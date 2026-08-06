@@ -58,9 +58,8 @@
             const t = data.tasks;
             const taskHtml = [];
             if (t.active > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas activas en sistema</span><span class="status-pill status-active">${t.active} Active</span></div>`);
-            if (t.pending > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas pendientes</span><span class="status-pill status-pending">${t.pending} Pending</span></div>`);
-            if (t.completed > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas completadas</span><span class="status-pill status-completed">${t.completed} Completed</span></div>`);
-            if (taskHtml.length === 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Sin tareas activas — el sistema está limpio.</span></div>`);
+            if (t.inactive > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas desactivadas</span><span class="status-pill status-inactive">${t.inactive} Inactive</span></div>`);
+            if (taskHtml.length === 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Sin tareas — el sistema está limpio.</span></div>`);
             document.getElementById('task-list').innerHTML = taskHtml.join('');
             document.getElementById('task-list').classList.remove('loading-pulse');
 
