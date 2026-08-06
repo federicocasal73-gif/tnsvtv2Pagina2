@@ -73,6 +73,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $shopEquipped = null;
 
+    // ===== TNSVT Reino v2 — JWT refresh + tier (Phase 0 STEP 2) =====
+
+    #[ORM\Column(type: Types::STRING, length: 32, nullable: true, options: ['default' => 'INITIATE'])]
+    private ?string $tier = 'INITIATE';
+
+    #[ORM\Column(type: Types::STRING, length: 128, nullable: true)]
+    private ?string $currentRefreshTokenHash = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $refreshTokenRotatedAt = null;
+
+    // ===== End v2 additions =====
+
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: WalletTransaction::class)]
     private Collection $walletTransactions;
 
@@ -179,6 +192,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getShopEquipped(): ?array { return $this->shopEquipped; }
     public function setShopEquipped(?array $v): static { $this->shopEquipped = $v; return $this; }
+
+    // ===== TNSVT Reino v2 — tier + JWT refresh getters/setters =====
+
+    public const TIER_INITIATE = 'INITIATE';
+    public const TIER_ASPIRANT = 'ASPIRANT';
+    public const TIER_1 = 'TIER_1';
+    public const TIER_2 = 'TIER_2';
+    public const TIER_3_ZENITH = 'TIER_3_ZENITH';
+    public const TIER_MASTER = 'MASTER';
+
+    public const TIERS = [
+        self::TIER_INITIATE,
+        self::TIER_ASPIRANT,
+        self::TIER_1,
+        self::TIER_2,
+        self::TIER_3_ZENITH,
+        self::TIER_MASTER,
+    ];
+
+    public function getTier(): string { return $this->tier ?? self::TIER_INITIATE; }
+    public function setTier(string $tier): static
+    {
+        if (!in_array($tier, self::TIERS, true)) {
+            throw new \InvalidArgumentException("Invalid tier: $tier");
+        }
+        $this->tier = $tier;
+        return $this;
+    }
+
+    public function getCurrentRefreshTokenHash(): ?string { return $this->currentRefreshTokenHash; }
+    public function setCurrentRefreshTokenHash(?string $h): static { $this->currentRefreshTokenHash = $h; return $this; }
+
+    public function getRefreshTokenRotatedAt(): ?\DateTimeImmutable { return $this->refreshTokenRotatedAt; }
+    public function setRefreshTokenRotatedAt(?\DateTimeImmutable $d): static { $this->refreshTokenRotatedAt = $d; return $this; }
+
+    // ===== End v2 additions =====
 
     public function getWalletBalanceFloat(): float { return (float) $this->walletBalance; }
     public function hasBalance(float $min): bool { return $this->getWalletBalanceFloat() >= $min; }
