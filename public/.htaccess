@@ -1,0 +1,26 @@
+# public/.htaccess
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Detecta el RewriteBase automáticamente
+    RewriteCond %{REQUEST_URI}::$1 ^(/.+)/(.*)::\2$
+    RewriteRule ^(.*) - [E=BASE:%1]
+
+    # Si existe el archivo físico, lo sirve directo
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Todo lo demás lo manda al front controller
+    RewriteRule ^ %{ENV:BASE}/index.php [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        RedirectMatch 302 ^/$ /index.php/
+    </IfModule>
+</IfModule>
+
+# Seguridad: bloquear acceso a archivos ocultos (.env, .git, etc.)
+<FilesMatch "^(\.|composer\.(json|lock)|README|YAML)">
+    Require all denied
+</FilesMatch>
