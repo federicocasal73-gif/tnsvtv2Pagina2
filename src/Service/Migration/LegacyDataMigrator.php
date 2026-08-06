@@ -103,17 +103,35 @@ class LegacyDataMigrator
         private LoggerInterface $logger,
     ) {}
 
+    private ?string $legacyUrl = null;
+
+    /**
+     * Override the legacy DB URL (useful for testing).
+     */
+    public function setLegacyUrl(string $url): self
+    {
+        $this->legacyUrl = $url;
+        return $this;
+    }
+
     /**
      * Build a connection to the legacy database from env vars.
      */
     public function buildLegacyConnection(): Connection
     {
-        $url = $_ENV['LEGACY_DATABASE_URL'] ?? getenv('LEGACY_DATABASE_URL') ?? null;
+        $url = $this->legacyUrl
+            ?? $_ENV['LEGACY_DATABASE_URL'] ?? getenv('LEGACY_DATABASE_URL') ?? null;
         if (!$url) {
             throw new \RuntimeException(
                 'LEGACY_DATABASE_URL must be set. Example: ' .
                 'mysql://u310596868:YOUR_PASS@localhost:3306/u310596868_tnsvt?serverVersion=8.0.32&charset=utf8mb4'
             );
+        }
+        // URL-encode any special chars in the password (semicolons, etc.)
+        $parts = parse_url($url);
+        if ($parts && isset($parts['pass'])) {
+            $encodedPass = rawurlencode($parts['pass']);
+            $url = str_replace(':' . $parts['pass'] . '@', ':' . $encodedPass . '@', $url);
         }
         return DriverManager::getConnection(['url' => $url]);
     }

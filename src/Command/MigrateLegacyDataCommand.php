@@ -28,6 +28,7 @@ class MigrateLegacyDataCommand extends Command
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Run without writing (validates queries)')
             ->addOption('execute', null, InputOption::VALUE_NONE, 'Actually migrate (writes to destination)')
             ->addOption('report', null, InputOption::VALUE_REQUIRED, 'Write report JSON to this path', 'var/migration-report.json')
+            ->addOption('legacy-url', null, InputOption::VALUE_REQUIRED, 'Override LEGACY_DATABASE_URL env var')
         ;
     }
 
@@ -37,6 +38,11 @@ class MigrateLegacyDataCommand extends Command
 
         $isDryRun = !$input->getOption('execute') || $input->getOption('dry-run');
         $mode = $isDryRun ? 'DRY-RUN' : 'EXECUTE';
+
+        // Apply legacy URL override
+        if ($url = $input->getOption('legacy-url')) {
+            $this->migrator->setLegacyUrl($url);
+        }
 
         $io->title('TNSVT Reino v2 — Legacy Data Migration');
         $io->writeln(sprintf('Mode: <info>%s</info>', $mode));
