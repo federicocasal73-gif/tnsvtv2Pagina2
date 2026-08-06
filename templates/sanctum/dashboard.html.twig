@@ -1,109 +1,85 @@
 {% extends 'shell.html.twig' %}
 
-{% block title %}Command Center · T.N.S.V.T{% endblock %}
-
-{% block sidebar_nav %}
-    <a href="{{ path('sanctum_dashboard') }}" class="sidebar-link active">
-        <span class="material-symbols-elev">dashboard</span>
-        <span>Dashboard</span>
-    </a>
-    <a href="{{ path('sanctum_users') }}" class="sidebar-link">
-        <span class="material-symbols-elev">group</span>
-        <span>Adeptos</span>
-    </a>
-    <a href="{{ path('sanctum_audit') }}" class="sidebar-link">
-        <span class="material-symbols-elev">shield</span>
-        <span>Audit Log</span>
-    </a>
-
-    <style>
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            color: var(--on-surface-variant-elev);
-            font-size: 0.875rem;
-            font-weight: 500;
-            border-left: 2px solid transparent;
-            transition: all 0.2s ease;
-        }
-        .sidebar-link:hover {
-            background: var(--glass-bg-elev);
-            color: var(--on-surface-elev);
-        }
-        .sidebar-link.active {
-            background: var(--glass-bg-strong-elev);
-            color: var(--gold-elev);
-            border-left-color: var(--gold-elev);
-        }
-    </style>
-{% endblock %}
+{% block title %}Dashboard · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}Command Center{% endblock %}
 {% block topbar_subtitle %}Divine synchronization active.{% endblock %}
 
 {% block content %}
-    {# ====== Command Center Dashboard (Phase 1a placeholder) ====== #}
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {# KPI Cards (Stitch style) #}
-        <div class="stat-card-elev">
-            <p class="stat-label-elev">Global PnL</p>
-            <p class="stat-value-elev">+$0</p>
-            <p class="stat-meta-elev">— pending data</p>
-        </div>
-
-        <div class="stat-card-elev">
-            <p class="stat-label-elev">Active Seekers</p>
-            <p class="stat-value-elev">0</p>
-            <p class="stat-meta-elev">Real-time presence</p>
-        </div>
-
-        <div class="stat-card-elev">
-            <p class="stat-label-elev">Server Sanctum</p>
-            <p class="stat-value-elev">99.9%</p>
-            <p class="stat-meta-elev">Divine Integrity High</p>
-        </div>
-
-        <div class="stat-card-elev">
-            <p class="stat-label-elev">Macro Signals</p>
-            <p class="stat-value-elev">0</p>
-            <p class="stat-meta-elev">Executions per hr</p>
-        </div>
+    {# Skeleton loading state — JS will replace #kpi-grid, #task-list, #signal-list on load #}
+    <div id="kpi-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 loading-pulse">
+        <div class="kpi-card"><p class="kpi-label">Global PnL</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
+        <div class="kpi-card"><p class="kpi-label">Active Seekers</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
+        <div class="kpi-card"><p class="kpi-label">Server Sanctum</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
+        <div class="kpi-card"><p class="kpi-label">Macro Signals</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {# Task Sovereignty placeholder #}
         <div class="glass-card-elev p-6 lg:col-span-2">
             <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Task Sovereignty</h3>
-            <p class="text-sm text-[var(--outline-elev)] mb-4">Phase 1a placeholder — task list will populate when data is migrated.</p>
-            <div class="space-y-3">
-                <div class="flex items-center justify-between p-3 rounded-lg glass-card-elev">
-                    <span class="text-sm">Liquidity Stream Calibration</span>
-                    <span class="status-pill-elev status-active">Active</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg glass-card-elev">
-                    <span class="text-sm">Vault Integrity Audit</span>
-                    <span class="status-pill-elev status-pending">Pending</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg glass-card-elev">
-                    <span class="text-sm">Conclave Oracle Update</span>
-                    <span class="status-pill-elev status-completed">Completed</span>
+            <div id="task-list" class="space-y-3">
+                <div class="flex items-center justify-between p-3 rounded-lg glass-card-elev loading-pulse">
+                    <span class="text-sm text-[var(--outline-elev)]">Cargando tareas...</span>
                 </div>
             </div>
         </div>
 
-        {# Recent Signals placeholder #}
         <div class="glass-card-elev p-6">
             <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Recent Signals</h3>
-            <p class="text-sm text-[var(--outline-elev)]">Phase 1a placeholder — live feed coming in Phase 4.</p>
+            <div id="signal-list" class="space-y-3 text-sm">
+                <p class="text-[var(--outline-elev)]">Sin actividad reciente.</p>
+            </div>
         </div>
     </div>
 
     <div class="mt-6 section-divider-elev"></div>
+    <p class="text-xs text-center text-[var(--outline-elev)]">T.N.S.V.T Reino v2 · Phase 1a · Sanctum real con datos del DB</p>
 
-    <p class="text-xs text-center text-[var(--outline-elev)]">
-        T.N.S.V.T Reino v2 · Phase 0 STEP 5 · Sanctum shell preview · {{ "now"|date("Y-m-d H:i") }}
-    </p>
+    <script>
+    (async function() {
+        try {
+            const r = await fetch('/sanctum/api/dashboard');
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const data = await r.json();
+            if (!data.success) throw new Error(data.error || 'unknown error');
+
+            // Render KPIs
+            const k = data.kpis;
+            const pnlFmt = (k.globalPnl >= 0 ? '+$' : '-$') + Math.abs(k.globalPnl).toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('kpi-grid').innerHTML = `
+                <div class="kpi-card"><p class="kpi-label">Global PnL</p><p class="kpi-value" style="color:${k.globalPnl >= 0 ? 'var(--gold-elev)' : '#ff6b6b'}">${pnlFmt}</p><p class="kpi-meta">${k.totalUsers} usuarios totales</p></div>
+                <div class="kpi-card"><p class="kpi-label">Active Seekers</p><p class="kpi-value">${k.activeSeekers}</p><p class="kpi-meta">${k.activeUsers} de ${k.totalUsers} activos</p></div>
+                <div class="kpi-card"><p class="kpi-label">Server Sanctum</p><p class="kpi-value">${k.serverSanctum}%</p><p class="kpi-meta">${k.serverSanctum >= 99 ? 'Divine Integrity High' : 'Operational'}</p></div>
+                <div class="kpi-card"><p class="kpi-label">Macro Signals</p><p class="kpi-value">${k.macroSignals}</p><p class="kpi-meta">Eventos en próximas 24h</p></div>
+            `;
+            document.getElementById('kpi-grid').classList.remove('loading-pulse');
+
+            // Render tasks
+            const t = data.tasks;
+            const taskHtml = [];
+            if (t.active > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas activas en sistema</span><span class="status-pill status-active">${t.active} Active</span></div>`);
+            if (t.pending > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas pendientes</span><span class="status-pill status-pending">${t.pending} Pending</span></div>`);
+            if (t.completed > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas completadas</span><span class="status-pill status-completed">${t.completed} Completed</span></div>`);
+            if (taskHtml.length === 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Sin tareas activas — el sistema está limpio.</span></div>`);
+            document.getElementById('task-list').innerHTML = taskHtml.join('');
+            document.getElementById('task-list').classList.remove('loading-pulse');
+
+            // Render recent signals
+            const sig = data.recentSignals;
+            if (sig && sig.length > 0) {
+                document.getElementById('signal-list').innerHTML = sig.map(s => `
+                    <div class="p-2 border-l-2 border-[var(--gold-elev)]">
+                        <p class="text-xs text-[var(--outline-elev)]">${new Date(s.time).toLocaleString()}</p>
+                        <p><span class="font-mono text-xs">${s.admin}</span> · <span class="text-[var(--on-surface-elev)]">${s.action}</span></p>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('signal-list').innerHTML = '<p class="text-[var(--outline-elev)]">Sin actividad reciente.</p>';
+            }
+        } catch (e) {
+            console.error('Dashboard load failed:', e);
+            document.getElementById('kpi-grid').innerHTML = '<div class="kpi-card col-span-4 text-center text-red-400">Error cargando dashboard: ' + e.message + '</div>';
+        }
+    })();
+    </script>
 {% endblock %}

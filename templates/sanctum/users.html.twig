@@ -2,27 +2,97 @@
 
 {% block title %}Adeptos · T.N.S.V.T{% endblock %}
 
-{% block sidebar_nav %}
-    <a href="{{ path('sanctum_dashboard') }}" class="sidebar-link">
-        <span class="material-symbols-elev">dashboard</span>
-        <span>Dashboard</span>
-    </a>
-    <a href="{{ path('sanctum_users') }}" class="sidebar-link active">
-        <span class="material-symbols-elev">group</span>
-        <span>Adeptos</span>
-    </a>
-    <a href="{{ path('sanctum_audit') }}" class="sidebar-link">
-        <span class="material-symbols-elev">shield</span>
-        <span>Audit Log</span>
-    </a>
-{% endblock %}
-
 {% block topbar_title %}Adeptos{% endblock %}
 {% block topbar_subtitle %}Gestión de usuarios y tiers{% endblock %}
 
 {% block content %}
     <div class="glass-card-elev p-6">
-        <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Phase 1a placeholder</h3>
-        <p class="text-sm text-[var(--outline-elev)]">User list con tier badges, filtros, bulk actions — se implementa en Phase 1a.</p>
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)]">Usuarios del sistema</h3>
+            <button id="refresh-users" class="btn-elev-secondary text-xs">
+                <span class="material-symbols-elev text-sm align-middle">refresh</span>
+                Actualizar
+            </button>
+        </div>
+        <div id="users-table" class="overflow-x-auto">
+            <p class="text-[var(--outline-elev)] text-center py-8 loading-pulse">Cargando usuarios...</p>
+        </div>
     </div>
+
+    <script>
+    (async function() {
+        async function loadUsers() {
+            const container = document.getElementById('users-table');
+            container.classList.add('loading-pulse');
+            container.innerHTML = '<p class="text-[var(--outline-elev)] text-center py-8">Cargando...</p>';
+            try {
+                const r = await fetch('/sanctum/api/users');
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const data = await r.json();
+                if (!data.success) throw new Error(data.error || 'unknown error');
+                if (data.users.length === 0) {
+                    container.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin usuarios.</p>';
+                    return;
+                }
+                container.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Tier</th>
+                                <th>Roles</th>
+                                <th>Status</th>
+                                <th>Wallet</th>
+                                <th>Coins</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        ${data.users.map(u => `
+                            <tr>
+                                <td>${u.id}</td>
+                                <td><code>${u.code}</code></td>
+                                <td>${u.name || ''}</td>
+                                <td>${u.email || '<span class="text-[var(--outline-elev)]">—</span>'}</td>
+                                <td><span class="tier-badge-elev tier-${(u.tier || 'INITIATE').toLowerCase().replace(/_/g, '-')}">${u.tier || 'INITIATE'}</span></td>
+                                <td>${u.isAdmin ? '<span class="status-pill status-active">ADMIN</span>' : '<span class="status-pill status-pending">USER</span>'}</td>
+                                <td>${u.active ? '<span class="status-pill status-active">Active</span>' : '<span class="status-pill status-inactive">Inactive</span>'}</td>
+                                <td>$${u.walletBalance || '0.00'}</td>
+                                <td>${u.coins || 0}</td>
+                                <td>${u.lastLogin || '<span class="text-[var(--outline-elev)]">never</span>'}</td>
+                                <td>
+                                    <button class="btn-action btn-toggle" onclick="toggleActive('${u.code}')">${u.active ? 'Desactivar' : 'Activar'}</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                        </tbody>
+                    </table>
+                    <p class="text-xs text-[var(--outline-elev)] mt-4">Total: <strong>${data.count}</strong> usuarios</p>
+                `;
+            } catch (e) {
+                container.innerHTML = '<p class="text-red-400 text-center py-8">Error: ' + e.message + '</p>';
+            }
+            container.classList.remove('loading-pulse');
+        }
+
+        window.toggleActive = async function(code) {
+            if (!confirm('¿Toggle active para ' + code + '?')) return;
+            try {
+                const r = await fetch('/sanctum/api/users/' + code + '/active', {method: 'PATCH'});
+                const data = await r.json();
+                if (data.success) loadUsers();
+                else alert('Error: ' + (data.error || 'unknown'));
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        };
+
+        document.getElementById('refresh-users').addEventListener('click', loadUsers);
+        loadUsers();
+    })();
+    </script>
 {% endblock %}

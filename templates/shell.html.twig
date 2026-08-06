@@ -6,31 +6,51 @@
     <meta name="theme-color" content="#050308" />
     <title>{% block title %}T.N.S.V.T — Sanctum{% endblock %}</title>
 
-    {# Space Grotesk + Inter from Google Fonts #}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-
-    {# Material Symbols Outlined (icons) #}
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-    {# Design tokens (NEW v2 - additive) #}
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
-
-    {# Elevation utility classes (NEW v2) #}
     <link rel="stylesheet" href="{{ asset('styles/elev.css') }}" />
 
     {% block stylesheets %}{% endblock %}
+    <style>
+        .sanctum-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: var(--on-surface-variant-elev); font-size: 0.875rem; font-weight: 500; border-left: 2px solid transparent; transition: all 0.2s ease; text-decoration: none; }
+        .sanctum-link:hover { background: var(--glass-bg-elev); color: var(--on-surface-elev); }
+        .sanctum-link.active { background: var(--glass-bg-strong-elev); color: var(--gold-elev); border-left-color: var(--gold-elev); }
+        .kpi-card { background: var(--glass-bg-elev); backdrop-filter: blur(20px); border: 1px solid var(--glass-border-elev); border-radius: 0.75rem; padding: 1.25rem 1.5rem; transition: all 0.3s ease; }
+        .kpi-card:hover { border-color: rgba(212, 175, 55, 0.3); background: var(--glass-bg-strong-elev); }
+        .kpi-label { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--outline-elev); margin: 0; }
+        .kpi-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--gold-elev); margin: 0.5rem 0 0.25rem; line-height: 1.1; }
+        .kpi-meta { font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; color: var(--on-surface-variant-elev); }
+        .tier-initiate { background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, transparent 100%); border-left-color: var(--tier-initiate-elev); }
+        .tier-aspirant { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%); border-left-color: var(--tier-aspirant-elev); }
+        .tier-1 { background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, transparent 100%); border-left-color: var(--tier-1-elev); }
+        .tier-2 { background: linear-gradient(135deg, rgba(197, 160, 40, 0.2) 0%, transparent 100%); border-left-color: var(--tier-2-elev); }
+        .tier-3-zenith { background: linear-gradient(135deg, rgba(242, 202, 80, 0.3) 0%, transparent 100%); border-left-color: var(--tier-3-zenith-elev); }
+        .tier-master { background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, transparent 100%); border-left-color: var(--tier-master-elev); }
+        .status-pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+        .status-active { background: rgba(242, 202, 80, 0.15); color: var(--gold-elev); border: 1px solid rgba(242, 202, 80, 0.3); }
+        .status-pending { background: rgba(153, 144, 124, 0.15); color: var(--outline-elev); border: 1px solid var(--outline-variant-elev); }
+        .status-completed { background: rgba(52, 199, 89, 0.15); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.3); }
+        .status-inactive { background: rgba(107, 114, 128, 0.15); color: var(--outline-elev); border: 1px solid var(--outline-variant-elev); }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--outline-elev); border-bottom: 1px solid var(--outline-variant-elev); }
+        .data-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--outline-variant-elev); font-size: 0.875rem; }
+        .data-table tr:hover td { background: var(--glass-bg-elev); }
+        .btn-action { padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: 1px solid; background: transparent; }
+        .btn-toggle { color: var(--gold-elev); border-color: var(--gold-elev); }
+        .btn-toggle:hover { background: rgba(242, 202, 80, 0.1); }
+        .loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    </style>
 </head>
 
 <body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased">
 
-{# ====== SANCTUM SHELL — Phase 1a (placeholder) ====== #}
 <div class="flex min-h-screen">
-
-    {# Sidebar (left, fixed) #}
     <aside id="sanctum-sidebar" class="w-64 bg-[var(--surface-elev)] border-r border-[var(--outline-variant-elev)] flex flex-col">
-        {# Logo + brand #}
         <div class="p-6 border-b border-[var(--outline-variant-elev)]">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg gold-glow-elev flex items-center justify-center bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)]">
@@ -43,61 +63,96 @@
             </div>
         </div>
 
-        {# Navigation #}
         <nav class="flex-1 overflow-y-auto py-4">
-            {% block sidebar_nav %}
-                {# Filled in by child templates #}
-            {% endblock %}
+            <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
+                <span class="material-symbols-elev">dashboard</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
+                <span class="material-symbols-elev">group</span>
+                <span>Adeptos</span>
+            </a>
+            <a href="{{ path('sanctum_audit') }}" class="sanctum-link" data-page="audit">
+                <span class="material-symbols-elev">shield</span>
+                <span>Audit Log</span>
+            </a>
+            <a href="/sanctum/api/dashboard" target="_blank" class="sanctum-link">
+                <span class="material-symbols-elev">data_object</span>
+                <span>API JSON</span>
+            </a>
         </nav>
 
-        {# User card (bottom) #}
         <div class="p-4 border-t border-[var(--outline-variant-elev)]">
-            {% block sidebar_user %}
-                <div class="glass-card-elev p-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-[var(--on-primary-elev)] font-bold">
-                            {{ app.user ? app.user.code|slice(0, 2) : '??' }}
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-[var(--on-surface-elev)] truncate">{{ app.user ? app.user.name : 'Guest' }}</p>
-                            <span class="tier-badge-elev tier-master">
-                                {{ app.user ? app.user.tier|default('INITIATE') : 'INITIATE' }}
-                            </span>
-                        </div>
+            <div class="glass-card-elev p-3">
+                <div class="flex items-center gap-3">
+                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-[var(--on-primary-elev)] font-bold">
+                        ?
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="user-name" class="text-sm font-medium text-[var(--on-surface-elev)] truncate">Cargando...</p>
+                        <span id="user-tier" class="tier-badge-elev tier-initiate">—</span>
                     </div>
                 </div>
-            {% endblock %}
+                <button id="logout-btn" class="mt-2 w-full text-xs py-1 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-variant-elev)] hover:bg-[var(--glass-bg-strong-elev)]">
+                    Cerrar sesión
+                </button>
+            </div>
         </div>
     </aside>
 
-    {# Main content area #}
     <main class="flex-1 flex flex-col">
-        {# Topbar #}
         <header class="h-16 bg-[var(--surface-elev)] border-b border-[var(--outline-variant-elev)] flex items-center justify-between px-6">
-            {% block topbar %}
-                <div>
-                    <h2 class="text-xl font-semibold text-[var(--on-surface-elev)]">{% block topbar_title %}Command Center{% endblock %}</h2>
-                    <p class="text-xs text-[var(--outline-elev)]">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button class="btn-elev-ghost" title="Notifications">
-                        <span class="material-symbols-elev">notifications</span>
-                    </button>
-                </div>
-            {% endblock %}
+            <div>
+                <h2 class="text-xl font-semibold text-[var(--on-surface-elev)]">{% block topbar_title %}Command Center{% endblock %}</h2>
+                <p class="text-xs text-[var(--outline-elev)]">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="btn-elev-ghost" title="Notificaciones">
+                    <span class="material-symbols-elev">notifications</span>
+                </button>
+            </div>
         </header>
 
-        {# Content #}
         <div class="flex-1 overflow-auto p-6">
             {% block content %}{% endblock %}
         </div>
     </main>
 </div>
 
-{# Floating UI (toasts, modals, etc.) #}
 <div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50">
     {% block floats %}{% endblock %}
 </div>
+
+<script>
+(function() {
+    // Active nav highlight
+    const path = window.location.pathname;
+    document.querySelectorAll('.sanctum-link[data-page]').forEach(a => {
+        if (a.getAttribute('href') === path) a.classList.add('active');
+    });
+
+    // Load user info from session via /api/auth/check
+    fetch('/api/auth/check').then(r => r.json()).then(data => {
+        if (data && data.user) {
+            const code = (data.user.code || '??').slice(0, 2);
+            document.getElementById('user-avatar').textContent = code;
+            document.getElementById('user-name').textContent = data.user.name || data.user.code;
+            const tierEl = document.getElementById('user-tier');
+            tierEl.textContent = (data.user.tier || 'INITIATE');
+            tierEl.className = 'tier-badge-elev tier-' + (data.user.tier || 'INITIATE').toLowerCase().replace(/_/g, '-');
+        } else {
+            document.getElementById('user-name').textContent = 'Guest';
+        }
+    }).catch(() => { document.getElementById('user-name').textContent = 'Sin sesión'; });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        if (confirm('¿Cerrar sesión?')) {
+            fetch('/api/auth/logout', {method: 'POST'}).then(() => location.href = '/');
+        }
+    });
+})();
+</script>
 
 {% block javascripts %}{% endblock %}
 </body>
