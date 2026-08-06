@@ -1,0 +1,28 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Audit Log · T.N.S.V.T{% endblock %}
+
+{% block sidebar_nav %}
+    <a href="{{ path('sanctum_dashboard') }}" class="sidebar-link">
+        <span class="material-symbols-elev">dashboard</span>
+        <span>Dashboard</span>
+    </a>
+    <a href="{{ path('sanctum_users') }}" class="sidebar-link">
+        <span class="material-symbols-elev">group</span>
+        <span>Adeptos</span>
+    </a>
+    <a href="{{ path('sanctum_audit') }}" class="sidebar-link active">
+        <span class="material-symbols-elev">shield</span>
+        <span>Audit Log</span>
+    </a>
+{% endblock %}
+
+{% block topbar_title %}Audit Log{% endblock %}
+{% block topbar_subtitle %}Registro de acciones administrativas{% endblock %}
+
+{% block content %}
+    <div class="glass-card-elev p-6">
+        <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Phase 1a placeholder</h3>
+        <p class="text-sm text-[var(--outline-elev)]">Audit log search/filter/export — auto-populado por AuditSubscriber en cada acción admin.</p>
+    </div>
+{% endblock %}

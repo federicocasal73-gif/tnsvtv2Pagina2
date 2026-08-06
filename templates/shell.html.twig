@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es" class="dark" data-apk="false">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050308" />
+    <title>{% block title %}T.N.S.V.T — Sanctum{% endblock %}</title>
+
+    {# Space Grotesk + Inter from Google Fonts #}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    {# Material Symbols Outlined (icons) #}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    {# Design tokens (NEW v2 - additive) #}
+    <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
+
+    {# Elevation utility classes (NEW v2) #}
+    <link rel="stylesheet" href="{{ asset('styles/elev.css') }}" />
+
+    {% block stylesheets %}{% endblock %}
+</head>
+
+<body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased">
+
+{# ====== SANCTUM SHELL — Phase 1a (placeholder) ====== #}
+<div class="flex min-h-screen">
+
+    {# Sidebar (left, fixed) #}
+    <aside id="sanctum-sidebar" class="w-64 bg-[var(--surface-elev)] border-r border-[var(--outline-variant-elev)] flex flex-col">
+        {# Logo + brand #}
+        <div class="p-6 border-b border-[var(--outline-variant-elev)]">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg gold-glow-elev flex items-center justify-center bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)]">
+                    <span class="material-symbols-elev text-[var(--on-primary-elev)]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-wider text-[var(--on-surface-elev)]">T.N.S.V.T</h1>
+                    <p class="text-xs text-[var(--outline-elev)] tracking-widest">SANCTUM</p>
+                </div>
+            </div>
+        </div>
+
+        {# Navigation #}
+        <nav class="flex-1 overflow-y-auto py-4">
+            {% block sidebar_nav %}
+                {# Filled in by child templates #}
+            {% endblock %}
+        </nav>
+
+        {# User card (bottom) #}
+        <div class="p-4 border-t border-[var(--outline-variant-elev)]">
+            {% block sidebar_user %}
+                <div class="glass-card-elev p-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-[var(--on-primary-elev)] font-bold">
+                            {{ app.user ? app.user.code|slice(0, 2) : '??' }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-[var(--on-surface-elev)] truncate">{{ app.user ? app.user.name : 'Guest' }}</p>
+                            <span class="tier-badge-elev tier-master">
+                                {{ app.user ? app.user.tier|default('INITIATE') : 'INITIATE' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {% endblock %}
+        </div>
+    </aside>
+
+    {# Main content area #}
+    <main class="flex-1 flex flex-col">
+        {# Topbar #}
+        <header class="h-16 bg-[var(--surface-elev)] border-b border-[var(--outline-variant-elev)] flex items-center justify-between px-6">
+            {% block topbar %}
+                <div>
+                    <h2 class="text-xl font-semibold text-[var(--on-surface-elev)]">{% block topbar_title %}Command Center{% endblock %}</h2>
+                    <p class="text-xs text-[var(--outline-elev)]">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="btn-elev-ghost" title="Notifications">
+                        <span class="material-symbols-elev">notifications</span>
+                    </button>
+                </div>
+            {% endblock %}
+        </header>
+
+        {# Content #}
+        <div class="flex-1 overflow-auto p-6">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{# Floating UI (toasts, modals, etc.) #}
+<div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50">
+    {% block floats %}{% endblock %}
+</div>
+
+{% block javascripts %}{% endblock %}
+</body>
+</html>

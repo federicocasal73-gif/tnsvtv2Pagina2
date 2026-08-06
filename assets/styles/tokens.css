@@ -1,0 +1,92 @@
+/*
+ * TNSVT Reino v2 — Design Tokens (Phase 0 STEP 5)
+ *
+ * Add-only CSS variables for the Stitch-inspired aesthetic.
+ * These co-exist with the existing tokens (--gold, --violet, --bg, etc.)
+ * WITHOUT overriding or renaming. Use the -elev suffix for new tokens.
+ *
+ * Existing tokens (preserved, do not modify):
+ *   --gold: #c5a028, --gold-bright: #ffd700
+ *   --violet: #8a3cff, --violet-glow
+ *   --bg: #030106, --white, --muted
+ *   --node-bg, --surface, --glow
+ *
+ * New Stitch-aligned tokens (-elev suffix):
+ */
+
+:root {
+  /* === Stitch gold palette === */
+  --gold-elev: #f2ca50;
+  --gold-bright-elev: #ffe088;
+  --gold-fixed-dim-elev: #e9c349;
+  --gold-fixed-elev: #ffe088;
+  --gold-fixed-bright-elev: #fff5b3;
+  --gold-container-elev: #d4af37;
+
+  /* === Stitch void/nebula palette === */
+  --void-elev: #050308;
+  --void-deep-elev: #100b1c;
+  --nebula-elev: #2D1B4E;
+  --nebula-glow-elev: rgba(111, 4, 228, 0.4);
+
+  /* === Stitch surface palette (Material 3 inspired) === */
+  --surface-elev: #161121;
+  --surface-low-elev: #1e192a;
+  --surface-container-elev: #221d2e;
+  --surface-high-elev: #2d2739;
+  --surface-container-high-elev: #2d2739;
+  --surface-container-highest-elev: #383244;
+  --surface-container-low-elev: #221d2e;
+  --surface-container-lowest-elev: #100b1c;
+  --surface-bright-elev: #3c3649;
+  --surface-dim-elev: #161121;
+  --surface-variant-elev: #383244;
+
+  /* === Stitch text/outline colors === */
+  --on-surface-elev: #e9def6;
+  --on-surface-variant-elev: #d0c5af;
+  --on-primary-elev: #3c2f00;
+  --on-primary-container-elev: #554300;
+  --on-secondary-elev: #41008b;
+  --on-secondary-container-elev: #d7bfff;
+  --on-tertiary-elev: #082b72;
+  --on-tertiary-container-elev: #254188;
+  --outline-elev: #99907c;
+  --outline-variant-elev: #4d4635;
+  --on-background-elev: #e9def6;
+  --background-elev: #161121;
+
+  /* === Stitch semantic === */
+  --primary-elev: #f2ca50;
+  --secondary-elev: #d4bbff;
+  --tertiary-elev: #bfcdff;
+  --error-elev: #ffb4ab;
+
+  /* === TNSVT-specific brand tokens === */
+  --starlight-white-elev: #FDFCF8;
+  --void-black-elev: #050308;
+
+  /* === Glassmorphism utilities === */
+  --glass-bg-elev: rgba(255, 255, 255, 0.03);
+  --glass-bg-strong-elev: rgba(255, 255, 255, 0.05);
+  --glass-border-elev: rgba(255, 255, 255, 0.1);
+  --glass-border-strong-elev: rgba(255, 255, 255, 0.2);
+
+  /* === Glow effects === */
+  --gold-glow-elev: 0 0 25px rgba(212, 175, 55, 0.15);
+  --gold-glow-strong-elev: 0 0 35px rgba(242, 202, 80, 0.4);
+  --purple-glow-elev: 0 0 40px rgba(111, 4, 228, 0.2);
+
+  /* === Sacred geometry & animations === */
+  --rotation-sacred-duration: 120s;
+  --pulse-aura-duration: 8s;
+  --status-pulse-duration: 2s;
+
+  /* === Tiers (visual badge colors) === */
+  --tier-initiate-elev: #6b7280;     /* gray-500 */
+  --tier-aspirant-elev: #3b82f6;     /* blue-500 */
+  --tier-1-elev: #8b5cf6;            /* violet-500 */
+  --tier-2-elev: #c5a028;            /* gold-elev */
+  --tier-3-zenith-elev: #f2ca50;      /* gold-bright */
+  --tier-master-elev: #fbbf24;        /* amber-400 */
+}
