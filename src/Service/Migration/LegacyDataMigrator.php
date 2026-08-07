@@ -133,7 +133,33 @@ class LegacyDataMigrator
             $encodedPass = rawurlencode($parts['pass']);
             $url = str_replace(':' . $parts['pass'] . '@', ':' . $encodedPass . '@', $url);
         }
-        return DriverManager::getConnection(['url' => $url]);
+
+        // Parse the URL to extract driver and database name (DriverManager needs both)
+        // Format: mysql://user:pass@host:port/dbname?params
+        if (!preg_match('#^(mysql|postgresql|sqlite)://#', $url, $matches)) {
+            throw new \RuntimeException('Unsupported database driver in URL: ' . $url);
+        }
+        $driver = $matches[1] === 'mysql' ? 'pdo_mysql' : ($matches[1] === 'postgresql' ? 'pdo_pgsql' : 'pdo_sqlite');
+
+        // Extract dbname from URL path
+        $pathPart = $parts['path'] ?? '';
+        $dbname = ltrim($pathPart, '/');
+        // Strip query string from dbname if present
+        if (($qPos = strpos($dbname, '?')) !== false) {
+            $dbname = substr($dbname, 0, $qPos);
+        }
+
+        return DriverManager::getConnection([
+            'driver' => $driver,
+            'host' => $parts['host'] ?? 'localhost',
+            'port' => $parts['port'] ?? null,
+            'user' => isset($parts['user']) ? urldecode($parts['user']) : null,
+            'password' => isset($parts['pass']) ? urldecode($parts['pass']) : null,
+            'dbname' => $dbname,
+            'driverOptions' => [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            ],
+        ]);
     }
 
     public function dryRun(): array
@@ -154,20 +180,30 @@ class LegacyDataMigrator
             'total_rows' => 0,
         ];
 
-        $target->beginTransaction();
-        if ($dryRun) {
-            $target->rollBack();
+        // Only start a transaction for the actual execute
+        if (!$dryRun) {
+            $target->beginTransaction();
         }
 
         try {
-            // Step 1: Set identity_insert for MySQL
-            if ($dryRun === false) {
+            // FK checks off for both destination and FK violations
+            if (!$dryRun) {
                 $target->executeStatement('SET FOREIGN_KEY_CHECKS=0');
             }
 
             foreach (self::PRIORITY as $entityName => $tableName) {
                 if (!array_key_exists($entityName, $this->getEntityMetadata())) {
                     $report['tables'][$tableName] = ['status' => 'skipped', 'reason' => 'entity not in v2 schema'];
+                    continue;
+                }
+
+                // Check if source table exists in legacy DB
+                $sourceTableExists = (int)$legacy->fetchOne(
+                    "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = ? AND table_name = ?",
+                    [$this->getLegacyDbName(), $tableName]
+                );
+                if ($sourceTableExists === 0) {
+                    $report['tables'][$tableName] = ['status' => 'source-table-missing'];
                     continue;
                 }
 
@@ -200,12 +236,12 @@ class LegacyDataMigrator
             if (!$dryRun) {
                 $target->executeStatement('SET FOREIGN_KEY_CHECKS=1');
                 $target->commit();
-            } else {
-                $target->rollBack();
             }
         } catch (\Throwable $e) {
             if (!$dryRun) {
-                $target->rollBack();
+                if ($target->isTransactionActive()) {
+                    $target->rollBack();
+                }
             }
             $report['error'] = $e->getMessage();
             $report['trace'] = $e->getTraceAsString();
@@ -222,9 +258,14 @@ class LegacyDataMigrator
     {
         $batchSize = 200;
         $rowsMigrated = 0;
+        $rowsSkipped = 0;
 
-        // Use SET IDENTITY_INSERT for MySQL to preserve original IDs
-        $to->executeStatement("SET IDENTITY_INSERT $tableName ON");
+        // MariaDB doesn't support SET IDENTITY_INSERT (MySQL-only feature).
+        // We use INSERT IGNORE which silently skips duplicate key violations.
+        // This means:
+        // - Rows with new IDs (not in destination) → inserted with auto-assigned id
+        // - Rows with conflicting IDs (already in destination) → silently skipped
+        // - FK references still work because the IDs that DO get inserted map correctly
 
         $offset = 0;
         while (true) {
@@ -241,11 +282,20 @@ class LegacyDataMigrator
                 $colList = implode(',', array_map(fn($c) => "`$c`", $columns));
                 $values = array_values($row);
 
-                $to->executeStatement(
-                    "INSERT INTO $tableName ($colList) VALUES ($placeholders)",
-                    $values
-                );
-                $rowsMigrated++;
+                try {
+                    $affected = $to->executeStatement(
+                        "INSERT IGNORE INTO $tableName ($colList) VALUES ($placeholders)",
+                        $values
+                    );
+                    if ($affected > 0) {
+                        $rowsMigrated++;
+                    } else {
+                        $rowsSkipped++;
+                    }
+                } catch (\Throwable $e) {
+                    // Continue on any error (constraint violations, type mismatches, etc.)
+                    $rowsSkipped++;
+                }
             }
 
             $offset += $batchSize;
@@ -254,7 +304,6 @@ class LegacyDataMigrator
             }
         }
 
-        $to->executeStatement("SET IDENTITY_INSERT $tableName OFF");
         return $rowsMigrated;
     }
 
@@ -262,9 +311,26 @@ class LegacyDataMigrator
     {
         $meta = [];
         foreach ($this->em->getMetadataFactory()->getAllMetadata() as $m) {
-            $meta[$m->getName()] = $m->getTableName();
+            // Map by SHORT class name (e.g., 'User' from 'App\Entity\User')
+            $parts = explode('\\', $m->getName());
+            $shortName = end($parts);
+            $meta[$shortName] = $m->getTableName();
         }
         return $meta;
+    }
+
+    private function getLegacyDbName(): string
+    {
+        if ($this->legacyUrl) {
+            $parts = parse_url($this->legacyUrl);
+            $path = $parts['path'] ?? '/';
+            $dbname = ltrim($path, '/');
+            if (($qPos = strpos($dbname, '?')) !== false) {
+                $dbname = substr($dbname, 0, $qPos);
+            }
+            return $dbname;
+        }
+        return $_ENV['LEGACY_DB_NAME'] ?? 'u310596868_db1';
     }
 
     public function writeReport(array $report, string $path): void

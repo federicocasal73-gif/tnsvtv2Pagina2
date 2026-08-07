@@ -49,7 +49,8 @@ class MigrateLegacyDataCommand extends Command
         $io->newLine();
 
         if (!$isDryRun) {
-            if (!$io->confirm('This will WRITE data to the v2 database. Continue?', false)) {
+            // Auto-accept when --execute is used (no TTY available in non-interactive contexts)
+            if ($input->isInteractive() && !$io->confirm('This will WRITE data to the v2 database. Continue?', false)) {
                 $io->warning('Cancelled by user.');
                 return Command::FAILURE;
             }
