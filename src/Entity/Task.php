@@ -46,4 +46,16 @@ class Task
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function setCreatedAt(?\DateTimeImmutable $createdAt): static { $this->createdAt = $createdAt; return $this; }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'title' => $this->getTitle(),
+            'description' => $this->getDescription(),
+            'orden' => $this->getOrden(),
+            'active' => $this->isActive(),
+            'createdAt' => $this->getCreatedAt()?->format('Y-m-d H:i'),
+        ];
+    }
 }
