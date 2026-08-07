@@ -19,5 +19,9 @@ services:
     App\:
         resource: '../src/'
 
+    # Public services (for direct access via container.get())
+    App\Service\Monitoring\MonitoringService:
+        public: true
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
