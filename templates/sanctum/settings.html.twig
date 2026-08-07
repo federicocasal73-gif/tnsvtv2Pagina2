@@ -1,0 +1,153 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Settings · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Settings · Configuración Global{% endblock %}
+{% block topbar_subtitle %}Feature flags, tier prices, límites del sistema{% endblock %}
+
+{% block content %}
+    <div class="max-w-5xl mx-auto">
+        {# Toolbar #}
+        <div class="glass-card-elev p-4 mb-6 flex items-center justify-between">
+            <div>
+                <p class="text-sm text-[var(--on-surface-elev)]">Configuración global del Sanctum</p>
+                <p class="text-xs text-[var(--outline-elev)]">Los cambios se aplican inmediatamente a todos los usuarios</p>
+            </div>
+            <button id="reload-btn" class="btn-elev-secondary text-xs">
+                <span class="material-symbols-elev align-middle text-sm">refresh</span>
+                Recargar
+            </button>
+        </div>
+
+        {# Settings grouped by category #}
+        <div id="settings-container">
+            <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando configuración...</p>
+        </div>
+    </div>
+
+    <script>
+    async function loadAll() {
+        const container = document.getElementById('settings-container');
+        try {
+            const r = await fetch('/sanctum/api/settings');
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const data = await r.json();
+            if (!data.success) throw new Error(data.error || 'unknown');
+            render(data.by_category);
+        } catch (e) {
+            container.innerHTML = '<p class="text-red-400 text-center py-8">Error: ' + e.message + '</p>';
+        }
+    }
+
+    function render(byCategory) {
+        const container = document.getElementById('settings-container');
+        let html = '';
+        const categoryLabels = {
+            'tier': 'Tiers & Pricing',
+            'feature': 'Feature Flags',
+            'general': 'General',
+            'limit': 'Límites del Sistema',
+        };
+        const categoryIcons = {
+            'tier': 'workspace_premium',
+            'feature': 'toggle_on',
+            'general': 'settings',
+            'limit': 'tune',
+        };
+        for (const [cat, settings] of Object.entries(byCategory)) {
+            const label = categoryLabels[cat] || cat;
+            const icon = categoryIcons[cat] || 'settings';
+            html += `<div class="glass-card-elev p-6 mb-6">`;
+            html += `<div class="flex items-center gap-3 mb-4">`;
+            html += `<span class="material-symbols-elev text-[var(--gold-elev)]">${icon}</span>`;
+            html += `<h3 class="text-lg font-semibold text-[var(--on-surface-elev)]">${label}</h3>`;
+            html += `<span class="text-xs text-[var(--outline-elev)]">${settings.length} settings</span>`;
+            html += `</div>`;
+            html += `<div class="space-y-3">`;
+            for (const s of settings) {
+                const isBool = s.value === '1' || s.value === '0' || s.value === 'true' || s.value === 'false';
+                const isFeature = cat === 'feature';
+                const toggleOn = s.value === '1' || s.value === 'true';
+                html += `<div class="flex items-start gap-3 p-3 rounded glass-card-elev" data-key="${s.key}">`;
+                html += `<div class="flex-1 min-w-0">`;
+                html += `<p class="text-sm font-mono text-[var(--on-surface-elev)] break-all">${s.key}</p>`;
+                if (s.description) html += `<p class="text-xs text-[var(--outline-elev)] mt-1">${s.description}</p>`;
+                html += `</div>`;
+                html += `<div class="flex items-center gap-2">`;
+                if (isFeature) {
+                    // Toggle switch
+                    html += `<label class="toggle-switch">`;
+                    html += `<input type="checkbox" data-key="${s.key}" data-type="bool" ${toggleOn ? 'checked' : ''} onchange="updateSetting('${s.key}', this.checked ? '1' : '0', 'bool')" />`;
+                    html += `<span class="toggle-slider"></span>`;
+                    html += `</label>`;
+                } else {
+                    // Input field
+                    html += `<input type="text" data-key="${s.key}" data-type="text" value="${s.value || ''}" class="w-32 px-2 py-1 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" onblur="updateSetting('${s.key}', this.value, 'text')" />`;
+                }
+                html += `</div>`;
+                html += `</div>`;
+            }
+            html += `</div></div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    async function updateSetting(key, value, type) {
+        try {
+            const r = await fetch(`/sanctum/api/settings/${encodeURIComponent(key)}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: String(value) }),
+            });
+            const data = await r.json();
+            if (data.success) {
+                console.log(`Updated ${key} = ${value}`);
+            } else {
+                alert('Error: ' + (data.error || 'desconocido'));
+            }
+        } catch (e) {
+            alert('Error: ' + e.message);
+        }
+    }
+
+    document.getElementById('reload-btn').addEventListener('click', loadAll);
+    loadAll();
+    </script>
+
+    <style>
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        cursor: pointer;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .toggle-slider {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--glass-border-elev);
+        border-radius: 12px;
+        transition: 0.3s;
+    }
+    .toggle-slider::before {
+        content: "";
+        position: absolute;
+        height: 18px; width: 18px;
+        left: 3px; bottom: 3px;
+        background: var(--on-surface-elev);
+        border-radius: 50%;
+        transition: 0.3s;
+    }
+    .toggle-switch input:checked + .toggle-slider {
+        background: var(--gold-elev);
+    }
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(20px);
+    }
+    </style>
+{% endblock %}

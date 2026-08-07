@@ -32,4 +32,10 @@ class SanctumController extends AbstractController
     {
         return $this->render('sanctum/tasks.html.twig');
     }
+
+    #[Route('/settings', name: 'sanctum_settings', methods: ['GET'])]
+    public function settings(): Response
+    {
+        return $this->render('sanctum/settings.html.twig');
+    }
 }
