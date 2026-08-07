@@ -1,0 +1,238 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Hilos del Mundo · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Hilos del Mundo{% endblock %}
+{% block topbar_subtitle %}Calendario Macroeconómico · No-Trade Window · Disciplina Operacional{% endblock %}
+
+{% block content %}
+    <div class="max-w-6xl mx-auto">
+        {# No-Trade Window Status Banner #}
+        <div id="ntw-banner" class="glass-card-elev p-6 mb-6 border-l-4 border-[var(--gold-elev)]">
+            <div class="flex items-center gap-4">
+                <div id="ntw-icon" class="w-14 h-14 rounded-full bg-[var(--gold-elev)] flex items-center justify-center">
+                    <span class="material-symbols-elev text-[var(--on-primary-elev)]" style="font-variation-settings: 'FILL' 1;">timer</span>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-xl font-semibold text-[var(--on-surface-elev)]" id="ntw-title">Cargando...</h2>
+                    <p class="text-sm text-[var(--outline-elev)]" id="ntw-message">Cargando estado del no-trade window...</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-3xl font-bold text-[var(--gold-elev)] font-mono" id="ntw-countdown">--:--</p>
+                    <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider" id="ntw-countdown-label">...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {# No-Trade Window Visualizer #}
+            <div class="glass-card-elev p-6 lg:col-span-2">
+                <h3 class="text-lg font-semibold mb-2 text-[var(--on-surface-elev)]">No-Trade Window Timeline</h3>
+                <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">Próximas 168 horas (7 días)</p>
+                <div class="relative" style="height: 280px;">
+                    <svg id="timeline-svg" width="100%" height="100%" viewBox="0 0 800 280" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+            </div>
+
+            {# Upcoming Events List #}
+            <div class="glass-card-elev p-6">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Próximos eventos</h3>
+                <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">High-impact (importance ≥ 3)</p>
+                <div id="upcoming-list" class="space-y-2 max-h-96 overflow-y-auto pr-2">
+                    <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando eventos...</p>
+                </div>
+            </div>
+        </div>
+
+        {# Trading Discipline Rules #}
+        <div class="glass-card-elev p-6 mt-6">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Regla de Disciplina</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div class="glass-card-elev p-4">
+                    <p class="text-[var(--gold-elev)] font-bold text-2xl">15'</p>
+                    <p class="text-[var(--on-surface-elev)] font-medium">Antes del evento</p>
+                    <p class="text-[var(--outline-elev)] text-xs">No abras trades. Cierra posiciones abiertas.</p>
+                </div>
+                <div class="glass-card-elev p-4 border-2 border-[var(--gold-elev)]">
+                    <p class="text-[var(--gold-elev)] font-bold text-2xl">EVENTO</p>
+                    <p class="text-[var(--on-surface-elev)] font-medium">Durante la noticia</p>
+                    <p class="text-[var(--outline-elev)] text-xs">Spread se expande. Liquidez se seca. Chaos.</p>
+                </div>
+                <div class="glass-card-elev p-4">
+                    <p class="text-[var(--gold-elev)] font-bold text-2xl">15'</p>
+                    <p class="text-[var(--on-surface-elev)] font-medium">Después del evento</p>
+                    <p class="text-[var(--outline-elev)] text-xs">Espera. Confirmá dirección. Re-entrada segura.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let countdownInterval = null;
+    let allWindows = [];
+
+    function formatTime(seconds) {
+        if (seconds < 0) seconds = 0;
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        if (h > 0) return `${h}h ${m}m`;
+        if (m > 0) return `${m}m ${s}s`;
+        return `${s}s`;
+    }
+
+    async function loadAll() {
+        // Load windows
+        try {
+            const resp = await fetch('/api/macro/windows?limit=30');
+            const data = await resp.json();
+            if (data.success) {
+                allWindows = data.windows;
+                renderTimeline(allWindows);
+                renderUpcoming(allWindows);
+                updateStatus(data.windows);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function updateStatus(windows) {
+        const now = new Date();
+        const active = windows.find(w => w.is_active);
+        const upcoming = windows.filter(w => !w.is_active && new Date(w.start) > now).sort((a, b) => new Date(a.start) - new Date(b.start));
+
+        const titleEl = document.getElementById('ntw-title');
+        const msgEl = document.getElementById('ntw-message');
+        const iconEl = document.getElementById('ntw-icon');
+        const countdownEl = document.getElementById('ntw-countdown');
+        const labelEl = document.getElementById('ntw-countdown-label');
+        const bannerEl = document.getElementById('ntw-banner');
+
+        if (countdownInterval) clearInterval(countdownInterval);
+
+        if (active) {
+            // ACTIVE WINDOW
+            titleEl.textContent = '🔴 No-Trade Window ACTIVA';
+            msgEl.innerHTML = `<strong>${active.title}</strong> (${active.country} ${active.currency}) · impact ${active.importance}`;
+            iconEl.style.background = '#ff6b6b';
+            countdownEl.textContent = formatTime(active.seconds_until_end);
+            labelEl.textContent = 'Hasta el final del window';
+            bannerEl.style.borderLeftColor = '#ff6b6b';
+        } else if (upcoming.length > 0) {
+            const next = upcoming[0];
+            titleEl.textContent = 'Próximo: ' + next.title;
+            msgEl.innerHTML = `${next.country} ${next.currency} · impact ${next.importance} · ${new Date(next.start).toLocaleString()}`;
+            iconEl.style.background = 'var(--gold-elev)';
+            labelEl.textContent = 'Inicia en';
+            bannerEl.style.borderLeftColor = 'var(--gold-elev)';
+
+            countdownInterval = setInterval(() => {
+                const remaining = new Date(next.start).getTime() - Date.now();
+                countdownEl.textContent = formatTime(Math.max(0, Math.floor(remaining / 1000)));
+                if (remaining <= 0) loadAll();
+            }, 1000);
+        } else {
+            titleEl.textContent = '✓ Sin eventos próximos';
+            msgEl.textContent = 'No hay no-trade windows en el horizonte cercano';
+            iconEl.style.background = 'var(--glass-bg-elev)';
+            countdownEl.textContent = 'LIBRE';
+            labelEl.textContent = 'No events';
+            bannerEl.style.borderLeftColor = 'var(--gold-elev)';
+        }
+    }
+
+    function renderTimeline(windows) {
+        const svg = document.getElementById('timeline-svg');
+        const w = 800, h = 280;
+        const now = new Date();
+        const range = 7 * 24 * 60 * 60 * 1000; // 7 days
+        const startMs = now.getTime();
+        const endMs = startMs + range;
+        const xScale = (ms) => 40 + ((ms - startMs) / range) * (w - 60);
+        const yHigh = h - 50;
+        const yMid = h - 80;
+        const yLow = h - 110;
+
+        let html = '';
+        // X-axis (now line)
+        const nowX = xScale(now.getTime());
+        html += `<line x1="${nowX}" y1="20" x2="${nowX}" y2="${h - 30}" stroke="var(--gold-elev)" stroke-width="1.5" />`;
+        html += `<text x="${nowX}" y="14" text-anchor="middle" font-size="10" fill="var(--gold-elev)">NOW</text>`;
+        // Day markers
+        for (let d = 0; d <= 7; d++) {
+            const dayX = xScale(startMs + d * 24 * 60 * 60 * 1000);
+            html += `<line x1="${dayX}" y1="${h - 30}" x2="${dayX}" y2="${h - 25}" stroke="var(--outline-variant-elev)" stroke-width="0.5" />`;
+            const dayDate = new Date(startMs + d * 24 * 60 * 60 * 1000);
+            html += `<text x="${dayX}" y="${h - 12}" text-anchor="middle" font-size="9" fill="var(--outline-elev)">${dayDate.getDate()}/${dayDate.getMonth() + 1}</text>`;
+        }
+        // Time axis line
+        html += `<line x1="40" y1="${h - 30}" x2="${w - 20}" y2="${h - 30}" stroke="var(--outline-variant-elev)" stroke-width="0.5" />`;
+        // Plot each event window
+        for (const win of windows) {
+            const startMs = new Date(win.start).getTime();
+            const endMs = new Date(win.end).getTime();
+            if (endMs < startMs || startMs > endMs) continue;
+            const x1 = Math.max(40, xScale(startMs));
+            const x2 = Math.min(w - 20, xScale(endMs));
+            if (x2 < x1) continue;
+            const isActive = win.is_active;
+            const color = isActive ? '#ff6b6b' : 'var(--gold-elev)';
+            const opacity = isActive ? '0.8' : '0.4';
+            // Choose y based on importance (3 = high, so higher position)
+            const y = win.importance >= 3 ? yHigh : (win.importance >= 2 ? yMid : yLow);
+            const wpx = x2 - x1;
+            html += `<rect x="${x1}" y="${y - 8}" width="${wpx}" height="16" fill="${color}" fill-opacity="${opacity}" rx="2"><title>${win.title} (${win.country})</title></rect>`;
+            // Event marker (start)
+            html += `<line x1="${x1}" y1="${y - 14}" x2="${x1}" y2="${y + 14}" stroke="${color}" stroke-width="1.5" />`;
+            if (wpx > 40) {
+                const displayTitle = win.title.length > 18 ? win.title.substring(0, 15) + '...' : win.title;
+                html += `<text x="${x1 + 2}" y="${y + 3}" font-size="8" fill="white" pointer-events="none">${displayTitle}</text>`;
+            }
+        }
+        // Legend
+        html += `<rect x="40" y="10" width="10" height="10" fill="var(--gold-elev)" fill-opacity="0.4" />`;
+        html += `<text x="55" y="19" font-size="9" fill="var(--outline-elev)">Próximo</text>`;
+        html += `<rect x="100" y="10" width="10" height="10" fill="#ff6b6b" fill-opacity="0.8" />`;
+        html += `<text x="115" y="19" font-size="9" fill="var(--outline-elev)">Activo</text>`;
+        svg.innerHTML = html;
+    }
+
+    function renderUpcoming(windows) {
+        const list = document.getElementById('upcoming-list');
+        const now = new Date();
+        const upcoming = windows.filter(w => !w.is_active && new Date(w.start) > now).sort((a, b) => new Date(a.start) - new Date(b.start));
+        if (upcoming.length === 0) {
+            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin eventos próximos</p>';
+            return;
+        }
+        list.innerHTML = upcoming.slice(0, 15).map(w => {
+            const startDt = new Date(w.start);
+            const seconds = w.seconds_until_start;
+            const urgency = seconds < 3600 ? 'urgent' : (seconds < 21600 ? 'soon' : 'later');
+            return `
+                <div class="flex items-center gap-3 p-2 rounded glass-card-elev border-l-2 ${urgency === 'urgent' ? 'border-red-400' : 'border-[var(--gold-elev)]'}">
+                    <div class="text-center min-w-12">
+                        <p class="text-2xl font-bold text-[var(--gold-elev)]">${startDt.getDate()}</p>
+                        <p class="text-xs text-[var(--outline-elev)] uppercase">${['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][startDt.getMonth()]}</p>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-[var(--on-surface-elev)] truncate">${w.title}</p>
+                        <p class="text-xs text-[var(--outline-elev)]">${w.country} ${w.currency} · ${startDt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-[var(--outline-elev)] uppercase">En</p>
+                        <p class="text-sm font-bold ${urgency === 'urgent' ? 'text-red-400' : 'text-[var(--gold-elev)]'}">${formatTime(seconds)}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAll();
+        // Auto-refresh every 60s
+        setInterval(loadAll, 60000);
+    });
+    </script>
+{% endblock %}
