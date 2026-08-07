@@ -108,14 +108,18 @@ class MonitoringService
         if (!$status) {
             return ['status' => 'disabled'];
         }
+        $memoryUsage = is_numeric($status['memory_usage'] ?? 0) ? (int)$status['memory_usage'] : 0;
+        $freeMemory = is_numeric($status['free_memory'] ?? 0) ? (int)$status['free_memory'] : 0;
+        $memoryConsumption = is_numeric($status['memory_consumption'] ?? 0) ? (int)$status['memory_consumption'] : 0;
+        $stats = $status['opcache_statistics'] ?? [];
         return [
             'status' => $status['opcache_enabled'] ? 'enabled' : 'disabled',
-            'memory_used_mb' => round($status['memory_usage'] / 1024 / 1024, 2),
-            'memory_free_mb' => round($status['free_memory'] / 1024 / 1024, 2),
-            'cached_scripts' => $status['opcache_statistics']['num_cached_scripts'] ?? 0,
-            'hits' => $status['opcache_statistics']['hits'] ?? 0,
-            'misses' => $status['opcache_statistics']['misses'] ?? 0,
-            'memory_limit_mb' => round(($status['memory_consumption'] ?? 0) / 1024 / 1024, 2),
+            'memory_used_mb' => round($memoryUsage / 1024 / 1024, 2),
+            'memory_free_mb' => round($freeMemory / 1024 / 1024, 2),
+            'cached_scripts' => $stats['num_cached_scripts'] ?? 0,
+            'hits' => $stats['hits'] ?? 0,
+            'misses' => $stats['misses'] ?? 0,
+            'memory_limit_mb' => round($memoryConsumption / 1024 / 1024, 2),
         ];
     }
 
@@ -217,10 +221,10 @@ class MonitoringService
         if (!file_exists($uptimeFile)) {
             return null;
         }
-        $uptime = (float)file_get_contents($uptimeFile);
-        $days = floor($uptime / 86400);
-        $hours = floor(($uptime % 86400) / 3600);
-        $mins = floor(($uptime % 3600) / 60);
+        $uptime = (int)file_get_contents($uptimeFile);
+        $days = intdiv($uptime, 86400);
+        $hours = intdiv($uptime % 86400, 3600);
+        $mins = intdiv($uptime % 3600, 60);
         return $days . 'd ' . $hours . 'h ' . $mins . 'm';
     }
 }
