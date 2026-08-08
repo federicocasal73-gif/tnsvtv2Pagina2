@@ -3,99 +3,213 @@
 {% block title %}Audit Log · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}Audit Log{% endblock %}
-{% block topbar_subtitle %}Registro de acciones administrativas{% endblock %}
+{% block topbar_subtitle %}Registro de acciones administrativas con filtros e iconos{% endblock %}
 
 {% block content %}
-    <div class="glass-card-elev p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)]">Audit Log</h3>
-            <div class="flex gap-2 text-xs">
-                <select id="filter-action" class="px-2 py-1 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]">
-                    <option value="">Todas las acciones</option>
-                    <option value="login">Login</option>
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                </select>
-                <button id="refresh-audit" class="btn-elev-secondary text-xs">
-                    <span class="material-symbols-elev text-sm align-middle">refresh</span>
-                    Actualizar
-                </button>
+    <div class="max-w-7xl mx-auto">
+        {# Toolbar #}
+        <div class="glass-card-elev p-4 mb-6">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">shield</span>
+                        Audit Log
+                    </h2>
+                    <p class="text-xs text-[var(--outline-elev)]">Acciones realizadas por administradores del Sanctum</p>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <select id="filter-result" class="px-3 py-1.5 text-sm rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]">
+                        <option value="">Todos</option>
+                        <option value="success">Exitosos</option>
+                        <option value="fail">Fallidos</option>
+                    </select>
+                    <input id="filter-search" type="text" placeholder="Buscar acción..." class="px-3 py-1.5 text-sm rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]" />
+                    <button id="refresh-btn" class="btn-elev-secondary text-xs">
+                        <span class="material-symbols-elev align-middle text-sm">refresh</span>
+                    </button>
+                </div>
             </div>
         </div>
-        <div id="audit-list" class="overflow-x-auto">
-            <p class="text-[var(--outline-elev)] text-center py-8 loading-pulse">Cargando audit log...</p>
+
+        {# Stats bar #}
+        <div id="stats-bar" class="grid grid-cols-3 gap-4 mb-6">
+            <div class="glass-card-elev p-4 text-center">
+                <p class="text-2xl font-bold text-[var(--gold-elev)]" id="stat-total">—</p>
+                <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Total events</p>
+            </div>
+            <div class="glass-card-elev p-4 text-center">
+                <p class="text-2xl font-bold text-[#4ade80]" id="stat-success">—</p>
+                <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Successful</p>
+            </div>
+            <div class="glass-card-elev p-4 text-center">
+                <p class="text-2xl font-bold text-[#ff6b6b]" id="stat-failed">—</p>
+                <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Failed</p>
+            </div>
         </div>
-        <div id="audit-pagination" class="mt-4 flex justify-center gap-2 text-xs"></div>
+
+        {# Entries list #}
+        <div class="glass-card-elev p-6">
+            <div id="entries-list" class="space-y-2">
+                <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando audit log...</p>
+            </div>
+        </div>
+
+        {# Pagination #}
+        <div id="pagination" class="flex items-center justify-center gap-2 mt-4 text-sm"></div>
     </div>
 
+    <style>
+    .audit-entry {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        transition: all 0.2s ease;
+    }
+    .audit-entry:hover {
+        background: var(--glass-bg-strong-elev);
+        border-color: var(--gold-elev);
+    }
+    .audit-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--glass-bg-strong-elev);
+        border: 1px solid var(--outline-variant-elev);
+    }
+    .audit-icon.success { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
+    .audit-icon.fail { color: #ff6b6b; border-color: rgba(255, 107, 107, 0.4); }
+    .status-pill {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .status-pill.success { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .status-pill.fail { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.3); }
+    .status-pill.admin { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .action-tag {
+        display: inline-block;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.25rem;
+        background: var(--glass-bg-strong-elev);
+        font-size: 0.7rem;
+        font-family: monospace;
+        color: var(--gold-elev);
+    }
+    </style>
+
     <script>
-    (async function() {
-        let currentPage = 1;
-        const perPage = 25;
+    let currentPage = 1;
+    const perPage = 25;
+    let currentFilter = { result: '', search: '' };
 
-        async function loadAudit() {
-            const container = document.getElementById('audit-list');
-            const action = document.getElementById('filter-action').value;
-            container.classList.add('loading-pulse');
-            container.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Cargando...</p>';
-            try {
-                let url = '/sanctum/api/audit?page=' + currentPage + '&per_page=' + perPage;
-                if (action) url += '&action=' + action;
-                const r = await fetch(url);
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                const data = await r.json();
-                if (!data.success) throw new Error(data.error || 'unknown');
+    async function loadAudit() {
+        const list = document.getElementById('entries-list');
+        list.classList.add('loading-pulse');
+        try {
+            let url = `/sanctum/api/audit?page=${currentPage}&per_page=${perPage}`;
+            if (currentFilter.result) url += `&result=${encodeURIComponent(currentFilter.result)}`;
+            const r = await fetch(url);
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const data = await r.json();
+            if (!data.success) throw new Error(data.error || 'unknown');
+            renderEntries(data.entries, data.pagination);
+        } catch (e) {
+            list.innerHTML = '<p class="text-red-400 text-center py-8">Error: ' + e.message + '</p>';
+        } finally {
+            list.classList.remove('loading-pulse');
+        }
+    }
 
-                if (data.entries.length === 0) {
-                    container.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas de audit. Las acciones admin se loguean automáticamente.</p>';
-                    return;
-                }
+    async function loadStats() {
+        try {
+            const r = await fetch(`/sanctum/api/audit?page=1&per_page=1000`);
+            if (!r.ok) return;
+            const data = await r.json();
+            if (!data.success) return;
+            const total = data.entries.length;
+            const success = data.entries.filter(e => e.result === 'success').length;
+            const failed = data.entries.filter(e => e.result === 'fail').length;
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-success').textContent = success;
+            document.getElementById('stat-failed').textContent = failed;
+        } catch (e) {}
+    }
 
-                container.innerHTML = `
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Time</th>
-                                <th>Admin</th>
-                                <th>Action</th>
-                                <th>Result</th>
-                                <th>IP</th>
-                                <th>UA</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        ${data.entries.map(e => `
-                            <tr>
-                                <td>${e.id}</td>
-                                <td>${e.createdAt}</td>
-                                <td><code>${e.admin || ''}</code></td>
-                                <td>${e.action}</td>
-                                <td>${e.result === 'success' ? '<span class="status-pill status-completed">OK</span>' : '<span class="status-pill status-inactive">FAIL</span>'}</td>
-                                <td>${e.ip || ''}</td>
-                                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${e.userAgent || ''}</td>
-                            </tr>
-                        `).join('')}
-                        </tbody>
-                    </table>
-                `;
-                // Pagination
-                const pag = data.pagination;
-                const pagHtml = [];
-                if (pag.page > 1) pagHtml.push(`<button class="btn-action btn-toggle" data-page="${pag.page - 1}">← Anterior</button>`);
-                pagHtml.push(`<span class="px-2 text-[var(--on-surface-variant-elev)]">Página ${pag.page} de ${pag.pages} (${pag.total} total)</span>`);
-                if (pag.page < pag.pages) pagHtml.push(`<button class="btn-action btn-toggle" data-page="${pag.page + 1}">Siguiente →</button>`);
-                document.getElementById('audit-pagination').innerHTML = pagHtml.join('');
-                document.querySelectorAll('#audit-pagination [data-page]').forEach(b => b.addEventListener('click', e => { currentPage = parseInt(e.target.dataset.page); loadAudit(); }));
-            } catch (e) {
-                container.innerHTML = '<p class="text-red-400 text-center py-8">Error: ' + e.message + '</p>';
-            }
-            container.classList.remove('loading-pulse');
+    function renderEntries(entries, pagination) {
+        const list = document.getElementById('entries-list');
+        if (!entries || entries.length === 0) {
+            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas de audit log</p>';
+            document.getElementById('pagination').innerHTML = '';
+            return;
         }
 
-        document.getElementById('refresh-audit').addEventListener('click', loadAudit);
-        document.getElementById('filter-action').addEventListener('change', () => { currentPage = 1; loadAudit(); });
-        loadAudit();
-    })();
+        // Filter by search
+        const filtered = currentFilter.search
+            ? entries.filter(e => e.action.toLowerCase().includes(currentFilter.search.toLowerCase()))
+            : entries;
+
+        list.innerHTML = filtered.map(e => {
+            const iconClass = e.result === 'success' ? 'success' : 'fail';
+            const iconName = e.result === 'success' ? 'check_circle' : 'cancel';
+            return `
+            <div class="audit-entry">
+                <div class="audit-icon ${iconClass}">
+                    <span class="material-symbols-elev">${iconName}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="action-tag">${escapeHtml(e.action)}</span>
+                        <span class="status-pill ${e.result}">${e.result}</span>
+                        ${e.admin && e.admin.startsWith('ADMIN') ? '<span class="status-pill admin">ADMIN</span>' : ''}
+                    </div>
+                    <p class="text-xs text-[var(--outline-elev)] mt-1">
+                        <span class="font-mono">${escapeHtml(e.admin || '—')}</span>
+                        ${e.ip ? '<span class="ml-2">· ' + escapeHtml(e.ip) + '</span>' : ''}
+                    </p>
+                </div>
+                <p class="text-xs text-[var(--outline-elev)] font-mono whitespace-nowrap">${(e.time || '').substring(0, 16).replace('T', ' ')}</p>
+            </div>`;
+        }).join('');
+
+        // Pagination
+        renderPagination(pagination);
+    }
+
+    function renderPagination(p) {
+        if (!p || p.pages <= 1) {
+            document.getElementById('pagination').innerHTML = '';
+            return;
+        }
+        const html = [];
+        if (p.page > 1) html.push(`<button class="btn-elev-ghost text-xs" data-page="${p.page - 1}">← Anterior</button>`);
+        html.push(`<span class="px-3 text-[var(--on-surface-elev)]">Página ${p.page} de ${p.pages} · ${p.total} total</span>`);
+        if (p.page < p.pages) html.push(`<button class="btn-elev-ghost text-xs" data-page="${p.page + 1}">Siguiente →</button>`);
+        document.getElementById('pagination').innerHTML = html.join('');
+        document.querySelectorAll('#pagination button[data-page]').forEach(b => {
+            b.addEventListener('click', () => { currentPage = parseInt(b.dataset.page); loadAudit(); });
+        });
+    }
+
+    function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    document.getElementById('refresh-btn').addEventListener('click', loadAudit);
+    document.getElementById('filter-result').addEventListener('change', e => { currentFilter.result = e.target.value; currentPage = 1; loadAudit(); });
+    document.getElementById('filter-search').addEventListener('input', e => { currentFilter.search = e.target.value; loadAudit(); });
+
+    loadAudit();
+    loadStats();
     </script>
 {% endblock %}
