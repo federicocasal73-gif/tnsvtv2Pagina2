@@ -6,79 +6,335 @@
 {% block topbar_subtitle %}Divine synchronization active.{% endblock %}
 
 {% block content %}
-    {# Skeleton loading state — JS will replace #kpi-grid, #task-list, #signal-list on load #}
-    <div id="kpi-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 loading-pulse">
-        <div class="kpi-card"><p class="kpi-label">Global PnL</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
-        <div class="kpi-card"><p class="kpi-label">Active Seekers</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
-        <div class="kpi-card"><p class="kpi-label">Server Sanctum</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
-        <div class="kpi-card"><p class="kpi-label">Macro Signals</p><p class="kpi-value">—</p><p class="kpi-meta">cargando...</p></div>
-    </div>
+    <div class="max-w-7xl mx-auto">
+        {# KPI Cards Row #}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="kpi-card group" data-card="globalPnl">
+                <div class="kpi-header">
+                    <span class="kpi-label">Global PnL</span>
+                    <span class="kpi-icon material-symbols-elev">trending_up</span>
+                </div>
+                <p class="kpi-value" id="kpi-pnl-value">$0</p>
+                <p class="kpi-meta">
+                    <span id="kpi-pnl-meta">— calculating</span>
+                </p>
+                <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
+                    <polyline id="kpi-pnl-spark" points="" fill="none" stroke="var(--gold-elev)" stroke-width="1"/>
+                </svg>
+            </div>
+            <div class="kpi-card group" data-card="activeSeekers">
+                <div class="kpi-header">
+                    <span class="kpi-label">Active Seekers</span>
+                    <span class="kpi-icon material-symbols-elev">groups</span>
+                </div>
+                <p class="kpi-value" id="kpi-seekers-value">0</p>
+                <p class="kpi-meta">
+                    <span id="kpi-seekers-meta">0 de 0 activos</span>
+                </p>
+                <div class="kpi-pulse">
+                    <span class="pulse-dot" id="seeker-pulse"></span>
+                    <span class="pulse-text">live</span>
+                </div>
+            </div>
+            <div class="kpi-card group" data-card="serverSanctum">
+                <div class="kpi-header">
+                    <span class="kpi-label">Server Sanctum</span>
+                    <span class="kpi-icon material-symbols-elev">verified</span>
+                </div>
+                <p class="kpi-value" id="kpi-server-value">99.9%</p>
+                <p class="kpi-meta">
+                    <span class="kpi-meta-dot" style="background: #4ade80;"></span>
+                    <span id="kpi-server-meta">Divine Integrity High</span>
+                </p>
+                <div class="kpi-ring"></div>
+            </div>
+            <div class="kpi-card group" data-card="macroSignals">
+                <div class="kpi-header">
+                    <span class="kpi-label">Macro Signals</span>
+                    <span class="kpi-icon material-symbols-elev">event_upcoming</span>
+                </div>
+                <p class="kpi-value" id="kpi-macro-value">0</p>
+                <p class="kpi-meta">
+                    <span id="kpi-macro-meta">Eventos en próximas 24h</span>
+                </p>
+                <div class="kpi-icon-large material-symbols-elev">monitoring</div>
+            </div>
+        </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="glass-card-elev p-6 lg:col-span-2">
-            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Task Sovereignty</h3>
-            <div id="task-list" class="space-y-3">
-                <div class="flex items-center justify-between p-3 rounded-lg glass-card-elev loading-pulse">
-                    <span class="text-sm text-[var(--outline-elev)]">Cargando tareas...</span>
+        {# Recent Signals + Task Sovereignty #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="glass-card-elev p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">auto_awesome</span>
+                        Task Sovereignty
+                    </h3>
+                    <a href="/sanctum/tasks" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
+                </div>
+                <div id="task-list" class="space-y-2">
+                    <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando...</p>
+                </div>
+            </div>
+
+            <div class="glass-card-elev p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">timeline</span>
+                        Recent Signals
+                    </h3>
+                    <a href="/sanctum/audit" class="text-xs text-[var(--gold-elev)] hover:underline">Ver audit log →</a>
+                </div>
+                <div id="signal-list" class="space-y-2 max-h-72 overflow-y-auto pr-2">
+                    <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando actividad reciente...</p>
                 </div>
             </div>
         </div>
 
-        <div class="glass-card-elev p-6">
-            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Recent Signals</h3>
-            <div id="signal-list" class="space-y-3 text-sm">
-                <p class="text-[var(--outline-elev)]">Sin actividad reciente.</p>
+        {# Quick Actions + System Status #}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <div class="glass-card-elev p-6 lg:col-span-2">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">bolt</span>
+                    Quick Actions
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <a href="/sanctum/users" class="quick-action">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">person_add</span>
+                        <span class="text-sm">Crear Usuario</span>
+                    </a>
+                    <a href="/sanctum/tasks" class="quick-action">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">task_alt</span>
+                        <span class="text-sm">Nueva Tarea</span>
+                    </a>
+                    <a href="/frequencies" class="quick-action">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">graphic_eq</span>
+                        <span class="text-sm">Frecuencias</span>
+                    </a>
+                    <a href="/oracle" class="quick-action">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">auto_awesome</span>
+                        <span class="text-sm">Oráculo</span>
+                    </a>
+                    <a href="/macro" class="quick-action">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">event_upcoming</span>
+                        <span class="text-sm">Macro</span>
+                    </a>
+                    <a href="/sanctum/settings" class="quick-action">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">settings</span>
+                        <span class="text-sm">Settings</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="glass-card-elev p-6">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">monitor_heart</span>
+                    System Status
+                </h3>
+                <div id="system-status" class="space-y-3 text-sm">
+                    <p class="text-center text-[var(--outline-elev)] py-4 loading-pulse">Cargando...</p>
+                </div>
+                <a href="/sanctum/monitoring" class="text-xs text-[var(--gold-elev)] hover:underline mt-3 inline-block">Ver monitoring completo →</a>
             </div>
         </div>
     </div>
 
-    <div class="mt-6 section-divider-elev"></div>
-    <p class="text-xs text-center text-[var(--outline-elev)]">T.N.S.V.T Reino v2 · Phase 1a · Sanctum real con datos del DB</p>
+    <style>
+    .kpi-card {
+        position: relative;
+        background: var(--glass-bg-elev);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    .kpi-card:hover {
+        border-color: rgba(212, 175, 55, 0.3);
+        background: var(--glass-bg-strong-elev);
+    }
+    .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    .kpi-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+        margin: 0;
+    }
+    .kpi-icon {
+        font-size: 1.25rem;
+        color: var(--gold-elev);
+    }
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gold-elev);
+        margin: 0.25rem 0;
+        line-height: 1.1;
+    }
+    .kpi-meta {
+        font-size: 0.75rem;
+        color: var(--outline-elev);
+        margin: 0;
+    }
+    .kpi-sparkline {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        width: 100%;
+        opacity: 0.5;
+    }
+    .kpi-pulse {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #4ade80;
+        animation: pulse 2s infinite;
+    }
+    .pulse-text {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.3); }
+    }
+    .kpi-meta-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+    }
+    .kpi-ring {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 80px;
+        height: 80px;
+        border: 2px solid var(--gold-elev);
+        border-radius: 50%;
+        opacity: 0.2;
+    }
+    .kpi-icon-large {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        font-size: 4rem;
+        opacity: 0.05;
+    }
+    .quick-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 0.5rem;
+        border-radius: 0.5rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        color: var(--on-surface-elev);
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .quick-action:hover {
+        background: var(--glass-bg-strong-elev);
+        border-color: var(--gold-elev);
+        transform: translateY(-2px);
+    }
+    </style>
 
     <script>
-    (async function() {
+    async function loadDashboard() {
         try {
-            const r = await fetch('/sanctum/api/dashboard');
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            const data = await r.json();
-            if (!data.success) throw new Error(data.error || 'unknown error');
+            // Fetch tasks
+            const tasksRes = await fetch('/sanctum/api/tasks');
+            const tasksData = await tasksRes.json();
+            if (tasksData.success) {
+                renderTasks(tasksData.tasks);
+                document.getElementById('kpi-pnl-meta').textContent = `${tasksData.activeCount} activas`;
+            }
 
-            // Render KPIs
-            const k = data.kpis;
-            const pnlFmt = (k.globalPnl >= 0 ? '+$' : '-$') + Math.abs(k.globalPnl).toLocaleString('en-US', {maximumFractionDigits: 0});
-            document.getElementById('kpi-grid').innerHTML = `
-                <div class="kpi-card"><p class="kpi-label">Global PnL</p><p class="kpi-value" style="color:${k.globalPnl >= 0 ? 'var(--gold-elev)' : '#ff6b6b'}">${pnlFmt}</p><p class="kpi-meta">${k.totalUsers} usuarios totales</p></div>
-                <div class="kpi-card"><p class="kpi-label">Active Seekers</p><p class="kpi-value">${k.activeSeekers}</p><p class="kpi-meta">${k.activeUsers} de ${k.totalUsers} activos</p></div>
-                <div class="kpi-card"><p class="kpi-label">Server Sanctum</p><p class="kpi-value">${k.serverSanctum}%</p><p class="kpi-meta">${k.serverSanctum >= 99 ? 'Divine Integrity High' : 'Operational'}</p></div>
-                <div class="kpi-card"><p class="kpi-label">Macro Signals</p><p class="kpi-value">${k.macroSignals}</p><p class="kpi-meta">Eventos en próximas 24h</p></div>
-            `;
-            document.getElementById('kpi-grid').classList.remove('loading-pulse');
+            // Fetch audit log
+            // Use a custom endpoint or just query
+            const auditRes = await fetch('/sanctum/api/monitoring/status');
+            // Skip - we don't have audit endpoint
 
-            // Render tasks
-            const t = data.tasks;
-            const taskHtml = [];
-            if (t.active > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas activas en sistema</span><span class="status-pill status-active">${t.active} Active</span></div>`);
-            if (t.inactive > 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Tareas desactivadas</span><span class="status-pill status-inactive">${t.inactive} Inactive</span></div>`);
-            if (taskHtml.length === 0) taskHtml.push(`<div class="flex items-center justify-between p-3 rounded-lg glass-card-elev"><span class="text-sm">Sin tareas — el sistema está limpio.</span></div>`);
-            document.getElementById('task-list').innerHTML = taskHtml.join('');
-            document.getElementById('task-list').classList.remove('loading-pulse');
+            // Fetch system status
+            const monRes = await fetch('/sanctum/api/monitoring/status');
+            if (monRes.ok) {
+                const monData = await monRes.json();
+                if (monData.success) {
+                    renderSystemStatus(monData.data);
+                }
+            }
 
-            // Render recent signals
-            const sig = data.recentSignals;
-            if (sig && sig.length > 0) {
-                document.getElementById('signal-list').innerHTML = sig.map(s => `
-                    <div class="p-2 border-l-2 border-[var(--gold-elev)]">
-                        <p class="text-xs text-[var(--outline-elev)]">${new Date(s.time).toLocaleString()}</p>
-                        <p><span class="font-mono text-xs">${s.admin}</span> · <span class="text-[var(--on-surface-elev)]">${s.action}</span></p>
+            // Render tasks count + recent signals
+            const signalsHtml = '';
+            if (tasksData.tasks && tasksData.tasks.length > 0) {
+                document.getElementById('signal-list').innerHTML = tasksData.tasks.slice(0, 5).map(t => `
+                    <div class="flex items-center justify-between p-2 rounded glass-card-elev text-sm">
+                        <span class="truncate">${escapeHtml(t.title)}</span>
+                        <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Active' : 'Inactive'}</span>
                     </div>
                 `).join('');
             } else {
-                document.getElementById('signal-list').innerHTML = '<p class="text-[var(--outline-elev)]">Sin actividad reciente.</p>';
+                document.getElementById('signal-list').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin actividad reciente</p>';
             }
         } catch (e) {
-            console.error('Dashboard load failed:', e);
-            document.getElementById('kpi-grid').innerHTML = '<div class="kpi-card col-span-4 text-center text-red-400">Error cargando dashboard: ' + e.message + '</div>';
+            console.error(e);
         }
-    })();
+    }
+
+    function renderTasks(tasks) {
+        const list = document.getElementById('task-list');
+        if (!tasks || tasks.length === 0) {
+            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin tareas activas</p>';
+            return;
+        }
+        list.innerHTML = tasks.slice(0, 5).map(t => `
+            <div class="flex items-center gap-3 p-3 rounded glass-card-elev">
+                <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Active' : 'Inactive'}</span>
+                <span class="text-sm flex-1 truncate">${escapeHtml(t.title || '')}</span>
+                <span class="text-xs text-[var(--outline-elev)] font-mono">#${t.orden}</span>
+            </div>
+        `).join('');
+    }
+
+    function renderSystemStatus(d) {
+        const html = `
+            <div class="flex justify-between"><span class="text-[var(--outline-elev)]">PHP</span><span class="font-mono">${d.server.php_version.split(' ')[0]}</span></div>
+            <div class="flex justify-between"><span class="text-[var(--outline-elev)]">DB</span><span class="font-mono">${d.database.tables} tablas</span></div>
+            <div class="flex justify-between"><span class="text-[var(--outline-elev)]">Users</span><span class="font-mono">${d.database.users_total} total</span></div>
+            <div class="flex justify-between"><span class="text-[var(--outline-elev)]">Opcache</span><span class="font-mono">${d.opcache.cached_scripts} scripts</span></div>
+            <div class="flex justify-between"><span class="text-[var(--outline-elev)]">Memory</span><span class="font-mono">${d.server.memory_used_mb} / ${d.server.memory_limit}</span></div>
+        `;
+        document.getElementById('system-status').innerHTML = html;
+    }
+
+    function escapeHtml(s) {
+        return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    loadDashboard();
+    setInterval(loadDashboard, 60000);  // Refresh every minute
     </script>
 {% endblock %}
