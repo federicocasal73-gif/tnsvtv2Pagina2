@@ -195,6 +195,11 @@
                     <span>${u.coins || 0} coins</span>
                     <span>${u.lastLogin ? u.lastLogin.substring(5, 16).replace('T', ' ') : '—'}</span>
                 </div>
+                <div class="mt-2 flex justify-end">
+                    <button class="text-xs px-2 py-1 rounded ${u.active ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' : 'bg-green-900/30 text-green-400 hover:bg-green-900/50'} transition-colors" data-user-code="${escapeHtml(u.code || '')}" data-action="toggle-user">
+                        ${u.active ? 'Desactivar' : 'Activar'}
+                    </button>
+                </div>
             </div>`;
         }).join('');
     }
@@ -206,6 +211,27 @@
     document.getElementById('refresh-btn').addEventListener('click', loadUsers);
     document.getElementById('search-input').addEventListener('input', e => { currentFilter.search = e.target.value; renderUsers(); });
     document.getElementById('filter-tier').addEventListener('change', e => { currentFilter.tier = e.target.value; renderUsers(); });
+
+    // Toggle user active state
+    document.addEventListener('click', async (e) => {
+        if (!e.target.matches('[data-action="toggle-user"]')) return;
+        const code = e.target.dataset.userCode;
+        if (!code) return;
+        e.target.disabled = true;
+        try {
+            const r = await fetch('/sanctum/api/users/' + encodeURIComponent(code) + '/active', { method: 'PATCH' });
+            const data = await r.json();
+            if (data.success) {
+                loadUsers();
+            } else {
+                alert('Error: ' + (data.error || 'desconocido'));
+                e.target.disabled = false;
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+            e.target.disabled = false;
+        }
+    });
 
     loadUsers();
     </script>

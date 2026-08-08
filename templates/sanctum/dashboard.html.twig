@@ -69,7 +69,13 @@
                         <span class="material-symbols-elev text-[var(--gold-elev)]">auto_awesome</span>
                         Task Sovereignty
                     </h3>
-                    <a href="/sanctum/tasks" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
+                    <div class="flex gap-2">
+                        <button id="quick-add-task" class="btn-elev-secondary text-xs">
+                            <span class="material-symbols-elev align-middle text-sm">add</span>
+                            Nueva
+                        </button>
+                        <a href="/sanctum/tasks" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
+                    </div>
                 </div>
                 <div id="task-list" class="space-y-2">
                     <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando...</p>
@@ -98,13 +104,13 @@
                     Quick Actions
                 </h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <button class="quick-action" data-action="open-create-task">
+                        <span class="material-symbols-elev text-[var(--gold-elev)]">task_alt</span>
+                        <span class="text-sm">Nueva Tarea</span>
+                    </button>
                     <a href="/sanctum/users" class="quick-action">
                         <span class="material-symbols-elev text-[var(--gold-elev)]">person_add</span>
                         <span class="text-sm">Crear Usuario</span>
-                    </a>
-                    <a href="/sanctum/tasks" class="quick-action">
-                        <span class="material-symbols-elev text-[var(--gold-elev)]">task_alt</span>
-                        <span class="text-sm">Nueva Tarea</span>
                     </a>
                     <a href="/frequencies" class="quick-action">
                         <span class="material-symbols-elev text-[var(--gold-elev)]">graphic_eq</span>
@@ -138,6 +144,46 @@
         </div>
     </div>
 
+    {# Create Task Modal #}
+    <div id="create-task-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="text-xl font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">task_alt</span>
+                    Nueva Tarea
+                </h2>
+                <button class="modal-close" data-action="close-create-task">
+                    <span class="material-symbols-elev">close</span>
+                </button>
+            </div>
+            <form id="create-task-form" class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Título *</label>
+                    <input id="task-title" name="title" type="text" required maxlength="255" placeholder="Ej: Auditar journal del usuario X" class="form-input" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea id="task-description" name="description" rows="3" placeholder="Detalles opcionales..." class="form-input"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group flex-1">
+                        <label class="form-label">Orden</label>
+                        <input id="task-orden" name="orden" type="number" min="0" value="0" class="form-input" />
+                    </div>
+                    <label class="form-group flex items-center gap-2 pt-6">
+                        <input id="task-active" name="active" type="checkbox" checked />
+                        <span>Activa</span>
+                    </label>
+                </div>
+                <p id="create-task-error" class="text-red-400 text-sm hidden"></p>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" data-action="close-create-task">Cancelar</button>
+                    <button type="submit" class="btn-primary">Crear Tarea</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <style>
     .kpi-card {
         position: relative;
@@ -148,6 +194,7 @@
         padding: 1.25rem 1.5rem;
         transition: all 0.3s ease;
         overflow: hidden;
+        cursor: pointer;
     }
     .kpi-card:hover {
         border-color: rgba(212, 175, 55, 0.3);
@@ -253,12 +300,104 @@
         border: 1px solid var(--glass-border-elev);
         color: var(--on-surface-elev);
         text-decoration: none;
+        cursor: pointer;
+        font: inherit;
         transition: all 0.2s ease;
     }
     .quick-action:hover {
         background: var(--glass-bg-strong-elev);
         border-color: var(--gold-elev);
         transform: translateY(-2px);
+    }
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 1rem;
+    }
+    .modal-content {
+        background: var(--surface-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow: auto;
+    }
+    .modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--glass-border-elev);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .modal-close {
+        background: transparent;
+        border: none;
+        color: var(--on-surface-elev);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+    }
+    .modal-close:hover {
+        background: var(--glass-bg-elev);
+    }
+    .modal-body {
+        padding: 1.5rem;
+    }
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--glass-border-elev);
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+    }
+    .form-group { margin-bottom: 1rem; }
+    .form-row { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; }
+    .form-label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--outline-elev);
+        margin-bottom: 0.25rem;
+    }
+    .form-input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.375rem;
+        color: var(--on-surface-elev);
+        font-size: 0.875rem;
+    }
+    .form-input:focus {
+        outline: none;
+        border-color: var(--gold-elev);
+    }
+    .btn-primary {
+        padding: 0.5rem 1.25rem;
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+        color: var(--on-primary-elev);
+        font-weight: 600;
+        border: none;
+        border-radius: 0.375rem;
+        cursor: pointer;
+    }
+    .btn-secondary {
+        padding: 0.5rem 1.25rem;
+        background: transparent;
+        color: var(--on-surface-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.375rem;
+        cursor: pointer;
     }
     </style>
 
@@ -273,11 +412,6 @@
                 document.getElementById('kpi-pnl-meta').textContent = `${tasksData.activeCount} activas`;
             }
 
-            // Fetch audit log
-            // Use a custom endpoint or just query
-            const auditRes = await fetch('/sanctum/api/monitoring/status');
-            // Skip - we don't have audit endpoint
-
             // Fetch system status
             const monRes = await fetch('/sanctum/api/monitoring/status');
             if (monRes.ok) {
@@ -287,8 +421,7 @@
                 }
             }
 
-            // Render tasks count + recent signals
-            const signalsHtml = '';
+            // Render recent signals
             if (tasksData.tasks && tasksData.tasks.length > 0) {
                 document.getElementById('signal-list').innerHTML = tasksData.tasks.slice(0, 5).map(t => `
                     <div class="flex items-center justify-between p-2 rounded glass-card-elev text-sm">
@@ -334,7 +467,65 @@
         return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    loadDashboard();
-    setInterval(loadDashboard, 60000);  // Refresh every minute
+    // Modal handlers
+    function openCreateTask() {
+        document.getElementById('create-task-modal').style.display = 'flex';
+        setTimeout(() => document.getElementById('task-title').focus(), 100);
+    }
+    function closeCreateTask() {
+        document.getElementById('create-task-modal').style.display = 'none';
+        document.getElementById('create-task-form').reset();
+        document.getElementById('create-task-error').classList.add('hidden');
+    }
+    async function submitCreateTask(e) {
+        e.preventDefault();
+        const errEl = document.getElementById('create-task-error');
+        errEl.classList.add('hidden');
+        const title = document.getElementById('task-title').value.trim();
+        const description = document.getElementById('task-description').value.trim();
+        const orden = parseInt(document.getElementById('task-orden').value) || 0;
+        const active = document.getElementById('task-active').checked;
+        if (!title) {
+            errEl.textContent = 'El título es obligatorio';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        try {
+            const r = await fetch('/sanctum/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description, orden, active })
+            });
+            const data = await r.json();
+            if (data.success) {
+                closeCreateTask();
+                loadDashboard();
+            } else {
+                errEl.textContent = data.error || 'Error desconocido';
+                errEl.classList.remove('hidden');
+            }
+        } catch (e) {
+            errEl.textContent = 'Error de red: ' + e.message;
+            errEl.classList.remove('hidden');
+        }
+    }
+
+    // Wire up events
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboard();
+        document.getElementById('quick-add-task').addEventListener('click', openCreateTask);
+        document.querySelectorAll('[data-action="open-create-task"]').forEach(b => b.addEventListener('click', openCreateTask));
+        document.querySelectorAll('[data-action="close-create-task"]').forEach(b => b.addEventListener('click', closeCreateTask));
+        document.getElementById('create-task-form').addEventListener('submit', submitCreateTask);
+        document.getElementById('create-task-modal').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeCreateTask();
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && document.getElementById('create-task-modal').style.display === 'flex') {
+                closeCreateTask();
+            }
+        });
+        setInterval(loadDashboard, 60000);
+    });
     </script>
 {% endblock %}
