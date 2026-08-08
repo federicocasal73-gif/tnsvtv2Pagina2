@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es" class="dark" data-apk="false">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050308" />
+    <title>T.N.S.V.T · Reino del Cristo Íntegro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/elev.css') }}" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #050308 0%, #100b1c 50%, #16121f 100%);
+            color: #e9def6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .home-container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            background: linear-gradient(135deg, #f2ca50 0%, #ffe088 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .tagline {
+            font-size: 0.9rem;
+            color: #99907c;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        .verse {
+            font-style: italic;
+            color: #d0c5af;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-decoration: none;
+            color: #e9def6;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        .feature:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            color: #f2ca50;
+            margin-bottom: 0.5rem;
+        }
+        .feature-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .feature-desc {
+            font-size: 0.85rem;
+            color: #99907c;
+        }
+        .login-btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #f2ca50 0%, #ffe088 100%);
+            color: #241a00;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
+        .cross {
+            font-size: 3rem;
+            color: #f2ca50;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-container">
+        <div class="hero">
+            <div class="cross">✝</div>
+            <h1 class="logo">T.N.S.V.T</h1>
+            <p class="tagline">Reino del Cristo Íntegro</p>
+            <p class="verse">"El ejecutor honesto cuenta no solo lo que hizo,<br> sino cómo se sintió al hacerlo."</p>
+        </div>
+
+        <a href="#" onclick="event.preventDefault(); document.getElementById('login-form').submit();" class="login-btn">
+            Iniciar sesión →
+        </a>
+
+        <form id="login-form" method="POST" action="/api/auth/login" style="display: none;">
+            <input name="code" />
+            <input name="name" />
+            <input name="password" />
+        </form>
+
+        <div class="features">
+            <a href="/sanctum" class="feature">
+                <div class="feature-icon material-symbols-elev">dashboard</div>
+                <div class="feature-title">Sanctum</div>
+                <div class="feature-desc">Command center con KPIs, tasks, audit y settings</div>
+            </a>
+            <a href="/oracle" class="feature">
+                <div class="feature-icon material-symbols-elev">auto_awesome</div>
+                <div class="feature-title">Oráculo</div>
+                <div class="feature-desc">Faith vs Logic, Emotional Bias Map, Session Performance</div>
+            </a>
+            <a href="/macro" class="feature">
+                <div class="feature-icon material-symbols-elev">event_upcoming</div>
+                <div class="feature-title">Macro</div>
+                <div class="feature-desc">Hilos del Mundo - No-Trade Window + 49 eventos</div>
+            </a>
+            <a href="/frequencies" class="feature">
+                <div class="feature-icon material-symbols-elev">graphic_eq</div>
+                <div class="feature-title">Audio Hub</div>
+                <div class="feature-desc">12 frecuencias Solfeggio + Web Audio API</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const code = prompt('Código de usuario:');
+            if (!code) return;
+            const isAdmin = code.toUpperCase().startsWith('ADMIN');
+            const pass = isAdmin ? prompt('Contraseña:') : null;
+            const form = document.getElementById('login-form');
+            form.elements.code.value = code;
+            if (isAdmin && pass) form.elements.password.value = pass;
+            if (!isAdmin) form.elements.name.value = 'Demo';
+            form.submit();
+        }
+    });
+    </script>
+</body>
+</html>
