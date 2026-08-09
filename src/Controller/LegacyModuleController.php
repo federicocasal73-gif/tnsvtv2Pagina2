@@ -30,17 +30,8 @@ class LegacyModuleController extends AbstractController
     // /journal migrated to SanctumModuleController::journal()
 
 
-    #[Route('/chat', name: 'legacy_chat', methods: ['GET'])]
-    public function chat(): Response
-    {
-        return $this->render('legacy/redirect.html.twig', [
-            'title' => 'Mensajes',
-            'icon' => 'chat',
-            'description' => 'Mensajería directa entre miembros del Sanctum',
-            'legacy_path' => '/messages',
-            'features' => ['Mensajes privados', 'Grupos', 'Adjuntos', 'Read receipts'],
-        ]);
-    }
+    // /chat migrated to SanctumModuleController::chat()
+
 
     #[Route('/feed', name: 'legacy_feed', methods: ['GET'])]
     public function feed(): Response

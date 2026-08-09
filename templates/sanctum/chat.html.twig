@@ -1,0 +1,325 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Mensajes · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Mensajes{% endblock %}
+{% block topbar_subtitle %}Conversaciones, grupos y adjuntos entre miembros del Sanctum.{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto h-[calc(100vh-7rem)] flex gap-4">
+    {# ─── Conversation list ─── #}
+    <aside class="w-80 glass-card-elev flex flex-col overflow-hidden">
+        <div class="p-3 border-b border-[var(--glass-border-elev)] flex gap-2">
+            <button id="new-dm-btn" class="btn-action btn-toggle flex-1 text-xs">
+                <span class="material-symbols-elev align-middle text-sm">add</span>
+                Nuevo DM
+            </button>
+            <button id="new-group-btn" class="btn-action btn-toggle flex-1 text-xs">
+                <span class="material-symbols-elev align-middle text-sm">group_add</span>
+                Grupo
+            </button>
+        </div>
+        <div id="conv-list" class="flex-1 overflow-y-auto divide-y divide-[var(--outline-variant-elev)]">
+            <p class="text-center text-[var(--outline-elev)] py-8 text-sm">Cargando conversaciones...</p>
+        </div>
+    </aside>
+
+    {# ─── Messages pane ─── #}
+    <section class="flex-1 glass-card-elev flex flex-col overflow-hidden">
+        <div id="chat-header" class="p-3 border-b border-[var(--glass-border-elev)] flex items-center gap-3">
+            <p class="text-[var(--outline-elev)] text-sm">Selecciona una conversación para empezar</p>
+        </div>
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-2">
+            <p class="text-center text-[var(--outline-elev)] py-12 text-sm">Sin mensajes</p>
+        </div>
+        <div id="chat-composer" class="p-3 border-t border-[var(--glass-border-elev)] flex items-center gap-2" style="display:none;">
+            <textarea id="chat-input" rows="1" placeholder="Escribe un mensaje..."
+                      class="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] resize-none"
+                      style="font-family: inherit;"></textarea>
+            <input id="chat-file" type="file" accept="image/*,video/*,audio/*,.pdf" style="display:none;" />
+            <button id="chat-attach" class="btn-action btn-toggle" title="Adjuntar">
+                <span class="material-symbols-elev">attach_file</span>
+            </button>
+            <button id="chat-send" class="btn-primary">
+                <span class="material-symbols-elev align-middle text-sm">send</span>
+            </button>
+        </div>
+    </section>
+</div>
+
+{# ─── New DM modal ─── #}
+<div id="new-dm-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:100; align-items:center; justify-content:center;">
+    <div class="glass-card-elev" style="width:100%; max-width:420px;">
+        <div class="flex items-center justify-between p-4 border-b border-[var(--glass-border-elev)]">
+            <h2 class="text-base font-semibold">Nuevo mensaje directo</h2>
+            <button data-action="close-dm-modal" class="text-[var(--outline-elev)] hover:text-white">
+                <span class="material-symbols-elev">close</span>
+            </button>
+        </div>
+        <div class="p-4 space-y-3">
+            <label class="kpi-label block">Buscar usuario</label>
+            <input id="dm-search" type="text" placeholder="Código o nombre..." class="form-input w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)]" />
+            <div id="dm-results" class="space-y-1 max-h-64 overflow-y-auto"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.conv-row { display:flex; align-items:center; gap:0.75rem; padding:0.75rem; cursor:pointer; transition:background 0.15s; }
+.conv-row:hover { background: var(--glass-bg-elev); }
+.conv-row.active { background: var(--glass-bg-strong-elev); border-left: 2px solid var(--gold-elev); }
+.conv-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--gold-elev),var(--gold-bright-elev)); display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--on-primary-elev); flex-shrink:0; }
+.conv-name { font-weight:500; font-size:0.875rem; }
+.conv-preview { font-size:0.75rem; color:var(--outline-elev); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.conv-time { font-size:0.65rem; color:var(--outline-elev); margin-left:auto; flex-shrink:0; }
+.conv-unread { background:var(--gold-elev); color:var(--on-primary-elev); font-size:0.65rem; font-weight:600; padding:0.125rem 0.5rem; border-radius:1rem; }
+.msg-row { display:flex; gap:0.5rem; max-width:80%; }
+.msg-row.own { margin-left:auto; flex-direction:row-reverse; }
+.msg-avatar { width:28px; height:28px; border-radius:50%; background:var(--glass-bg-elev); display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0; }
+.msg-bubble { padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border-radius:0.75rem; }
+.msg-row.own .msg-bubble { background:var(--gold-elev); color:var(--on-primary-elev); }
+.msg-content { font-size:0.875rem; word-break:break-word; }
+.msg-meta { font-size:0.65rem; opacity:0.6; margin-top:0.25rem; }
+.msg-photo { max-width:240px; border-radius:0.5rem; margin-top:0.5rem; }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const listEl = document.getElementById('conv-list');
+    const headerEl = document.getElementById('chat-header');
+    const messagesEl = document.getElementById('chat-messages');
+    const composer = document.getElementById('chat-composer');
+    const inputEl = document.getElementById('chat-input');
+    const fileEl = document.getElementById('chat-file');
+    const sendBtn = document.getElementById('chat-send');
+    const attachBtn = document.getElementById('chat-attach');
+    const newDmModal = document.getElementById('new-dm-modal');
+    const dmSearch = document.getElementById('dm-search');
+    const dmResults = document.getElementById('dm-results');
+
+    let currentConvId = null;
+    let pollTimer = null;
+    const me = () => (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async function loadConversations() {
+        const r = await apiFetch('/api/chat/conversations?user_code=' + me());
+        if (!r.ok || !r.data) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-sm">Sin datos disponibles</p>';
+            return;
+        }
+        // Backend returns array directly; tolerate {success, conversations} wrapper
+        const convs = Array.isArray(r.data) ? r.data : (r.data.conversations || []);
+        if (convs.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-sm">Sin conversaciones</p>';
+            return;
+        }
+        listEl.innerHTML = convs.map(c => {
+            const initials = (c.other_user_name || c.title || '?').slice(0, 2).toUpperCase();
+            const unread = c.unread_count > 0 ? `<span class="conv-unread">${c.unread_count}</span>` : '';
+            return `
+                <div class="conv-row" data-id="${c.id}">
+                    <div class="conv-avatar">${escapeHtml(initials)}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center">
+                            <span class="conv-name">${escapeHtml(c.other_user_name || c.title || 'Grupo')}</span>
+                            <span class="conv-time">${escapeHtml(c.last_message?.created_at_display || c.created_at_display || '')}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="conv-preview">${escapeHtml((c.last_message?.content || c.last_message?.has_photo) ? (c.last_message?.content || '📷 Foto') : 'Sin mensajes')}</span>
+                            ${unread}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        listEl.querySelectorAll('.conv-row').forEach(row => {
+            row.addEventListener('click', () => selectConversation(parseInt(row.dataset.id)));
+        });
+    }
+
+    async function selectConversation(convId) {
+        currentConvId = convId;
+        listEl.querySelectorAll('.conv-row').forEach(r => r.classList.remove('active'));
+        listEl.querySelector(`[data-id="${convId}"]`)?.classList.add('active');
+        composer.style.display = 'flex';
+        await loadMessages();
+        if (pollTimer) clearInterval(pollTimer);
+        pollTimer = setInterval(() => { if (currentConvId) loadMessages(true); }, 4000);
+    }
+
+    async function loadMessages(silent) {
+        if (!currentConvId) return;
+        if (!silent) messagesEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12 text-sm">Cargando mensajes...</p>';
+        const r = await apiFetch(`/api/chat/conversations/${currentConvId}/messages?user_code=${me()}`);
+        if (!r.ok || !r.data) {
+            if (!silent) messagesEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12 text-sm">Sin mensajes</p>';
+            return;
+        }
+        const data = Array.isArray(r.data) ? { messages: r.data, conversation: {} } : r.data;
+        const msgs = data.messages || [];
+        const conv = data.conversation || {};
+        headerEl.innerHTML = `
+            <div class="conv-avatar">${escapeHtml((conv.other_user_name || conv.title || '?').slice(0, 2).toUpperCase())}</div>
+            <div class="flex-1">
+                <div class="font-semibold text-sm">${escapeHtml(conv.other_user_name || conv.title || 'Conversación')}</div>
+                <div class="text-xs text-[var(--outline-elev)]">${escapeHtml(conv.other_user_code || '')}</div>
+            </div>
+        `;
+
+        if (msgs.length === 0) {
+            messagesEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12 text-sm">Sin mensajes. ¡Sé el primero en escribir!</p>';
+            return;
+        }
+
+        messagesEl.innerHTML = msgs.map(m => {
+            const own = m.sender_code === me();
+            const initial = (m.sender_name || '?').slice(0, 1).toUpperCase();
+            const photo = m.photo ? `<img src="${escapeHtml(m.photo)}" class="msg-photo" />` : '';
+            const attachment = m.attachment && m.attachment.url ? `<div class="msg-content mt-2"><a href="${escapeHtml(m.attachment.url)}" target="_blank" class="underline">${escapeHtml(m.attachment.name || 'Adjunto')}</a></div>` : '';
+            return `
+                <div class="msg-row ${own ? 'own' : ''}">
+                    <div class="msg-avatar">${escapeHtml(initial)}</div>
+                    <div class="msg-bubble">
+                        <div class="msg-content">${escapeHtml(m.content || '')}</div>
+                        ${photo}
+                        ${attachment}
+                        <div class="msg-meta">${escapeHtml(m.created_at_display || '')}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const content = inputEl.value.trim();
+        if (!content && !fileEl.files[0]) return;
+        if (!currentConvId) return;
+
+        let photoData = null;
+        if (fileEl.files[0]) {
+            const reader = new FileReader();
+            photoData = await new Promise((resolve) => {
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(fileEl.files[0]);
+            });
+        }
+
+        const r = await apiFetch(`/api/chat/conversations/${currentConvId}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_code: me(),
+                content: content || '',
+                photo: photoData,
+            })
+        });
+
+        if (r.ok && r.data) {
+            const ok = Array.isArray(r.data) ? r.data.length > 0 : (r.data.success !== false && r.data.id);
+            if (ok) {
+                inputEl.value = '';
+                fileEl.value = '';
+                if (window.apiToast) apiToast('Mensaje enviado', 'success');
+                await loadMessages();
+            } else {
+                const msg = (r.data && r.data.error) || 'Error';
+                if (window.apiToast) apiToast(msg, 'error');
+            }
+        } else {
+            if (window.apiToast) apiToast('Error al enviar', 'error');
+        }
+    }
+
+    async function searchUsers(query) {
+        if (query.length < 2) {
+            dmResults.innerHTML = '';
+            return;
+        }
+        const r = await apiFetch(`/api/chat/users?user_code=${me()}&q=${encodeURIComponent(query)}`);
+        if (!r.ok || !r.data) {
+            dmResults.innerHTML = '<p class="text-[var(--outline-elev)] text-sm">Sin resultados</p>';
+            return;
+        }
+        // /api/chat/users returns array directly OR {users: [...]}; also has ?q filter ignored by backend (returns all)
+        let users = Array.isArray(r.data) ? r.data : (r.data.users || []);
+        // Apply client-side filter since backend ignores ?q
+        const q = query.toLowerCase();
+        users = users.filter(u => u.code !== me() && (
+            (u.code || '').toLowerCase().includes(q) || (u.name || '').toLowerCase().includes(q)
+        ));
+        if (users.length === 0) {
+            dmResults.innerHTML = '<p class="text-[var(--outline-elev)] text-sm">Sin resultados</p>';
+            return;
+        }
+        dmResults.innerHTML = users.map(u => `
+            <div class="conv-row" data-code="${escapeHtml(u.code)}">
+                <div class="conv-avatar">${escapeHtml((u.name || u.code).slice(0, 2).toUpperCase())}</div>
+                <div class="flex-1">
+                    <div class="conv-name">${escapeHtml(u.name)}</div>
+                    <div class="conv-preview">${escapeHtml(u.code)}</div>
+                </div>
+            </div>
+        `).join('');
+
+        dmResults.querySelectorAll('.conv-row').forEach(row => {
+            row.addEventListener('click', () => startDM(row.dataset.code));
+        });
+    }
+
+    async function startDM(otherCode) {
+        const r = await apiFetch('/api/chat/conversations?user_code=' + me(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_code: me(), other_code: otherCode })
+        });
+        if (r.ok && r.data) {
+            const conv = Array.isArray(r.data) ? r.data : (r.data.conversation || r.data);
+            if (conv && conv.id) {
+                if (window.apiToast) apiToast('Conversación creada', 'success');
+                newDmModal.style.display = 'none';
+                await loadConversations();
+                selectConversation(conv.id);
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('new-dm-btn').addEventListener('click', () => {
+            newDmModal.style.display = 'flex';
+            dmSearch.focus();
+        });
+        document.querySelectorAll('[data-action="close-dm-modal"]').forEach(b => b.addEventListener('click', () => {
+            newDmModal.style.display = 'none';
+        }));
+        newDmModal.addEventListener('click', e => { if (e.target === newDmModal) newDmModal.style.display = 'none'; });
+        dmSearch.addEventListener('input', () => searchUsers(dmSearch.value));
+        attachBtn.addEventListener('click', () => fileEl.click());
+        sendBtn.addEventListener('click', sendMessage);
+        inputEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        document.getElementById('new-group-btn').addEventListener('click', () => {
+            if (window.apiToast) apiToast('Función de grupos próximamente', 'info');
+        });
+
+        function boot() {
+            if (me()) loadConversations();
+            else setTimeout(boot, 1000);
+        }
+        if (window.TNSVT_USER) boot();
+        else window.addEventListener('tnsvt:user-loaded', boot, { once: true });
+    });
+})();
+</script>
+{% endblock %}

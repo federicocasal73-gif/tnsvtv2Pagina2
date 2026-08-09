@@ -28,4 +28,10 @@ class SanctumModuleController extends AbstractController
     {
         return $this->render('sanctum/calendar.html.twig');
     }
+
+    #[Route('/chat', name: 'sanctum_chat', methods: ['GET'])]
+    public function chat(): Response
+    {
+        return $this->render('sanctum/chat.html.twig');
+    }
 }
