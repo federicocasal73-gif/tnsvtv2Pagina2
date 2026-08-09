@@ -28,7 +28,7 @@
         }
         .hero {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
         }
         .logo {
             font-family: 'Cinzel', serif;
@@ -55,6 +55,132 @@
             margin: 0 auto;
             line-height: 1.5;
         }
+        .cross {
+            font-size: 3rem;
+            color: #f2ca50;
+            margin-bottom: 1rem;
+        }
+
+        /* ─── Login card ─── */
+        .login-card {
+            max-width: 420px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        .login-card h2 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--gold-elev, #f2ca50);
+        }
+        .form-field {
+            margin-bottom: 1rem;
+        }
+        .form-field label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #99907c;
+            margin-bottom: 0.375rem;
+        }
+        .form-field input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 0.5rem;
+            color: #e9def6;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        .form-field input:focus {
+            outline: none;
+            border-color: #f2ca50;
+        }
+        .login-submit {
+            width: 100%;
+            padding: 0.875rem;
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, #f2ca50 0%, #ffe088 100%);
+            color: #241a00;
+            font-weight: 700;
+            font-size: 0.95rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .login-submit:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        }
+        .login-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .login-error {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(248, 113, 113, 0.15);
+            border: 1px solid rgba(248, 113, 113, 0.4);
+            border-radius: 0.5rem;
+            color: #fca5a5;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        .login-success {
+            display: none;
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: rgba(52, 211, 153, 0.15);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            border-radius: 0.5rem;
+            color: #6ee7b7;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+        .login-hint {
+            margin-top: 1rem;
+            padding: 0.625rem;
+            background: rgba(242, 202, 80, 0.08);
+            border-radius: 0.375rem;
+            color: #99907c;
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .login-hint code {
+            background: rgba(0,0,0,0.3);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            color: #f2ca50;
+            font-family: 'Space Grotesk', monospace;
+        }
+        .toggle-mode {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: #99907c;
+        }
+        .toggle-mode a {
+            color: #f2ca50;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* ─── Features ─── */
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -71,6 +197,7 @@
             color: #e9def6;
             transition: all 0.3s ease;
             display: block;
+            text-align: center;
         }
         .feature:hover {
             background: rgba(255, 255, 255, 0.05);
@@ -90,26 +217,6 @@
             font-size: 0.85rem;
             color: #99907c;
         }
-        .login-btn {
-            display: inline-block;
-            margin-top: 2rem;
-            padding: 0.75rem 2rem;
-            background: linear-gradient(135deg, #f2ca50 0%, #ffe088 100%);
-            color: #241a00;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
-        }
-        .cross {
-            font-size: 3rem;
-            color: #f2ca50;
-            margin-bottom: 1rem;
-        }
     </style>
 </head>
 <body>
@@ -121,15 +228,37 @@
             <p class="verse">"El ejecutor honesto cuenta no solo lo que hizo,<br> sino cómo se sintió al hacerlo."</p>
         </div>
 
-        <a href="#" onclick="event.preventDefault(); document.getElementById('login-form').submit();" class="login-btn">
-            Iniciar sesión →
-        </a>
-
-        <form id="login-form" method="POST" action="/api/auth/login" style="display: none;">
-            <input name="code" />
-            <input name="name" />
-            <input name="password" />
-        </form>
+        {# ─── Login card ─── #}
+        <div class="login-card">
+            <h2>Iniciar sesión</h2>
+            <form id="login-form" autocomplete="off">
+                <div class="form-field">
+                    <label for="login-code">Código de acceso</label>
+                    <input type="text" id="login-code" name="code" required autocomplete="username"
+                           placeholder="ADMIN01 / DEMO / tu código" />
+                </div>
+                <div class="form-field">
+                    <label for="login-name" id="login-name-label">Nombre (solo usuarios)</label>
+                    <input type="text" id="login-name" name="name" autocomplete="name"
+                           placeholder="Nombre del usuario (Demo, Juan, etc.)" />
+                </div>
+                <div class="form-field" id="login-password-field">
+                    <label for="login-password">Contraseña (solo admins)</label>
+                    <input type="password" id="login-password" name="password" autocomplete="current-password"
+                           placeholder="Solo requerida si tu código empieza con ADMIN" />
+                </div>
+                <button type="submit" class="login-submit" id="login-submit-btn">
+                    <span id="login-btn-text">Entrar</span>
+                </button>
+                <div class="login-error" id="login-error"></div>
+                <div class="login-success" id="login-success"></div>
+            </form>
+            <div class="login-hint">
+                <strong>Cómo funciona:</strong> ADMIN01 = admin (necesita contraseña).<br>
+                <code>DEMO</code> con nombre <code>Demo</code> = usuario normal (sin contraseña).<br>
+                Tu sesión queda activa hasta cerrar el navegador.
+            </div>
+        </div>
 
         <div class="features">
             <a href="/sanctum" class="feature">
@@ -137,39 +266,145 @@
                 <div class="feature-title">Sanctum</div>
                 <div class="feature-desc">Command center con KPIs, tasks, audit y settings</div>
             </a>
-            <a href="/oracle" class="feature">
-                <div class="feature-icon material-symbols-elev">auto_awesome</div>
-                <div class="feature-title">Oráculo</div>
-                <div class="feature-desc">Faith vs Logic, Emotional Bias Map, Session Performance</div>
+            <a href="/journal" class="feature">
+                <div class="feature-icon material-symbols-elev">edit_note</div>
+                <div class="feature-title">Trading Journal</div>
+                <div class="feature-desc">Bitácora de operaciones, métricas y análisis</div>
             </a>
-            <a href="/macro" class="feature">
-                <div class="feature-icon material-symbols-elev">event_upcoming</div>
-                <div class="feature-title">Macro</div>
-                <div class="feature-desc">Hilos del Mundo - No-Trade Window + 49 eventos</div>
+            <a href="/calendar" class="feature">
+                <div class="feature-icon material-symbols-elev">calendar_month</div>
+                <div class="feature-title">Calendario</div>
+                <div class="feature-desc">Eventos macro con filtros de país e impacto</div>
             </a>
-            <a href="/frequencies" class="feature">
-                <div class="feature-icon material-symbols-elev">graphic_eq</div>
-                <div class="feature-title">Audio Hub</div>
-                <div class="feature-desc">12 frecuencias Solfeggio + Web Audio API</div>
+            <a href="/chat" class="feature">
+                <div class="feature-icon material-symbols-elev">chat</div>
+                <div class="feature-title">Mensajes</div>
+                <div class="feature-desc">Conversaciones, grupos y adjuntos</div>
+            </a>
+            <a href="/feed" class="feature">
+                <div class="feature-icon material-symbols-elev">forum</div>
+                <div class="feature-title">Feed</div>
+                <div class="feature-desc">Salón del Cónclave con señales y resultados</div>
+            </a>
+            <a href="/diario" class="feature">
+                <div class="feature-icon material-symbols-elev">menu_book</div>
+                <div class="feature-title">Diario</div>
+                <div class="feature-desc">Bitácora privada cifrada extremo a extremo</div>
             </a>
         </div>
     </div>
 
     <script>
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            const code = prompt('Código de usuario:');
-            if (!code) return;
-            const isAdmin = code.toUpperCase().startsWith('ADMIN');
-            const pass = isAdmin ? prompt('Contraseña:') : null;
-            const form = document.getElementById('login-form');
-            form.elements.code.value = code;
-            if (isAdmin && pass) form.elements.password.value = pass;
-            if (!isAdmin) form.elements.name.value = 'Demo';
-            form.submit();
+    (function () {
+        'use strict';
+        var form = document.getElementById('login-form');
+        var codeInput = document.getElementById('login-code');
+        var nameInput = document.getElementById('login-name');
+        var passInput = document.getElementById('login-password');
+        var passField = document.getElementById('login-password-field');
+        var nameLabel = document.getElementById('login-name-label');
+        var submitBtn = document.getElementById('login-submit-btn');
+        var btnText = document.getElementById('login-btn-text');
+        var errorEl = document.getElementById('login-error');
+        var successEl = document.getElementById('login-success');
+
+        function isAdmin(code) {
+            return code.toUpperCase().startsWith('ADMIN');
         }
-    });
+
+        // Show/hide password field based on code prefix
+        codeInput.addEventListener('input', function () {
+            var v = codeInput.value.trim();
+            if (isAdmin(v)) {
+                passField.style.display = '';
+                nameLabel.textContent = 'Nombre (opcional para admins)';
+                nameInput.placeholder = 'Nombre del admin (opcional)';
+            } else {
+                passField.style.display = 'none';
+                passInput.value = '';
+                nameLabel.textContent = 'Nombre (requerido para usuarios)';
+                nameInput.placeholder = 'Ej: Demo';
+            }
+        });
+
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+            successEl.style.display = 'none';
+        }
+
+        function showSuccess(msg) {
+            successEl.textContent = msg;
+            successEl.style.display = 'block';
+            errorEl.style.display = 'none';
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var code = codeInput.value.trim();
+            if (!code) {
+                showError('Ingresá tu código de acceso');
+                codeInput.focus();
+                return;
+            }
+
+            var payload = { code: code.toUpperCase() };
+            if (isAdmin(code)) {
+                var pass = passInput.value;
+                if (!pass) {
+                    showError('Los administradores necesitan contraseña');
+                    passInput.focus();
+                    return;
+                }
+                payload.password = pass;
+                var name = nameInput.value.trim();
+                if (name) payload.name = name;
+            } else {
+                var name = nameInput.value.trim();
+                if (!name) {
+                    showError('Los usuarios necesitan su nombre (Ej: Demo)');
+                    nameInput.focus();
+                    return;
+                }
+                payload.name = name;
+            }
+
+            submitBtn.disabled = true;
+            btnText.textContent = 'Conectando…';
+            errorEl.style.display = 'none';
+
+            fetch('/api/auth/login', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; }); })
+            .then(function (resp) {
+                if (resp.ok && resp.data && resp.data.success) {
+                    var user = resp.data.user || {};
+                    showSuccess('Bienvenido ' + (user.name || user.code) + '. Redirigiendo…');
+                    // Persist user to localStorage so subsequent pages can skip /api/auth/check delay
+                    try { localStorage.setItem('tnsvt_user', JSON.stringify(user)); } catch (_) {}
+                    var target = user.isAdmin ? '/sanctum' : '/journal';
+                    setTimeout(function () { window.location.href = target; }, 600);
+                } else {
+                    var msg = (resp.data && resp.data.error) || 'Error ' + resp.status;
+                    showError(msg);
+                    submitBtn.disabled = false;
+                    btnText.textContent = 'Entrar';
+                }
+            })
+            .catch(function (err) {
+                showError('Sin conexión con el servidor: ' + (err.message || err));
+                submitBtn.disabled = false;
+                btnText.textContent = 'Entrar';
+            });
+        });
+
+        // Auto-focus code field on load
+        codeInput.focus();
+    })();
     </script>
 </body>
 </html>
