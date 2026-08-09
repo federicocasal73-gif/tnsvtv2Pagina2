@@ -27,17 +27,8 @@ class LegacyModuleController extends AbstractController
      * with the real module controller.
      */
 
-    #[Route('/journal', name: 'legacy_journal', methods: ['GET'])]
-    public function journal(): Response
-    {
-        return $this->render('legacy/redirect.html.twig', [
-            'title' => 'Trading Journal',
-            'icon' => 'edit_note',
-            'description' => 'Tu historial completo de trades con análisis emocional y métricas',
-            'legacy_path' => '/journal',
-            'features' => ['Journal entries', 'Emotional analysis', 'PnL tracking', 'Asset breakdown'],
-        ]);
-    }
+    // /journal migrated to SanctumModuleController::journal()
+
 
     #[Route('/chat', name: 'legacy_chat', methods: ['GET'])]
     public function chat(): Response

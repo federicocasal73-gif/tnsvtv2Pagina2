@@ -1,0 +1,332 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Trading Journal · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Trading Journal{% endblock %}
+{% block topbar_subtitle %}Bitácora de operaciones, análisis emocional y métricas.{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    {# ─── KPI Stats Row ─── #}
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6" id="journal-stats">
+        <div class="kpi-card"><p class="kpi-label">Total</p><p class="kpi-value" id="stat-total">0</p></div>
+        <div class="kpi-card"><p class="kpi-label">Wins</p><p class="kpi-value text-emerald-400" id="stat-wins">0</p></div>
+        <div class="kpi-card"><p class="kpi-label">Losses</p><p class="kpi-value text-red-400" id="stat-losses">0</p></div>
+        <div class="kpi-card"><p class="kpi-label">Win Rate</p><p class="kpi-value" id="stat-winrate">0%</p></div>
+        <div class="kpi-card"><p class="kpi-label">Total PnL</p><p class="kpi-value" id="stat-pnl">$0</p></div>
+    </div>
+
+    {# ─── Toolbar ─── #}
+    <div class="glass-card-elev p-4 mb-4 flex flex-wrap items-center gap-3">
+        <button id="btn-new-trade" class="btn-primary flex items-center gap-2">
+            <span class="material-symbols-elev align-middle text-sm">add</span>
+            Nuevo Trade
+        </button>
+        <div class="flex-1"></div>
+        <div class="flex items-center gap-2 text-sm text-[var(--outline-elev)]">
+            <span id="journal-count">0 trades</span>
+        </div>
+    </div>
+
+    {# ─── Trade List ─── #}
+    <div class="glass-card-elev p-0 overflow-hidden">
+        <div id="trade-list" class="divide-y divide-[var(--outline-variant-elev)]">
+            <p class="text-center text-[var(--outline-elev)] py-12">Cargando journal...</p>
+        </div>
+    </div>
+</div>
+
+{# ─── New/Edit Trade Modal ─── #}
+<div id="trade-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:100; align-items:center; justify-content:center; padding:1rem;">
+    <div class="glass-card-elev" style="width:100%; max-width:540px; max-height:90vh; overflow-y:auto;">
+        <div class="flex items-center justify-between p-5 border-b border-[var(--glass-border-elev)]">
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">edit_note</span>
+                <span id="trade-modal-title">Nuevo Trade</span>
+            </h2>
+            <button type="button" data-action="close-trade-modal" class="text-[var(--outline-elev)] hover:text-white">
+                <span class="material-symbols-elev">close</span>
+            </button>
+        </div>
+        <form id="trade-form" class="p-5 space-y-3">
+            <input type="hidden" id="trade-id" />
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="kpi-label block mb-1">Asset *</label>
+                    <input id="trade-asset" type="text" required maxlength="20" placeholder="XAUUSD"
+                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                </div>
+                <div>
+                    <label class="kpi-label block mb-1">Dirección</label>
+                    <select id="trade-dir" class="form-input"
+                            style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+                        <option value="BUY">BUY (Long)</option>
+                        <option value="SELL">SELL (Short)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="kpi-label block mb-1">Fecha</label>
+                    <input id="trade-date" type="datetime-local"
+                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                </div>
+                <div>
+                    <label class="kpi-label block mb-1">Resultado</label>
+                    <select id="trade-result" class="form-input"
+                            style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+                        <option value="">—</option>
+                        <option value="WIN">WIN</option>
+                        <option value="LOSS">LOSS</option>
+                        <option value="BE">BREAK-EVEN</option>
+                        <option value="OPEN">OPEN</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3">
+                <div>
+                    <label class="kpi-label block mb-1">Entry</label>
+                    <input id="trade-entry" type="text" step="any" placeholder="2650.50"
+                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                </div>
+                <div>
+                    <label class="kpi-label block mb-1">SL</label>
+                    <input id="trade-sl" type="text" step="any" placeholder="2645"
+                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                </div>
+                <div>
+                    <label class="kpi-label block mb-1">TP</label>
+                    <input id="trade-tp" type="text" step="any" placeholder="2660"
+                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                </div>
+                <div>
+                    <label class="kpi-label block mb-1">PnL ($)</label>
+                    <input id="trade-pnl" type="number" step="any" placeholder="125.50"
+                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                </div>
+            </div>
+
+            <div>
+                <label class="kpi-label block mb-1">Notas</label>
+                <textarea id="trade-notes" rows="3" placeholder="Análisis, emociones, plan ejecutado..."
+                          class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;"></textarea>
+            </div>
+
+            <p id="trade-form-error" class="text-red-400 text-sm hidden"></p>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-[var(--glass-border-elev)]">
+                <button type="button" data-action="close-trade-modal"
+                        class="btn-secondary">Cancelar</button>
+                <button type="submit" id="trade-submit" class="btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.trade-row { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; transition:background 0.2s ease; cursor:pointer; }
+.trade-row:hover { background: var(--glass-bg-elev); }
+.trade-asset { font-weight:600; min-width:80px; }
+.trade-dir-BUY { color: #34c759; }
+.trade-dir-SELL { color: #f87171; }
+.trade-pnl-pos { color: #34c759; font-weight:600; }
+.trade-pnl-neg { color: #f87171; font-weight:600; }
+.trade-actions { display:flex; gap:0.5rem; opacity:0.6; transition:opacity 0.2s ease; }
+.trade-row:hover .trade-actions { opacity:1; }
+.trade-actions button { background:transparent; border:1px solid var(--glass-border-elev); color:var(--on-surface-variant-elev); padding:0.25rem 0.5rem; border-radius:0.25rem; cursor:pointer; font-size:0.7rem; }
+.trade-actions button:hover { background: var(--glass-bg-elev); color: var(--gold-elev); border-color: var(--gold-elev); }
+.btn-primary { padding:0.5rem 1.25rem; background:linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev)); color:var(--on-primary-elev); font-weight:600; border:none; border-radius:0.375rem; cursor:pointer; }
+.btn-secondary { padding:0.5rem 1.25rem; background:transparent; color:var(--on-surface-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; cursor:pointer; }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const listEl = document.getElementById('trade-list');
+    const modal = document.getElementById('trade-modal');
+    const form = document.getElementById('trade-form');
+    const modalTitle = document.getElementById('trade-modal-title');
+    const errEl = document.getElementById('trade-form-error');
+
+    function currentUserCode() {
+        return (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+    }
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function openModal(trade) {
+        form.reset();
+        errEl.classList.add('hidden');
+        document.getElementById('trade-id').value = '';
+        if (trade) {
+            modalTitle.textContent = 'Editar Trade';
+            document.getElementById('trade-id').value = trade.id || '';
+            document.getElementById('trade-asset').value = trade.asset || '';
+            document.getElementById('trade-dir').value = trade.dir || 'BUY';
+            document.getElementById('trade-date').value = trade.date ? trade.date.slice(0, 16) : '';
+            document.getElementById('trade-entry').value = trade.entry || '';
+            document.getElementById('trade-sl').value = trade.sl || '';
+            document.getElementById('trade-tp').value = trade.tp || '';
+            document.getElementById('trade-result').value = trade.result || '';
+            document.getElementById('trade-pnl').value = trade.pnl != null ? trade.pnl : '';
+            document.getElementById('trade-notes').value = trade.notes || '';
+        } else {
+            modalTitle.textContent = 'Nuevo Trade';
+            document.getElementById('trade-date').value = new Date().toISOString().slice(0, 16);
+        }
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('trade-asset').focus(), 100);
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    async function loadTrades() {
+        const r = await apiFetch('/api/journal?user_code=' + currentUserCode());
+        if (!r.ok || !r.data || !r.data.success) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12">Sin datos disponibles</p>';
+            return;
+        }
+        const trades = r.data.trades || [];
+        const stats = r.data.stats || {};
+        document.getElementById('stat-total').textContent = stats.total || 0;
+        document.getElementById('stat-wins').textContent = stats.wins || 0;
+        document.getElementById('stat-losses').textContent = stats.losses || 0;
+        document.getElementById('stat-winrate').textContent = (stats.win_rate || 0) + '%';
+        document.getElementById('stat-pnl').textContent = '$' + (stats.total_pnl || 0).toFixed(2);
+        document.getElementById('journal-count').textContent = trades.length + ' trades';
+
+        if (trades.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12">Sin trades. Click "Nuevo Trade" para empezar.</p>';
+            return;
+        }
+
+        listEl.innerHTML = trades.map(t => {
+            const pnlClass = (t.pnl >= 0) ? 'trade-pnl-pos' : 'trade-pnl-neg';
+            const pnlStr = (t.pnl >= 0 ? '+$' : '-$') + Math.abs(t.pnl).toFixed(2);
+            const dateStr = t.date ? new Date(t.date).toLocaleString() : '';
+            return `
+                <div class="trade-row" data-id="${t.id}">
+                    <span class="trade-asset">${escapeHtml(t.asset)}</span>
+                    <span class="trade-dir-${escapeHtml(t.dir)} text-sm">${escapeHtml(t.dir)}</span>
+                    <span class="text-xs text-[var(--outline-elev)] flex-1 truncate">${escapeHtml(dateStr)}</span>
+                    <span class="${pnlClass} text-sm">${pnlStr}</span>
+                    <span class="status-pill ${t.result === 'WIN' ? 'status-completed' : t.result === 'LOSS' ? 'status-inactive' : 'status-pending'}">${escapeHtml(t.result || 'OPEN')}</span>
+                    <div class="trade-actions">
+                        <button data-action="edit" data-id="${t.id}">Editar</button>
+                        <button data-action="delete" data-id="${t.id}">Eliminar</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function saveTrade(e) {
+        e.preventDefault();
+        errEl.classList.add('hidden');
+        const id = document.getElementById('trade-id').value;
+        const data = {
+            user_code: currentUserCode(),
+            asset: document.getElementById('trade-asset').value.trim().toUpperCase(),
+            dir: document.getElementById('trade-dir').value,
+            date: document.getElementById('trade-date').value || null,
+            entry: document.getElementById('trade-entry').value,
+            sl: document.getElementById('trade-sl').value,
+            tp: document.getElementById('trade-tp').value,
+            result: document.getElementById('trade-result').value,
+            pnl: document.getElementById('trade-pnl').value,
+            notes: document.getElementById('trade-notes').value,
+        };
+        const url = id ? '/api/journal/' + id : '/api/journal';
+        const method = id ? 'PATCH' : 'POST';
+        const r = await apiFetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (r.ok && r.data && r.data.success) {
+            if (window.apiToast) apiToast(id ? 'Trade actualizado' : 'Trade creado', 'success');
+            closeModal();
+            loadTrades();
+        } else {
+            const msg = (r.data && (r.data.error || r.data.message)) || 'Error';
+            errEl.textContent = msg;
+            errEl.classList.remove('hidden');
+        }
+    }
+
+    async function deleteTrade(id) {
+        if (!confirm('¿Eliminar este trade?')) return;
+        const r = await apiFetch('/api/journal/' + id, { method: 'DELETE' });
+        if (r.ok && r.data && r.data.success) {
+            if (window.apiToast) apiToast('Trade eliminado', 'success');
+            loadTrades();
+        } else {
+            if (window.apiToast) apiToast('Error al eliminar', 'error');
+        }
+    }
+
+    // Event handlers
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('btn-new-trade').addEventListener('click', () => openModal(null));
+        document.querySelectorAll('[data-action="close-trade-modal"]').forEach(b => b.addEventListener('click', closeModal));
+        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+        form.addEventListener('submit', saveTrade);
+
+        listEl.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('[data-action="edit"]');
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                const row = listEl.querySelector(`[data-id="${id}"]`);
+                if (row) {
+                    const trade = {
+                        id: id,
+                        asset: row.querySelector('.trade-asset')?.textContent,
+                        dir: row.querySelector('[class*="trade-dir-"]')?.textContent,
+                        date: row.querySelector('.text-xs')?.textContent,
+                        pnl: parseFloat(row.querySelector('[class*="trade-pnl-"]')?.textContent.replace(/[^-\d.]/g, '')),
+                        result: row.querySelector('.status-pill')?.textContent.trim(),
+                    };
+                    openModal(trade);
+                }
+                return;
+            }
+            const delBtn = e.target.closest('[data-action="delete"]');
+            if (delBtn) {
+                deleteTrade(delBtn.dataset.id);
+            }
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+        });
+
+        // Wait for TNSVT_USER (set by shell.html.twig after /api/auth/check resolves)
+        function boot() {
+            if (currentUserCode()) {
+                loadTrades();
+            } else {
+                // Try once more after a short delay; if still no user, give up.
+                setTimeout(() => {
+                    if (currentUserCode()) loadTrades();
+                    else listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12">Sin sesión</p>';
+                }, 1000);
+            }
+        }
+        if (window.TNSVT_USER) {
+            boot();
+        } else {
+            window.addEventListener('tnsvt:user-loaded', boot, { once: true });
+            // Fallback timeout in case event never fires
+            setTimeout(boot, 2000);
+        }
+    });
+})();
+</script>
+{% endblock %}

@@ -187,6 +187,8 @@
         apiFetch('/api/auth/check').then(r => {
             if (r.ok && r.data && r.data.user) {
                 const u = r.data.user;
+                window.TNSVT_USER = u;
+                window.dispatchEvent(new CustomEvent('tnsvt:user-loaded', { detail: u }));
                 const code = (u.code || '??').slice(0, 2);
                 document.getElementById('user-avatar').textContent = code;
                 document.getElementById('user-name').textContent = u.name || u.code;
@@ -195,6 +197,7 @@
                 tierEl.className = 'tier-badge-elev tier-' + (u.tier || 'INITIATE').toLowerCase().replace(/_/g, '-');
             } else if (r.status === 401) {
                 document.getElementById('user-name').textContent = 'Sin sesión';
+                window.TNSVT_USER = null;
             } else if (!r.ok) {
                 document.getElementById('user-name').textContent = '—';
             }
