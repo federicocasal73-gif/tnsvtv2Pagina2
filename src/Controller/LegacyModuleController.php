@@ -33,17 +33,8 @@ class LegacyModuleController extends AbstractController
     // /chat migrated to SanctumModuleController::chat()
 
 
-    #[Route('/feed', name: 'legacy_feed', methods: ['GET'])]
-    public function feed(): Response
-    {
-        return $this->render('legacy/redirect.html.twig', [
-            'title' => 'Salón del Cónclave',
-            'icon' => 'forum',
-            'description' => 'Feed comunitario con señales, resultados y proyecciones',
-            'legacy_path' => '/feed',
-            'features' => ['Posts', 'Señales', 'Resultados', 'Comentarios'],
-        ]);
-    }
+    // /feed migrated to SanctumModuleController::feed()
+
 
     // /calendar migrated to SanctumModuleController::calendar()
 

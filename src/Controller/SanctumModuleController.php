@@ -34,4 +34,10 @@ class SanctumModuleController extends AbstractController
     {
         return $this->render('sanctum/chat.html.twig');
     }
+
+    #[Route('/feed', name: 'sanctum_feed', methods: ['GET'])]
+    public function feed(): Response
+    {
+        return $this->render('sanctum/feed.html.twig');
+    }
 }

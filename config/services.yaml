@@ -23,5 +23,24 @@ services:
     App\Service\Monitoring\MonitoringService:
         public: true
 
+    # ─── LinkPreview (Pilar B.4: Feed) ───
+    App\Service\LinkPreview\ScreenshotProviderInterface:
+        alias: App\Service\LinkPreview\NullScreenshotProvider
+
+    App\Service\LinkPreview\SiteEnrichers\SiteEnricherInterface:
+        tags: ['app.link_preview.enricher']
+
+    _instanceof:
+        App\Service\LinkPreview\SiteEnrichers\SiteEnricherInterface:
+            tags: ['app.link_preview.enricher']
+
+    App\Service\LinkPreview\LinkPreviewService:
+        arguments:
+            $enrichers: !tagged_iterator app.link_preview.enricher
+
+    App\Service\LinkPreview\FaviconService:
+        arguments:
+            $uploadDir: '%kernel.project_dir%/public/uploads/link-previews/favicons'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
