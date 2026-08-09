@@ -1,0 +1,147 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Calendario Económico · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Calendario Económico{% endblock %}
+{% block topbar_subtitle %}Eventos macro en tiempo real con filtros por país e impacto.{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    {# ─── Filters ─── #}
+    <div class="glass-card-elev p-4 mb-4 flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2">
+            <label class="kpi-label">Fecha</label>
+            <input id="cal-date" type="date"
+                   class="form-input" style="padding:0.4rem 0.6rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+        </div>
+        <div class="flex items-center gap-2">
+            <label class="kpi-label">País</label>
+            <select id="cal-country" multiple size="1"
+                    class="form-input" style="padding:0.4rem 0.6rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+                <option value="US" selected>🇺🇸 USD</option>
+                <option value="EU" selected>🇪🇺 EUR</option>
+                <option value="GB" selected>🇬🇧 GBP</option>
+                <option value="JP" selected>🇯🇵 JPY</option>
+                <option value="CA">🇨🇦 CAD</option>
+                <option value="AU">🇦🇺 AUD</option>
+                <option value="CH">🇨🇭 CHF</option>
+                <option value="CN">🇨🇳 CNY</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-2">
+            <label class="kpi-label">Impacto</label>
+            <select id="cal-impact"
+                    class="form-input" style="padding:0.4rem 0.6rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+                <option value="">Todos</option>
+                <option value="3" selected>Alto (3)</option>
+                <option value="2">Medio (2)</option>
+                <option value="1">Bajo (1)</option>
+            </select>
+        </div>
+        <div class="flex-1"></div>
+        <div class="text-sm text-[var(--outline-elev)]">
+            <span id="cal-count">0 eventos</span>
+        </div>
+    </div>
+
+    {# ─── Events Table ─── #}
+    <div class="glass-card-elev p-0 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>País</th>
+                        <th>Evento</th>
+                        <th>Impacto</th>
+                        <th>Actual</th>
+                        <th>Previsión</th>
+                        <th>Anterior</th>
+                    </tr>
+                </thead>
+                <tbody id="cal-list">
+                    <tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+.cal-impact-3 { color: #f87171; font-weight: 600; }
+.cal-impact-2 { color: #fbbf24; font-weight: 600; }
+.cal-impact-1 { color: #94a3b8; font-weight: 500; }
+.cal-critical { background: rgba(248, 113, 113, 0.08); }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const listEl = document.getElementById('cal-list');
+    const countEl = document.getElementById('cal-count');
+    const dateInput = document.getElementById('cal-date');
+    const countrySel = document.getElementById('cal-country');
+    const impactSel = document.getElementById('cal-impact');
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function selectedCountries() {
+        return Array.from(countrySel.selectedOptions).map(o => o.value);
+    }
+
+    async function loadEvents() {
+        listEl.innerHTML = '<tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>';
+        const params = new URLSearchParams();
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Argentina/Buenos_Aires';
+        params.set('tz', tz);
+        const countries = selectedCountries();
+        if (countries.length) params.set('countries', countries.join(','));
+        if (impactSel.value) params.set('impact', impactSel.value);
+
+        const r = await apiFetch('/api/calendar/events?' + params.toString());
+        if (!r.ok || !r.data || !r.data.events) {
+            listEl.innerHTML = '<tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Sin datos disponibles</td></tr>';
+            countEl.textContent = '0 eventos';
+            return;
+        }
+        const events = r.data.events || [];
+        countEl.textContent = events.length + ' eventos';
+
+        if (events.length === 0) {
+            listEl.innerHTML = '<tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">No hay eventos para los filtros seleccionados</td></tr>';
+            return;
+        }
+
+        listEl.innerHTML = events.map(e => {
+            const impact = e.importance || 1;
+            const critical = e.is_critical ? 'cal-critical' : '';
+            return `
+                <tr class="${critical}">
+                    <td class="font-mono">${escapeHtml(e.time || '')}</td>
+                    <td>${escapeHtml(e.currency || e.country_code || '')}</td>
+                    <td>${escapeHtml(e.title || '')}</td>
+                    <td class="cal-impact-${impact}">${'●'.repeat(impact)}${'○'.repeat(3 - impact)}</td>
+                    <td>${escapeHtml(e.actual || '—')}</td>
+                    <td>${escapeHtml(e.forecast || '—')}</td>
+                    <td>${escapeHtml(e.previous || '—')}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Default date = today
+        const now = new Date();
+        dateInput.value = now.toISOString().slice(0, 10);
+
+        dateInput.addEventListener('change', loadEvents);
+        countrySel.addEventListener('change', loadEvents);
+        impactSel.addEventListener('change', loadEvents);
+
+        loadEvents();
+    });
+})();
+</script>
+{% endblock %}

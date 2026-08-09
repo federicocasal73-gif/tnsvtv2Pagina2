@@ -54,17 +54,8 @@ class LegacyModuleController extends AbstractController
         ]);
     }
 
-    #[Route('/calendar', name: 'legacy_calendar', methods: ['GET'])]
-    public function calendar(): Response
-    {
-        return $this->render('legacy/redirect.html.twig', [
-            'title' => 'Calendario',
-            'icon' => 'calendar_month',
-            'description' => 'Calendario económico con eventos macro y recordatorios',
-            'legacy_path' => '/calendar',
-            'features' => ['Eventos macro', 'No-trade windows', 'Recordatorios', 'Histórico'],
-        ]);
-    }
+    // /calendar migrated to SanctumModuleController::calendar()
+
 
     #[Route('/diario', name: 'legacy_diario', methods: ['GET'])]
     public function diario(): Response
