@@ -172,6 +172,8 @@
     {% block floats %}{% endblock %}
 </div>
 
+{% include '_partials/api_helper.html.twig' %}
+
 <script>
 (function() {
     // Active nav highlight
@@ -180,24 +182,29 @@
         if (a.getAttribute('href') === path) a.classList.add('active');
     });
 
-    // Load user info from session via /api/auth/check
-    fetch('/api/auth/check').then(r => r.json()).then(data => {
-        if (data && data.user) {
-            const code = (data.user.code || '??').slice(0, 2);
-            document.getElementById('user-avatar').textContent = code;
-            document.getElementById('user-name').textContent = data.user.name || data.user.code;
-            const tierEl = document.getElementById('user-tier');
-            tierEl.textContent = (data.user.tier || 'INITIATE');
-            tierEl.className = 'tier-badge-elev tier-' + (data.user.tier || 'INITIATE').toLowerCase().replace(/_/g, '-');
-        } else {
-            document.getElementById('user-name').textContent = 'Guest';
-        }
-    }).catch(() => { document.getElementById('user-name').textContent = 'Sin sesión'; });
+    // Load user info from session via /api/auth/check (using robust helper)
+    if (window.apiFetch) {
+        apiFetch('/api/auth/check').then(r => {
+            if (r.ok && r.data && r.data.user) {
+                const u = r.data.user;
+                const code = (u.code || '??').slice(0, 2);
+                document.getElementById('user-avatar').textContent = code;
+                document.getElementById('user-name').textContent = u.name || u.code;
+                const tierEl = document.getElementById('user-tier');
+                tierEl.textContent = (u.tier || 'INITIATE');
+                tierEl.className = 'tier-badge-elev tier-' + (u.tier || 'INITIATE').toLowerCase().replace(/_/g, '-');
+            } else if (r.status === 401) {
+                document.getElementById('user-name').textContent = 'Sin sesión';
+            } else if (!r.ok) {
+                document.getElementById('user-name').textContent = '—';
+            }
+        });
+    }
 
     // Logout
     document.getElementById('logout-btn').addEventListener('click', function() {
         if (confirm('¿Cerrar sesión?')) {
-            fetch('/api/auth/logout', {method: 'POST'}).then(() => location.href = '/');
+            apiFetch('/api/auth/logout', { method: 'POST', silent: true }).then(() => location.href = '/');
         }
     });
 })();

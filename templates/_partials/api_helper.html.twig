@@ -1,0 +1,191 @@
+{# _partials/api_helper.html.twig — Global API helper + error UI.
+
+   Provides:
+     • window.apiFetch(url, opts)    → fetch wrapper w/ 30s timeout, 401→redirect, 500→banner, AbortError→timeout
+     • window.apiToast(msg, kind)    → top-right toast (success|error|info)
+     • <div id="api-error-banner">   → inline error banner mounted by apiFetch on 5xx
+
+   Mount once via:  {% include '_partials/api_helper.html.twig' %}
+
+   Each page may call: apiFetch('/sanctum/api/tasks').then(d => …) — the helper handles errors gracefully.
+#}
+
+<style>
+#api-error-banner {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    background: rgba(127, 29, 29, 0.95);
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    backdrop-filter: blur(12px);
+    color: #fecaca;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 36rem;
+    animation: api-banner-in 0.2s ease-out;
+}
+#api-error-banner.hidden { display: none !important; }
+#api-error-banner .api-banner-icon { color: #f87171; flex-shrink: 0; }
+#api-error-banner #api-error-banner-msg { flex: 1; }
+#api-error-banner button {
+    background: transparent;
+    border: none;
+    color: #fca5a5;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+}
+#api-error-banner button:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+#api-toast-stack {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+.api-toast {
+    pointer-events: auto;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity 0.3s ease;
+    max-width: 24rem;
+    animation: api-toast-in 0.2s ease-out;
+}
+.api-toast-success { background: rgba(6, 78, 59, 0.95); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.5); }
+.api-toast-error   { background: rgba(127, 29, 29, 0.95); color: #fecaca; border-color: rgba(248, 113, 113, 0.5); }
+.api-toast-info    { background: rgba(24, 24, 27, 0.95);  color: #d4d4d8; border-color: rgba(161, 161, 170, 0.5); }
+
+@keyframes api-banner-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes api-toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+</style>
+
+<div id="api-error-banner" class="hidden" role="alert" aria-live="assertive">
+    <span class="material-symbols-elev api-banner-icon">error</span>
+    <span id="api-error-banner-msg">Server error</span>
+    <button type="button" onclick="document.getElementById('api-error-banner').classList.add('hidden')" aria-label="Dismiss">
+        <span class="material-symbols-elev" style="font-size: 1.125rem;">close</span>
+    </button>
+</div>
+
+<div id="api-toast-stack" aria-live="polite"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    const DEFAULT_TIMEOUT_MS = 30000;
+    const banner = () => document.getElementById('api-error-banner');
+    const bannerMsg = () => document.getElementById('api-error-banner-msg');
+    const toastStack = () => document.getElementById('api-toast-stack');
+
+    function showBanner(message) {
+        const el = banner();
+        if (!el) return;
+        bannerMsg().textContent = message;
+        el.classList.remove('hidden');
+    }
+
+    function hideBanner() {
+        const el = banner();
+        if (el) el.classList.add('hidden');
+    }
+
+    function apiToast(message, kind) {
+        kind = kind || 'info';
+        const stack = toastStack();
+        if (!stack) return;
+        const node = document.createElement('div');
+        node.className = 'api-toast api-toast-' + kind;
+        const icons = { success: 'check_circle', error: 'error', info: 'info' };
+        node.innerHTML = '<span class="material-symbols-elev"></span><span></span>';
+        node.firstElementChild.textContent = icons[kind] || 'info';
+        node.lastElementChild.textContent = message;
+        stack.appendChild(node);
+        setTimeout(() => { node.style.opacity = '0'; }, 3500);
+        setTimeout(() => { node.remove(); }, 4000);
+    }
+
+    /**
+     * Robust fetch wrapper.
+     * @param {string} url
+     * @param {object} [opts]
+     * @param {number} [opts.timeoutMs=30000]
+     * @param {boolean} [opts.silent=false]   when true, do NOT show global banner on 5xx (caller handles)
+     * @param {boolean} [opts.redirectOn401=true]
+     * @returns {Promise<{ok:boolean, status:number, data:any}>}
+     */
+    async function apiFetch(url, opts) {
+        opts = opts || {};
+        const timeoutMs = opts.timeoutMs || DEFAULT_TIMEOUT_MS;
+        const silent = !!opts.silent;
+        const redirectOn401 = opts.redirectOn401 !== false;
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+            const res = await fetch(url, Object.assign({}, opts, { signal: controller.signal }));
+            clearTimeout(timer);
+
+            const status = res.status;
+            let data = null;
+            const ct = res.headers.get('content-type') || '';
+            if (ct.indexOf('application/json') !== -1) {
+                try { data = await res.json(); } catch (_) { data = null; }
+            } else {
+                try { data = await res.text(); } catch (_) { data = null; }
+            }
+
+            if (status === 401 && redirectOn401) {
+                hideBanner();
+                window.location.href = '/';
+                return { ok: false, status: 401, data: null };
+            }
+
+            if (status >= 500) {
+                const msg = (data && (data.error || data.message)) || ('Server error ' + status);
+                if (!silent) showBanner('⚠ ' + msg);
+                return { ok: false, status: status, data: data };
+            }
+
+            return { ok: status >= 200 && status < 300, status: status, data: data };
+        } catch (err) {
+            clearTimeout(timer);
+            if (err && err.name === 'AbortError') {
+                if (!silent) showBanner('⏱ Request timeout — el servidor no respondió en ' + Math.round(timeoutMs / 1000) + 's');
+                return { ok: false, status: 0, data: null, timeout: true };
+            }
+            if (!silent) showBanner('🌐 Sin conexión con el servidor');
+            return { ok: false, status: 0, data: null, networkError: true };
+        }
+    }
+
+    window.apiFetch = apiFetch;
+    window.apiToast = apiToast;
+    window.apiHideBanner = hideBanner;
+})();
+</script>

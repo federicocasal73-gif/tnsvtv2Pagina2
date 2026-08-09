@@ -403,27 +403,14 @@
 
     <script>
     async function loadDashboard() {
-        try {
-            // Fetch tasks
-            const tasksRes = await fetch('/sanctum/api/tasks');
-            const tasksData = await tasksRes.json();
-            if (tasksData.success) {
-                renderTasks(tasksData.tasks);
-                document.getElementById('kpi-pnl-meta').textContent = `${tasksData.activeCount} activas`;
-            }
-
-            // Fetch system status
-            const monRes = await fetch('/sanctum/api/monitoring/status');
-            if (monRes.ok) {
-                const monData = await monRes.json();
-                if (monData.success) {
-                    renderSystemStatus(monData.data);
-                }
-            }
-
+        // Tasks (server returns {success, tasks, activeCount})
+        const tasksRes = await apiFetch('/sanctum/api/tasks');
+        if (tasksRes.ok && tasksRes.data && tasksRes.data.success) {
+            renderTasks(tasksRes.data.tasks);
+            document.getElementById('kpi-pnl-meta').textContent = `${tasksRes.data.activeCount} activas`;
             // Render recent signals
-            if (tasksData.tasks && tasksData.tasks.length > 0) {
-                document.getElementById('signal-list').innerHTML = tasksData.tasks.slice(0, 5).map(t => `
+            if (tasksRes.data.tasks && tasksRes.data.tasks.length > 0) {
+                document.getElementById('signal-list').innerHTML = tasksRes.data.tasks.slice(0, 5).map(t => `
                     <div class="flex items-center justify-between p-2 rounded glass-card-elev text-sm">
                         <span class="truncate">${escapeHtml(t.title)}</span>
                         <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Active' : 'Inactive'}</span>
@@ -432,8 +419,17 @@
             } else {
                 document.getElementById('signal-list').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin actividad reciente</p>';
             }
-        } catch (e) {
-            console.error(e);
+        } else {
+            document.getElementById('task-list').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-sm">Sin datos disponibles</p>';
+            document.getElementById('signal-list').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin datos disponibles</p>';
+        }
+
+        // System status
+        const monRes = await apiFetch('/sanctum/api/monitoring/status', { silent: true });
+        if (monRes.ok && monRes.data && monRes.data.success) {
+            renderSystemStatus(monRes.data.data);
+        } else {
+            document.getElementById('system-status').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin datos disponibles</p>';
         }
     }
 
@@ -490,22 +486,18 @@
             errEl.classList.remove('hidden');
             return;
         }
-        try {
-            const r = await fetch('/sanctum/api/tasks', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, orden, active })
-            });
-            const data = await r.json();
-            if (data.success) {
-                closeCreateTask();
-                loadDashboard();
-            } else {
-                errEl.textContent = data.error || 'Error desconocido';
-                errEl.classList.remove('hidden');
-            }
-        } catch (e) {
-            errEl.textContent = 'Error de red: ' + e.message;
+        const r = await apiFetch('/sanctum/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, orden, active })
+        });
+        if (r.ok && r.data && r.data.success) {
+            if (window.apiToast) apiToast('Tarea creada', 'success');
+            closeCreateTask();
+            loadDashboard();
+        } else {
+            const msg = (r.data && (r.data.error || r.data.message)) || (r.timeout ? 'Timeout' : r.networkError ? 'Sin conexión' : 'Error');
+            errEl.textContent = msg;
             errEl.classList.remove('hidden');
         }
     }
