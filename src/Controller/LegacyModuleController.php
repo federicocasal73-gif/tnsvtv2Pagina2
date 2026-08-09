@@ -39,17 +39,8 @@ class LegacyModuleController extends AbstractController
     // /calendar migrated to SanctumModuleController::calendar()
 
 
-    #[Route('/diario', name: 'legacy_diario', methods: ['GET'])]
-    public function diario(): Response
-    {
-        return $this->render('legacy/redirect.html.twig', [
-            'title' => 'Diario Personal',
-            'icon' => 'menu_book',
-            'description' => 'Tu diario privado con reflexiones y bitácora',
-            'legacy_path' => '/diary',
-            'features' => ['Entradas privadas', 'Reflexiones', 'Bitácora', 'Privacidad'],
-        ]);
-    }
+    // /diario migrated to SanctumModuleController::diary()
+
 
     #[Route('/trading', name: 'legacy_trading', methods: ['GET'])]
     public function trading(): Response

@@ -1,0 +1,283 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Diario Personal · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Diario Personal{% endblock %}
+{% block topbar_subtitle %}Tu bitácora privada con reflexiones y pensamientos cifrados.{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    {# ─── Setup notice if no encryption key ─── #}
+    <div id="diary-setup-banner" class="hidden glass-card-elev p-4 mb-4" style="border-color: rgba(251, 191, 36, 0.4);">
+        <div class="flex items-start gap-3">
+            <span class="material-symbols-elev text-amber-400">lock</span>
+            <div class="flex-1">
+                <h3 class="font-semibold text-sm">Configurar cifrado del diario</h3>
+                <p class="text-xs text-[var(--outline-elev)] mt-1">
+                    Tu diario se almacena cifrado de extremo a extremo. Necesitás configurar una clave maestra.
+                </p>
+                <div class="mt-3 flex gap-2">
+                    <input id="diary-master-key" type="password" placeholder="Clave maestra (mínimo 8 caracteres)"
+                           class="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] text-sm" />
+                    <button id="diary-setup-btn" class="btn-primary">Configurar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# ─── Composer ─── #}
+    <div class="glass-card-elev p-4 mb-4">
+        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
+            <span class="material-symbols-elev text-[var(--gold-elev)]">edit_note</span>
+            Nueva entrada
+        </h3>
+        <input id="entry-title" type="text" placeholder="Título (opcional)" maxlength="120"
+               class="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] mb-2" />
+        <textarea id="entry-body" rows="6" placeholder="Escribí lo que sentís, aprendiste, o querés recordar. Esto se cifra antes de salir de tu navegador."
+                  class="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] resize-none"
+                  style="font-family: inherit;"></textarea>
+        <div class="flex items-center justify-end gap-2 mt-3">
+            <button id="entry-save" class="btn-primary" disabled>
+                <span class="material-symbols-elev align-middle text-sm">lock</span>
+                Cifrar y guardar
+            </button>
+        </div>
+    </div>
+
+    {# ─── Entries ─── #}
+    <div id="diary-entries" class="space-y-3">
+        <p class="text-center text-[var(--outline-elev)] py-8">Cargando entradas...</p>
+    </div>
+</div>
+
+<style>
+.diary-entry { padding:1rem; cursor:pointer; transition:background 0.15s; }
+.diary-entry:hover { background:var(--glass-bg-elev); }
+.diary-title { font-weight:600; font-size:0.9375rem; margin-bottom:0.25rem; }
+.diary-preview { font-size:0.8125rem; color:var(--outline-elev); line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.diary-time { font-size:0.7rem; color:var(--outline-elev); margin-top:0.5rem; }
+.diary-locked { color:var(--outline-elev); font-style:italic; font-size:0.8125rem; }
+.diary-actions { display:flex; gap:0.5rem; margin-top:0.5rem; }
+.diary-action { padding:0.25rem 0.5rem; font-size:0.7rem; background:transparent; border:1px solid var(--glass-border-elev); color:var(--on-surface-variant-elev); border-radius:0.25rem; cursor:pointer; }
+.diary-action:hover { color:var(--gold-elev); border-color:var(--gold-elev); }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const listEl = document.getElementById('diary-entries');
+    const titleEl = document.getElementById('entry-title');
+    const bodyEl = document.getElementById('entry-body');
+    const saveBtn = document.getElementById('entry-save');
+    const setupBanner = document.getElementById('diary-setup-banner');
+    const masterKeyEl = document.getElementById('diary-master-key');
+    const setupBtn = document.getElementById('diary-setup-btn');
+    const me = () => (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // ─── Encryption helpers (AES-GCM via WebCrypto) ───
+    let masterKey = null;
+
+    async function deriveKey(passphrase) {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey(
+            'raw', enc.encode(passphrase), { name: 'PBKDF2' }, false, ['deriveKey']
+        );
+        return crypto.subtle.deriveKey(
+            { name: 'PBKDF2', salt: enc.encode('tnsvt-diary-v2'), iterations: 100000, hash: 'SHA-256' },
+            keyMaterial,
+            { name: 'AES-GCM', length: 256 },
+            true,
+            ['encrypt', 'decrypt']
+        );
+    }
+
+    async function encryptText(plaintext, key) {
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const enc = new TextEncoder();
+        const ciphertext = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv: iv },
+            key,
+            enc.encode(plaintext)
+        );
+        return {
+            encrypted: btoa(String.fromCharCode(...new Uint8Array(ciphertext))),
+            iv: btoa(String.fromCharCode(...iv))
+        };
+    }
+
+    async function decryptText(encryptedB64, ivB64, key) {
+        try {
+            const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
+            const ciphertext = Uint8Array.from(atob(encryptedB64), c => c.charCodeAt(0));
+            const plaintext = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                ciphertext
+            );
+            return new TextDecoder().decode(plaintext);
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // ─── Setup ───
+    async function checkSetup() {
+        const r = await apiFetch('/api/diary/setup?code=' + me());
+        if (r.ok && r.data) {
+            const token = Array.isArray(r.data) ? r.data.setup_token : (r.data.setup_token || null);
+            const iv = Array.isArray(r.data) ? r.data.setup_iv : (r.data.setup_iv || null);
+            if (!token) {
+                setupBanner.classList.remove('hidden');
+                saveBtn.disabled = true;
+            } else {
+                setupBanner.classList.add('hidden');
+                saveBtn.disabled = false;
+            }
+        }
+    }
+
+    setupBtn.addEventListener('click', async () => {
+        const pass = masterKeyEl.value;
+        if (pass.length < 8) {
+            if (window.apiToast) apiToast('La clave debe tener al menos 8 caracteres', 'error');
+            return;
+        }
+        masterKey = await deriveKey(pass);
+        // Derive a stable token from the key to store on server
+        const rawKey = await crypto.subtle.exportKey('raw', masterKey);
+        const hash = await crypto.subtle.digest('SHA-256', rawKey);
+        const tokenB64 = btoa(String.fromCharCode(...new Uint8Array(hash)));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const ivB64 = btoa(String.fromCharCode(...iv));
+
+        const r = await apiFetch('/api/diary/setup?code=' + me(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: me(), setup_token: tokenB64, setup_iv: ivB64 })
+        });
+        if (r.ok && r.data && (r.data.success || Array.isArray(r.data))) {
+            if (window.apiToast) apiToast('Clave maestra configurada', 'success');
+            setupBanner.classList.add('hidden');
+            saveBtn.disabled = false;
+            await loadEntries();
+        } else {
+            if (window.apiToast) apiToast('Error al configurar', 'error');
+        }
+    });
+
+    // ─── Load entries ───
+    async function loadEntries() {
+        listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Cargando entradas...</p>';
+        const r = await apiFetch('/api/diary?code=' + me());
+        if (!r.ok || !r.data) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin datos disponibles</p>';
+            return;
+        }
+        const data = Array.isArray(r.data) ? { entries: r.data } : r.data;
+        const entries = data.entries || [];
+        if (entries.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas. ¡Empezá tu diario cifrado arriba!</p>';
+            return;
+        }
+        listEl.innerHTML = entries.map(e => `
+            <article class="glass-card-elev diary-entry" data-id="${e.id}">
+                <div class="diary-locked">🔒 Entrada cifrada — click para descifrar</div>
+                <div class="diary-time">${escapeHtml(new Date(e.created_at).toLocaleString())}</div>
+            </article>
+        `).join('');
+
+        listEl.querySelectorAll('.diary-entry').forEach(el => {
+            el.addEventListener('click', () => unlockEntry(parseInt(el.dataset.id)));
+        });
+    }
+
+    async function unlockEntry(id) {
+        if (!masterKey) {
+            const pass = prompt('Ingresá tu clave maestra para descifrar:');
+            if (!pass) return;
+            masterKey = await deriveKey(pass);
+        }
+        const r = await apiFetch('/api/diary?code=' + me());
+        if (!r.ok || !r.data) return;
+        const data = Array.isArray(r.data) ? { entries: r.data } : r.data;
+        const entry = (data.entries || []).find(e => e.id === id);
+        if (!entry) return;
+        const plaintext = await decryptText(entry.encrypted_data, entry.iv, masterKey);
+        if (plaintext === null) {
+            if (window.apiToast) apiToast('Clave incorrecta', 'error');
+            return;
+        }
+        const lines = plaintext.split('\n');
+        const title = lines[0].startsWith('#') ? lines.shift().slice(1).trim() : '(sin título)';
+        const body = lines.join('\n').trim().slice(0, 200);
+        const el = listEl.querySelector(`[data-id="${id}"]`);
+        el.innerHTML = `
+            <div class="diary-title">${escapeHtml(title)}</div>
+            <div class="diary-preview">${escapeHtml(body) || '<em>(vacío)</em>'}</div>
+            <div class="diary-time">${escapeHtml(new Date(entry.created_at).toLocaleString())}</div>
+            <div class="diary-actions">
+                <button class="diary-action" data-action="delete" data-id="${id}">Eliminar</button>
+            </div>
+        `;
+        el.querySelector('[data-action="delete"]').addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            deleteEntry(id);
+        });
+    }
+
+    async function saveEntry() {
+        const title = titleEl.value.trim();
+        const body = bodyEl.value.trim();
+        if (!title && !body) {
+            if (window.apiToast) apiToast('Entrada vacía', 'error');
+            return;
+        }
+        const plaintext = (title ? '# ' + title + '\n\n' : '') + body;
+        const { encrypted, iv } = await encryptText(plaintext, masterKey);
+        const r = await apiFetch('/api/diary?code=' + me(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: me(), encrypted_data: encrypted, iv: iv })
+        });
+        if (r.ok && r.data && (r.data.success || r.data.id || Array.isArray(r.data))) {
+            titleEl.value = '';
+            bodyEl.value = '';
+            if (window.apiToast) apiToast('Entrada cifrada y guardada', 'success');
+            await loadEntries();
+        } else {
+            if (window.apiToast) apiToast('Error al guardar', 'error');
+        }
+    }
+
+    async function deleteEntry(id) {
+        if (!confirm('¿Eliminar esta entrada del diario? (Se perderá el cifrado y no se puede recuperar)')) return;
+        const r = await apiFetch('/api/diary/' + id + '?code=' + me(), { method: 'DELETE' });
+        if (r.ok && r.data && (r.data.success || Array.isArray(r.data))) {
+            if (window.apiToast) apiToast('Entrada eliminada', 'success');
+            await loadEntries();
+        } else {
+            if (window.apiToast) apiToast('Error al eliminar', 'error');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        saveBtn.addEventListener('click', saveEntry);
+
+        function boot() {
+            if (me()) {
+                checkSetup();
+                loadEntries();
+            } else {
+                setTimeout(boot, 1000);
+            }
+        }
+        if (window.TNSVT_USER) boot();
+        else window.addEventListener('tnsvt:user-loaded', boot, { once: true });
+    });
+})();
+</script>
+{% endblock %}

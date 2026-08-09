@@ -40,4 +40,10 @@ class SanctumModuleController extends AbstractController
     {
         return $this->render('sanctum/feed.html.twig');
     }
+
+    #[Route('/diario', name: 'sanctum_diary', methods: ['GET'])]
+    public function diary(): Response
+    {
+        return $this->render('sanctum/diary.html.twig');
+    }
 }
