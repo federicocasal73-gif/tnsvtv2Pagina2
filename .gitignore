@@ -22,3 +22,7 @@
 /phpunit.xml
 /.phpunit.cache/
 ###< phpunit/phpunit ###
+
+###> tnsvt v2 dev artifacts ###
+/public/index_dev.php
+###< tnsvt v2 dev artifacts ###

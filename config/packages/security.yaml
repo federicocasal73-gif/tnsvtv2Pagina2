@@ -40,7 +40,6 @@ security:
         - { path: ^/api/link-preview/preview, roles: PUBLIC_ACCESS }
         # Sanctum admin panel
         - { path: ^/sanctum, roles: ROLE_ADMIN }
-        - { path: ^/trono, roles: ROLE_ADMIN }
         # Everything else under /api requires authentication
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
