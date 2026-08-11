@@ -1,0 +1,180 @@
+/* ═══════════════════════════════════════════════════════════════
+   ⛧ TNSVT v3.6 — TOPBAR CSS
+   ═══════════════════════════════════════════════════════════════ */
+
+.tnsvt-topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 9990;
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-left: max(20px, env(safe-area-inset-left, 20px));
+  padding-right: max(20px, env(safe-area-inset-right, 20px));
+  background: linear-gradient(180deg,
+    rgba(10,5,22,0.92) 0%,
+    rgba(10,5,22,0.5) 70%,
+    transparent 100%);
+  border-bottom: 1px solid rgba(212,175,55,0.12);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Hamburger */
+.tnsvt-hamburger {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: rgba(20,8,42,0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(212,175,55,0.35);
+  color: #f0d97e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; cursor: pointer;
+  box-shadow: 0 0 18px rgba(212,175,55,0.15);
+  transition: all .25s ease;
+  flex-shrink: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: hover) {
+  .tnsvt-hamburger:hover {
+    border-color: #f0d97e; transform: scale(1.06);
+    box-shadow: 0 0 24px rgba(212,175,55,0.4);
+  }
+}
+.tnsvt-hamburger:active { transform: scale(0.94); }
+
+/* Brand */
+.tnsvt-brand {
+  text-decoration: none;
+  display: flex; flex-direction: column; gap: 3px;
+  color: inherit; line-height: 1;
+  flex: 1;
+}
+.tnsvt-brand h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 1.55rem; font-weight: 700;
+  color: #f0d97e; margin: 0;
+  letter-spacing: 3px; line-height: 1;
+  text-shadow: 0 0 12px rgba(212,175,55,0.3);
+  white-space: nowrap; flex-shrink: 0;
+  padding-left: 2px;
+}
+.tnsvt-brand-sub {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.58rem;
+  color: #a499b8; letter-spacing: 3px;
+}
+
+/* Right side */
+.tnsvt-topbar-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 12px;
+}
+
+/* Notif */
+.tnsvt-notif-btn {
+  position: relative;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: rgba(20,8,42,0.7);
+  border: 1px solid rgba(212,175,55,0.4);
+  color: #f0d97e;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; cursor: pointer;
+  box-shadow: 0 0 16px rgba(212,175,55,0.2);
+  transition: all .25s ease;
+  touch-action: manipulation;
+}
+@media (hover: hover) {
+  .tnsvt-notif-btn:hover { transform: scale(1.06); border-color: #f0d97e; }
+}
+.tnsvt-notif-btn:active { transform: scale(0.94); }
+.tnsvt-notif-badge {
+  position: absolute; top: -3px; right: -3px;
+  background: #ff3b30; color: #fff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.55rem; font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 100px;
+  box-shadow: 0 0 8px rgba(255,59,48,0.6);
+  min-width: 16px; text-align: center;
+}
+
+/* Admin block */
+.tnsvt-admin-block {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 14px;
+  background: rgba(20,8,42,0.6);
+  border: 1px solid rgba(138,60,255,0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all .25s ease;
+  touch-action: manipulation;
+}
+@media (hover: hover) {
+  .tnsvt-admin-block:hover {
+    border-color: #8a3cff;
+    box-shadow: 0 0 14px rgba(138,60,255,0.25);
+  }
+}
+.tnsvt-admin-info {
+  display: flex; flex-direction: column; gap: 2px;
+  text-align: right;
+}
+.tnsvt-admin-tag {
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem; font-weight: 700;
+  color: #8a3cff; line-height: 1;
+}
+.tnsvt-admin-sub {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  color: #a499b8; letter-spacing: 1px;
+}
+.tnsvt-admin-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f0d97e, #b8860b);
+  display: flex; align-items: center; justify-content: center;
+  color: #000;
+  font-family: 'Cinzel', serif;
+  font-weight: 700; font-size: 1.1rem;
+  box-shadow: 0 0 16px rgba(212,175,55,0.4);
+  flex-shrink: 0; overflow: hidden;
+}
+.tnsvt-admin-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.tnsvt-login-btn {
+  padding: 9px 18px;
+  background: linear-gradient(180deg, #f0d97e, #b8860b);
+  color: #000;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 1.5px;
+  border-radius: 10px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(212,175,55,0.35);
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .tnsvt-topbar { padding: 12px 18px; gap: 10px; }
+  .tnsvt-brand h1 { font-size: 1.25rem; letter-spacing: 2px; }
+  .tnsvt-brand-sub { font-size: 0.5rem; letter-spacing: 2px; }
+}
+
+@media (max-width: 600px) {
+  .tnsvt-topbar { padding: 10px 12px; gap: 8px; }
+  .tnsvt-hamburger { width: 40px; height: 40px; font-size: 1.05rem; }
+  .tnsvt-brand h1 { font-size: 1.05rem; letter-spacing: 1.5px; }
+  .tnsvt-brand-sub { display: none; }
+  .tnsvt-notif-btn { width: 38px; height: 38px; font-size: 0.95rem; }
+  .tnsvt-admin-block { padding: 4px 8px 4px 10px; gap: 7px; }
+  .tnsvt-admin-tag { font-size: 0.7rem; }
+  .tnsvt-admin-sub { display: none; }
+  .tnsvt-admin-avatar { width: 34px; height: 34px; font-size: 0.95rem; }
+}
+
+@media (max-width: 380px) {
+  .tnsvt-admin-info { display: none; }
+}

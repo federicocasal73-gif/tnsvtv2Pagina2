@@ -1,0 +1,20 @@
+/* ===== OFFLINE BANNER (Phase 1 offline-resilient APK) ===== */
+#tnsvt-offline-banner {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 99999;
+  padding: 10px 16px; display: none; align-items: center; justify-content: center;
+  gap: 10px; font-size: 0.78rem; font-weight: 600; text-align: center;
+  background: linear-gradient(90deg, #c327fb, #8a3cff); color: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5); padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  animation: tnsvtBannerSlide 0.3s ease;
+}
+#tnsvt-offline-banner.show { display: flex; }
+#tnsvt-offline-banner.warn { background: linear-gradient(90deg, #d97706, #f59e0b); }
+#tnsvt-offline-banner > button {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+  color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem;
+  cursor: pointer; flex-shrink: 0;
+}
+@keyframes tnsvtBannerSlide {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

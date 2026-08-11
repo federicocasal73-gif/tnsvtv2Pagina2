@@ -11,9 +11,22 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/elev.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/elev-imports/legacy-glowup.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/elev-imports/legacy-app.css') }}" />
     <style>
+        :root {
+            --gold: #f2ca50;
+            --gold-bright: #ffe088;
+            --violet: #8a3cff;
+            --violet-glow: rgba(138, 60, 255, 0.3);
+            --bg-void: #050308;
+            --bg-deep: #100b1c;
+        }
         body {
-            background: linear-gradient(135deg, #050308 0%, #100b1c 50%, #16121f 100%);
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(138, 60, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(242, 202, 80, 0.06) 0%, transparent 40%),
+                linear-gradient(135deg, #050308 0%, #100b1c 50%, #16121f 100%);
             color: #e9def6;
             min-height: 100vh;
             display: flex;
@@ -21,6 +34,25 @@
             justify-content: center;
             padding: 2rem;
             font-family: 'Inter', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f2ca50' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            animation: subtle-drift 120s linear infinite;
+        }
+        @keyframes subtle-drift {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(-30px, -20px); }
+            100% { transform: translate(0, 0); }
         }
         .home-container {
             max-width: 1200px;
@@ -66,10 +98,26 @@
             max-width: 420px;
             margin: 2rem auto;
             padding: 2rem;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(242, 202, 80, 0.15);
             border-radius: 1rem;
+            box-shadow:
+                0 0 40px rgba(242, 202, 80, 0.05),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+            border-radius: 2px;
         }
         .login-card h2 {
             font-family: 'Cinzel', serif;
@@ -111,19 +159,22 @@
             width: 100%;
             padding: 0.875rem;
             margin-top: 0.5rem;
-            background: linear-gradient(135deg, #f2ca50 0%, #ffe088 100%);
+            background: linear-gradient(135deg, #f2ca50 0%, #ffe088 50%, #f2ca50 100%);
+            background-size: 200% 200%;
             color: #241a00;
             font-weight: 700;
             font-size: 0.95rem;
             border: none;
             border-radius: 0.5rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             font-family: inherit;
+            box-shadow: 0 4px 15px rgba(242, 202, 80, 0.25);
         }
         .login-submit:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+            transform: translateY(-2px);
+            background-position: 100% 100%;
+            box-shadow: 0 8px 30px rgba(242, 202, 80, 0.45);
         }
         .login-submit:disabled {
             opacity: 0.5;
@@ -186,11 +237,14 @@
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1rem;
             margin-top: 3rem;
+            position: relative;
+            z-index: 1;
         }
         .feature {
-            background: rgba(255, 255, 255, 0.03);
+            background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(242, 202, 80, 0.12);
             border-radius: 0.75rem;
             padding: 1.5rem;
             text-decoration: none;
@@ -198,11 +252,21 @@
             transition: all 0.3s ease;
             display: block;
             text-align: center;
+            position: relative;
+        }
+        .feature::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, transparent 60%, rgba(242, 202, 80, 0.08) 100%);
+            pointer-events: none;
         }
         .feature:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(212, 175, 55, 0.4);
-            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(242, 202, 80, 0.08) 0%, rgba(138, 60, 255, 0.05) 100%);
+            border-color: rgba(242, 202, 80, 0.35);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(138, 60, 255, 0.15);
         }
         .feature-icon {
             font-size: 2rem;

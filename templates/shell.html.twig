@@ -13,12 +13,14 @@
 
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/elev.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/elev-imports/legacy-glowup.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/elev-imports/legacy-app.css') }}" />
 
     {% block stylesheets %}{% endblock %}
     <style>
         .sanctum-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: var(--on-surface-variant-elev); font-size: 0.875rem; font-weight: 500; border-left: 2px solid transparent; transition: all 0.2s ease; text-decoration: none; }
-        .sanctum-link:hover { background: var(--glass-bg-elev); color: var(--on-surface-elev); }
-        .sanctum-link.active { background: var(--glass-bg-strong-elev); color: var(--gold-elev); border-left-color: var(--gold-elev); }
+        .sanctum-link:hover { background: linear-gradient(90deg, rgba(242, 202, 80, 0.06) 0%, transparent 100%); color: var(--on-surface-elev); border-left-color: rgba(242, 202, 80, 0.2); }
+        .sanctum-link.active { background: linear-gradient(90deg, rgba(242, 202, 80, 0.12) 0%, rgba(242, 202, 80, 0.02) 100%); color: var(--gold-elev); border-left-color: var(--gold-elev); box-shadow: inset 0 0 20px rgba(242, 202, 80, 0.05); }
         .kpi-card { background: var(--glass-bg-elev); backdrop-filter: blur(20px); border: 1px solid var(--glass-border-elev); border-radius: 0.75rem; padding: 1.25rem 1.5rem; transition: all 0.3s ease; }
         .kpi-card:hover { border-color: rgba(212, 175, 55, 0.3); background: var(--glass-bg-strong-elev); }
         .kpi-label { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--outline-elev); margin: 0; }
@@ -159,17 +161,18 @@
     </aside>
 
     <main class="flex-1 flex flex-col">
-        <header class="h-16 bg-[var(--surface-elev)] border-b border-[var(--outline-variant-elev)] flex items-center justify-between px-6">
-            <div>
-                <h2 class="text-xl font-semibold text-[var(--on-surface-elev)]">{% block topbar_title %}Command Center{% endblock %}</h2>
-                <p class="text-xs text-[var(--outline-elev)]">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="btn-elev-ghost" title="Notificaciones">
-                    <span class="material-symbols-elev">notifications</span>
-                </button>
-            </div>
-        </header>
+    <header class="h-16 bg-gradient-to-r from-[var(--surface-elev)] via-[rgba(242,202,80,0.02)] to-[var(--surface-elev)] border-b border-[var(--outline-variant-elev)] flex items-center justify-between px-6">
+        <div>
+            <h2 class="text-xl font-semibold text-[var(--on-surface-elev)] tracking-wide">{% block topbar_title %}Command Center{% endblock %}</h2>
+            <p class="text-xs text-[var(--outline-elev)]">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="btn-elev-ghost relative" title="Notificaciones">
+                <span class="material-symbols-elev">notifications</span>
+                <span id="header-notif-badge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[var(--gold-elev)] text-black text-[10px] font-bold px-1">0</span>
+            </button>
+        </div>
+    </header>
 
         <div class="flex-1 overflow-auto p-6">
             {% block content %}{% endblock %}

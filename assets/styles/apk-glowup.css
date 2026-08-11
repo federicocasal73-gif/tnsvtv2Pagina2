@@ -1,0 +1,712 @@
+/* ============================================================
+   T.N.S.V.T — APK Glow-Up CSS
+   Touch-optimized animations — APK ONLY (body.is-apk)
+   No layout/resolution changes — animations and visual polish only
+   ============================================================ */
+
+/* ── KEYFRAMES ──────────────────────────────────────────────── */
+@keyframes apk-gateFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+@keyframes apk-shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+@keyframes apk-hexPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.03); opacity: 0.9; }
+}
+@keyframes apk-fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes apk-modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes apk-glowPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,215,0,0.1); }
+  50% { box-shadow: 0 0 16px rgba(255,215,0,0.25); }
+}
+@keyframes apk-violetPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(138,60,255,0.1); }
+  50% { box-shadow: 0 0 14px rgba(138,60,255,0.2); }
+}
+
+/* ── LOGIN ──────────────────────────────────────────────────── */
+body.is-apk .gate-box {
+  animation: apk-gateFloat 6s ease-in-out infinite !important;
+}
+body.is-apk .gate-box h2 {
+  background: linear-gradient(135deg, #fff 20%, var(--gold-bright) 50%, #fff 80%) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: apk-shimmer 4s ease-in-out infinite !important;
+}
+body.is-apk .gate-box input:focus {
+  border-color: var(--gold-bright) !important;
+  box-shadow: 0 0 0 3px rgba(255,215,0,0.1), 0 0 16px rgba(255,215,0,0.12) !important;
+}
+@media (hover: none) {
+  body.is-apk .login-btn:active {
+    transform: scale(0.97) !important;
+    box-shadow: 0 0 20px rgba(138,60,255,0.3) !important;
+  }
+}
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+body.is-apk .tnsvt-topbar {
+  backdrop-filter: blur(12px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.3) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+}
+body.is-apk .tnsvt-brand h1 {
+  background: linear-gradient(135deg, #fff 30%, var(--gold-bright) 60%, #fff 90%) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: apk-shimmer 6s ease-in-out infinite !important;
+}
+@media (hover: none) {
+  body.is-apk .tnsvt-notif-btn:active {
+    background: rgba(138,60,255,0.2) !important;
+    box-shadow: 0 0 12px rgba(138,60,255,0.2) !important;
+  }
+}
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+body.is-apk .trading-sidebar .sidebar-btn.active {
+  border-color: var(--gold-bright) !important;
+  box-shadow: 0 0 12px rgba(255,215,0,0.1), inset 0 0 20px rgba(212,175,55,0.04) !important;
+  color: var(--gold-bright) !important;
+}
+@media (hover: none) {
+  body.is-apk .sidebar-btn:active {
+    background: rgba(35,18,65,0.95) !important;
+    border-color: rgba(212,175,55,0.3) !important;
+  }
+}
+
+/* ── HUB HEXAGONE ───────────────────────────────────────────── */
+body.is-apk .hexagon-border {
+  position: relative !important;
+}
+body.is-apk .hexagon-border::after {
+  content: '' !important;
+  position: absolute !important;
+  inset: -5px !important;
+  background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(138,60,255,0.15)) !important;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%) !important;
+  z-index: -1 !important;
+  animation: apk-hexPulse 3s ease-in-out infinite !important;
+}
+
+/* ── HUB NODES ──────────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .rect-node:active {
+    background: rgba(20,12,40,0.95) !important;
+    border-color: var(--gold-bright) !important;
+    box-shadow: 0 0 16px rgba(255,215,0,0.12) !important;
+    transform: scale(0.96) !important;
+  }
+}
+body.is-apk .rect-node.completed {
+  border-color: var(--gold-bright) !important;
+  color: #fff !important;
+}
+body.is-apk .rect-node.active-learning {
+  animation: apk-glowPulse 2s ease-in-out infinite !important;
+}
+
+/* ── HUB TRIGGER CIRCLE ─────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .bottom-trigger-circle:active {
+    transform: scale(0.9) !important;
+    box-shadow: 0 0 20px rgba(138,60,255,0.25) !important;
+  }
+}
+body.is-apk .bottom-trigger-circle.ready-pulse {
+  animation: apk-glowPulse 1.5s ease-in-out infinite !important;
+}
+
+/* ── HUB BRANDING ───────────────────────────────────────────── */
+body.is-apk .main-logo-text {
+  background: linear-gradient(135deg, #fff 20%, var(--gold-bright) 50%, #fff 80%) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: apk-shimmer 5s ease-in-out infinite !important;
+}
+
+/* ── SVG LINES ──────────────────────────────────────────────── */
+body.is-apk .path-line.illuminated {
+  filter: drop-shadow(0 0 6px var(--gold-bright)) !important;
+}
+
+/* ── TRADING MAIN ───────────────────────────────────────────── */
+body.is-apk .trading-main {
+  position: relative !important;
+}
+body.is-apk .trading-main::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.25), transparent) !important;
+}
+
+/* ── TAB CONTENT ────────────────────────────────────────────── */
+body.is-apk .tab-content.active {
+  animation: apk-fadeSlideIn 0.35s ease both !important;
+}
+
+/* ── FEED CARDS ─────────────────────────────────────────────── */
+body.is-apk .signal-card-wrap {
+  animation: apk-fadeSlideIn 0.3s ease both !important;
+}
+@media (hover: none) {
+  body.is-apk .signal-card-wrap:active {
+    border-color: rgba(212,175,55,0.3) !important;
+  }
+}
+
+/* ── FEED PILLS ─────────────────────────────────────────────── */
+body.is-apk .feed-cat.active {
+  box-shadow: 0 0 10px rgba(255,215,0,0.15) !important;
+}
+@media (hover: none) {
+  body.is-apk .feed-cat:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+/* ── CREATE POST BOX ────────────────────────────────────────── */
+body.is-apk .create-post-box:focus-within {
+  border-color: rgba(138,60,255,0.35) !important;
+  box-shadow: 0 0 24px rgba(138,60,255,0.06) !important;
+}
+body.is-apk .create-post-box textarea:focus {
+  border-color: var(--gold-bright) !important;
+}
+
+/* ── POST BUTTON ────────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .post-btn:active {
+    transform: scale(0.97) !important;
+    box-shadow: 0 0 16px rgba(255,215,0,0.25) !important;
+  }
+}
+
+/* ── SIGNAL TRADE ───────────────────────────────────────────── */
+body.is-apk .signal-buy {
+  box-shadow: 0 0 6px rgba(52,199,89,0.12) !important;
+}
+body.is-apk .signal-sell {
+  box-shadow: 0 0 6px rgba(255,59,48,0.12) !important;
+}
+
+/* ── ACTIONS ────────────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .signal-action:active {
+    background: rgba(255,215,0,0.08) !important;
+    color: var(--gold-bright) !important;
+  }
+  body.is-apk .signal-action.liked {
+    text-shadow: 0 0 6px rgba(255,215,0,0.3) !important;
+  }
+}
+
+/* ── COMMENTS ───────────────────────────────────────────────── */
+body.is-apk .comment-input-row input[type="text"]:focus {
+  border-color: var(--gold-bright) !important;
+}
+@media (hover: none) {
+  body.is-apk .comment-submit:active {
+    transform: scale(0.96) !important;
+    box-shadow: 0 0 12px rgba(138,60,255,0.25) !important;
+  }
+}
+
+/* ── JOURNAL STATS ──────────────────────────────────────────── */
+body.is-apk .tj-stat::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, currentColor, transparent) !important;
+  opacity: 0.7 !important;
+}
+@media (hover: none) {
+  body.is-apk .tj-stat:active {
+    transform: translateY(-1px) !important;
+  }
+}
+
+/* ── JOURNAL KPI ────────────────────────────────────────────── */
+body.is-apk .tj-kpi {
+  position: relative !important;
+  overflow: hidden !important;
+}
+body.is-apk .tj-kpi::after {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+body.is-apk .tj-kpi:focus-within::after,
+body.is-apk .tj-kpi:active::after {
+  opacity: 1 !important;
+}
+
+/* ── JOURNAL CHART BARS ─────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .tj-bar:active {
+    filter: brightness(1.2) !important;
+    transform: scaleY(1.05) !important;
+  }
+}
+
+/* ── JOURNAL CALENDAR ───────────────────────────────────────── */
+body.is-apk .tj-cal-cell.today {
+  box-shadow: 0 0 10px rgba(255,215,0,0.12) !important;
+}
+body.is-apk .tj-cal-cell.has-win {
+  box-shadow: 0 0 6px rgba(52,199,89,0.12) !important;
+}
+body.is-apk .tj-cal-cell.has-loss {
+  box-shadow: 0 0 6px rgba(255,59,48,0.12) !important;
+}
+@media (hover: none) {
+  body.is-apk .tj-cal-cell:active:not(.empty) {
+    transform: scale(1.05) !important;
+  }
+}
+
+/* ── FORMS FOCUS ────────────────────────────────────────────── */
+body.is-apk .tj-field input:focus,
+body.is-apk .tj-field select:focus,
+body.is-apk .tj-field textarea:focus,
+body.is-apk .journal-form input:focus,
+body.is-apk .journal-form select:focus,
+body.is-apk .journal-form textarea:focus,
+body.is-apk .tj-filter-input:focus,
+body.is-apk .admin-input:focus,
+body.is-apk .admin-textarea:focus,
+body.is-apk .admin-select:focus {
+  border-color: var(--gold-bright) !important;
+  box-shadow: 0 0 0 2px rgba(255,215,0,0.06) !important;
+}
+
+/* ── TASKS ──────────────────────────────────────────────────── */
+body.is-apk .task-card {
+  position: relative !important;
+  overflow: hidden !important;
+}
+body.is-apk .task-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important;
+  width: 3px !important; height: 100% !important;
+  background: linear-gradient(180deg, var(--violet), rgba(138,60,255,0.3)) !important;
+  opacity: 0.6 !important;
+}
+body.is-apk .task-card.completed {
+  border-color: rgba(52,199,89,0.3) !important;
+  background: rgba(52,199,89,0.03) !important;
+}
+@media (hover: none) {
+  body.is-apk .task-card:active {
+    border-color: rgba(138,60,255,0.3) !important;
+  }
+}
+body.is-apk .task-check {
+  transition: all 0.2s ease !important;
+}
+@media (hover: none) {
+  body.is-apk .task-check:active {
+    border-color: var(--gold-bright) !important;
+    box-shadow: 0 0 8px rgba(255,215,0,0.15) !important;
+  }
+}
+
+/* ── ACADEMIA CARDS ─────────────────────────────────────────── */
+body.is-apk .acad-card {
+  animation: apk-fadeSlideIn 0.3s ease both !important;
+}
+body.is-apk .acad-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+  z-index: 2 !important;
+}
+body.is-apk .acad-card:active::before,
+body.is-apk .acad-card:focus::before {
+  opacity: 0.7 !important;
+}
+
+/* ── MACRO CARDS ────────────────────────────────────────────── */
+body.is-apk .mc-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, transparent, rgba(138,60,255,0.4), transparent) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+body.is-apk .mc-card:active::before {
+  opacity: 0.6 !important;
+}
+@media (hover: none) {
+  body.is-apk .mc-flow-node:active {
+    transform: scale(0.97) !important;
+    box-shadow: 0 0 12px rgba(212,175,55,0.1) !important;
+  }
+}
+
+/* ── ACCORDION ──────────────────────────────────────────────── */
+body.is-apk .mc-accordion.open .mc-acc-num {
+  text-shadow: 0 0 10px rgba(255,215,0,0.3) !important;
+}
+@media (hover: none) {
+  body.is-apk .mc-accordion-hdr:active {
+    background: rgba(212,175,55,0.03) !important;
+  }
+}
+
+/* ── QUIZ OPTIONS ───────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .mc-quiz-opt:active {
+    border-color: var(--gold-bright) !important;
+    background: rgba(255,215,0,0.04) !important;
+    transform: translateX(3px) !important;
+  }
+}
+body.is-apk .mc-quiz-opt.correct {
+  box-shadow: 0 0 12px rgba(52,199,89,0.12) !important;
+}
+body.is-apk .mc-quiz-opt.wrong {
+  box-shadow: 0 0 12px rgba(255,59,48,0.12) !important;
+}
+
+/* ── NOTIFICATION PANEL ─────────────────────────────────────── */
+body.is-apk .notif-panel {
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 30px rgba(138,60,255,0.06) !important;
+}
+
+/* ── PUSH TOAST ─────────────────────────────────────────────── */
+body.is-apk .push-toast {
+  box-shadow: 0 10px 36px rgba(0,0,0,0.5), 0 0 24px rgba(138,60,255,0.08) !important;
+}
+
+/* ── MODALS ─────────────────────────────────────────────────── */
+body.is-apk .tj-day-inner,
+body.is-apk .admin-panel {
+  animation: apk-modalIn 0.3s ease both !important;
+}
+
+/* ── PHOTO SLOTS ────────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .tj-photo-slot:active {
+    border-color: var(--gold-bright) !important;
+    background: rgba(255,215,0,0.03) !important;
+  }
+}
+
+/* ── ADMIN BUTTONS ──────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .admin-btn-primary:active {
+    transform: scale(0.97) !important;
+    box-shadow: 0 0 16px rgba(255,215,0,0.25) !important;
+  }
+}
+
+/* ── TOOL BUTTONS ───────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .tj-tool-btn:active {
+    border-color: var(--gold-bright) !important;
+    color: var(--gold-bright) !important;
+  }
+}
+
+/* ── KEY CARDS ──────────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .key-card:active {
+    border-left-color: var(--gold-bright) !important;
+    transform: translateX(3px) !important;
+  }
+}
+
+/* ── SOCIAL CARDS ───────────────────────────────────────────── */
+body.is-apk .social-user-card {
+  animation: apk-fadeSlideIn 0.3s ease both !important;
+}
+@media (hover: none) {
+  body.is-apk .social-user-card:active {
+    border-color: rgba(138,60,255,0.3) !important;
+    transform: translateX(3px) !important;
+  }
+}
+
+/* ── GOLDEN RULE ────────────────────────────────────────────── */
+body.is-apk .mc-golden-rule {
+  position: relative !important;
+}
+body.is-apk .mc-golden-rule::before {
+  content: '' !important;
+  position: absolute !important;
+  inset: -1px !important;
+  background: linear-gradient(135deg, rgba(212,175,55,0.1), transparent, rgba(138,60,255,0.08)) !important;
+  opacity: 0 !important;
+  transition: opacity 0.4s ease !important;
+  pointer-events: none !important;
+}
+body.is-apk .mc-golden-rule:active::before {
+  opacity: 1 !important;
+}
+
+/* ── SUBTABS ────────────────────────────────────────────────── */
+body.is-apk .subtab-btn {
+  position: relative !important;
+}
+body.is-apk .subtab-btn::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: -1px !important; left: 50% !important; right: 50% !important;
+  height: 2px !important;
+  background: var(--gold-bright) !important;
+  transition: all 0.3s ease !important;
+}
+body.is-apk .subtab-btn.active::after,
+body.is-apk .subtab-btn:active::after {
+  left: 0 !important; right: 0 !important;
+}
+
+/* ── EQUITY CHART ───────────────────────────────────────────── */
+body.is-apk .tj-chart-area {
+  border: 1px solid rgba(212,175,55,0.06) !important;
+}
+
+/* ── PERIOD BUTTONS ─────────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .tj-period-btn:active {
+    background: rgba(212,175,55,0.15) !important;
+    color: var(--gold-bright) !important;
+  }
+  body.is-apk .tj-cperiod-btn:active {
+    background: rgba(212,175,55,0.15) !important;
+    color: var(--gold-bright) !important;
+  }
+}
+
+/* ── TJ TABS ────────────────────────────────────────────────── */
+body.is-apk .tj-tab.active {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03) !important;
+}
+
+/* ── MACRO CYCLE TABS ───────────────────────────────────────── */
+body.is-apk .mc-cycle-tab.active .c-num {
+  color: var(--gold-bright) !important;
+  text-shadow: 0 0 8px rgba(255,215,0,0.2) !important;
+}
+
+/* ── SCENARIO TABS ──────────────────────────────────────────── */
+body.is-apk .mc-scen-tab.active {
+  box-shadow: 0 0 8px rgba(255,215,0,0.1) !important;
+}
+
+/* ── FILTER CHIPS ───────────────────────────────────────────── */
+body.is-apk .cal-country-btn.active,
+body.is-apk .cal-impact-btn.active {
+  box-shadow: 0 0 8px rgba(255,215,0,0.08) !important;
+}
+
+/* ── ACADEMIA LESSON ITEMS ──────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .acad-lesson-item:active {
+    border-color: rgba(212,175,55,0.25) !important;
+    background: rgba(255,255,255,0.05) !important;
+  }
+}
+
+/* ── ADMIN COURSE ITEMS ─────────────────────────────────────── */
+@media (hover: none) {
+  body.is-apk .admin-course-item:active {
+    border-color: rgba(212,175,55,0.2) !important;
+  }
+}
+
+/* ── MANUSCRIPT QUOTE ───────────────────────────────────────── */
+body.is-apk .manuscript-quote {
+  text-shadow: 0 0 8px rgba(255,215,0,0.12) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MUSIC PLAYER — Consolidado en barra inferior (APK)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ocultar reproductores flotantes */
+body.is-apk #musicPlayer { display: none !important; }
+body.is-apk #musicPlayerMini { display: none !important; }
+
+/* Ocultar botón Expandir de la barra */
+body.is-apk .mpb-expand { display: none !important; }
+
+/* Botón loop en barra */
+body.is-apk .mpb-loop-btn {
+  background: rgba(138,60,255,0.12) !important;
+  border: 1px solid rgba(138,60,255,0.25) !important;
+  border-radius: 6px !important;
+  color: #c4a0ff !important;
+  cursor: pointer !important;
+  font-size: 0.8rem !important;
+  padding: 4px 6px !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+@media (hover: none) {
+  body.is-apk .mpb-loop-btn:active {
+    background: rgba(138,60,255,0.3) !important;
+    transform: scale(0.92) !important;
+  }
+}
+
+/* Botón playlist en barra */
+body.is-apk .mpb-queue-btn {
+  background: rgba(212,175,55,0.1) !important;
+  border: 1px solid rgba(212,175,55,0.25) !important;
+  border-radius: 6px !important;
+  color: var(--gold-bright) !important;
+  cursor: pointer !important;
+  font-size: 0.9rem !important;
+  padding: 4px 6px !important;
+  line-height: 1 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+@media (hover: none) {
+  body.is-apk .mpb-queue-btn:active {
+    background: rgba(212,175,55,0.25) !important;
+    transform: scale(0.92) !important;
+  }
+}
+
+/* Queue panel pegado arriba de la barra APK */
+body.is-apk #musicQueuePanel {
+  bottom: 64px !important;
+  right: 12px !important;
+  left: 12px !important;
+  max-height: 320px !important;
+  border-color: rgba(212,175,55,0.3) !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.5), 0 0 16px rgba(212,175,55,0.04) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MUSIC PLAYER — Glassmorphism Premium (APK)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Barra — glassmorphism (más ligero que web para batería) */
+body.is-apk #musicPlayerBar {
+  background: rgba(10,5,22,0.75) !important;
+  backdrop-filter: blur(16px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.3) !important;
+  border-top: 1px solid rgba(212,175,55,0.15) !important;
+  box-shadow:
+    0 -4px 24px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.03) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Borde gradiente inferior */
+body.is-apk #musicPlayerBar::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 0 !important; left: 0 !important; right: 0 !important;
+  height: 2px !important;
+  background: linear-gradient(90deg, var(--violet), var(--gold-bright), var(--violet)) !important;
+  background-size: 200% auto !important;
+  animation: mpbBorderGlow 4s linear infinite !important;
+  opacity: 0.5 !important;
+}
+
+/* Cover — glow dorado */
+body.is-apk .mpb-cover {
+  box-shadow: 0 0 10px rgba(212,175,55,0.2), 0 2px 6px rgba(0,0,0,0.4) !important;
+  border: 2px solid rgba(212,175,55,0.15) !important;
+}
+
+/* Título */
+body.is-apk .mpb-title {
+  color: var(--gold-bright) !important;
+  text-shadow: 0 0 6px rgba(255,215,0,0.1) !important;
+}
+
+/* Subtítulo */
+body.is-apk .mpb-sub {
+  color: rgba(164,153,184,0.6) !important;
+}
+
+/* Botones prev/next */
+body.is-apk .mpb-btn {
+  background: rgba(138,60,255,0.1) !important;
+  border: 1px solid rgba(138,60,255,0.2) !important;
+  border-radius: 50% !important;
+  color: #c4a0ff !important;
+}
+@media (hover: none) {
+  body.is-apk .mpb-btn:active {
+    background: rgba(138,60,255,0.25) !important;
+    transform: scale(0.9) !important;
+  }
+}
+
+/* Botón play — glow */
+body.is-apk .mpb-btn-play {
+  box-shadow: 0 0 14px rgba(212,175,55,0.3), 0 2px 6px rgba(0,0,0,0.3) !important;
+}
+@media (hover: none) {
+  body.is-apk .mpb-btn-play:active {
+    transform: scale(0.92) !important;
+    box-shadow: 0 0 20px rgba(212,175,55,0.4) !important;
+  }
+}
+
+/* Barra de progreso (visible en pantallas anchas) */
+body.is-apk .mpb-bar {
+  background: rgba(255,255,255,0.06) !important;
+  border-radius: 4px !important;
+  height: 4px !important;
+}
+body.is-apk .mpb-bar-fill {
+  background: linear-gradient(90deg, var(--violet), var(--gold-bright)) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 6px rgba(138,60,255,0.25) !important;
+}
+
+/* Tiempo */
+body.is-apk .mpb-time {
+  color: rgba(164,153,184,0.5) !important;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace !important;
+  font-size: 0.58rem !important;
+}
+
+/* Queue panel glassmorphism */
+body.is-apk #musicQueuePanel {
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
+  background: rgba(10,5,22,0.88) !important;
+}

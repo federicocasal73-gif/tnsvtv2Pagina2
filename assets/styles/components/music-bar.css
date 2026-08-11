@@ -1,0 +1,50 @@
+/* ===== MÚSICA: BARRA PERSISTENTE (TIPO SPOTIFY) ===== */
+#musicPlayerBar {
+  position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important;
+  /* Safe area: respeta el home indicator en iOS / gesture bar en Android */
+  bottom: env(safe-area-inset-bottom, 0px) !important;
+  z-index: 9850;
+  height: 64px; background: rgba(9,5,18,0.97);
+  border-top: 1px solid rgba(212,175,55,0.3);
+  backdrop-filter: blur(14px);
+  display: none; align-items: center; padding: 0 16px; gap: 14px;
+  font-family: inherit; transition: transform 0.35s ease, opacity 0.25s;
+  box-shadow: 0 -6px 24px rgba(0,0,0,0.7), 0 -1px 0 rgba(212,175,55,0.3) inset;
+}
+/* Visibilidad controlada 100% por JS (inline style) - mas confiable */
+#musicPlayerBar.slide-out { transform: translateY(100%); opacity: 0; }
+/* FIX: evitar flash inicial arriba — forzar visibilidad solo via display, sin transform raro */
+#musicPlayerBar[style*="display: flex"] { transform: none !important; }
+.mpb-track { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 0 0 230px; max-width: 260px; }
+.mpb-cover { width: 42px; height: 42px; border-radius: 6px; background: linear-gradient(135deg,var(--violet),var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; box-shadow: 0 2px 8px rgba(212,175,55,0.3); }
+.mpb-cover.playing { animation: mpbSpin 6s linear infinite; }
+@keyframes mpbSpin { to { transform: rotate(360deg); } }
+.mpb-info { min-width: 0; flex: 1; }
+.mpb-title { font-size: 0.82rem; color: var(--gold-bright); font-family: 'Orbitron',sans-serif; letter-spacing: 0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+.mpb-sub { font-size: 0.62rem; color: #645a78; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: 'Orbitron',sans-serif; letter-spacing: 0.5px; }
+.mpb-controls { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.mpb-btn { background: transparent; border: none; color: #a499b8; cursor: pointer; font-size: 0.95rem; padding: 4px 6px; border-radius: 4px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; }
+.mpb-btn:hover { color: var(--gold-bright); background: rgba(212,175,55,0.1); }
+.mpb-btn-play { background: linear-gradient(135deg,var(--violet),var(--gold)); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 0.85rem; box-shadow: 0 0 10px rgba(212,175,55,0.45); margin: 0 4px; }
+.mpb-btn-play:hover { transform: scale(1.08); color: #fff; background: linear-gradient(135deg,var(--violet),var(--gold)); }
+.mpb-progress-wrap { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 120px; }
+.mpb-time { font-size: 0.62rem; color: #645a78; font-family: 'Orbitron',sans-serif; min-width: 32px; text-align: center; flex-shrink: 0; }
+.mpb-bar { flex: 1; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; cursor: pointer; overflow: hidden; }
+.mpb-bar:hover { height: 6px; }
+.mpb-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg,var(--violet),var(--gold-bright)); transition: width 0.25s linear; }
+.mpb-extras { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.mpb-viz { width: 56px; height: 26px; border-radius: 4px; background: rgba(0,0,0,0.3); }
+.mpb-vol { display: flex; align-items: center; gap: 3px; }
+.mpb-vol input[type=range] { width: 70px; height: 3px; cursor: pointer; accent-color: var(--gold-bright); }
+.mpb-expand { background: transparent; border: 1px solid rgba(212,175,55,0.3); color: var(--gold-bright); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.65rem; font-family: 'Orbitron',sans-serif; letter-spacing: 1px; transition: all 0.2s; white-space: nowrap; }
+.mpb-expand:hover { background: rgba(212,175,55,0.15); border-color: var(--gold-bright); }
+@media (max-width: 760px) {
+  .mpb-track { flex: 0 0 130px; max-width: 150px; }
+  .mpb-extras .mpb-vol { display: none; }
+  .mpb-viz { display: none; }
+  #musicPlayerBar { padding: 0 8px; gap: 6px; height: 58px; }
+  .mpb-progress-wrap { display: none; }
+}
+/* Cuando la barra está visible, el main-content debe dejarle espacio al fondo */
+body.music-bar-active .app-container { padding-bottom: 64px; }
+@media (max-width: 760px) { body.music-bar-active .app-container { padding-bottom: 58px; } }

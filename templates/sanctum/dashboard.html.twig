@@ -185,21 +185,34 @@
     </div>
 
     <style>
-    .kpi-card {
-        position: relative;
-        background: var(--glass-bg-elev);
-        backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.75rem;
-        padding: 1.25rem 1.5rem;
-        transition: all 0.3s ease;
-        overflow: hidden;
-        cursor: pointer;
-    }
-    .kpi-card:hover {
-        border-color: rgba(212, 175, 55, 0.3);
-        background: var(--glass-bg-strong-elev);
-    }
+        .kpi-card {
+            position: relative;
+            background: linear-gradient(135deg, var(--glass-bg-elev) 0%, rgba(242, 202, 80, 0.03) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border-elev);
+            border-radius: 0.75rem;
+            padding: 1.25rem 1.5rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .kpi-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(242, 202, 80, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .kpi-card:hover {
+            border-color: rgba(242, 202, 80, 0.4);
+            background: linear-gradient(135deg, var(--glass-bg-strong-elev) 0%, rgba(242, 202, 80, 0.08) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 60, 255, 0.12);
+        }
     .kpi-header {
         display: flex;
         justify-content: space-between;
@@ -224,6 +237,7 @@
         color: var(--gold-elev);
         margin: 0.25rem 0;
         line-height: 1.1;
+        text-shadow: 0 0 20px rgba(242, 202, 80, 0.3);
     }
     .kpi-meta {
         font-size: 0.75rem;
@@ -237,7 +251,7 @@
         right: 0;
         height: 30px;
         width: 100%;
-        opacity: 0.5;
+        opacity: 0.6;
     }
     .kpi-pulse {
         position: absolute;
@@ -253,6 +267,7 @@
         border-radius: 50%;
         background: #4ade80;
         animation: pulse 2s infinite;
+        box-shadow: 0 0 8px #4ade80;
     }
     .pulse-text {
         font-size: 0.7rem;
@@ -296,7 +311,7 @@
         gap: 0.5rem;
         padding: 1rem 0.5rem;
         border-radius: 0.5rem;
-        background: var(--glass-bg-elev);
+        background: linear-gradient(135deg, var(--glass-bg-elev) 0%, rgba(242, 202, 80, 0.02) 100%);
         border: 1px solid var(--glass-border-elev);
         color: var(--on-surface-elev);
         text-decoration: none;
@@ -305,9 +320,10 @@
         transition: all 0.2s ease;
     }
     .quick-action:hover {
-        background: var(--glass-bg-strong-elev);
+        background: linear-gradient(135deg, var(--glass-bg-strong-elev) 0%, rgba(242, 202, 80, 0.08) 100%);
         border-color: var(--gold-elev);
         transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(242, 202, 80, 0.2);
     }
     /* Modal */
     .modal-overlay {
@@ -322,13 +338,14 @@
         padding: 1rem;
     }
     .modal-content {
-        background: var(--surface-elev);
+        background: linear-gradient(135deg, var(--surface-elev) 0%, rgba(16, 11, 28, 0.95) 100%);
         border: 1px solid var(--glass-border-elev);
         border-radius: 1rem;
         width: 100%;
         max-width: 500px;
         max-height: 90vh;
         overflow: auto;
+        box-shadow: 0 0 40px rgba(138, 60, 255, 0.15);
     }
     .modal-header {
         padding: 1.25rem 1.5rem;
@@ -336,6 +353,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: linear-gradient(135deg, rgba(242, 202, 80, 0.05) 0%, transparent 100%);
     }
     .modal-close {
         background: transparent;
@@ -344,9 +362,11 @@
         cursor: pointer;
         padding: 0.25rem;
         border-radius: 0.25rem;
+        transition: all 0.2s ease;
     }
     .modal-close:hover {
         background: var(--glass-bg-elev);
+        color: var(--gold-elev);
     }
     .modal-body {
         padding: 1.5rem;
@@ -357,6 +377,7 @@
         display: flex;
         justify-content: flex-end;
         gap: 0.5rem;
+        background: rgba(0, 0, 0, 0.1);
     }
     .form-group { margin-bottom: 1rem; }
     .form-row { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; }

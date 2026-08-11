@@ -1,0 +1,708 @@
+/* ============================================================
+   T.N.S.V.T — Web Glow-Up CSS
+   Premium visual refinements — WEB ONLY (not APK)
+   All selectors gated with body:not(.is-apk)
+   ============================================================ */
+
+/* ── GLOBAL ENHANCEMENTS ────────────────────────────────────── */
+body:not(.is-apk) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(138,60,255,0.4) rgba(10,5,22,0.5);
+}
+body:not(.is-apk) ::-webkit-scrollbar { width: 6px; }
+body:not(.is-apk) ::-webkit-scrollbar-track { background: rgba(10,5,22,0.5); }
+body:not(.is-apk) ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(138,60,255,0.5), rgba(212,175,55,0.3));
+  border-radius: 3px;
+}
+body:not(.is-apk) ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #8a3cff, #d4af37); }
+
+/* ── LOGIN SCREEN ───────────────────────────────────────────── */
+body:not(.is-apk) #login-screen {
+  background: radial-gradient(ellipse at 30% 20%, rgba(138,60,255,0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(212,175,55,0.05) 0%, transparent 50%);
+}
+body:not(.is-apk) .gate-box {
+  backdrop-filter: blur(24px) saturate(1.2);
+  border: 1.5px solid rgba(212,175,55,0.5);
+  box-shadow: 0 0 60px rgba(255,215,0,0.08), 0 0 120px rgba(138,60,255,0.06),
+              inset 0 1px 0 rgba(255,255,255,0.05);
+  position: relative; overflow: hidden;
+  animation: gateFloat 6s ease-in-out infinite;
+}
+@keyframes gateFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+body:not(.is-apk) .gate-box::before {
+  content: ''; position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.3), transparent 40%, transparent 60%, rgba(138,60,255,0.3));
+  z-index: -1; opacity: 0; transition: opacity 0.6s ease;
+}
+body:not(.is-apk) .gate-box:hover::before { opacity: 1; }
+body:not(.is-apk) .gate-box h2 {
+  background: linear-gradient(135deg, #fff 20%, var(--gold-bright) 50%, #fff 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: shimmerTitle 4s ease-in-out infinite;
+}
+@keyframes shimmerTitle {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+body:not(.is-apk) .gate-box input {
+  background: rgba(0,0,0,0.6);
+  border: 1.5px solid rgba(138,60,255,0.3);
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .gate-box input:focus {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 0 3px rgba(255,215,0,0.1), 0 0 20px rgba(255,215,0,0.15);
+  background: rgba(0,0,0,0.7);
+}
+body:not(.is-apk) .login-btn {
+  background: linear-gradient(135deg, #8a3cff, #c327fb, #8a3cff);
+  background-size: 200% auto;
+  position: relative; overflow: hidden;
+  transition: all 0.4s ease;
+}
+body:not(.is-apk) .login-btn::after {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
+  opacity: 0; transition: opacity 0.4s ease;
+}
+body:not(.is-apk) .login-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(138,60,255,0.4), 0 0 40px rgba(138,60,255,0.15);
+}
+body:not(.is-apk) .login-btn:hover::after { opacity: 1; }
+body:not(.is-apk) .login-btn:active { transform: translateY(-1px) scale(0.98); }
+
+/* ── TOPBAR ─────────────────────────────────────────────────── */
+body:not(.is-apk) .tnsvt-topbar,
+body:not(.is-apk) .app-header {
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid rgba(138,60,255,0.25);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+body:not(.is-apk) .tnsvt-brand h1,
+body:not(.is-apk) .logo-area h1 {
+  background: linear-gradient(135deg, #fff 30%, var(--gold-bright) 60%, #fff 90%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: shimmerTitle 6s ease-in-out infinite;
+}
+body:not(.is-apk) .tnsvt-notif-btn,
+body:not(.is-apk) .notif-bell-btn { transition: all 0.3s ease; }
+body:not(.is-apk) .tnsvt-notif-btn:hover,
+body:not(.is-apk) .notif-bell-btn:hover {
+  background: rgba(138,60,255,0.2); border-color: var(--violet);
+  box-shadow: 0 0 16px rgba(138,60,255,0.25);
+}
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+body:not(.is-apk) .sidebar-btn {
+  position: relative; overflow: hidden;
+  border: 1px solid rgba(212,175,55,0.1);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+body:not(.is-apk) .sidebar-btn::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.06), transparent);
+  transition: left 0.5s ease;
+}
+body:not(.is-apk) .sidebar-btn:hover::before { left: 100%; }
+body:not(.is-apk) .sidebar-btn:hover {
+  background: rgba(35,18,65,0.95); border-color: rgba(212,175,55,0.35);
+  box-shadow: 0 0 20px rgba(212,175,55,0.08), inset 0 0 20px rgba(138,60,255,0.05);
+  transform: translateX(4px);
+}
+body:not(.is-apk) .sidebar-btn.active {
+  background: linear-gradient(135deg, rgba(35,18,65,0.95), rgba(20,12,40,0.95));
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 16px rgba(255,215,0,0.12), inset 0 0 30px rgba(212,175,55,0.05);
+  color: var(--gold-bright);
+}
+
+/* ── HUB VIEW ───────────────────────────────────────────────── */
+body:not(.is-apk) .diagram-container { filter: drop-shadow(0 0 40px rgba(138,60,255,0.08)); }
+body:not(.is-apk) .hexagon-border { position: relative; transition: all 0.5s ease; }
+body:not(.is-apk) .hexagon-border::after {
+  content: ''; position: absolute; inset: -6px;
+  background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(138,60,255,0.2));
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  z-index: -1; opacity: 0; transition: opacity 0.5s ease;
+  animation: hexPulse 3s ease-in-out infinite;
+}
+body:not(.is-apk) .hexagon-border:hover::after { opacity: 1; }
+@keyframes hexPulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+body:not(.is-apk) .rect-node { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+body:not(.is-apk) .rect-node:hover {
+  background: rgba(20,12,40,0.95); border-color: var(--gold-bright);
+  box-shadow: 0 0 20px rgba(255,215,0,0.15), inset 0 0 20px rgba(212,175,55,0.05);
+  transform: scale(1.05); z-index: 10;
+}
+body:not(.is-apk) .path-line.illuminated { stroke-width: 3; filter: drop-shadow(0 0 8px var(--gold-bright)); }
+body:not(.is-apk) .bottom-trigger-circle { transition: all 0.4s ease; }
+body:not(.is-apk) .bottom-trigger-circle:hover { transform: scale(1.15); box-shadow: 0 0 25px rgba(138,60,255,0.3); }
+body:not(.is-apk) .main-logo-text {
+  background: linear-gradient(135deg, #fff 20%, var(--gold-bright) 50%, #fff 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: shimmerTitle 5s ease-in-out infinite;
+}
+
+/* ── TRADING MAIN / TABS ────────────────────────────────────── */
+body:not(.is-apk) .trading-main {
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(212,175,55,0.12);
+  position: relative;
+}
+body:not(.is-apk) .trading-main::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.3), transparent);
+}
+body:not(.is-apk) .tab-content.active { animation: tabFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ⛧ FIX: asegurar que el tab activo SIEMPRE tenga opacity 1 después de la animación.
+   Soluciona bug donde el computed opacity se quedaba en 0 después de tabFadeIn
+   en ciertos contextos (rect 0x0 + flex parent). */
+body:not(.is-apk) .tab-content.active {
+  opacity: 1 !important;
+}
+
+/* ── CARDS (feed, journal, macro, academia) ─────────────────── */
+body:not(.is-apk) .signal-card-wrap,
+body:not(.is-apk) .mc-card,
+body:not(.is-apk) .tj-trade-card,
+body:not(.is-apk) .tj-equity,
+body:not(.is-apk) .tj-calendar,
+body:not(.is-apk) .tj-stats-block,
+body:not(.is-apk) .acad-card,
+body:not(.is-apk) .mc-quiz-box,
+body:not(.is-apk) .mc-tool-card,
+body:not(.is-apk) .mc-flow-node {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+body:not(.is-apk) .signal-card-wrap:hover,
+body:not(.is-apk) .mc-card:hover,
+body:not(.is-apk) .tj-trade-card:hover,
+body:not(.is-apk) .mc-quiz-box:hover,
+body:not(.is-apk) .mc-tool-card:hover,
+body:not(.is-apk) .mc-flow-node:hover {
+  border-color: rgba(212,175,55,0.35);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3), 0 0 20px rgba(212,175,55,0.05);
+  transform: translateY(-2px);
+}
+body:not(.is-apk) .acad-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 24px rgba(212,175,55,0.08);
+}
+
+/* ── CREATE POST BOX ────────────────────────────────────────── */
+body:not(.is-apk) .create-post-box {
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(212,175,55,0.12);
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .create-post-box:focus-within {
+  border-color: rgba(138,60,255,0.4);
+  box-shadow: 0 0 30px rgba(138,60,255,0.08);
+}
+body:not(.is-apk) .create-post-box textarea {
+  background: rgba(0,0,0,0.4); border: 1px solid rgba(138,60,255,0.15);
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .create-post-box textarea:focus {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 0 2px rgba(255,215,0,0.08);
+  background: rgba(0,0,0,0.5);
+}
+
+/* ── FEED PILLS + POST BTN ──────────────────────────────────── */
+body:not(.is-apk) .feed-cat {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative; overflow: hidden;
+}
+body:not(.is-apk) .feed-cat::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1));
+  opacity: 0; transition: opacity 0.3s ease;
+}
+body:not(.is-apk) .feed-cat:hover::after { opacity: 1; }
+body:not(.is-apk) .feed-cat.active { box-shadow: 0 0 12px rgba(255,215,0,0.2); }
+body:not(.is-apk) .post-btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+  background-size: 200% auto;
+  position: relative; overflow: hidden; transition: all 0.35s ease;
+}
+body:not(.is-apk) .post-btn::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+body:not(.is-apk) .post-btn:hover {
+  background-position: right center;
+  box-shadow: 0 4px 20px rgba(255,215,0,0.3); transform: translateY(-1px);
+}
+body:not(.is-apk) .post-btn:hover::before { left: 100%; }
+
+/* ── SIGNAL TRADE + ACTIONS ─────────────────────────────────── */
+body:not(.is-apk) .signal-trade {
+  background: rgba(0,0,0,0.35); border: 1px solid rgba(212,175,55,0.08);
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .signal-trade:hover { border-color: rgba(212,175,55,0.2); background: rgba(0,0,0,0.4); }
+body:not(.is-apk) .signal-buy { box-shadow: 0 0 8px rgba(52,199,89,0.15); }
+body:not(.is-apk) .signal-sell { box-shadow: 0 0 8px rgba(255,59,48,0.15); }
+body:not(.is-apk) .signal-action {
+  padding: 4px 8px; border-radius: 6px; transition: all 0.3s ease;
+}
+body:not(.is-apk) .signal-action:hover { background: rgba(255,215,0,0.08); color: var(--gold-bright); }
+body:not(.is-apk) .signal-action.liked { text-shadow: 0 0 8px rgba(255,215,0,0.4); }
+
+/* ── COMMENTS ───────────────────────────────────────────────── */
+body:not(.is-apk) .comment-box { backdrop-filter: blur(4px); }
+body:not(.is-apk) .comment-item {
+  padding: 6px 0; border-radius: 6px; transition: background 0.2s ease;
+}
+body:not(.is-apk) .comment-item:hover { background: rgba(138,60,255,0.04); }
+body:not(.is-apk) .comment-input-row input[type="text"] {
+  background: rgba(0,0,0,0.4); border: 1px solid rgba(138,60,255,0.15);
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .comment-input-row input[type="text"]:focus {
+  border-color: var(--gold-bright); box-shadow: 0 0 0 2px rgba(255,215,0,0.06);
+}
+body:not(.is-apk) .comment-submit {
+  background: linear-gradient(135deg, var(--violet), #a060ff); transition: all 0.3s ease;
+}
+body:not(.is-apk) .comment-submit:hover {
+  box-shadow: 0 4px 16px rgba(138,60,255,0.3); transform: translateY(-1px);
+}
+
+/* ── JOURNAL STATS + KPI ────────────────────────────────────── */
+body:not(.is-apk) .tj-stat { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+body:not(.is-apk) .tj-stat:hover {
+  transform: translateY(-3px); box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+}
+body:not(.is-apk) .tj-stat:hover::before { opacity: 1; }
+body:not(.is-apk) .tj-kpi {
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+body:not(.is-apk) .tj-kpi::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0; transition: opacity 0.3s ease;
+}
+body:not(.is-apk) .tj-kpi:hover { border-color: rgba(212,175,55,0.25); background: rgba(9,5,18,0.85); }
+body:not(.is-apk) .tj-kpi:hover::after { opacity: 1; }
+
+/* ── JOURNAL CHART + CALENDAR ───────────────────────────────── */
+body:not(.is-apk) .tj-chart-area {
+  border: 1px solid rgba(212,175,55,0.08); background: rgba(0,0,0,0.25);
+}
+body:not(.is-apk) .tj-bar { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+body:not(.is-apk) .tj-bar:hover { transform: scaleY(1.08); filter: brightness(1.2); }
+body:not(.is-apk) .tj-cal-cell { transition: all 0.25s ease; }
+body:not(.is-apk) .tj-cal-cell:hover:not(.empty) {
+  transform: scale(1.08); z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+body:not(.is-apk) .tj-cal-cell.today { box-shadow: 0 0 12px rgba(255,215,0,0.15); }
+body:not(.is-apk) .tj-cal-cell.has-win { box-shadow: 0 0 8px rgba(52,199,89,0.15); }
+body:not(.is-apk) .tj-cal-cell.has-loss { box-shadow: 0 0 8px rgba(255,59,48,0.15); }
+
+/* ── FORMS FOCUS ────────────────────────────────────────────── */
+body:not(.is-apk) .journal-form input,
+body:not(.is-apk) .journal-form select,
+body:not(.is-apk) .journal-form textarea,
+body:not(.is-apk) .tj-field input,
+body:not(.is-apk) .tj-field select,
+body:not(.is-apk) .tj-field textarea {
+  background: rgba(0,0,0,0.35); border: 1px solid rgba(138,60,255,0.15);
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .journal-form input:focus,
+body:not(.is-apk) .journal-form select:focus,
+body:not(.is-apk) .journal-form textarea:focus,
+body:not(.is-apk) .tj-field input:focus,
+body:not(.is-apk) .tj-field select:focus,
+body:not(.is-apk) .tj-field textarea:focus {
+  border-color: var(--gold-bright);
+  box-shadow: 0 0 0 2px rgba(255,215,0,0.08); background: rgba(0,0,0,0.45);
+}
+body:not(.is-apk) .tj-filter-input,
+body:not(.is-apk) .admin-input,
+body:not(.is-apk) .admin-textarea,
+body:not(.is-apk) .admin-select {
+  background: rgba(0,0,0,0.4); border: 1px solid rgba(212,175,55,0.12);
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .tj-filter-input:focus,
+body:not(.is-apk) .admin-input:focus,
+body:not(.is-apk) .admin-textarea:focus,
+body:not(.is-apk) .admin-select:focus {
+  border-color: var(--gold-bright); box-shadow: 0 0 0 2px rgba(255,215,0,0.08);
+}
+
+/* ── TASKS ──────────────────────────────────────────────────── */
+body:not(.is-apk) .task-card {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative; overflow: hidden;
+}
+body:not(.is-apk) .task-card::before {
+  content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--violet), rgba(138,60,255,0.3));
+  opacity: 0; transition: opacity 0.3s ease;
+}
+body:not(.is-apk) .task-card:hover {
+  border-color: rgba(138,60,255,0.35); transform: translateX(4px);
+}
+body:not(.is-apk) .task-card:hover::before { opacity: 1; }
+body:not(.is-apk) .task-check { transition: all 0.3s ease; }
+body:not(.is-apk) .task-check:hover { border-color: var(--gold-bright); box-shadow: 0 0 10px rgba(255,215,0,0.2); }
+body:not(.is-apk) .task-card.completed { background: rgba(52,199,89,0.04); border-color: rgba(52,199,89,0.3); }
+
+/* ── ACADEMIA ───────────────────────────────────────────────── */
+body:not(.is-apk) .acad-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0; transition: opacity 0.4s ease; z-index: 2;
+}
+body:not(.is-apk) .acad-card:hover::before { opacity: 1; }
+body:not(.is-apk) .acad-card:hover .acad-lock-icon {
+  transform: scale(1.1); box-shadow: 0 0 20px rgba(255,215,0,0.3);
+}
+
+/* ── MACRO + ACCORDION + QUIZ ───────────────────────────────── */
+body:not(.is-apk) .mc-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(138,60,255,0.5), transparent);
+  opacity: 0; transition: opacity 0.3s ease;
+}
+body:not(.is-apk) .mc-card:hover::before { opacity: 1; }
+body:not(.is-apk) .mc-flow-node:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 16px rgba(212,175,55,0.08);
+}
+body:not(.is-apk) .mc-accordion { transition: all 0.3s ease; }
+body:not(.is-apk) .mc-accordion:hover { border-color: rgba(212,175,55,0.25); }
+body:not(.is-apk) .mc-accordion-hdr { transition: background 0.2s ease; }
+body:not(.is-apk) .mc-accordion-hdr:hover { background: rgba(212,175,55,0.03); }
+body:not(.is-apk) .mc-accordion.open .mc-acc-num { text-shadow: 0 0 12px rgba(255,215,0,0.4); }
+body:not(.is-apk) .mc-quiz-opt {
+  transition: all 0.25s ease; position: relative; overflow: hidden;
+}
+body:not(.is-apk) .mc-quiz-opt::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(212,175,55,0.06), transparent);
+  transition: left 0.5s ease;
+}
+body:not(.is-apk) .mc-quiz-opt:hover {
+  border-color: var(--gold-bright); background: rgba(255,215,0,0.04); transform: translateX(4px);
+}
+body:not(.is-apk) .mc-quiz-opt:hover::before { left: 100%; }
+body:not(.is-apk) .mc-quiz-opt.correct { box-shadow: 0 0 16px rgba(52,199,89,0.15); }
+body:not(.is-apk) .mc-quiz-opt.wrong { box-shadow: 0 0 16px rgba(255,59,48,0.15); }
+
+/* ── NOTIFICATIONS ──────────────────────────────────────────── */
+body:not(.is-apk) .notif-panel {
+  border: 1px solid rgba(138,60,255,0.25);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.6), 0 0 40px rgba(138,60,255,0.08);
+}
+body:not(.is-apk) .notif-item { transition: all 0.2s ease; }
+body:not(.is-apk) .notif-item:hover { background: rgba(138,60,255,0.08); padding-left: 20px; }
+body:not(.is-apk) .push-toast {
+  border: 1px solid rgba(138,60,255,0.35);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 30px rgba(138,60,255,0.1);
+}
+
+/* ── MODALS ─────────────────────────────────────────────────── */
+body:not(.is-apk) .tj-day-inner,
+body:not(.is-apk) .admin-panel {
+  border: 1px solid rgba(212,175,55,0.2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(212,175,55,0.05);
+  animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── PHOTO SLOTS ────────────────────────────────────────────── */
+body:not(.is-apk) .tj-photo-slot { transition: all 0.3s ease; }
+body:not(.is-apk) .tj-photo-slot:hover {
+  border-color: var(--gold-bright); background: rgba(255,215,0,0.04); transform: scale(1.02);
+}
+
+/* ── ADMIN BTN ──────────────────────────────────────────────── */
+body:not(.is-apk) .admin-btn-primary {
+  background: linear-gradient(135deg, var(--gold), var(--gold-bright));
+  background-size: 200% auto; transition: all 0.35s ease;
+}
+body:not(.is-apk) .admin-btn-primary:hover {
+  background-position: right center;
+  box-shadow: 0 4px 20px rgba(255,215,0,0.3); transform: translateY(-1px);
+}
+
+/* ── SUBTABS ────────────────────────────────────────────────── */
+body:not(.is-apk) .subtab-btn { transition: all 0.3s ease; position: relative; }
+body:not(.is-apk) .subtab-btn::after {
+  content: ''; position: absolute; bottom: -1px; left: 50%; right: 50%; height: 2px;
+  background: var(--gold-bright); transition: all 0.3s ease;
+}
+body:not(.is-apk) .subtab-btn.active::after,
+body:not(.is-apk) .subtab-btn:hover::after { left: 0; right: 0; }
+
+/* ── TOOL BUTTONS ───────────────────────────────────────────── */
+body:not(.is-apk) .tj-tool-btn { position: relative; overflow: hidden; }
+body:not(.is-apk) .tj-tool-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,215,0,0.06));
+  opacity: 0; transition: opacity 0.3s ease;
+}
+body:not(.is-apk) .tj-tool-btn:hover::before { opacity: 1; }
+body:not(.is-apk) .tj-tool-btn:hover {
+  border-color: var(--gold-bright); color: var(--gold-bright); transform: translateY(-1px);
+}
+
+/* ── KEY CARDS ──────────────────────────────────────────────── */
+body:not(.is-apk) .key-card {
+  transition: all 0.3s ease; position: relative; overflow: hidden;
+}
+body:not(.is-apk) .key-card::after {
+  content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--violet), transparent); opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+body:not(.is-apk) .key-card:hover { border-left-color: var(--gold-bright); transform: translateX(4px); }
+body:not(.is-apk) .key-card:hover::after { opacity: 1; }
+
+/* ── SOCIAL ─────────────────────────────────────────────────── */
+body:not(.is-apk) .social-user-card { transition: all 0.3s ease; }
+body:not(.is-apk) .social-user-card:hover {
+  border-color: rgba(138,60,255,0.35); transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+body:not(.is-apk) .permission-toggle { transition: all 0.2s ease; }
+body:not(.is-apk) .permission-toggle:hover { background: rgba(138,60,255,0.08); }
+
+/* ── GOLDEN RULE ────────────────────────────────────────────── */
+body:not(.is-apk) .mc-golden-rule { position: relative; overflow: hidden; }
+body:not(.is-apk) .mc-golden-rule::before {
+  content: ''; position: absolute; inset: -1px;
+  background: linear-gradient(135deg, rgba(212,175,55,0.15), transparent, rgba(138,60,255,0.1));
+  opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+}
+body:not(.is-apk) .mc-golden-rule:hover::before { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════
+   MUSIC PLAYER — Consolidado en barra inferior
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ocultar reproductores flotantes */
+body:not(.is-apk) #musicPlayer { display: none !important; }
+body:not(.is-apk) #musicPlayerMini { display: none !important; }
+
+/* Ocultar botón Expandir de la barra */
+body:not(.is-apk) .mpb-expand { display: none !important; }
+
+/* Botón loop en barra */
+body:not(.is-apk) .mpb-loop-btn {
+  background: rgba(138,60,255,0.12); border: 1px solid rgba(138,60,255,0.25);
+  border-radius: 6px; color: #c4a0ff; cursor: pointer; font-size: 0.8rem;
+  padding: 4px 6px; line-height: 1; transition: all 0.2s ease;
+  display: flex; align-items: center; justify-content: center;
+}
+body:not(.is-apk) .mpb-loop-btn:hover {
+  background: rgba(138,60,255,0.25); border-color: var(--violet);
+  box-shadow: 0 0 10px rgba(138,60,255,0.2);
+}
+body:not(.is-apk) .mpb-loop-btn:active { transform: scale(0.92); }
+
+/* Botón playlist en barra */
+body:not(.is-apk) .mpb-queue-btn {
+  background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.25);
+  border-radius: 6px; color: var(--gold-bright); cursor: pointer; font-size: 0.9rem;
+  padding: 4px 6px; line-height: 1; transition: all 0.2s ease;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+body:not(.is-apk) .mpb-queue-btn:hover {
+  background: rgba(212,175,55,0.2); border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(255,215,0,0.15);
+}
+body:not(.is-apk) .mpb-queue-btn:active { transform: scale(0.92); }
+
+/* Queue panel pegado arriba de la barra pill */
+body:not(.is-apk) #musicQueuePanel {
+  bottom: 82px !important; right: 14px !important;
+  border-color: rgba(212,175,55,0.3) !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.4), 0 0 20px rgba(212,175,55,0.05) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MUSIC PLAYER — Glassmorphism Premium (WEB)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Barra principal — glassmorphism profundo */
+body:not(.is-apk) #musicPlayerBar,
+body:not(.is-apk) .music-player-bar,
+body:not(.is-apk) .player-bar {
+  background: rgba(10,5,22,0.65) !important;
+  backdrop-filter: blur(24px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(1.5) !important;
+  border: 1px solid rgba(212,175,55,0.2) !important;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(138,60,255,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Borde gradiente animado inferior */
+body:not(.is-apk) #musicPlayerBar::after,
+body:not(.is-apk) .music-player-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--violet), var(--gold-bright), var(--violet));
+  background-size: 200% auto;
+  animation: mpbBorderGlow 4s linear infinite;
+  opacity: 0.6;
+}
+@keyframes mpbBorderGlow {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Cover art — sombra dorada + glow */
+body:not(.is-apk) .mpb-cover {
+  box-shadow: 0 0 12px rgba(212,175,55,0.25), 0 2px 8px rgba(0,0,0,0.4) !important;
+  border: 2px solid rgba(212,175,55,0.2) !important;
+  transition: all 0.3s ease;
+}
+body:not(.is-apk) .mpb-cover.playing {
+  box-shadow: 0 0 18px rgba(212,175,55,0.35), 0 2px 12px rgba(0,0,0,0.5) !important;
+}
+
+/* Título — gold bright con text-shadow */
+body:not(.is-apk) .mpb-title {
+  color: var(--gold-bright) !important;
+  text-shadow: 0 0 8px rgba(255,215,0,0.15) !important;
+  font-weight: 600 !important;
+}
+
+/* Subtítulo */
+body:not(.is-apk) .mpb-sub {
+  color: rgba(164,153,184,0.7) !important;
+  font-size: 0.6rem !important;
+}
+
+/* Botones prev/next — gradiente sutil */
+body:not(.is-apk) .mpb-btn {
+  background: rgba(138,60,255,0.1) !important;
+  border: 1px solid rgba(138,60,255,0.2) !important;
+  border-radius: 50% !important;
+  color: #c4a0ff !important;
+  transition: all 0.25s ease !important;
+}
+body:not(.is-apk) .mpb-btn:hover {
+  background: rgba(138,60,255,0.25) !important;
+  border-color: rgba(138,60,255,0.4) !important;
+  box-shadow: 0 0 12px rgba(138,60,255,0.2) !important;
+}
+body:not(.is-apk) .mpb-btn:active {
+  transform: scale(0.9) !important;
+}
+
+/* Botón play — glow premium */
+body:not(.is-apk) .mpb-btn-play {
+  box-shadow: 0 0 16px rgba(212,175,55,0.35), 0 2px 8px rgba(0,0,0,0.3) !important;
+  transition: all 0.25s ease !important;
+}
+body:not(.is-apk) .mpb-btn-play:hover {
+  box-shadow: 0 0 24px rgba(212,175,55,0.5), 0 2px 12px rgba(0,0,0,0.4) !important;
+  transform: scale(1.05) !important;
+}
+body:not(.is-apk) .mpb-btn-play:active {
+  transform: scale(0.92) !important;
+  box-shadow: 0 0 20px rgba(212,175,55,0.4) !important;
+}
+
+/* Barra de progreso — estilo premium */
+body:not(.is-apk) .mpb-bar {
+  background: rgba(255,255,255,0.06) !important;
+  border-radius: 4px !important;
+  height: 5px !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+body:not(.is-apk) .mpb-bar-fill {
+  background: linear-gradient(90deg, var(--violet), var(--gold-bright)) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 8px rgba(138,60,255,0.3) !important;
+  transition: width 0.25s linear !important;
+}
+body:not(.is-apk) .mpb-bar:hover .mpb-bar-fill {
+  box-shadow: 0 0 12px rgba(138,60,255,0.4) !important;
+}
+
+/* Tiempo */
+body:not(.is-apk) .mpb-time {
+  color: rgba(164,153,184,0.6) !important;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace !important;
+  font-size: 0.65rem !important;
+}
+
+/* Volumen — accent dorado */
+body:not(.is-apk) .mpb-vol input[type="range"] {
+  accent-color: var(--gold-bright) !important;
+}
+body:not(.is-apk) .mpb-vol span {
+  color: rgba(164,153,184,0.5) !important;
+}
+
+/* Visualizer — glow sutil */
+body:not(.is-apk) .mpb-viz {
+  border-radius: 4px !important;
+  opacity: 0.8;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHAT BUBBLE — Reposicionamiento WEB
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Subir la burbuja ~80px en web para no tapar el reproductor */
+body:not(.is-apk) .cf-fab {
+  bottom: 104px !important;
+}
+body:not(.is-apk) .cf-presence {
+  bottom: 184px !important;
+}
+body:not(.is-apk) .cf-panel {
+  bottom: 180px !important;
+}
+body:not(.is-apk) .cf-toast {
+  bottom: 190px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   QUEUE PANEL — Glassmorphism premium
+   ═══════════════════════════════════════════════════════════════ */
+
+body:not(.is-apk) #musicQueuePanel {
+  backdrop-filter: blur(20px) saturate(1.3) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.3) !important;
+  background: rgba(10,5,22,0.85) !important;
+}
