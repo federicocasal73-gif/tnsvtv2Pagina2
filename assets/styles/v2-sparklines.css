@@ -1,0 +1,244 @@
+/* ===================================================================
+   TNSVT Reino v2 — Sparklines & Animated KPIs
+   Target: tnsvt.com production
+   =================================================================== */
+
+/* === Sparkline SVG === */
+.kpi-sparkline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    width: 100%;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.kpi-card:hover .kpi-sparkline {
+    opacity: 1;
+}
+
+/* === Count-up animation === */
+.kpi-value {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.kpi-value.counting {
+    animation: v2-count-up 0.6s ease-out;
+}
+
+@keyframes v2-count-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Live pulse indicator === */
+.kpi-pulse {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80, 0 0 16px rgba(74, 222, 128, 0.5);
+    animation: v2-pulse-glow 1.5s ease-in-out infinite;
+}
+
+.pulse-text {
+    font-size: 0.7rem;
+    color: var(--outline-elev);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+@keyframes v2-pulse-glow {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #4ade80, 0 0 16px rgba(74, 222, 128, 0.5); }
+    50% { opacity: 0.6; transform: scale(1.2); box-shadow: 0 0 12px #4ade80, 0 0 24px rgba(74, 222, 128, 0.7); }
+}
+
+/* === KPI ring decoration === */
+.kpi-ring {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 80px;
+    height: 80px;
+    border: 2px solid var(--gold-elev);
+    border-radius: 50%;
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+/* === Quick action hover === */
+.quick-action {
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(242, 202, 80, 0.1) 100%);
+    pointer-events: none;
+}
+
+.quick-action:hover {
+    background: linear-gradient(135deg, var(--glass-bg-strong-elev) 0%, rgba(242, 202, 80, 0.08) 100%);
+    border-color: var(--gold-elev);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(242, 202, 80, 0.2);
+}
+
+/* === System status bars === */
+.sys-stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.375rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sys-stat-row:last-child {
+    border-bottom: none;
+}
+
+.sys-stat-label {
+    color: var(--outline-elev);
+    font-size: 0.8rem;
+}
+
+.sys-stat-value {
+    color: var(--gold-elev);
+    font-weight: 600;
+    font-size: 0.85rem;
+    font-family: 'Space Grotesk', monospace;
+}
+
+/* === Trade row hover === */
+.trade-row {
+    transition: all 0.2s ease;
+}
+
+.trade-row:hover {
+    background: var(--glass-bg-elev);
+    transform: translateX(2px);
+}
+
+/* === Status pills === */
+.status-pill {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+.status-win {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.2), rgba(74, 222, 128, 0.1));
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.4);
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+}
+
+.status-loss {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.2), rgba(248, 113, 113, 0.1));
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    box-shadow: 0 0 8px rgba(248, 113, 113, 0.3);
+}
+
+.status-open {
+    background: linear-gradient(135deg, rgba(242, 202, 80, 0.2), rgba(242, 202, 80, 0.1));
+    color: var(--gold-elev);
+    border: 1px solid rgba(242, 202, 80, 0.4);
+}
+
+/* === Modal entrance animation === */
+.modal-overlay {
+    animation: v2-fade-in 0.2s ease-out;
+}
+
+.modal-content {
+    animation: v2-slide-up 0.3s ease-out;
+}
+
+@keyframes v2-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes v2-slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Toast notifications === */
+.api-toast {
+    animation: v2-slide-in-right 0.3s ease-out;
+}
+
+@keyframes v2-slide-in-right {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* === Page load stagger === */
+.stagger-item {
+    opacity: 0;
+    animation: v2-fade-in-up 0.4s ease-out forwards;
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes v2-fade-in-up {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Scrollbar styling === */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(242, 202, 80, 0.3);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(242, 202, 80, 0.5);
+}
+
+/* === Selection color === */
+::selection {
+    background: rgba(242, 202, 80, 0.3);
+    color: #fff;
+}
+
+/* === Focus ring === */
+*:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 2px;
+}

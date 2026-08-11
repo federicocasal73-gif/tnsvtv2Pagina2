@@ -1,0 +1,101 @@
+/* ===================================================================
+   TNSVT Reino v2 — Visual Tokens (inspired by v1 legacy visual system)
+   Target: tnsvt.com production
+   =================================================================== */
+
+:root {
+    /* === Core palette (from v1) === */
+    --v2-bg: #030106;
+    --v2-bg-void: #050308;
+    --v2-bg-deep: #100b1c;
+    --v2-bg-surface: #161121;
+    --v2-bg-surface-high: #1e192a;
+
+    --v2-violet: #8a3cff;
+    --v2-violet-mid: #7c3aed;
+    --v2-violet-dim: #2d1b69;
+    --v2-violet-glow: rgba(138, 60, 255, 0.4);
+    --v2-violet-line: rgba(138, 60, 255, 0.25);
+
+    --v2-gold: #d4af37;
+    --v2-gold-bright: #ffd700;
+    --v2-gold-light: #f2ca50;
+    --v2-gold-container: #c5a028;
+
+    --v2-white: #ffffff;
+    --v2-on-surface: #e9def6;
+    --v2-on-surface-dim: #b8b8cc;
+    --v2-muted: #645a78;
+    --v2-muted-light: #99907c;
+
+    /* === Glassmorphism === */
+    --v2-glass-bg: rgba(255, 255, 255, 0.04);
+    --v2-glass-bg-strong: rgba(255, 255, 255, 0.08);
+    --v2-glass-border: rgba(255, 255, 255, 0.1);
+    --v2-glass-border-gold: rgba(212, 175, 55, 0.2);
+    --v2-glass-blur: 20px;
+
+    /* === Glows === */
+    --v2-glow-gold: 0 0 20px rgba(212, 175, 55, 0.3);
+    --v2-glow-gold-strong: 0 0 40px rgba(212, 175, 55, 0.5);
+    --v2-glow-violet: 0 0 20px rgba(138, 60, 255, 0.3);
+    --v2-glow-violet-strong: 0 0 40px rgba(138, 60, 255, 0.5);
+
+    /* === Shadows === */
+    --v2-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --v2-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --v2-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --v2-shadow-glow: 0 0 30px rgba(212, 175, 55, 0.2);
+
+    /* === Gradients === */
+    --v2-gradient-gold: linear-gradient(135deg, #d4af37 0%, #ffd700 50%, #d4af37 100%);
+    --v2-gradient-violet: linear-gradient(135deg, #8a3cff 0%, #7c3aed 50%, #8a3cff 100%);
+    --v2-gradient-dark: linear-gradient(135deg, #050308 0%, #100b1c 50%, #161121 100%);
+    --v2-gradient-surface: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    --v2-gradient-gold-subtle: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+    --v2-gradient-violet-subtle: linear-gradient(135deg, rgba(138, 60, 255, 0.1) 0%, transparent 100%);
+
+    /* === Animations === */
+    --v2-transition-fast: 0.15s ease;
+    --v2-transition-normal: 0.3s ease;
+    --v2-transition-slow: 0.5s ease;
+}
+
+/* === Keyframes === */
+@keyframes v2-pulse-gold {
+    0%, 100% { box-shadow: 0 0 8px rgba(212, 175, 55, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.7); }
+}
+
+@keyframes v2-pulse-violet {
+    0%, 100% { box-shadow: 0 0 8px rgba(138, 60, 255, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(138, 60, 255, 0.7); }
+}
+
+@keyframes v2-drift {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(-5px, -3px); }
+    50% { transform: translate(0, -6px); }
+    75% { transform: translate(5px, -3px); }
+    100% { transform: translate(0, 0); }
+}
+
+@keyframes v2-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes v2-fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes v2-glow-pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.2); }
+}
+
+@keyframes v2-spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

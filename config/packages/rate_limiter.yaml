@@ -1,0 +1,34 @@
+framework:
+    rate_limiter:
+        # Admin actions: 10 por IP por minuto (create/close/cancel tournament)
+        admin_actions:
+            policy: 'fixed_window'
+            limit: 10
+            interval: '1 minute'
+            cache_pool: 'cache.rate_limiter'
+
+        # Tournament join: 5 por user por hora (anti-spam)
+        tournament_join:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '1 hour'
+            cache_pool: 'cache.rate_limiter'
+
+        # Admin login attempts: 5 por IP por 15 minutos (brute-force)
+        admin_login:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '15 minutes'
+            cache_pool: 'cache.rate_limiter'
+
+        # Trade/equity updates: 60 por user por minuto (anti-spam, sliding window)
+        user_actions:
+            policy: 'sliding_window'
+            limit: 60
+            interval: '1 minute'
+            cache_pool: 'cache.rate_limiter'
+
+    cache:
+        pools:
+            cache.rate_limiter:
+                adapter: cache.app

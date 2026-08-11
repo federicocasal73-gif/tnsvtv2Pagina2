@@ -9,7 +9,7 @@
     <div class="max-w-7xl mx-auto">
         {# KPI Cards Row #}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="kpi-card group" data-card="globalPnl">
+            <div class="kpi-card group stagger-item" data-card="globalPnl">
                 <div class="kpi-header">
                     <span class="kpi-label">Global PnL</span>
                     <span class="kpi-icon material-symbols-elev">trending_up</span>
@@ -18,11 +18,17 @@
                 <p class="kpi-meta">
                     <span id="kpi-pnl-meta">— calculating</span>
                 </p>
-                <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none">
-                    <polyline id="kpi-pnl-spark" points="" fill="none" stroke="var(--gold-elev)" stroke-width="1"/>
+                <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" id="kpi-pnl-spark-svg">
+                    <polyline id="kpi-pnl-spark" points="0,25 10,22 20,20 30,18 40,15 50,12 60,10 70,8 80,5 90,3 100,2" fill="none" stroke="var(--gold-elev)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <linearGradient id="pnl-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:var(--gold-elev);stop-opacity:0.3"/>
+                        <stop offset="100%" style="stop-color:var(--gold-elev);stop-opacity:0"/>
+                    </linearGradient>
+                    <polyline id="kpi-pnl-spark-fill" points="0,25 10,22 20,20 30,18 40,15 50,12 60,10 70,8 80,5 90,3 100,2 100,30 0,30" fill="url(#pnl-grad)" stroke="none"/>
                 </svg>
+                <div class="kpi-ring"></div>
             </div>
-            <div class="kpi-card group" data-card="activeSeekers">
+            <div class="kpi-card group stagger-item" data-card="activeSeekers">
                 <div class="kpi-header">
                     <span class="kpi-label">Active Seekers</span>
                     <span class="kpi-icon material-symbols-elev">groups</span>
@@ -31,12 +37,15 @@
                 <p class="kpi-meta">
                     <span id="kpi-seekers-meta">0 de 0 activos</span>
                 </p>
+                <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" id="kpi-seekers-spark-svg">
+                    <polyline id="kpi-seekers-spark" points="0,20 10,18 20,15 30,17 40,12 50,10 60,8 70,5 80,7 90,3 100,2" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <div class="kpi-pulse">
                     <span class="pulse-dot" id="seeker-pulse"></span>
                     <span class="pulse-text">live</span>
                 </div>
             </div>
-            <div class="kpi-card group" data-card="serverSanctum">
+            <div class="kpi-card group stagger-item" data-card="serverSanctum">
                 <div class="kpi-header">
                     <span class="kpi-label">Server Sanctum</span>
                     <span class="kpi-icon material-symbols-elev">verified</span>
@@ -46,9 +55,12 @@
                     <span class="kpi-meta-dot" style="background: #4ade80;"></span>
                     <span id="kpi-server-meta">Divine Integrity High</span>
                 </p>
-                <div class="kpi-ring"></div>
+                <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" id="kpi-server-spark-svg">
+                    <polyline id="kpi-server-spark" points="0,5 10,4 20,5 30,3 40,4 50,2 60,3 70,2 80,1 90,2 100,1" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="kpi-ring" style="border-color: #4ade80;"></div>
             </div>
-            <div class="kpi-card group" data-card="macroSignals">
+            <div class="kpi-card group stagger-item" data-card="macroSignals">
                 <div class="kpi-header">
                     <span class="kpi-label">Macro Signals</span>
                     <span class="kpi-icon material-symbols-elev">event_upcoming</span>
@@ -57,7 +69,10 @@
                 <p class="kpi-meta">
                     <span id="kpi-macro-meta">Eventos en próximas 24h</span>
                 </p>
-                <div class="kpi-icon-large material-symbols-elev">monitoring</div>
+                <svg class="kpi-sparkline" viewBox="0 0 100 30" preserveAspectRatio="none" id="kpi-macro-spark-svg">
+                    <polyline id="kpi-macro-spark" points="0,28 10,25 20,22 30,20 40,18 50,15 60,12 70,10 80,8 90,5 100,3" fill="none" stroke="var(--violet-glow, #8a3cff)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="kpi-ring" style="border-color: var(--violet-glow, #8a3cff);"></div>
             </div>
         </div>
 
@@ -539,6 +554,18 @@
             }
         });
         setInterval(loadDashboard, 60000);
+    });
+    </script>
+    <script src="{{ asset('js/modules/sparklines.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window._sparklineData = {
+            pnl: [120, 135, 128, 142, 155, 148, 162, 170, 165, 180, 175, 190],
+            seekers: [5, 6, 7, 8, 9, 8, 10, 11, 10, 12, 13, 14],
+            server: [99.5, 99.6, 99.8, 99.9, 99.7, 99.9, 100, 99.9, 99.8, 99.9, 100, 99.9],
+            macro: [2, 3, 1, 4, 2, 5, 3, 6, 4, 7, 5, 8]
+        };
+        if (window.initDashboardAnimations) window.initDashboardAnimations();
     });
     </script>
 {% endblock %}
