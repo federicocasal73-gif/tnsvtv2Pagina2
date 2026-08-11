@@ -2,7 +2,18 @@
 
 namespace App\Controller;
 
+use App\Entity\Notification;
+use App\Entity\User;
+use App\Repository\AccessRequestRepository;
+use App\Repository\ConnectionRepository;
+use App\Repository\JournalPermissionRepository;
+use App\Repository\JournalSettingRepository;
+use App\Repository\NotificationRepository;
+use App\Repository\TradeRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -45,5 +56,109 @@ class SanctumModuleController extends AbstractController
     public function diary(): Response
     {
         return $this->render('sanctum/diary.html.twig');
+    }
+
+    // ──── NOTIFICATIONS ────
+
+    #[Route('/notifications', name: 'sanctum_notifications', methods: ['GET'])]
+    public function notifications(): Response
+    {
+        return $this->render('sanctum/notifications.html.twig');
+    }
+
+    #[Route('/notifications/unread-count', name: 'sanctum_notif_count', methods: ['GET'])]
+    public function notificationsUnreadCount(): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['count' => 0]);
+        }
+        $repo = $this->container->get(NotificationRepository::class);
+        return $this->json(['count' => $repo->countUnread($user)]);
+    }
+
+    // ──── SOCIAL / JOURNAL SHARING ────
+
+    #[Route('/social', name: 'sanctum_social', methods: ['GET'])]
+    public function social(): Response
+    {
+        return $this->render('sanctum/social.html.twig');
+    }
+
+    #[Route('/social/api/users', name: 'sanctum_social_users', methods: ['GET'])]
+    public function socialUsers(): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) {
+            return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        $em = $this->container->get(EntityManagerInterface::class);
+        $users = $em->getRepository(User::class)->createQueryBuilder('u')
+            ->orderBy('u.code', 'ASC')
+            ->getQuery()->getResult();
+
+        $connRepo = $this->container->get(ConnectionRepository::class);
+        $myConnections = $connRepo->findByUser($user);
+        $connectedCodes = array_map(fn($c) => $c->getConnectedUser()->getCode(), $myConnections);
+
+        $reqRepo = $this->container->get(AccessRequestRepository::class);
+        $pendingSent = $reqRepo->findByRequesterAndStatus($user, 'pending');
+        $pendingSentCodes = array_map(fn($r) => $r->getTarget()->getCode(), $pendingSent);
+        $pendingReceived = $reqRepo->findByTargetAndStatus($user, 'pending');
+        $pendingReceivedCodes = array_map(fn($r) => $r->getRequester()->getCode(), $pendingReceived);
+
+        $result = [];
+        foreach ($users as $u) {
+            $code = $u->getCode();
+            if ($code === $user->getCode()) {
+                $status = 'owner';
+            } elseif (in_array($code, $connectedCodes)) {
+                $status = 'connected';
+            } elseif (in_array($code, $pendingSentCodes)) {
+                $status = 'pending_sent';
+            } elseif (in_array($code, $pendingReceivedCodes)) {
+                $status = 'pending_received';
+            } else {
+                $status = 'none';
+            }
+            $result[] = [
+                'code' => $code,
+                'name' => $u->getName(),
+                'is_admin' => $u->getIsAdmin(),
+                'status' => $status,
+            ];
+        }
+        return $this->json(['success' => true, 'users' => $result]);
+    }
+
+    #[Route('/social/api/access-status/{code}', name: 'sanctum_social_status', methods: ['GET'])]
+    public function socialAccessStatus(string $code): JsonResponse
+    {
+        $user = $this->getUser();
+        if (!$user instanceof User) return $this->json(['error' => 'Unauthorized'], 401);
+
+        $em = $this->container->get(EntityManagerInterface::class);
+        $userRepo = $em->getRepository(User::class);
+        $reqRepo = $this->container->get(AccessRequestRepository::class);
+
+        $target = $userRepo->findByCode($code);
+        if (!$target) return $this->json(['success' => true, 'status' => 'none']);
+
+        if ($target === $user) return $this->json(['success' => true, 'status' => 'owner']);
+
+        $connRepo = $this->container->get(ConnectionRepository::class);
+        if ($connRepo->areConnected($user, $target)) {
+            return $this->json(['success' => true, 'status' => 'connected']);
+        }
+
+        $ar = $reqRepo->findExisting($user, $target);
+        if ($ar) return $this->json(['success' => true, 'status' => $ar->getStatus()]);
+
+        $reverse = $reqRepo->findExisting($target, $user);
+        if ($reverse && $reverse->getStatus() === 'pending') {
+            return $this->json(['success' => true, 'status' => 'received_pending']);
+        }
+        return $this->json(['success' => true, 'status' => 'none']);
     }
 }

@@ -1,0 +1,155 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Notificaciones · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Notificaciones{% endblock %}
+{% block topbar_subtitle %}Tu actividad reciente del Sanctum.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    {# ─── Header ─── #}
+    <div class="glass-card-elev p-4 mb-4 flex items-center gap-3">
+        <span class="material-symbols-elev text-3xl text-[var(--gold-elev)]">notifications_active</span>
+        <div class="flex-1">
+            <h2 class="text-lg font-semibold">Notificaciones</h2>
+            <p class="text-xs text-[var(--outline-elev)]"><span id="notif-unread">0</span> sin leer</p>
+        </div>
+        <button id="notif-mark-all" class="btn-elev-secondary text-xs">
+            <span class="material-symbols-elev align-middle text-sm">done_all</span>
+            Marcar todas leídas
+        </button>
+    </div>
+
+    {# ─── List ─── #}
+    <div id="notif-list" class="space-y-2">
+        <p class="text-center text-[var(--outline-elev)] py-8">Cargando notificaciones...</p>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    var me = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+    var listEl = document.getElementById('notif-list');
+    var unreadEl = document.getElementById('notif-unread');
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(m) {
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+        });
+    }
+
+    function renderIcon(type) {
+        var map = {
+            'comment': 'comment',
+            'like': 'favorite',
+            'post': 'campaign',
+            'mention': 'alternate_email',
+            'signal': 'trending_up',
+            'dm': 'chat_bubble',
+            'academia': 'school',
+            'task': 'task_alt',
+            'access_request': 'person_add',
+            'access_accepted': 'check_circle',
+            'access_rejected': 'cancel',
+            'connection_removed': 'person_off',
+            'permissions_changed': 'lock_open',
+            'economic_alert': 'event'
+        };
+        return map[type] || 'notifications';
+    }
+
+    function renderLink(type) {
+        var map = {
+            'comment': '/feed',
+            'like': '/feed',
+            'post': '/feed',
+            'mention': '/feed',
+            'signal': '/calendar',
+            'dm': '/chat',
+            'academia': '/sanctum',
+            'task': '/sanctum/tasks',
+            'access_request': '/sanctum/social',
+            'access_accepted': '/sanctum/social',
+            'access_rejected': '/sanctum/social',
+            'connection_removed': '/sanctum/social',
+            'permissions_changed': '/sanctum/social',
+            'economic_alert': '/calendar'
+        };
+        return map[type] || '/feed';
+    }
+
+    async function loadNotifications() {
+        var r = await apiFetch('/api/notifications?user_code=' + encodeURIComponent(me));
+        if (!r.ok || !Array.isArray(r.data)) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin notificaciones</p>';
+            unreadEl.textContent = '0';
+            return;
+        }
+        var notifs = r.data;
+        var unread = notifs.filter(function(n){return !n.read;}).length;
+        unreadEl.textContent = unread;
+
+        if (notifs.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin notificaciones todavía</p>';
+            return;
+        }
+        listEl.innerHTML = notifs.map(function(n) {
+            var icon = renderIcon(n.type);
+            var link = n.link || renderLink(n.type);
+            var time = n.ts ? new Date(n.ts).toLocaleString() : '';
+            var unread_class = n.read ? '' : 'border-l-4 border-[var(--gold-elev)] bg-[rgba(242,202,80,0.05)]';
+            return '<a href="' + escapeHtml(link) + '" data-id="' + n.id + '" class="block glass-card-elev p-3 ' + unread_class + ' hover:bg-[var(--glass-bg-elev)] transition">'
+                + '<div class="flex items-start gap-3">'
+                + '<span class="material-symbols-elev text-[var(--gold-elev)] mt-0.5">' + icon + '</span>'
+                + '<div class="flex-1 min-w-0">'
+                + '<p class="text-sm text-[var(--on-surface-elev)]">' + escapeHtml(n.text || '') + '</p>'
+                + '<p class="text-xs text-[var(--outline-elev)] mt-1">' + escapeHtml(time) + '</p>'
+                + '</div>'
+                + (n.read ? '' : '<span class="text-xs text-[var(--gold-elev)] font-semibold">NUEVO</span>')
+                + '</div>'
+                + '</a>';
+        }).join('');
+    }
+
+    async function markRead(id, el) {
+        var r = await apiFetch('/api/notifications/' + id + '/read?user_code=' + encodeURIComponent(me), {
+            method: 'PUT',
+            silent: true
+        });
+        if (r.ok && el) {
+            el.classList.remove('border-l-4', 'border-[var(--gold-elev)]', 'bg-[rgba(242,202,80,0.05)]');
+            var badge = el.querySelector('.font-semibold');
+            if (badge) badge.remove();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        function boot() {
+            if (me) loadNotifications();
+            else setTimeout(boot, 500);
+        }
+        if (window.TNSVT_USER) boot();
+        else window.addEventListener('tnsvt:user-loaded', boot, { once: true });
+
+        listEl.addEventListener('click', function(e) {
+            var a = e.target.closest('a[data-id]');
+            if (!a) return;
+            var id = a.dataset.id;
+            markRead(id, a);
+        });
+
+        document.getElementById('notif-mark-all').addEventListener('click', async function() {
+            var r = await apiFetch('/api/notifications/read-all?user_code=' + encodeURIComponent(me), {
+                method: 'PUT',
+                silent: true
+            });
+            if (r.ok) {
+                if (window.apiToast) apiToast('Todas marcadas como leídas', 'success');
+                loadNotifications();
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

@@ -88,6 +88,15 @@
                 <span class="material-symbols-elev">task_alt</span>
                 <span>Tasks</span>
             </a>
+            <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
+                <span class="material-symbols-elev">notifications_active</span>
+                <span>Notificaciones</span>
+                <span id="bell-badge" class="hidden ml-auto px-1.5 rounded-full bg-[var(--gold-elev)] text-black text-[0.65rem] font-bold leading-tight py-0.5">0</span>
+            </a>
+            <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
+                <span class="material-symbols-elev">groups</span>
+                <span>Social</span>
+            </a>
             <a href="/oracle" class="sanctum-link" data-page="oracle">
                 <span class="material-symbols-elev">auto_awesome</span>
                 <span>Oráculo</span>
@@ -210,6 +219,26 @@
             apiFetch('/api/auth/logout', { method: 'POST', silent: true }).then(() => location.href = '/');
         }
     });
+
+    // Notification badge in sidebar (poll every 60s)
+    function refreshNotifBadge() {
+        if (!window.TNSVT_USER) return;
+        fetch('/sanctum/notifications/unread-count')
+            .then(function(r) { return r.ok ? r.json() : { count: 0 }; })
+            .then(function(data) {
+                var badge = document.getElementById('bell-badge');
+                if (!badge) return;
+                var n = (data && data.count) || 0;
+                if (n > 0) {
+                    badge.textContent = n > 99 ? '99+' : n;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }).catch(function() {});
+    }
+    refreshNotifBadge();
+    setInterval(refreshNotifBadge, 60000);
 })();
 </script>
 
