@@ -22,13 +22,11 @@ USER = "u310596868"
 KEYFILE = os.path.expanduser(r"~\.ssh\id_hostinger_v2")
 REMOTE_DIR = "/home/u310596868/domains/lightskyblue-turtle-221397.hostingersite.com/public_html"
 LOCAL_ROOT = Path(__file__).resolve().parent.parent
-SSH_PASSPHRASE = os.environ.get("SSH_PASSPHRASE", "")
+SSH_PASSPHRASE = os.environ.get("SSH_PASSPHRASE", None)
 
 def connect():
-    if not SSH_PASSPHRASE:
-        print("[deploy] ERROR: SSH_PASSPHRASE no está en env vars.")
-        sys.exit(1)
-    key = paramiko.Ed25519Key.from_private_key_file(KEYFILE, password=SSH_PASSPHRASE)
+    pwd = SSH_PASSPHRASE if SSH_PASSPHRASE else None
+    key = paramiko.Ed25519Key.from_private_key_file(KEYFILE, password=pwd)
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.connect(HOST, port=PORT, username=USER, pkey=key, timeout=30)
@@ -139,11 +137,6 @@ def main():
     print("T.N.S.V.T Reino v2 — Phase 0 Deploy v2")
     print(f"Target: {USER}@{HOST}:{PORT}{REMOTE_DIR}")
     print("=" * 60)
-
-    if not SSH_PASSPHRASE:
-        print("\n[deploy] SSH passphrase es REQUERIDA.")
-        print("Usage: $env:SSH_PASSPHRASE='tu_passphrase'; python bin/deploy.py")
-        sys.exit(1)
 
     print("\n[1/7] Conectando a Hostinger...")
     client = connect()
