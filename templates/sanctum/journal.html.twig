@@ -2,22 +2,145 @@
 
 {% block title %}Trading Journal · T.N.S.V.T{% endblock %}
 
-{% block topbar_title %}Trading Journal{% endblock %}
-{% block topbar_subtitle %}Bitácora de operaciones, análisis emocional y métricas.{% endblock %}
+{% block topbar_title %}El Libro del Ejecutor{% endblock %}
+{% block topbar_subtitle %}"Lo que no se registra, no se domina."{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .journal-card {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .journal-card:hover {
+        border-color: rgba(242, 202, 80, 0.2);
+        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
+    }
+    .journal-card.cosmic {
+        background: linear-gradient(135deg, rgba(45, 27, 78, 0.5), rgba(22, 17, 33, 0.7));
+        border: 1px solid rgba(242, 202, 80, 0.3);
+    }
+    .journal-equity {
+        width: 100%;
+        height: 200px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+        position: relative;
+    }
+    .journal-equity .reveal-path {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: reveal-path 2.5s ease-out forwards;
+    }
+    .scan-sweep::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(242, 202, 80, 0.1), transparent);
+        transform: skewX(-20deg);
+        animation: scan-sweep 4s infinite ease-in-out;
+    }
+    .journal-nav-btn {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.2s ease;
+        text-align: center;
+        background: transparent;
+        color: var(--outline-elev, #99907c);
+        border: none;
+        cursor: pointer;
+    }
+    .journal-nav-btn.active {
+        background: var(--gold-elev, #f2ca50);
+        color: var(--void-black, #050308);
+    }
+    .journal-nav-btn:hover:not(.active) {
+        color: var(--on-surface-elev, #e9def6);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    {# ─── KPI Stats Row ─── #}
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6" id="journal-stats">
-        <div class="kpi-card"><p class="kpi-label">Total</p><p class="kpi-value" id="stat-total">0</p></div>
-        <div class="kpi-card"><p class="kpi-label">Wins</p><p class="kpi-value text-emerald-400" id="stat-wins">0</p></div>
-        <div class="kpi-card"><p class="kpi-label">Losses</p><p class="kpi-value text-red-400" id="stat-losses">0</p></div>
-        <div class="kpi-card"><p class="kpi-label">Win Rate</p><p class="kpi-value" id="stat-winrate">0%</p></div>
-        <div class="kpi-card"><p class="kpi-label">Total PnL</p><p class="kpi-value" id="stat-pnl">$0</p></div>
+    {# ─── Header ─── #}
+    <div class="text-center mb-6">
+        <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-2">El Libro del Ejecutor</p>
+        <h1 class="font-headline-lg text-headline-lg shimmer-text">Trading Journal</h1>
     </div>
 
+    {# ─── KPI Stats Row (Bento Grid 2x2) ─── #}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="journal-stats">
+        <div class="journal-card text-center">
+            <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">analytics</span>
+            <p class="kpi-label mt-2">Trades</p>
+            <p class="kpi-value gold" id="stat-total">0</p>
+        </div>
+        <div class="journal-card text-center">
+            <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">trending_up</span>
+            <p class="kpi-label mt-2">Win Rate</p>
+            <p class="kpi-value gold" id="stat-winrate">0%</p>
+        </div>
+        <div class="journal-card text-center col-span-2">
+            <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">payments</span>
+            <p class="kpi-label mt-2">PnL Neto Total</p>
+            <p class="text-4xl font-bold text-[var(--gold-elev)] mt-1" id="stat-pnl">$0</p>
+        </div>
+    </div>
+
+    {# ─── Equity Curve ─── #}
+    <div class="journal-card mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-title-md text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-[var(--gold-elev)]">show_chart</span>
+                Curva de Equity
+            </h3>
+            <div class="flex gap-2">
+                <button class="filter-pill" data-range="7">7d</button>
+                <button class="filter-pill active" data-range="30">30d</button>
+                <button class="filter-pill" data-range="90">90d</button>
+            </div>
+        </div>
+        <div class="journal-equity">
+            <svg class="w-full h-full" preserveaspectratio="none" viewBox="0 0 400 100">
+                <defs>
+                    <lineargradient id="equityGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stop-color="#f2ca50" stop-opacity="0.3"/>
+                        <stop offset="100%" stop-color="#f2ca50" stop-opacity="0"/>
+                    </lineargradient>
+                </defs>
+                <path class="reveal-path drop-shadow-[0_0_8px_rgba(242,202,80,0.5)]"
+                      d="M0,80 Q50,75 100,85 T200,60 T300,40 T400,20"
+                      fill="none" stroke="#f2ca50" stroke-width="2"/>
+                <path d="M0,80 Q50,75 100,85 T200,60 T300,40 T400,20 V100 H0 Z"
+                      fill="url(#equityGradient)"/>
+            </svg>
+        </div>
+    </div>
+
+    {# ─── Navigation Tabs ─── #}
+    <nav class="flex justify-between items-center glass-card-elev rounded-full px-1 py-1 mb-4">
+        <button class="journal-nav-btn active">Dashboard</button>
+        <button class="journal-nav-btn">Registrar</button>
+        <button class="journal-nav-btn">Log</button>
+        <button class="journal-nav-btn">Stats</button>
+    </nav>
+
     {# ─── Toolbar ─── #}
-    <div class="glass-card-elev p-4 mb-4 flex flex-wrap items-center gap-3">
+    <div class="journal-card mb-4 flex flex-wrap items-center gap-3">
         <button id="btn-new-trade" class="btn-primary flex items-center gap-2">
             <span class="material-symbols-elev align-middle text-sm">add</span>
             Nuevo Trade
@@ -29,9 +152,9 @@
     </div>
 
     {# ─── Trade List ─── #}
-    <div class="glass-card-elev p-0 overflow-hidden">
+    <div class="journal-card p-0 overflow-hidden">
         <div id="trade-list" class="divide-y divide-[var(--outline-variant-elev)]">
-            <p class="text-center text-[var(--outline-elev)] py-12">Cargando journal...</p>
+            <p class="text-center text-[var(--outline-elev)] py-12 loading-pulse">Cargando journal...</p>
         </div>
     </div>
 </div>
