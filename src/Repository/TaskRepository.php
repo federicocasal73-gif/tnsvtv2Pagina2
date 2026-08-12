@@ -27,6 +27,12 @@ class TaskRepository extends ServiceEntityRepository
     }
 
     /** @return Task[] */
+    public function findAllActiveOrdered(): array
+    {
+        return $this->findActiveOrdered();
+    }
+
+    /** @return Task[] */
     public function findActiveOrdered(): array
     {
         return $this->createQueryBuilder('t')
