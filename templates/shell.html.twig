@@ -67,39 +67,89 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto py-4">
+            {# ═══ PRINCIPAL ═══ #}
             <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
                 <span class="material-symbols-elev">dashboard</span>
                 <span>Dashboard</span>
             </a>
-            <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
-                <span class="material-symbols-elev">group</span>
-                <span>Adeptos</span>
+            <a href="/profile" class="sanctum-link" data-page="profile">
+                <span class="material-symbols-elev">person</span>
+                <span>Mi Perfil</span>
             </a>
-            <a href="{{ path('sanctum_audit') }}" class="sanctum-link" data-page="audit">
-                <span class="material-symbols-elev">shield</span>
-                <span>Audit Log</span>
+
+            {# ═══ TRADING ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Trading</div>
+            <a href="/journal" class="sanctum-link" data-page="journal">
+                <span class="material-symbols-elev">edit_note</span>
+                <span>Journal</span>
             </a>
-            <a href="/frequencies" class="sanctum-link" data-page="frequencies">
-                <span class="material-symbols-elev">graphic_eq</span>
-                <span>Frecuencias</span>
+            <a href="/calendar" class="sanctum-link" data-page="calendar">
+                <span class="material-symbols-elev">calendar_month</span>
+                <span>Calendario</span>
             </a>
-            <a href="/sanctum/api/dashboard" target="_blank" class="sanctum-link">
-                <span class="material-symbols-elev">data_object</span>
-                <span>API JSON</span>
+            <a href="/leaderboard" class="sanctum-link" data-page="leaderboard">
+                <span class="material-symbols-elev">leaderboard</span>
+                <span>Leaderboard</span>
             </a>
-            <a href="/sanctum/tasks" class="sanctum-link" data-page="tasks">
-                <span class="material-symbols-elev">task_alt</span>
-                <span>Tasks</span>
+
+            {# ═══ SOCIAL ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Social</div>
+            <a href="/chat" class="sanctum-link" data-page="chat">
+                <span class="material-symbols-elev">chat</span>
+                <span>Chat</span>
             </a>
-            <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
-                <span class="material-symbols-elev">notifications_active</span>
-                <span>Notificaciones</span>
-                <span id="bell-badge" class="hidden ml-auto px-1.5 rounded-full bg-[var(--gold-elev)] text-black text-[0.65rem] font-bold leading-tight py-0.5">0</span>
+            <a href="/feed" class="sanctum-link" data-page="feed">
+                <span class="material-symbols-elev">forum</span>
+                <span>Feed</span>
+            </a>
+            <a href="/clan" class="sanctum-link" data-page="clan">
+                <span class="material-symbols-elev">groups</span>
+                <span>Clan</span>
             </a>
             <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
-                <span class="material-symbols-elev">groups</span>
-                <span>Social</span>
+                <span class="material-symbols-elev">share</span>
+                <span>Journal Sharing</span>
             </a>
+
+            {# ═══ COMPETENCIA ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Competición</div>
+            <a href="/tournaments" class="sanctum-link" data-page="tournaments">
+                <span class="material-symbols-emoji">🏆</span>
+                <span>Torneos</span>
+            </a>
+            <a href="/duels" class="sanctum-link" data-page="duels">
+                <span class="material-symbols-elev">swords</span>
+                <span>Duelos 1v1</span>
+            </a>
+            <a href="/game" class="sanctum-link" data-page="game">
+                <span class="material-symbols-elev">sports_esports</span>
+                <span>Game</span>
+            </a>
+            <a href="/honor" class="sanctum-link" data-page="honor">
+                <span class="material-symbols-elev">military_tech</span>
+                <span>Honor</span>
+            </a>
+
+            {# ═══ EDUCACIÓN ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Educación</div>
+            <a href="/campus" class="sanctum-link" data-page="campus">
+                <span class="material-symbols-elev">school</span>
+                <span>Campus</span>
+            </a>
+
+            {# ═══ ECONOMÍA ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Economía</div>
+            <a href="/shop" class="sanctum-link" data-page="shop">
+                <span class="material-symbols-elev">store</span>
+                <span>Tienda</span>
+            </a>
+            <a href="/wallet" class="sanctum-link" data-page="wallet">
+                <span class="material-symbols-elev">account_balance_wallet</span>
+                <span>Wallet</span>
+            </a>
+
+            {# ═══ HERRAMIENTAS ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Herramientas</div>
             <a href="/oracle" class="sanctum-link" data-page="oracle">
                 <span class="material-symbols-elev">auto_awesome</span>
                 <span>Oráculo</span>
@@ -112,6 +162,30 @@
                 <span class="material-symbols-elev">graphic_eq</span>
                 <span>Frecuencias</span>
             </a>
+            <a href="/diario" class="sanctum-link" data-page="diario">
+                <span class="material-symbols-elev">menu_book</span>
+                <span>Diario</span>
+            </a>
+            <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
+                <span class="material-symbols-elev">notifications_active</span>
+                <span>Notificaciones</span>
+                <span id="bell-badge" class="hidden ml-auto px-1.5 rounded-full bg-[var(--gold-elev)] text-black text-[0.65rem] font-bold leading-tight py-0.5">0</span>
+            </a>
+
+            {# ═══ ADMIN ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Administración</div>
+            <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
+                <span class="material-symbols-elev">group</span>
+                <span>Usuarios</span>
+            </a>
+            <a href="/sanctum/tasks" class="sanctum-link" data-page="tasks">
+                <span class="material-symbols-elev">task_alt</span>
+                <span>Tareas</span>
+            </a>
+            <a href="{{ path('sanctum_audit') }}" class="sanctum-link" data-page="audit">
+                <span class="material-symbols-elev">shield</span>
+                <span>Audit</span>
+            </a>
             <a href="/sanctum/settings" class="sanctum-link" data-page="settings">
                 <span class="material-symbols-elev">settings</span>
                 <span>Settings</span>
@@ -119,67 +193,6 @@
             <a href="/sanctum/monitoring" class="sanctum-link" data-page="monitoring">
                 <span class="material-symbols-elev">monitoring</span>
                 <span>Monitoring</span>
-            </a>
-            <div class="px-6 my-2 text-xs uppercase tracking-wider text-[var(--outline-elev)] opacity-50">Legacy modules</div>
-            <a href="/journal" class="sanctum-link" data-page="journal">
-                <span class="material-symbols-elev">edit_note</span>
-                <span>Journal</span>
-            </a>
-            <a href="/chat" class="sanctum-link" data-page="chat">
-                <span class="material-symbols-elev">chat</span>
-                <span>Chat</span>
-            </a>
-            <a href="/feed" class="sanctum-link" data-page="feed">
-                <span class="material-symbols-elev">forum</span>
-                <span>Feed</span>
-            </a>
-            <a href="/calendar" class="sanctum-link" data-page="calendar">
-                <span class="material-symbols-elev">calendar_month</span>
-                <span>Calendar</span>
-            </a>
-            <a href="/diario" class="sanctum-link" data-page="diario">
-                <span class="material-symbols-elev">menu_book</span>
-                <span>Diario</span>
-            </a>
-            <a href="/campus" class="sanctum-link" data-page="campus">
-                <span class="material-symbols-elev">school</span>
-                <span>Campus</span>
-            </a>
-            <a href="/game" class="sanctum-link" data-page="game">
-                <span class="material-symbols-elev">sports_esports</span>
-                <span>Game</span>
-            </a>
-            <a href="/leaderboard" class="sanctum-link" data-page="leaderboard">
-                <span class="material-symbols-elev">leaderboard</span>
-                <span>Leaderboard</span>
-            </a>
-            <a href="/tournaments" class="sanctum-link" data-page="tournaments">
-                <span class="material-symbols-emoji">🏆</span>
-                <span>Torneos</span>
-            </a>
-            <a href="/duels" class="sanctum-link" data-page="duels">
-                <span class="material-symbols-elev">swords</span>
-                <span>Duelos</span>
-            </a>
-            <a href="/clan" class="sanctum-link" data-page="clan">
-                <span class="material-symbols-elev">groups</span>
-                <span>Clan</span>
-            </a>
-            <a href="/shop" class="sanctum-link" data-page="shop">
-                <span class="material-symbols-elev">store</span>
-                <span>Tienda</span>
-            </a>
-            <a href="/wallet" class="sanctum-link" data-page="wallet">
-                <span class="material-symbols-elev">account_balance_wallet</span>
-                <span>Wallet</span>
-            </a>
-            <a href="/honor" class="sanctum-link" data-page="honor">
-                <span class="material-symbols-elev">military_tech</span>
-                <span>Honor</span>
-            </a>
-            <a href="/profile" class="sanctum-link" data-page="profile">
-                <span class="material-symbols-elev">person</span>
-                <span>Perfil</span>
             </a>
         </nav>
 
