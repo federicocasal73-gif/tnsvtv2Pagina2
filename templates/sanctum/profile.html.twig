@@ -154,19 +154,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
+{# Three.js for Sacred Sigil #}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" defer></script>
+
+<div class="max-w-2xl mx-auto pb-24">
     {# ─── Profile Hero with 3D Sigil ─── #}
     <div class="profile-card">
         <div class="text-center mb-4">
             <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Identidad Celestial</p>
         </div>
-        <div class="profile-sigil">
-            <div class="sigil-rotate">
-                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                    <circle cx="50" cy="50" fill="none" opacity="0.3" r="45" stroke="#d4af37" stroke-width="0.5"/>
-                    <path d="M50 5 L55 45 L95 50 L55 55 L50 95 L45 55 L5 50 L45 45 Z" fill="#d4af37"/>
-                </svg>
-            </div>
+        <div class="profile-sigil" id="sacred-sigil-container">
+            {# Three.js will render the 3D sigil here via sacred-sigil.js #}
+        </div>
             <div class="sigil-pulse"></div>
             <div class="sigil-core"></div>
         </div>
@@ -395,4 +394,8 @@
     }).catch(() => {});
 })();
 </script>
+
+{# Sacred Sigil 3D + Tabbar #}
+<script src="{{ asset('js/modules/sacred-sigil.js') }}" defer></script>
+{% include '_partials/tabbar.html.twig' %}
 {% endblock %}
