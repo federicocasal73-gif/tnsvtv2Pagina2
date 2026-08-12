@@ -3,51 +3,214 @@
 {% block title %}Hilos del Mundo · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}Hilos del Mundo{% endblock %}
-{% block topbar_subtitle %}Calendario Macroeconómico · No-Trade Window · Disciplina Operacional{% endblock %}
+{% block topbar_subtitle %}El Pulso del Mercado · Macro Calendario{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .macro-card {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .macro-card:hover {
+        border-color: rgba(242, 202, 80, 0.2);
+        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
+    }
+    .nont-trade-banner {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(242, 202, 80, 0.2);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .nont-trade-banner.locked {
+        border-color: rgba(248, 113, 113, 0.3);
+        background: rgba(248, 113, 113, 0.05);
+    }
+    .nont-trade-banner.locked::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--error, #f87171), transparent);
+    }
+    .countdown-display {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--gold-elev, #f2ca50);
+        text-shadow: 0 0 20px rgba(242, 202, 80, 0.4);
+        animation: countdown-pulse 2s ease-in-out infinite;
+    }
+    .countdown-display.locked {
+        color: var(--error, #f87171);
+        text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
+    }
+    .countdown-block {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(242, 202, 80, 0.2);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1.25rem;
+        text-align: center;
+        min-width: 80px;
+    }
+    .countdown-block.locked {
+        border-color: rgba(248, 113, 113, 0.3);
+    }
+    .countdown-block-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--gold-elev, #f2ca50);
+    }
+    .countdown-block.locked .countdown-block-value {
+        color: var(--error, #f87171);
+    }
+    .countdown-block-label {
+        font-size: 0.6rem;
+        color: var(--outline-elev, #99907c);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 0.25rem;
+    }
+    .macro-event-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        transition: all 0.2s ease;
+        border-left-width: 3px;
+    }
+    .macro-event-card:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .macro-event-card.high-impact {
+        border-left-color: var(--gold-elev, #f2ca50);
+    }
+    .macro-event-card.medium-impact {
+        border-left-color: rgba(242, 202, 80, 0.5);
+    }
+    .macro-event-card.low-impact {
+        border-left-color: rgba(255, 255, 255, 0.2);
+    }
+    .impact-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .impact-dot.high { background: var(--error, #f87171); }
+    .impact-dot.medium { background: var(--warning, #fbbf24); }
+    .impact-dot.low { background: var(--success, #4ade80); }
+    .lock-overlay {
+        position: absolute;
+        inset: 0;
+        backdrop-filter: blur(8px);
+        background: rgba(5, 3, 8, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        z-index: 10;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .lock-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-    <div class="max-w-6xl mx-auto">
-        {# No-Trade Window Status Banner #}
-        <div id="ntw-banner" class="glass-card-elev p-6 mb-6 border-l-4 border-[var(--gold-elev)]">
-            <div class="flex items-center gap-4">
-                <div id="ntw-icon" class="w-14 h-14 rounded-full bg-[var(--gold-elev)] flex items-center justify-center">
-                    <span class="material-symbols-elev text-[var(--on-primary-elev)]" style="font-variation-settings: 'FILL' 1;">timer</span>
+<div class="max-w-6xl mx-auto">
+    {# Header #}
+    <div class="text-center mb-8">
+        <p class="font-label-sm text-label-sm text-primary uppercase tracking-[0.3em] mb-2">Calendario Económico</p>
+        <h1 class="font-headline-xl text-headline-xl shimmer-text">El Pulso del Mercado</h1>
+        <p class="text-on-surface-variant opacity-70 italic mt-2">"Operar en el momento equivocado borra todos tus conocimientos."</p>
+    </div>
+
+    {# No-Trade Window Banner #}
+    <div id="ntw-banner" class="nont-trade-banner">
+        <div class="flex items-center gap-4">
+            <div id="ntw-icon" class="w-14 h-14 rounded-full bg-[var(--gold-elev)] flex items-center justify-center">
+                <span class="material-symbols-outlined text-[var(--on-primary-elev)]" style="font-variation-settings: 'FILL' 1;">timer</span>
+            </div>
+            <div class="flex-1">
+                <h2 class="text-xl font-semibold text-[var(--on-surface-elev)]" id="ntw-title">Cargando...</h2>
+                <p class="text-sm text-[var(--outline-elev)]" id="ntw-message">Cargando estado del no-trade window...</p>
+            </div>
+            <div class="flex gap-3">
+                <div class="countdown-block">
+                    <p class="countdown-block-value" id="ntw-hours">--</p>
+                    <p class="countdown-block-label">Horas</p>
                 </div>
-                <div class="flex-1">
-                    <h2 class="text-xl font-semibold text-[var(--on-surface-elev)]" id="ntw-title">Cargando...</h2>
-                    <p class="text-sm text-[var(--outline-elev)]" id="ntw-message">Cargando estado del no-trade window...</p>
+                <div class="countdown-block">
+                    <p class="countdown-block-value" id="ntw-mins">--</p>
+                    <p class="countdown-block-label">Mins</p>
                 </div>
-                <div class="text-right">
-                    <p class="text-3xl font-bold text-[var(--gold-elev)] font-mono" id="ntw-countdown">--:--</p>
-                    <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider" id="ntw-countdown-label">...</p>
+                <div class="countdown-block">
+                    <p class="countdown-block-value" id="ntw-secs">--</p>
+                    <p class="countdown-block-label">Segs</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {# No-Trade Window Timeline #}
+        <div class="macro-card lg:col-span-2 relative">
+            <h3 class="text-lg font-semibold mb-2 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[var(--gold-elev)]">schedule</span>
+                No-Trade Window Timeline
+            </h3>
+            <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">Próximas 168 horas (7 días)</p>
+            <div class="relative" style="height: 280px;">
+                <svg id="timeline-svg" width="100%" height="100%" viewBox="0 0 800 280" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+            {# Lock Overlay #}
+            <div id="lock-overlay" class="lock-overlay">
+                <div class="text-center">
+                    <span class="material-symbols-outlined text-5xl text-[var(--error)] pulse-gold">gavel</span>
+                    <p class="font-headline-lg text-[var(--error)] font-bold mt-2">PROHIBIDO OPERAR</p>
+                    <p class="font-label-sm text-[var(--outline-elev)] mt-1">La volatilidad sagrada se aproxima</p>
+                    <p class="text-xs text-[var(--outline-elev)] mt-2" id="lock-message">Respeta los hilos o serás consumido</p>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {# No-Trade Window Visualizer #}
-            <div class="glass-card-elev p-6 lg:col-span-2">
-                <h3 class="text-lg font-semibold mb-2 text-[var(--on-surface-elev)]">No-Trade Window Timeline</h3>
-                <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">Próximas 168 horas (7 días)</p>
-                <div class="relative" style="height: 280px;">
-                    <svg id="timeline-svg" width="100%" height="100%" viewBox="0 0 800 280" preserveAspectRatio="xMidYMid meet"></svg>
-                </div>
-            </div>
-
-            {# Upcoming Events List #}
-            <div class="glass-card-elev p-6">
-                <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Próximos eventos</h3>
-                <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">High-impact (importance ≥ 3)</p>
-                <div id="upcoming-list" class="space-y-2 max-h-96 overflow-y-auto pr-2">
-                    <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando eventos...</p>
-                </div>
+        {# Upcoming Events List #}
+        <div class="macro-card">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[var(--gold-elev)]">public</span>
+                Próximos eventos
+            </h3>
+            <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">High-impact (importance ≥ 3)</p>
+            <div id="upcoming-list" class="space-y-2 max-h-96 overflow-y-auto pr-2">
+                <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando eventos...</p>
             </div>
         </div>
+    </div>
 
-        {# Trading Discipline Rules #}
-        <div class="glass-card-elev p-6 mt-6">
-            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Regla de Disciplina</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+    {# Trading Discipline Rules #}
+    <div class="macro-card mt-6">
+        <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+            <span class="material-symbols-outlined text-[var(--gold-elev)]">shield</span>
+            Regla de Disciplina
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div class="glass-card-elev p-4">
                     <p class="text-[var(--gold-elev)] font-bold text-2xl">15'</p>
                     <p class="text-[var(--on-surface-elev)] font-medium">Antes del evento</p>
