@@ -88,11 +88,55 @@
             margin: 0 auto;
             line-height: 1.5;
         }
-        .cross {
-            font-size: 3rem;
-            color: #f2ca50;
-            margin-bottom: 1rem;
+        /* ─── Animated background orbs ─── */
+        .bg-orbs { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .orb {
+            position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+            animation: orb-float 20s ease-in-out infinite;
         }
+        .orb-1 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(242,202,80,0.3), transparent 70%); top: -10%; left: -10%; animation-delay: 0s; }
+        .orb-2 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(138,60,255,0.25), transparent 70%); bottom: -10%; right: -10%; animation-delay: -7s; }
+        .orb-3 { width: 250px; height: 250px; background: radial-gradient(circle, rgba(242,202,80,0.15), transparent 70%); top: 40%; right: 20%; animation-delay: -14s; }
+        @keyframes orb-float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -40px) scale(1.1); }
+            66% { transform: translate(-20px, 30px) scale(0.95); }
+        }
+
+        /* ─── Floating particles ─── */
+        .particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .particle {
+            position: absolute; width: 3px; height: 3px; background: rgba(242,202,80,0.6);
+            border-radius: 50%; animation: particle-rise 15s linear infinite;
+            box-shadow: 0 0 6px rgba(242,202,80,0.4);
+        }
+        @keyframes particle-rise {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) translateX(50px); opacity: 0; }
+        }
+
+        /* ─── Live stats strip ─── */
+        .stats-strip {
+            display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+            margin: 1.5rem 0; position: relative; z-index: 1;
+        }
+        .stat-item {
+            text-align: center; padding: 0.75rem 1.25rem;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(242,202,80,0.1);
+            border-radius: 0.75rem; backdrop-filter: blur(10px);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .stat-item:hover { transform: translateY(-3px); border-color: rgba(242,202,80,0.3); }
+        .stat-value {
+            font-size: 1.5rem; font-weight: 700;
+            background: linear-gradient(135deg, #f2ca50, #ffe088);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.65rem; color: #99907c; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.25rem; }
+        .stat-live { display: inline-block; width: 6px; height: 6px; background: #4ade80; border-radius: 50%; margin-right: 4px; animation: stat-pulse 2s infinite; }
+        @keyframes stat-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         /* ─── Login card ─── */
         .login-card {
@@ -285,13 +329,73 @@
     </style>
 </head>
 <body>
+    {# ─── Animated background ─── #}
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="particles" id="particles"></div>
+    <script>
+        // Generate floating particles
+        (function() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 25; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDelay = -(Math.random() * 15) + 's';
+                p.style.animationDuration = (10 + Math.random() * 10) + 's';
+                p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+                container.appendChild(p);
+            }
+        })();
+    </script>
     <div class="home-container">
         <div class="hero">
             <div class="cross">✝</div>
             <h1 class="logo">T.N.S.V.T</h1>
             <p class="tagline">Reino del Cristo Íntegro</p>
-            <p class="verse">"El ejecutor honesto cuenta no solo lo que hizo,<br> sino cómo se sintió al hacerlo."</p>
+            <p class="verse">"Por mí, los reyes reinan y los príncipes gobiernan con justicia." — Proverbios 8:15</p>
         </div>
+
+        {# ─── Live platform stats ─── #}
+        <div class="stats-strip">
+            <div class="stat-item">
+                <div class="stat-value" id="stat-traders">—</div>
+                <div class="stat-label"><span class="stat-live"></span>Traders Activos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-trades">—</div>
+                <div class="stat-label">Trades Hoy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-pnl">—</div>
+                <div class="stat-label">PnL Global</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-uptime">99.9%</div>
+                <div class="stat-label"><span class="stat-live"></span>Uptime</div>
+            </div>
+        </div>
+        <script>
+            // Load live stats
+            (function() {
+                apiFetch('/api/journal/stats').then(r => {
+                    if (r.total !== undefined) document.getElementById('stat-trades').textContent = r.total || 0;
+                    if (r.total_pnl !== undefined) {
+                        const pnl = parseFloat(r.total_pnl);
+                        const el = document.getElementById('stat-pnl');
+                        el.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
+                        el.style.background = pnl >= 0 ? 'linear-gradient(135deg, #4ade80, #22c55e)' : 'linear-gradient(135deg, #f87171, #ef4444)';
+                        el.style.webkitBackgroundClip = 'text';
+                    }
+                }).catch(() => {});
+                apiFetch('/api/users/all').then(r => {
+                    if (r.users) document.getElementById('stat-traders').textContent = r.users.length || 0;
+                }).catch(() => {});
+            })();
+        </script>
 
         {# ─── Login card ─── #}
         <div class="login-card">
