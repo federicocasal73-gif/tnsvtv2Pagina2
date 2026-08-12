@@ -1,0 +1,84 @@
+/* T.N.S.V.T Sacred Glass Design System - Tokens Elevated */
+:root {
+  /* Core Palette */
+  --void-black: #050308;
+  --surface-dim: #161121;
+  --surface: #161121;
+  --surface-bright: #3c3649;
+  --surface-container-lowest: #100b1c;
+  --surface-container-low: #1e192a;
+  --surface-container: #221d2e;
+  --surface-container-high: #2d2739;
+  --surface-container-highest: #383244;
+  --surface-variant: #383244;
+
+  /* Brand Colors */
+  --primary: #f2ca50;
+  --primary-fixed: #ffe088;
+  --primary-fixed-dim: #e9c349;
+  --primary-container: #d4af37;
+  --on-primary: #3c2f00;
+  --on-primary-fixed: #241a00;
+  --on-primary-fixed-variant: #574500;
+  --on-primary-container: #554300;
+
+  /* Secondary (Vesper Purple) */
+  --secondary: #d4bbff;
+  --secondary-fixed: #ebdcff;
+  --secondary-fixed-dim: #d4bbff;
+  --secondary-container: #6f04e4;
+  --on-secondary: #41008b;
+  --on-secondary-fixed: #260058;
+  --on-secondary-container: #d7bfff;
+
+  /* Tertiary */
+  --tertiary: #bfcdff;
+  --tertiary-fixed: #dbe1ff;
+  --tertiary-container: #97b0ff;
+
+  /* Semantic */
+  --error: #ffb4ab;
+  --error-container: #93000a;
+  --success: #4ade80;
+  --warning: #fbbf24;
+
+  /* Text */
+  --on-surface: #e9def6;
+  --on-surface-variant: #d0c5af;
+  --on-background: #e9def6;
+  --outline: #99907c;
+  --outline-variant: #4d4635;
+
+  /* Special */
+  --starlight-white: #FDFCF8;
+  --nebula-purple: #2D1B4E;
+  --gold-glow: rgba(242, 202, 80, 0.15);
+  --purple-glow: rgba(111, 4, 228, 0.2);
+
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-label: 'Space Grotesk', sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 0 20px rgba(242, 202, 80, 0.15);
+  --shadow-purple: 0 0 40px rgba(111, 4, 228, 0.2);
+}
