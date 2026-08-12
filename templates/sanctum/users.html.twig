@@ -2,13 +2,192 @@
 
 {% block title %}Adeptos · T.N.S.V.T{% endblock %}
 
-{% block topbar_title %}Adeptos{% endblock %}
-{% block topbar_subtitle %}Gestión de usuarios con avatares, tier badges y status indicators{% endblock %}
+{% block topbar_title %}Trono de Control{% endblock %}
+{% block topbar_subtitle %}Comando de Reino · Gestión de Adeptos{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .admin-card {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    .admin-card:hover {
+        border-color: rgba(242, 202, 80, 0.2);
+        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
+    }
+    .stat-mini-admin {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    .stat-mini-admin:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(242, 202, 80, 0.2);
+    }
+    .stat-mini-admin-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gold-elev, #f2ca50);
+    }
+    .stat-mini-admin-label {
+        font-size: 0.65rem;
+        color: var(--outline-elev, #99907c);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 0.25rem;
+    }
+    .alert-toggle {
+        position: relative;
+        width: 56px;
+        height: 28px;
+        background: var(--glass-border-elev, rgba(255, 255, 255, 0.1));
+        border-radius: 14px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        flex-shrink: 0;
+    }
+    .alert-toggle.active {
+        background: var(--gold-elev, #f2ca50);
+    }
+    .alert-toggle::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+    .alert-toggle.active::after {
+        transform: translateX(28px);
+    }
+    .audio-player-mini {
+        position: relative;
+        background: linear-gradient(135deg, rgba(45, 27, 78, 0.5), rgba(22, 17, 33, 0.7));
+        border: 1px solid rgba(242, 202, 80, 0.2);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    .audio-player-mini::before {
+        content: '';
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(242, 202, 80, 0.1), transparent 70%);
+        pointer-events: none;
+    }
+    .audio-wave {
+        display: flex;
+        align-items: end;
+        gap: 2px;
+        height: 20px;
+    }
+    .audio-wave-bar {
+        width: 3px;
+        background: var(--gold-elev, #f2ca50);
+        border-radius: 1px;
+        animation: wave-bar 1s ease-in-out infinite;
+    }
+    @keyframes wave-bar {
+        0%, 100% { height: 30%; }
+        50% { height: 100%; }
+    }
+    .audio-wave-bar:nth-child(2) { animation-delay: 0.1s; }
+    .audio-wave-bar:nth-child(3) { animation-delay: 0.2s; }
+    .audio-wave-bar:nth-child(4) { animation-delay: 0.3s; }
+    .audio-wave-bar:nth-child(5) { animation-delay: 0.4s; }
+</style>
+{% endblock %}
 
 {% block content %}
     <div class="max-w-7xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-6">
+            <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-2">Trono de Control</p>
+            <h1 class="font-headline-lg text-headline-lg shimmer-text">Comando de Reino</h1>
+        </div>
+
+        {# Global Kingdom Stats #}
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="stat-mini-admin">
+                <div class="stat-mini-admin-value" id="admin-stat-total">0</div>
+                <div class="stat-mini-admin-label">Total Users</div>
+            </div>
+            <div class="stat-mini-admin">
+                <div class="stat-mini-admin-value" id="admin-stat-signals">0</div>
+                <div class="stat-mini-admin-label">Señales</div>
+            </div>
+            <div class="stat-mini-admin">
+                <div class="stat-mini-admin-value text-green-400" id="admin-stat-pnl">+$0</div>
+                <div class="stat-mini-admin-label">Total PnL</div>
+            </div>
+        </div>
+
+        {# Alert Mode Switch #}
+        <div class="admin-card">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center border border-red-500/20">
+                    <span class="material-symbols-elev text-red-400">warning</span>
+                </div>
+                <div class="flex-1">
+                    <p class="font-label-md text-label-md font-bold text-[var(--on-surface-elev)]">Modo Alerta Alta Precisión</p>
+                    <p class="text-[10px] text-[var(--outline-elev)] uppercase tracking-wider">Protocolo de Emergencia</p>
+                </div>
+                <div class="alert-toggle" id="alert-mode-toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
+        </div>
+
+        {# Audio Player Mini #}
+        <div class="audio-player-mini">
+            <div class="flex items-center gap-5 mb-4 relative z-10">
+                <div class="w-16 h-16 rounded-lg overflow-hidden shadow-2xl relative bg-[var(--primary-container,#d4af37)]/20 flex items-center justify-center">
+                    <div class="audio-wave">
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest">Global Temple Broadcast</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-[var(--primary)] pulse-gold"></span>
+                    </div>
+                    <p class="font-title-md text-title-md font-bold text-[var(--starlight-white,#FDFCF8)] leading-tight">Sinfonía Atmosférica Nro. 4</p>
+                    <p class="text-xs text-[var(--outline-elev)]">Frecuencia de Cónclave · 432Hz</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-center gap-6 relative z-10">
+                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
+                    <span class="material-symbols-elev text-2xl">skip_previous</span>
+                </button>
+                <button class="w-12 h-12 rounded-full bg-[var(--primary)] text-[var(--void-black,#050308)] flex items-center justify-center gold-glow-elev hover:scale-110 transition-transform">
+                    <span class="material-symbols-elev text-3xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+                </button>
+                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
+                    <span class="material-symbols-elev text-2xl">skip_next</span>
+                </button>
+            </div>
+        </div>
+
         {# Toolbar #}
-        <div class="glass-card-elev p-4 mb-6 flex items-center justify-between flex-wrap gap-4">
+        <div class="admin-card flex items-center justify-between flex-wrap gap-4">
             <div>
                 <h2 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
                     <span class="material-symbols-elev text-[var(--gold-elev)]">groups</span>
@@ -38,8 +217,6 @@
             <p class="col-span-full text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando adeptos...</p>
         </div>
     </div>
-
-    <style>
     .user-card {
         position: relative;
         background: var(--glass-bg-elev);
