@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,157 +14,118 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/profile')]
 class ProfileController extends AbstractController
 {
-    private string $avatarDir;
-    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    private const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    public function __construct(
+        private EntityManagerInterface $em,
+        private UserRepository $userRepository,
+    ) {}
 
-    public function __construct(private UserRepository $userRepository)
+    #[Route('/{code}', name: 'api_profile_show', methods: ['GET'])]
+    public function show(string $code): JsonResponse
     {
-        $this->avatarDir = dirname(__DIR__, 3) . '/public/uploads/avatars';
-    }
-
-    private function getCurrentUser(Request $request): ?User
-    {
-        $user = $this->getUser();
-        if ($user instanceof User) return $user;
-        $code = trim($request->headers->get('X-Game-Code', ''));
-        if (!$code) return null;
-        return $this->userRepository->findOneBy(['code' => $code, 'active' => true]);
-    }
-
-    // Avatar routes MUST come before the variable {code} route
-
-    #[Route('/avatar', name: 'api_profile_avatar_get', methods: ['GET'])]
-    public function getAvatar(Request $request): JsonResponse
-    {
-        $userCode = strtoupper($request->query->get('user_code', ''));
-        if (!$userCode) {
-            return $this->json(['error' => 'Missing user_code'], 400);
-        }
-        $user = $this->userRepository->findByCode($userCode);
+        $user = $this->userRepository->findByCode($code);
         if (!$user) {
-            return $this->json(['error' => 'User not found'], 404);
+            return $this->json(['success' => false, 'error' => 'Usuario no encontrado'], 404);
         }
+
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $isOwner = $currentUser && $currentUser->getCode() === $code;
 
         return $this->json([
-            'avatar_url' => $this->getAvatarUrl($userCode),
-            'avatar_color' => null,
-            'initials' => strtoupper(substr(trim($user->getName() ?? $userCode), 0, 2)),
+            'success' => true,
+            'user' => [
+                'code' => $user->getCode(),
+                'name' => $user->getName(),
+                'is_admin' => $user->getIsAdmin(),
+                'tier' => $user->getTier(),
+                'avatar_url' => $user->getAvatarUrl(),
+                'notification_sound' => $user->getNotificationSound() ?? 'chime',
+                'reputation' => $user->getReputation(),
+                'coins' => $user->getCoins(),
+                'wallet_balance' => $user->getWalletBalance(),
+                'last_login' => $user->getLastLogin()?->format('Y-m-d H:i'),
+                'vip_until' => $user->getVipUntil()?->format('Y-m-d'),
+            ],
+            'is_owner' => $isOwner,
         ]);
+    }
+
+    #[Route('', name: 'api_profile_update', methods: ['PUT', 'PATCH'])]
+    public function update(Request $request): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        $data = json_decode($request->getContent(), true) ?? [];
+
+        if (isset($data['name'])) {
+            $user->setName(trim($data['name']));
+        }
+        if (isset($data['notification_sound'])) {
+            $user->setNotificationSound($data['notification_sound']);
+        }
+
+        $this->em->flush();
+
+        return $this->json(['success' => true, 'user' => [
+            'code' => $user->getCode(),
+            'name' => $user->getName(),
+            'notification_sound' => $user->getNotificationSound(),
+        ]]);
     }
 
     #[Route('/avatar', name: 'api_profile_avatar_upload', methods: ['POST'])]
     public function uploadAvatar(Request $request): JsonResponse
     {
-        $authUser = $this->getCurrentUser($request);
-        if (!$authUser) {
-            return $this->json(['error' => 'No autorizado — X-Game-Code requerido'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $userCode = strtoupper($request->query->get('user_code', ''));
-        if (!$userCode) {
-            return $this->json(['error' => 'Missing user_code'], 400);
-        }
-        if (strtoupper($authUser->getCode() ?? '') !== $userCode) {
-            return $this->json(['error' => 'No autorizado — solo puedes modificar tu propio avatar'], Response::HTTP_FORBIDDEN);
-        }
-
-        $user = $this->userRepository->findByCode($userCode);
+        /** @var User|null $user */
+        $user = $this->getUser();
         if (!$user) {
-            return $this->json(['error' => 'User not found'], 404);
+            return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
         }
 
         $file = $request->files->get('avatar');
-        if (!$file || !$file->isValid()) {
-            return $this->json(['error' => 'No valid file uploaded. Max 5MB, formats: jpg/png/gif/webp'], 400);
+        if (!$file) {
+            return $this->json(['success' => false, 'error' => 'No file uploaded'], 400);
         }
 
-        if ($file->getSize() > self::MAX_FILE_SIZE) {
-            return $this->json(['error' => 'File too large. Max 5MB allowed.'], 413);
+        // Validate
+        $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!in_array($file->getMimeType(), $allowed)) {
+            return $this->json(['success' => false, 'error' => 'Invalid file type'], 400);
+        }
+        if ($file->getSize() > 5_000_000) {
+            return $this->json(['success' => false, 'error' => 'File too large (max 5MB)'], 400);
         }
 
-        if (!is_dir($this->avatarDir)) {
-            mkdir($this->avatarDir, 0775, true);
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/avatars';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
         }
 
-        // Delete old avatar
-        foreach (self::ALLOWED_EXTENSIONS as $ext) {
-            $old = "$this->avatarDir/$userCode.$ext";
-            if (is_file($old)) unlink($old);
-        }
+        $filename = 'avatar_' . $user->getCode() . '_' . time() . '.' . $file->guessExtension();
+        $file->move($uploadDir, $filename);
 
-        $extension = strtolower($file->guessExtension() ?? 'png');
-        if (!in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
-            $extension = 'png';
-        }
+        $user->setAvatarUrl('/uploads/avatars/' . $filename);
+        $this->em->flush();
 
-        $file->move($this->avatarDir, "$userCode.$extension");
-
-        return $this->json([
-            'avatar_url' => $this->getAvatarUrl($userCode),
-            'avatar_color' => null,
-        ]);
+        return $this->json(['success' => true, 'avatar_url' => $user->getAvatarUrl()]);
     }
 
     #[Route('/avatar', name: 'api_profile_avatar_delete', methods: ['DELETE'])]
-    public function deleteAvatar(Request $request): JsonResponse
+    public function deleteAvatar(): JsonResponse
     {
-        $authUser = $this->getCurrentUser($request);
-        if (!$authUser) {
-            return $this->json(['error' => 'No autorizado — X-Game-Code requerido'], Response::HTTP_UNAUTHORIZED);
+        /** @var User|null $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
         }
 
-        $userCode = strtoupper($request->query->get('user_code', ''));
-        if (!$userCode) {
-            return $this->json(['error' => 'Missing user_code'], 400);
-        }
-        if (strtoupper($authUser->getCode() ?? '') !== $userCode) {
-            return $this->json(['error' => 'No autorizado — solo puedes eliminar tu propio avatar'], Response::HTTP_FORBIDDEN);
-        }
-
-        foreach (self::ALLOWED_EXTENSIONS as $ext) {
-            $path = "$this->avatarDir/$userCode.$ext";
-            if (is_file($path)) unlink($path);
-        }
+        $user->setAvatarUrl(null);
+        $this->em->flush();
 
         return $this->json(['success' => true]);
-    }
-
-    // Variable route MUST come last to avoid catching /avatar
-
-    #[Route('/{code}', name: 'api_profile_show', methods: ['GET'])]
-    public function show(string $code): JsonResponse
-    {
-        $user = $this->userRepository->findByCode(strtoupper($code));
-        if (!$user) {
-            return $this->json(['error' => 'User not found'], 404);
-        }
-
-        $roles = $user->getRoles();
-        $initials = strtoupper(substr(trim($user->getName() ?? $user->getCode() ?? '?'), 0, 2));
-
-        return $this->json([
-            'code' => $user->getCode(),
-            'name' => $user->getName(),
-            'role' => $roles[0] ?? 'ROLE_USER',
-            'wallet' => $user->getWalletBalance(),
-            'is_admin' => in_array('ROLE_ADMIN', $roles, true),
-            'last_login' => $user->getLastLogin()?->format('c'),
-            'avatar_url' => $this->getAvatarUrl($user->getCode()),
-            'avatar_color' => null,
-            'initials' => $initials,
-        ]);
-    }
-
-    private function getAvatarUrl(?string $userCode): ?string
-    {
-        if (!$userCode) return null;
-        foreach (self::ALLOWED_EXTENSIONS as $ext) {
-            $path = "$this->avatarDir/$userCode.$ext";
-            if (is_file($path)) {
-                return "/uploads/avatars/$userCode.$ext";
-            }
-        }
-        return null;
     }
 }

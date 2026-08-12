@@ -1,0 +1,187 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Perfil · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Mi Perfil{% endblock %}
+{% block topbar_subtitle %}Tu identidad en el Reino.{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    {# ─── Profile Card ─── #}
+    <div class="glass-card-elev p-6 mb-6">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="relative">
+                <div id="profile-avatar" class="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-2xl font-bold text-[var(--on-primary-elev)] overflow-hidden">
+                    <img id="avatar-img" src="" alt="" class="w-full h-full object-cover" style="display:none;">
+                    <span id="avatar-initial">?</span>
+                </div>
+                <label class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[var(--gold-elev)] flex items-center justify-center cursor-pointer hover:scale-110 transition-transform" title="Cambiar avatar">
+                    <span class="material-symbols-elev text-sm text-black">camera_alt</span>
+                    <input type="file" id="avatar-input" accept="image/*" class="hidden">
+                </label>
+            </div>
+            <div class="flex-1">
+                <h2 id="profile-name" class="text-xl font-bold">Cargando...</h2>
+                <p id="profile-code" class="text-sm text-[var(--outline-elev)]">—</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <span id="profile-tier" class="tier-badge-elev">—</span>
+                    <span id="profile-vip" class="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-semibold" style="display:none;">VIP</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="glass-card-elev p-3">
+                <div id="profile-reputation" class="text-xl font-bold text-[var(--gold-elev)]">—</div>
+                <div class="text-xs text-[var(--outline-elev)]">Reputación</div>
+            </div>
+            <div class="glass-card-elev p-3">
+                <div id="profile-coins" class="text-xl font-bold text-[var(--gold-elev)]">—</div>
+                <div class="text-xs text-[var(--outline-elev)]">Coins</div>
+            </div>
+            <div class="glass-card-elev p-3">
+                <div id="profile-wallet" class="text-xl font-bold text-[var(--gold-elev)]">—</div>
+                <div class="text-xs text-[var(--outline-elev)]">Wallet</div>
+            </div>
+        </div>
+    </div>
+
+    {# ─── Edit Profile ─── #}
+    <div class="glass-card-elev p-6 mb-6">
+        <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span class="material-symbols-elev">edit</span>
+            Editar Perfil
+        </h3>
+        <div class="space-y-4">
+            <div>
+                <label class="form-label">Nombre</label>
+                <input id="edit-name" type="text" class="form-input" placeholder="Tu nombre">
+            </div>
+            <div>
+                <label class="form-label">Sonido de Notificación</label>
+                <select id="edit-sound" class="form-input">
+                    <option value="chime">Chime</option>
+                    <option value="mario_coin">Mario Coin</option>
+                    <option value="zelda_secret">Zelda Secret</option>
+                    <option value="sonic_ring">Sonic Ring</option>
+                    <option value="apple_tritone">Apple Tritone</option>
+                    <option value="pixel_popcorn">Pixel Popcorn</option>
+                    <option value="pokemon_levelup">Pokemon Levelup</option>
+                    <option value="deus_ex_scan">Deus Ex Scan</option>
+                    <option value="indiana_jones_whip">Indiana Jones Whip</option>
+                    <option value="msn_message">MSN Message</option>
+                    <option value="swoosh">Swoosh</option>
+                </select>
+            </div>
+            <button id="save-profile" class="btn-primary w-full">Guardar Cambios</button>
+        </div>
+    </div>
+
+    {# ─── Journal Stats ─── #}
+    <div class="glass-card-elev p-6">
+        <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span class="material-symbols-elev">analytics</span>
+            Estadísticas de Trading
+        </h3>
+        <div id="journal-stats" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="text-center p-3 glass-card-elev">
+                <div id="js-total" class="text-lg font-bold">—</div>
+                <div class="text-xs text-[var(--outline-elev)]">Total</div>
+            </div>
+            <div class="text-center p-3 glass-card-elev">
+                <div id="js-wins" class="text-lg font-bold text-green-400">—</div>
+                <div class="text-xs text-[var(--outline-elev)]">Wins</div>
+            </div>
+            <div class="text-center p-3 glass-card-elev">
+                <div id="js-winrate" class="text-lg font-bold text-[var(--gold-elev)]">—</div>
+                <div class="text-xs text-[var(--outline-elev)]">Win Rate</div>
+            </div>
+            <div class="text-center p-3 glass-card-elev">
+                <div id="js-pnl" class="text-lg font-bold">—</div>
+                <div class="text-xs text-[var(--outline-elev)]">PnL</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    const nameEl = document.getElementById('profile-name');
+    const codeEl = document.getElementById('profile-code');
+    const tierEl = document.getElementById('profile-tier');
+    const vipEl = document.getElementById('profile-vip');
+    const avatarImg = document.getElementById('avatar-img');
+    const avatarInitial = document.getElementById('avatar-initial');
+    const avatarInput = document.getElementById('avatar-input');
+    const editName = document.getElementById('edit-name');
+    const editSound = document.getElementById('edit-sound');
+    const saveBtn = document.getElementById('save-profile');
+
+    // Load profile
+    apiFetch('/api/profile/{{ app.user.code }}').then(r => {
+        if (!r.success) return;
+        const u = r.user;
+        nameEl.textContent = u.name || '—';
+        codeEl.textContent = u.code || '—';
+        tierEl.textContent = u.tier || 'INITIATE';
+        if (u.avatar_url) {
+            avatarImg.src = u.avatar_url;
+            avatarImg.style.display = '';
+            avatarInitial.style.display = 'none';
+        } else {
+            avatarInitial.textContent = (u.name || '?').charAt(0);
+        }
+        document.getElementById('profile-reputation').textContent = u.reputation || 0;
+        document.getElementById('profile-coins').textContent = u.coins || 0;
+        document.getElementById('profile-wallet').textContent = '$' + (u.wallet_balance || '0');
+        if (u.vip_until) vipEl.style.display = '';
+        editName.value = u.name || '';
+        editSound.value = u.notification_sound || 'chime';
+    }).catch(() => {});
+
+    // Avatar upload
+    avatarInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        const fd = new FormData();
+        fd.append('avatar', file);
+        apiFetch('/api/profile/avatar', { method: 'POST', body: fd, headers: {} })
+            .then(r => {
+                if (r.success) {
+                    avatarImg.src = r.avatar_url + '?t=' + Date.now();
+                    avatarImg.style.display = '';
+                    avatarInitial.style.display = 'none';
+                    apiToast('Avatar actualizado', 'success');
+                }
+            })
+            .catch(() => apiToast('Error al subir avatar', 'error'));
+    });
+
+    // Save profile
+    saveBtn.addEventListener('click', function() {
+        apiFetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: editName.value, notification_sound: editSound.value }),
+        }).then(r => {
+            if (r.success) {
+                nameEl.textContent = r.user.name;
+                apiToast('Perfil guardado', 'success');
+            }
+        }).catch(() => apiToast('Error al guardar', 'error'));
+    });
+
+    // Load journal stats
+    apiFetch('/api/journal/stats').then(r => {
+        document.getElementById('js-total').textContent = r.total || 0;
+        document.getElementById('js-wins').textContent = r.wins || 0;
+        document.getElementById('js-winrate').textContent = (r.win_rate || 0) + '%';
+        const pnl = parseFloat(r.total_pnl || 0);
+        const pnlEl = document.getElementById('js-pnl');
+        pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
+        pnlEl.className = 'text-lg font-bold ' + (pnl >= 0 ? 'text-green-400' : 'text-red-400');
+    }).catch(() => {});
+})();
+</script>
+{% endblock %}

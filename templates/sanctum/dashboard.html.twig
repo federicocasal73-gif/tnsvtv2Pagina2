@@ -157,6 +157,49 @@
                 <a href="/sanctum/monitoring" class="text-xs text-[var(--gold-elev)] hover:underline mt-3 inline-block">Ver monitoring completo →</a>
             </div>
         </div>
+
+        {# Activity Feed + Market Pulse #}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="glass-card-elev p-6">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">feed</span>
+                    Actividad Reciente
+                </h3>
+                <div id="activity-feed" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                    <p class="text-center text-[var(--outline-elev)] py-4 loading-pulse">Cargando actividad...</p>
+                </div>
+            </div>
+
+            <div class="glass-card-elev p-6">
+                <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">event_upcoming</span>
+                    Próximos Eventos Macro
+                </h3>
+                <div id="market-pulse" class="space-y-3">
+                    <p class="text-center text-[var(--outline-elev)] py-4 loading-pulse">Cargando eventos...</p>
+                </div>
+            </div>
+        </div>
+
+        {# Quick Stats Row #}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass-card-elev p-4 text-center">
+                <div class="text-xs text-[var(--outline-elev)] uppercase tracking-wider mb-1">PnL Semanal</div>
+                <div id="qs-weekly-pnl" class="text-xl font-bold">—</div>
+            </div>
+            <div class="glass-card-elev p-4 text-center">
+                <div class="text-xs text-[var(--outline-elev)] uppercase tracking-wider mb-1">Win Rate</div>
+                <div id="qs-winrate" class="text-xl font-bold text-[var(--gold-elev)]">—</div>
+            </div>
+            <div class="glass-card-elev p-4 text-center">
+                <div class="text-xs text-[var(--outline-elev)] uppercase tracking-wider mb-1">Mejor Trade</div>
+                <div id="qs-best-trade" class="text-xl font-bold text-green-400">—</div>
+            </div>
+            <div class="glass-card-elev p-4 text-center">
+                <div class="text-xs text-[var(--outline-elev)] uppercase tracking-wider mb-1">Notificaciones</div>
+                <div id="qs-notifs" class="text-xl font-bold">—</div>
+            </div>
+        </div>
     </div>
 
     {# Create Task Modal #}
@@ -435,6 +478,10 @@
         border-radius: 0.375rem;
         cursor: pointer;
     }
+    .impact-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .impact-high { background:#f87171; }
+    .impact-medium { background:#fbbf24; }
+    .impact-low { background:#4ade80; }
     </style>
 
     <script>
@@ -466,6 +513,51 @@
             renderSystemStatus(monRes.data.data);
         } else {
             document.getElementById('system-status').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin datos disponibles</p>';
+        }
+
+        // Activity Feed (recent journal entries)
+        const journalRes = await apiFetch('/api/journal?limit=5', { silent: true });
+        if (journalRes.ok && journalRes.data && journalRes.data.entries && journalRes.data.entries.length > 0) {
+            document.getElementById('activity-feed').innerHTML = journalRes.data.entries.slice(0, 5).map(e => `
+                <div class="flex items-center gap-3 p-2 rounded glass-card-elev text-sm">
+                    <span class="text-xs">${e.asset||'—'}</span>
+                    <span class="text-xs ${e.direction === 'BUY' ? 'text-green-400' : 'text-red-400'}">${e.direction||'—'}</span>
+                    <span class="text-xs text-[var(--outline-elev)] ml-auto">${e.date||''}</span>
+                </div>
+            `).join('');
+        } else {
+            document.getElementById('activity-feed').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin actividad reciente</p>';
+        }
+
+        // Market Pulse (upcoming macro events)
+        const calRes = await apiFetch('/api/calendar/events?limit=3', { silent: true });
+        if (calRes.ok && calRes.data && calRes.data.events && calRes.data.events.length > 0) {
+            document.getElementById('market-pulse').innerHTML = calRes.data.events.slice(0, 3).map(ev => `
+                <div class="flex items-center gap-3 p-2 rounded glass-card-elev text-sm">
+                    <span class="text-xs font-medium">${ev.country||'—'}</span>
+                    <span class="text-xs flex-1 truncate">${ev.event||ev.title||'—'}</span>
+                    <span class="impact-dot impact-${ev.impact||'medium'}"></span>
+                </div>
+            `).join('');
+        } else {
+            document.getElementById('market-pulse').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin eventos próximos</p>';
+        }
+
+        // Quick Stats
+        const statsRes = await apiFetch('/api/journal/stats', { silent: true });
+        if (statsRes.ok && statsRes.data) {
+            const s = statsRes.data;
+            const pnl = parseFloat(s.total_pnl || 0);
+            document.getElementById('qs-weekly-pnl').textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
+            document.getElementById('qs-weekly-pnl').className = 'text-xl font-bold ' + (pnl >= 0 ? 'text-green-400' : 'text-red-400');
+            document.getElementById('qs-winrate').textContent = (s.win_rate || 0) + '%';
+            document.getElementById('qs-best-trade').textContent = s.best_trade ? '$' + parseFloat(s.best_trade).toFixed(0) : '—';
+        }
+
+        // Notifications count
+        const notifRes = await apiFetch('/api/notifications/count', { silent: true });
+        if (notifRes.ok && notifRes.data) {
+            document.getElementById('qs-notifs').textContent = notifRes.data.count || 0;
         }
     }
 
