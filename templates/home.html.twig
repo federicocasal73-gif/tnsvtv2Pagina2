@@ -14,6 +14,9 @@
     <link rel="stylesheet" href="{{ asset('styles/v2-tokens.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/v2-components.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/v2-sparklines.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/tokens-elev.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/animations.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/glass-premium.css') }}" />
     <style>
         :root {
             --gold: #f2ca50;
@@ -575,5 +578,9 @@
         codeInput.focus();
     })();
     </script>
+
+{# WebGL Background + Bottom Tab Bar #}
+<script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
+{% include '_partials/tabbar.html.twig' %}
 </body>
 </html>

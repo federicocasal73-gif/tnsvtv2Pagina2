@@ -55,6 +55,9 @@
 
 <body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased">
 
+{# api_helper MUST be included BEFORE any {% block content %} to ensure window.apiFetch is defined #}
+{% include '_partials/api_helper.html.twig' with {} %}
+
 <div class="flex min-h-screen">
     <aside id="sanctum-sidebar" class="w-64 bg-[var(--surface-elev)] border-r border-[var(--outline-variant-elev)] flex flex-col">
         <div class="p-6 border-b border-[var(--outline-variant-elev)]">
@@ -241,7 +244,7 @@
     {% block floats %}{% endblock %}
 </div>
 
-{% include '_partials/api_helper.html.twig' %}
+{% block javascripts %}{% endblock %}
 
 <script>
 (function() {
