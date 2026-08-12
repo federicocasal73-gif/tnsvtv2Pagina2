@@ -6,23 +6,88 @@
 {% block topbar_subtitle %}Feature flags, tier prices, límites del sistema{% endblock %}
 
 {% block content %}
-    <div class="max-w-5xl mx-auto">
-        {# Toolbar #}
-        <div class="glass-card-elev p-4 mb-6 flex items-center justify-between">
+<div class="max-w-5xl mx-auto">
+    {# User Preferences #}
+    <div class="glass-card-elev p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+            <span class="material-symbols-elev text-[var(--gold-elev)]">person</span>
+            Mis Preferencias
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <p class="text-sm text-[var(--on-surface-elev)]">Configuración global del Sanctum</p>
-                <p class="text-xs text-[var(--outline-elev)]">Los cambios se aplican inmediatamente a todos los usuarios</p>
+                <label class="form-label">Sonido de Notificación</label>
+                <select id="pref-sound" class="form-input" onchange="savePreference('sound', this.value)">
+                    <option value="chime">🔔 Chime</option>
+                    <option value="mario_coin">🍄 Mario Coin</option>
+                    <option value="zelda_secret">🗡️ Zelda Secret</option>
+                    <option value="sonic_ring">💍 Sonic Ring</option>
+                    <option value="apple_tritone">🍎 Apple Tritone</option>
+                    <option value="pixel_popcorn">🍿 Pixel Popcorn</option>
+                    <option value="pokemon_levelup">⚡ Pokemon Levelup</option>
+                    <option value="deus_ex_scan">🔍 Deus Ex Scan</option>
+                    <option value="indiana_jones_whip">🏃 Indiana Jones Whip</option>
+                    <option value="msn_message">💬 MSN Message</option>
+                    <option value="swoosh">💨 Swoosh</option>
+                </select>
             </div>
-            <button id="reload-btn" class="btn-elev-secondary text-xs">
-                <span class="material-symbols-elev align-middle text-sm">refresh</span>
-                Recargar
-            </button>
+            <div>
+                <label class="form-label">Idioma</label>
+                <select id="pref-lang" class="form-input" onchange="savePreference('lang', this.value)">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
         </div>
+        <button id="save-prefs" class="btn-primary mt-4" onclick="saveAllPreferences()">Guardar Preferencias</button>
+    </div>
 
-        {# Settings grouped by category #}
-        <div id="settings-container">
-            <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando configuración...</p>
+    {# Admin Settings #}
+    <div class="glass-card-elev p-4 mb-6 flex items-center justify-between">
+        <div>
+            <p class="text-sm text-[var(--on-surface-elev)]">Configuración global del Sanctum</p>
+            <p class="text-xs text-[var(--outline-elev)]">Los cambios se aplican inmediatamente a todos los usuarios</p>
         </div>
+        <button id="reload-btn" class="btn-elev-secondary text-xs">
+            <span class="material-symbols-elev align-middle text-sm">refresh</span>
+            Recargar
+        </button>
+    </div>
+
+    {# Settings grouped by category #}
+    <div id="settings-container">
+        <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando configuración...</p>
+    </div>
+</div>
+
+<script>
+    // Load user preferences
+    (function() {
+        apiFetch('/api/profile/{{ app.user.code }}').then(r => {
+            if (r.success && r.user) {
+                document.getElementById('pref-sound').value = r.user.notification_sound || 'chime';
+            }
+        }).catch(() => {});
+    })();
+
+    function savePreference(key, value) {
+        const btn = document.getElementById('save-prefs');
+        btn.textContent = 'Guardando...';
+        apiFetch('/api/profile', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notification_sound: value }),
+        }).then(r => {
+            if (r.success) {
+                btn.textContent = '✓ Guardado';
+                setTimeout(() => { btn.textContent = 'Guardar Preferencias'; }, 2000);
+            }
+        }).catch(() => { btn.textContent = 'Guardar Preferencias'; });
+    }
+
+    function saveAllPreferences() {
+        const sound = document.getElementById('pref-sound').value;
+        savePreference('sound', sound);
+    }
     </div>
 
     <script>

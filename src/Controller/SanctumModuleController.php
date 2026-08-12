@@ -241,4 +241,12 @@ class SanctumModuleController extends AbstractController
     {
         return $this->render('sanctum/profile.html.twig');
     }
+
+    // ──── PUBLIC PROFILE ────
+
+    #[Route('/u/{code}', name: 'sanctum_profile_public', methods: ['GET'])]
+    public function profilePublic(string $code): Response
+    {
+        return $this->render('sanctum/profile_public.html.twig');
+    }
 }
