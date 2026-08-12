@@ -2,16 +2,177 @@
 
 {% block title %}Perfil · T.N.S.V.T{% endblock %}
 
-{% block topbar_title %}Mi Perfil{% endblock %}
-{% block topbar_subtitle %}Tu identidad en el Reino.{% endblock %}
+{% block topbar_title %}Perfil y Seguridad{% endblock %}
+{% block topbar_subtitle %}Identidad Celestial · Tier · Disciplina{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .profile-card {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    .profile-card:hover {
+        border-color: rgba(242, 202, 80, 0.2);
+        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
+    }
+    .profile-sigil {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 1rem;
+    }
+    .profile-sigil .sigil-rotate {
+        position: absolute;
+        inset: 0;
+        animation: spin-sacred 30s linear infinite;
+    }
+    .profile-sigil .sigil-pulse {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 1px solid rgba(242, 202, 80, 0.3);
+        animation: pulse-aura 3s ease-in-out infinite;
+    }
+    .profile-sigil .sigil-core {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 30%;
+        height: 30%;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold-elev, #f2ca50), var(--primary-fixed, #ffe088));
+        box-shadow: 0 0 20px rgba(242, 202, 80, 0.5);
+        animation: pulse-gold 2s ease-in-out infinite;
+    }
+    .stat-mini {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    .stat-mini:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(242, 202, 80, 0.2);
+    }
+    .stat-mini-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--gold-elev, #f2ca50);
+    }
+    .stat-mini-label {
+        font-size: 0.65rem;
+        color: var(--outline-elev, #99907c);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 0.25rem;
+    }
+    .progress-constellation {
+        position: relative;
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 1rem 0 0.5rem;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--gold-elev, #f2ca50), var(--primary-fixed, #ffe088));
+        border-radius: 2px;
+        position: relative;
+    }
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        background: var(--gold-elev, #f2ca50);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--gold-elev, #f2ca50);
+    }
+    .progress-fill::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmer 2s linear infinite;
+    }
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+    }
+    .toggle-switch {
+        position: relative;
+        width: 44px;
+        height: 24px;
+        background: var(--glass-border-elev, rgba(255, 255, 255, 0.1));
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+        flex-shrink: 0;
+    }
+    .toggle-switch.active {
+        background: var(--gold-elev, #f2ca50);
+    }
+    .toggle-switch::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        background: var(--on-surface-elev, #e9def6);
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+    }
+    .toggle-switch.active::after {
+        transform: translateX(20px);
+    }
+    .danger-zone {
+        border: 1px solid rgba(248, 113, 113, 0.3);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    {# ─── Profile Card ─── #}
-    <div class="glass-card-elev p-6 mb-6">
+    {# ─── Profile Hero with 3D Sigil ─── #}
+    <div class="profile-card">
+        <div class="text-center mb-4">
+            <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Identidad Celestial</p>
+        </div>
+        <div class="profile-sigil">
+            <div class="sigil-rotate">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+                    <circle cx="50" cy="50" fill="none" opacity="0.3" r="45" stroke="#d4af37" stroke-width="0.5"/>
+                    <path d="M50 5 L55 45 L95 50 L55 55 L50 95 L45 55 L5 50 L45 45 Z" fill="#d4af37"/>
+                </svg>
+            </div>
+            <div class="sigil-pulse"></div>
+            <div class="sigil-core"></div>
+        </div>
         <div class="flex items-center gap-4 mb-6">
             <div class="relative">
-                <div id="profile-avatar" class="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-2xl font-bold text-[var(--on-primary-elev)] overflow-hidden">
+                <div id="profile-avatar" class="w-20 h-20 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-2xl font-bold text-[var(--on-primary-elev)] overflow-hidden border-2 border-[var(--gold-elev)]/30">
                     <img id="avatar-img" src="" alt="" class="w-full h-full object-cover" style="display:none;">
                     <span id="avatar-initial">?</span>
                 </div>
@@ -30,24 +191,24 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-4 text-center">
-            <div class="glass-card-elev p-3">
-                <div id="profile-reputation" class="text-xl font-bold text-[var(--gold-elev)]">—</div>
-                <div class="text-xs text-[var(--outline-elev)]">Reputación</div>
+        <div class="grid grid-cols-3 gap-3 text-center">
+            <div class="stat-mini">
+                <div id="profile-reputation" class="stat-mini-value">—</div>
+                <div class="stat-mini-label">Reputación</div>
             </div>
-            <div class="glass-card-elev p-3">
-                <div id="profile-coins" class="text-xl font-bold text-[var(--gold-elev)]">—</div>
-                <div class="text-xs text-[var(--outline-elev)]">Coins</div>
+            <div class="stat-mini">
+                <div id="profile-coins" class="stat-mini-value">—</div>
+                <div class="stat-mini-label">Coins</div>
             </div>
-            <div class="glass-card-elev p-3">
-                <div id="profile-wallet" class="text-xl font-bold text-[var(--gold-elev)]">—</div>
-                <div class="text-xs text-[var(--outline-elev)]">Wallet</div>
+            <div class="stat-mini">
+                <div id="profile-wallet" class="stat-mini-value">—</div>
+                <div class="stat-mini-label">Wallet</div>
             </div>
         </div>
     </div>
 
     {# ─── Edit Profile ─── #}
-    <div class="glass-card-elev p-6 mb-6">
+    <div class="profile-card">
         <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
             <span class="material-symbols-elev">edit</span>
             Editar Perfil
@@ -101,6 +262,56 @@
                 <div class="text-xs text-[var(--outline-elev)]">PnL</div>
             </div>
         </div>
+    </div>
+
+    {# ─── Security Settings ─── #}
+    <div class="profile-card">
+        <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span class="material-symbols-elev">shield</span>
+            Protocolos de Seguridad
+        </h3>
+        <div class="toggle-row">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">fingerprint</span>
+                <div>
+                    <p class="text-sm text-[var(--on-surface-elev)] font-medium">Bloqueo por Huella</p>
+                    <p class="text-xs text-[var(--outline-elev)]">Acceso biométrico al Sanctum</p>
+                </div>
+            </div>
+            <div class="toggle-switch active" id="toggle-biometric" onclick="this.classList.toggle('active')"></div>
+        </div>
+        <div class="toggle-row">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">password</span>
+                <div>
+                    <p class="text-sm text-[var(--on-surface-elev)] font-medium">PIN de Seguridad</p>
+                    <p class="text-xs text-[var(--outline-elev)]">Código de 6 dígitos</p>
+                </div>
+            </div>
+            <button class="text-[var(--gold-elev)] text-xs font-medium hover:underline">Configurar</button>
+        </div>
+        <div class="toggle-row">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">notifications_active</span>
+                <div>
+                    <p class="text-sm text-[var(--on-surface-elev)] font-medium">Notificaciones Push</p>
+                    <p class="text-xs text-[var(--outline-elev)]">Recibir alertas en tiempo real</p>
+                </div>
+            </div>
+            <div class="toggle-switch active" id="toggle-notifs" onclick="this.classList.toggle('active')"></div>
+        </div>
+    </div>
+
+    {# ─── Danger Zone ─── #}
+    <div class="danger-zone">
+        <h3 class="text-sm font-semibold text-[var(--error)] uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span class="material-symbols-elev">warning</span>
+            Danger Zone
+        </h3>
+        <p class="text-xs text-[var(--outline-elev)] mb-4">Acciones irreversibles. Proceder con cuidado.</p>
+        <button class="w-full py-2 px-4 border border-[var(--error)]/50 text-[var(--error)] rounded-lg text-sm font-medium hover:bg-[var(--error)]/10 transition-colors">
+            Disolver Vínculo Soul Sigil
+        </button>
     </div>
 </div>
 
