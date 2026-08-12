@@ -1,0 +1,65 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Clan · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Clan{% endblock %}
+{% block topbar_subtitle %}Tu hermandad en el Reino.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div id="clan-info" class="glass-card-elev p-4 mb-4">
+        <p class="text-center text-[var(--outline-elev)] py-4">Cargando clan...</p>
+    </div>
+
+    <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Buscar Clanes</h3>
+    <div id="clan-search" class="space-y-3">
+        <p class="text-center text-[var(--outline-elev)] py-8">Cargando...</p>
+    </div>
+</div>
+
+<style>
+.clan-card { padding:1rem; }
+.clan-name { font-weight:600; font-size:0.9375rem; }
+.clan-meta { font-size:0.75rem; color:var(--outline-elev); margin-top:0.25rem; }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const infoEl = document.getElementById('clan-info');
+    const searchEl = document.getElementById('clan-search');
+
+    apiFetch('/api/clan/my').then(r => {
+        if (!r || !r.id) {
+            infoEl.innerHTML = '<p class="text-center">No perteneces a ningún clan. ¡Crea o únete a uno!</p>';
+            return;
+        }
+        infoEl.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold">${r.name}</h3>
+                    <p class="text-sm text-[var(--outline-elev)]">Miembros: ${r.member_count||0}</p>
+                </div>
+                <span class="text-xs px-2 py-1 rounded-full bg-[var(--glass-bg-strong-elev)] text-[var(--gold-elev)]">${r.tag||'CLAN'}</span>
+            </div>
+        `;
+    }).catch(() => { infoEl.innerHTML = '<p class="text-center text-[var(--outline-elev)]">Error al cargar.</p>'; });
+
+    apiFetch('/api/clan/search').then(r => {
+        if (!r.length) {
+            searchEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">No hay clanes públicos.</p>';
+            return;
+        }
+        searchEl.innerHTML = r.map(c => `
+            <div class="glass-card-elev clan-card flex items-center justify-between">
+                <div>
+                    <div class="clan-name">${c.name}</div>
+                    <div class="clan-meta">${c.member_count||0} miembros</div>
+                </div>
+                <button class="btn-primary text-xs" onclick="apiFetch('/api/clan/${c.id}/join',{method:'POST'}).then(()=>location.reload())">Unirse</button>
+            </div>
+        `).join('');
+    }).catch(() => { searchEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
+})();
+</script>
+{% endblock %}

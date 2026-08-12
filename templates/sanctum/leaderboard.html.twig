@@ -1,0 +1,71 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Leaderboard · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Leaderboard{% endblock %}
+{% block topbar_subtitle %}Ranking de traders del Reino.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    {# ─── Top 3 ─── #}
+    <div id="lb-podium" class="grid grid-cols-3 gap-3 mb-6">
+        <p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Cargando...</p>
+    </div>
+
+    {# ─── Full ranking ─── #}
+    <div class="glass-card-elev p-4">
+        <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Ranking Completo</h3>
+        <div id="lb-list" class="space-y-2">
+            <p class="text-center text-[var(--outline-elev)] py-8">Cargando leaderboard...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.lb-rank { display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0.75rem; border-radius:0.5rem; }
+.lb-rank:hover { background:var(--glass-bg-elev); }
+.lb-pos { width:28px; text-align:center; font-weight:700; font-size:0.875rem; color:var(--gold-elev); }
+.lb-pos.gold { color:#fbbf24; }
+.lb-pos.silver { color:#94a3b8; }
+.lb-pos.bronze { color:#d97706; }
+.lb-name { flex:1; font-weight:500; font-size:0.875rem; }
+.lb-score { font-weight:600; font-size:0.875rem; color:var(--gold-elev); }
+.podium-card { text-align:center; padding:1rem; }
+.podium-avatar { width:48px; height:48px; border-radius:50%; margin:0 auto 0.5rem; background:linear-gradient(135deg,var(--gold-elev),var(--gold-bright-elev)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.25rem; }
+.podium-name { font-weight:600; font-size:0.875rem; }
+.podium-score { font-size:0.75rem; color:var(--gold-elev); }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const podiumEl = document.getElementById('lb-podium');
+    const listEl = document.getElementById('lb-list');
+
+    apiFetch('/api/leaderboard/game/top?limit=10').then(r => {
+        if (!r.length) {
+            podiumEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Sin datos aún.</p>';
+            listEl.innerHTML = '';
+            return;
+        }
+        const medals = ['gold','silver','bronze'];
+        podiumEl.innerHTML = r.slice(0,3).map((p,i) => `
+            <div class="glass-card-elev podium-card">
+                <div class="podium-avatar">${(p.name||p.code||'?').charAt(0)}</div>
+                <div class="podium-name">${p.name||p.code}</div>
+                <div class="podium-score">${p.score||0} pts</div>
+            </div>
+        `).join('');
+        listEl.innerHTML = r.map((p,i) => `
+            <div class="lb-rank">
+                <span class="lb-pos ${medals[i]||''}">${i+1}</span>
+                <span class="lb-name">${p.name||p.code}</span>
+                <span class="lb-score">${p.score||0}</span>
+            </div>
+        `).join('');
+    }).catch(() => {
+        podiumEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Error al cargar.</p>';
+    });
+})();
+</script>
+{% endblock %}

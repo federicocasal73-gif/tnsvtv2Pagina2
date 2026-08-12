@@ -1,0 +1,46 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Honor · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Tablero de Honor{% endblock %}
+{% block topbar_subtitle %}Reconocimientos y logros del Reino.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div id="honor-list" class="space-y-3">
+        <p class="text-center text-[var(--outline-elev)] py-8">Cargando tablero de honor...</p>
+    </div>
+</div>
+
+<style>
+.honor-card { padding:1rem; display:flex; align-items:center; gap:1rem; }
+.honor-badge { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,var(--gold-elev),var(--gold-bright-elev)); display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+.honor-info { flex:1; }
+.honor-title { font-weight:600; font-size:0.9375rem; }
+.honor-desc { font-size:0.75rem; color:var(--outline-elev); }
+.honor-date { font-size:0.7rem; color:var(--gold-elev); }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const listEl = document.getElementById('honor-list');
+    apiFetch('/api/honor/board').then(r => {
+        if (!r.length) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Aún no hay reconocimientos.</p>';
+            return;
+        }
+        listEl.innerHTML = r.map(h => `
+            <div class="glass-card-elev honor-card">
+                <div class="honor-badge">${h.emoji||'🏆'}</div>
+                <div class="honor-info">
+                    <div class="honor-title">${h.title}</div>
+                    <div class="honor-desc">${h.description||''}</div>
+                </div>
+                <div class="honor-date">${h.awarded_at||''}</div>
+            </div>
+        `).join('');
+    }).catch(() => { listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
+})();
+</script>
+{% endblock %}

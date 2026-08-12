@@ -1,0 +1,75 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Game · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}TNSVT Game{% endblock %}
+{% block topbar_subtitle %}Market Instinct — Trading Game.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="glass-card-elev p-6 mb-4 text-center">
+        <div class="text-sm text-[var(--outline-elev)] mb-1">High Score</div>
+        <div id="game-highscore" class="text-3xl font-bold text-[var(--gold-elev)]">—</div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="glass-card-elev p-4 text-center">
+            <div class="text-sm text-[var(--outline-elev)]">Partidas</div>
+            <div id="game-played" class="text-xl font-bold">—</div>
+        </div>
+        <div class="glass-card-elev p-4 text-center">
+            <div class="text-sm text-[var(--outline-elev)]">VIP</div>
+            <div id="game-vip" class="text-xl font-bold">—</div>
+        </div>
+    </div>
+
+    <div class="glass-card-elev p-4 mb-4">
+        <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Leaderboard Global</h3>
+        <div id="game-lb" class="space-y-2">
+            <p class="text-center text-[var(--outline-elev)] py-4">Cargando...</p>
+        </div>
+    </div>
+
+    <button class="btn-primary w-full text-lg py-3" onclick="apiFetch('/api/game/session',{method:'POST'}).then(r=>{if(r.success)apiToast('¡Partida iniciada!','success')})">
+        🎮 Nueva Partida
+    </button>
+</div>
+
+<style>
+.game-lb-row { display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0.75rem; }
+.game-lb-row:hover { background:var(--glass-bg-elev); border-radius:0.5rem; }
+.game-lb-pos { width:28px; text-align:center; font-weight:700; color:var(--gold-elev); }
+.game-lb-name { flex:1; font-size:0.875rem; }
+.game-lb-score { font-weight:600; font-size:0.875rem; color:var(--gold-elev); }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const highEl = document.getElementById('game-highscore');
+    const playedEl = document.getElementById('game-played');
+    const vipEl = document.getElementById('game-vip');
+    const lbEl = document.getElementById('game-lb');
+
+    apiFetch('/api/game/my-stats').then(r => {
+        highEl.textContent = r.high_score||0;
+        playedEl.textContent = r.games_played||0;
+        vipEl.textContent = r.vip_active ? 'SÍ' : 'NO';
+    }).catch(() => {});
+
+    apiFetch('/api/game/leaderboard').then(r => {
+        if (!r.length) {
+            lbEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4">Sin datos.</p>';
+            return;
+        }
+        lbEl.innerHTML = r.slice(0,10).map((p,i) => `
+            <div class="game-lb-row">
+                <span class="game-lb-pos">${i+1}</span>
+                <span class="game-lb-name">${p.name||p.code||'—'}</span>
+                <span class="game-lb-score">${p.score||0}</span>
+            </div>
+        `).join('');
+    }).catch(() => { lbEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4">Error al cargar.</p>'; });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Tienda · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Tienda{% endblock %}
+{% block topbar_subtitle %}Objetos y mejoras para tu cuenta.{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="glass-card-elev p-4 mb-4">
+        <div class="flex items-center justify-between">
+            <span class="text-sm text-[var(--outline-elev)]">Tu balance:</span>
+            <span id="shop-balance" class="text-lg font-bold text-[var(--gold-elev)]">—</span>
+        </div>
+    </div>
+
+    <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Items Disponibles</h3>
+    <div id="shop-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Cargando tienda...</p>
+    </div>
+</div>
+
+<style>
+.shop-card { padding:1rem; text-align:center; transition:transform 0.2s; }
+.shop-card:hover { transform:translateY(-2px); }
+.shop-emoji { font-size:2.5rem; margin-bottom:0.5rem; }
+.shop-name { font-weight:600; font-size:0.875rem; margin-bottom:0.25rem; }
+.shop-desc { font-size:0.75rem; color:var(--outline-elev); margin-bottom:0.5rem; }
+.shop-price { font-weight:700; color:var(--gold-elev); font-size:1rem; }
+.shop-owned { font-size:0.7rem; color:#34d399; font-weight:600; }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const itemsEl = document.getElementById('shop-items');
+    const balanceEl = document.getElementById('shop-balance');
+
+    apiFetch('/api/wallet/balance').then(r => {
+        balanceEl.textContent = '$' + (r.balance||0);
+    }).catch(() => {});
+
+    apiFetch('/api/shop/items').then(r => {
+        if (!r.length) {
+            itemsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">No hay items disponibles.</p>';
+            return;
+        }
+        itemsEl.innerHTML = r.map(item => `
+            <div class="glass-card-elev shop-card">
+                <div class="shop-emoji">${item.emoji || '🎁'}</div>
+                <div class="shop-name">${item.name}</div>
+                <div class="shop-desc">${item.description||''}</div>
+                <div class="shop-price">$${item.price||0}</div>
+                ${item.owned ? '<div class="shop-owned">✓ Adquirido</div>' : `<button class="btn-primary w-full mt-2 text-xs" onclick="apiFetch('/api/shop/purchase',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item_id:${item.id}})}).then(()=>location.reload())">Comprar</button>`}
+            </div>
+        `).join('');
+    }).catch(() => { itemsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Error al cargar.</p>'; });
+})();
+</script>
+{% endblock %}

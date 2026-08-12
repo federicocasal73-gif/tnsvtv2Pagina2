@@ -1,0 +1,70 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Torneos · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Torneos{% endblock %}
+{% block topbar_subtitle %}Compite en torneos del Reino.{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div id="tournaments-active" class="space-y-4 mb-6">
+        <p class="text-center text-[var(--outline-elev)] py-8">Cargando torneos...</p>
+    </div>
+
+    <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Mis Torneos</h3>
+    <div id="tournaments-mine" class="space-y-3">
+        <p class="text-center text-[var(--outline-elev)] py-8">Cargando...</p>
+    </div>
+</div>
+
+<style>
+.tournament-card { padding:1rem; }
+.tournament-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; }
+.tournament-title { font-weight:600; font-size:0.9375rem; }
+.tournament-prize { font-size:0.875rem; color:var(--gold-elev); font-weight:600; }
+.tournament-meta { display:flex; gap:1rem; font-size:0.75rem; color:var(--outline-elev); }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const activeEl = document.getElementById('tournaments-active');
+    const mineEl = document.getElementById('tournaments-mine');
+
+    apiFetch('/api/tournaments/active').then(r => {
+        if (!r.length) {
+            activeEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">No hay torneos activos.</p>';
+            return;
+        }
+        activeEl.innerHTML = r.map(t => `
+            <div class="glass-card-elev tournament-card">
+                <div class="tournament-header">
+                    <span class="tournament-title">${t.name||'Torneo'}</span>
+                    <span class="tournament-prize">$${t.prize_pool||0}</span>
+                </div>
+                <div class="tournament-meta">
+                    <span>Participantes: ${t.participant_count||0}</span>
+                    <span>Estado: ${t.status||'active'}</span>
+                </div>
+                <button class="btn-primary w-full mt-3" onclick="apiFetch('/api/tournaments/${t.id}/join',{method:'POST'}).then(()=>location.reload())">Unirse</button>
+            </div>
+        `).join('');
+    }).catch(() => { activeEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
+
+    apiFetch('/api/tournaments/my').then(r => {
+        if (!r.length) {
+            mineEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">No estás en ningún torneo.</p>';
+            return;
+        }
+        mineEl.innerHTML = r.map(t => `
+            <div class="glass-card-elev tournament-card">
+                <div class="tournament-header">
+                    <span class="tournament-title">${t.name||'Torneo'}</span>
+                    <span class="text-sm ${t.my_position === 1 ? 'text-[var(--gold-elev)]' : 'text-[var(--outline-elev)]'}">#${t.my_position||'—'}</span>
+                </div>
+            </div>
+        `).join('');
+    }).catch(() => { mineEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
+})();
+</script>
+{% endblock %}

@@ -161,4 +161,76 @@ class SanctumModuleController extends AbstractController
         }
         return $this->json(['success' => true, 'status' => 'none']);
     }
+
+    // ──── CAMPUS / ACADEMIA ────
+
+    #[Route('/campus', name: 'sanctum_campus', methods: ['GET'])]
+    public function campus(): Response
+    {
+        return $this->render('sanctum/campus.html.twig');
+    }
+
+    // ──── GAME ────
+
+    #[Route('/game', name: 'sanctum_game', methods: ['GET'])]
+    public function game(): Response
+    {
+        return $this->render('sanctum/game.html.twig');
+    }
+
+    // ──── LEADERBOARD ────
+
+    #[Route('/leaderboard', name: 'sanctum_leaderboard', methods: ['GET'])]
+    public function leaderboard(): Response
+    {
+        return $this->render('sanctum/leaderboard.html.twig');
+    }
+
+    // ──── TOURNAMENTS ────
+
+    #[Route('/tournaments', name: 'sanctum_tournaments', methods: ['GET'])]
+    public function tournaments(): Response
+    {
+        return $this->render('sanctum/tournaments.html.twig');
+    }
+
+    // ──── DUELS ────
+
+    #[Route('/duels', name: 'sanctum_duels', methods: ['GET'])]
+    public function duels(): Response
+    {
+        return $this->render('sanctum/duels.html.twig');
+    }
+
+    // ──── CLAN ────
+
+    #[Route('/clan', name: 'sanctum_clan', methods: ['GET'])]
+    public function clan(): Response
+    {
+        return $this->render('sanctum/clan.html.twig');
+    }
+
+    // ──── SHOP ────
+
+    #[Route('/shop', name: 'sanctum_shop', methods: ['GET'])]
+    public function shop(): Response
+    {
+        return $this->render('sanctum/shop.html.twig');
+    }
+
+    // ──── WALLET ────
+
+    #[Route('/wallet', name: 'sanctum_wallet', methods: ['GET'])]
+    public function wallet(): Response
+    {
+        return $this->render('sanctum/wallet.html.twig');
+    }
+
+    // ──── HONOR BOARD ────
+
+    #[Route('/honor', name: 'sanctum_honor', methods: ['GET'])]
+    public function honor(): Response
+    {
+        return $this->render('sanctum/honor.html.twig');
+    }
 }

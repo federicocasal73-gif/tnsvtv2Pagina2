@@ -1,0 +1,65 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Wallet · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Mi Wallet{% endblock %}
+{% block topbar_subtitle %}Tu saldo y transacciones.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="glass-card-elev p-6 mb-4 text-center">
+        <div class="text-sm text-[var(--outline-elev)] mb-1">Saldo Disponible</div>
+        <div id="wallet-balance" class="text-3xl font-bold text-[var(--gold-elev)]">—</div>
+    </div>
+
+    <div class="glass-card-elev p-4">
+        <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Últimas Transacciones</h3>
+        <div id="wallet-txs" class="space-y-2">
+            <p class="text-center text-[var(--outline-elev)] py-8">Cargando transacciones...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+.tx-item { display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0.75rem; border-radius:0.5rem; }
+.tx-item:hover { background:var(--glass-bg-elev); }
+.tx-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.875rem; flex-shrink:0; }
+.tx-icon.credit { background:rgba(52,211,153,0.2); color:#34d399; }
+.tx-icon.debit { background:rgba(248,113,113,0.2); color:#f87171; }
+.tx-info { flex:1; }
+.tx-desc { font-size:0.875rem; font-weight:500; }
+.tx-date { font-size:0.7rem; color:var(--outline-elev); }
+.tx-amount { font-weight:600; font-size:0.875rem; }
+.tx-amount.credit { color:#34d399; }
+.tx-amount.debit { color:#f87171; }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const balanceEl = document.getElementById('wallet-balance');
+    const txsEl = document.getElementById('wallet-txs');
+
+    apiFetch('/api/wallet/balance').then(r => {
+        balanceEl.textContent = '$' + (r.balance||0);
+    }).catch(() => {});
+
+    apiFetch('/api/wallet/transactions').then(r => {
+        if (!r.length) {
+            txsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin transacciones.</p>';
+            return;
+        }
+        txsEl.innerHTML = r.map(tx => `
+            <div class="tx-item">
+                <div class="tx-icon ${tx.amount > 0 ? 'credit' : 'debit'}">${tx.amount > 0 ? '↓' : '↑'}</div>
+                <div class="tx-info">
+                    <div class="tx-desc">${tx.description||tx.type||'Transacción'}</div>
+                    <div class="tx-date">${tx.created_at||''}</div>
+                </div>
+                <div class="tx-amount ${tx.amount > 0 ? 'credit' : 'debit'}">${tx.amount > 0 ? '+' : ''}${tx.amount}</div>
+            </div>
+        `).join('');
+    }).catch(() => { txsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
+})();
+</script>
+{% endblock %}

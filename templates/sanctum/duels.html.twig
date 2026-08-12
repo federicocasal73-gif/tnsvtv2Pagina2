@@ -1,0 +1,45 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Duelos · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Duelos 1v1{% endblock %}
+{% block topbar_subtitle %}Desafía a otros traders.{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div id="duels-list" class="space-y-3">
+        <p class="text-center text-[var(--outline-elev)] py-8">Cargando duelos...</p>
+    </div>
+</div>
+
+<style>
+.duel-card { padding:1rem; display:flex; align-items:center; gap:1rem; }
+.duel-vs { font-weight:700; font-size:1.25rem; color:var(--gold-elev); }
+.duel-info { flex:1; }
+.duel-players { font-weight:600; font-size:0.9375rem; }
+.duel-meta { font-size:0.75rem; color:var(--outline-elev); }
+</style>
+
+<script>
+(function() {
+    'use strict';
+    const listEl = document.getElementById('duels-list');
+    apiFetch('/api/duels').then(r => {
+        if (!r.length) {
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">No hay duelos. ¡Crea uno!</p>';
+            return;
+        }
+        listEl.innerHTML = r.map(d => `
+            <div class="glass-card-elev duel-card">
+                <span class="duel-vs">VS</span>
+                <div class="duel-info">
+                    <div class="duel-players">${d.player1||'—'} vs ${d.player2||'—'}</div>
+                    <div class="duel-meta">Ronda ${d.current_round||0}/${d.totalRounds||3} · ${d.status||'active'}</div>
+                </div>
+                <span class="text-sm ${d.status === 'finished' ? 'text-[var(--outline-elev)]' : 'text-[var(--gold-elev)]'}">${d.status||'active'}</span>
+            </div>
+        `).join('');
+    }).catch(() => { listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
+})();
+</script>
+{% endblock %}
