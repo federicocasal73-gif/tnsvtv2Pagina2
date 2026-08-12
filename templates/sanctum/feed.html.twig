@@ -3,25 +3,141 @@
 {% block title %}Salón del Cónclave · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}Salón del Cónclave{% endblock %}
-{% block topbar_subtitle %}Feed comunitario con señales, resultados y proyecciones.{% endblock %}
+{% block topbar_subtitle %}"La palabra escrita queda. La palabra dicha se la lleva el viento."{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .feed-card {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .feed-card:hover {
+        border-color: rgba(242, 202, 80, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .feed-card.signal { border-left: 3px solid var(--gold-elev, #f2ca50); }
+    .feed-card.projection { border-left: 3px solid #8a3cff; }
+    .feed-card.result-win { border-left: 3px solid #4ade80; }
+    .feed-card.result-loss { border-left: 3px solid #f87171; }
+    .feed-card.question { border-left: 3px solid var(--secondary, #d4bbff); }
+
+    .feed-avatar {
+        width: 40px; height: 40px; border-radius: 50%;
+        border: 2px solid rgba(242, 202, 80, 0.3);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1rem; color: var(--on-primary-elev);
+        background: linear-gradient(135deg, var(--gold-elev, #f2ca50), var(--gold-bright-elev, #ffe088));
+    }
+    .feed-author { font-weight: 600; font-size: 0.9375rem; color: var(--starlight-white, #FDFCF8); }
+    .feed-time { font-size: 0.7rem; color: var(--outline-elev, #99907c); }
+    .feed-cat {
+        display: inline-block; padding: 2px 10px; font-size: 0.65rem; font-weight: 700;
+        border-radius: 1rem; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .cat-signal { background: rgba(242, 202, 80, 0.15); color: var(--gold-elev, #f2ca50); }
+    .cat-projection { background: rgba(138, 60, 255, 0.15); color: #8a3cff; }
+    .cat-result { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+    .cat-question { background: rgba(212, 187, 255, 0.15); color: var(--secondary, #d4bbff); }
+
+    .signal-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    .signal-field {
+        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0.5rem; padding: 0.5rem 0.75rem;
+    }
+    .signal-field-label { font-size: 0.6rem; color: var(--outline-elev, #99907c); text-transform: uppercase; letter-spacing: 0.05em; }
+    .signal-field-value { font-size: 1rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+    .signal-field-value.gold { color: var(--gold-elev, #f2ca50); }
+    .signal-field-value.green { color: #4ade80; }
+    .signal-field-value.red { color: #f87171; }
+
+    .feed-actions {
+        display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .feed-action-btn {
+        display: flex; align-items: center; gap: 0.375rem;
+        padding: 0.375rem 0.75rem; background: transparent; border: none;
+        color: var(--outline-elev, #99907c); cursor: pointer; font-size: 0.8rem;
+        border-radius: 0.375rem; transition: all 0.2s ease;
+    }
+    .feed-action-btn:hover { background: rgba(255, 255, 255, 0.05); color: var(--gold-elev, #f2ca50); }
+    .feed-action-btn.liked { color: #f87171; }
+
+    .composer-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(32px);
+        border: 1px solid rgba(242, 202, 80, 0.15);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-tabs {
+        display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.5rem;
+    }
+
+    .fab-btn {
+        position: fixed; bottom: 6rem; right: 1.5rem;
+        width: 3.5rem; height: 3.5rem; border-radius: 50%;
+        background: var(--gold-elev, #f2ca50); color: var(--void-black, #050308);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 4px 20px rgba(242, 202, 80, 0.4);
+        cursor: pointer; transition: all 0.3s ease; z-index: 40;
+        border: none;
+    }
+    .fab-btn:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(242, 202, 80, 0.6); }
+    .fab-btn:active { transform: scale(0.95); }
+
+    .post-modal {
+        position: fixed; inset: 0; z-index: 100;
+        display: none; align-items: center; justify-content: center;
+    }
+    .post-modal.active { display: flex; }
+    .post-modal-overlay {
+        position: absolute; inset: 0;
+        background: rgba(5, 3, 8, 0.9); backdrop-filter: blur(8px);
+    }
+    .post-modal-content {
+        position: relative; width: 100%; max-width: 500px;
+        background: var(--surface-container, #221d2e);
+        border: 1px solid rgba(242, 202, 80, 0.2);
+        border-radius: 1.5rem; padding: 2rem;
+        z-index: 101;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
+{# Filter Tabs #}
 <div class="max-w-3xl mx-auto">
-    {# ─── Composer ─── #}
-    <div class="glass-card-elev p-4 mb-4">
+    <div class="filter-tabs">
+        <button class="filter-pill active" data-filter="all">Todos</button>
+        <button class="filter-pill" data-filter="signal">Señales</button>
+        <button class="filter-pill" data-filter="result">Resultados</button>
+        <button class="filter-pill" data-filter="projection">Proyecciones</button>
+        <button class="filter-pill" data-filter="question">Preguntas</button>
+    </div>
+
+    {# Composer #}
+    <div class="composer-card">
         <div class="flex items-center gap-2 mb-3">
-            <select id="post-category" class="form-input"
-                    style="padding:0.4rem 0.6rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+            <select id="post-category" class="filter-pill" style="padding:4px 12px;">
                 <option value="general" selected>General</option>
                 <option value="signal">Señal</option>
                 <option value="result">Resultado</option>
                 <option value="analysis">Análisis</option>
             </select>
-            <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Categoría</span>
         </div>
         <textarea id="post-text" rows="3" placeholder="¿Qué querés compartir con el Sanctum?"
-                  class="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] resize-none"
-                  style="font-family: inherit;"></textarea>
+                  class="w-full px-4 py-3 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] text-[var(--on-surface-elev)] resize-none focus:outline-none focus:border-[var(--gold-elev)]"></textarea>
         <div class="flex items-center justify-end gap-2 mt-3">
             <button id="post-publish" class="btn-primary">
                 <span class="material-symbols-elev align-middle text-sm">send</span>
@@ -30,26 +146,64 @@
         </div>
     </div>
 
-    {# ─── Feed list ─── #}
+    {# Feed list #}
     <div id="feed-list" class="space-y-4">
-        <p class="text-center text-[var(--outline-elev)] py-8">Cargando feed...</p>
+        <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando feed...</p>
     </div>
 </div>
 
-<style>
-.feed-post { padding: 1rem; }
-.feed-header { display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem; }
-.feed-avatar { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--gold-elev),var(--gold-bright-elev)); display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--on-primary-elev); }
-.feed-author { font-weight:600; font-size:0.875rem; }
-.feed-time { font-size:0.7rem; color:var(--outline-elev); margin-left:auto; }
-.feed-cat { display:inline-block; padding:0.15rem 0.5rem; font-size:0.65rem; font-weight:600; border-radius:0.75rem; background:var(--glass-bg-strong-elev); color:var(--gold-elev); text-transform:uppercase; letter-spacing:0.05em; }
-.feed-text { font-size:0.9375rem; line-height:1.5; color:var(--on-surface-elev); white-space:pre-wrap; word-break:break-word; }
-.feed-photo { max-width:100%; border-radius:0.5rem; margin-top:0.75rem; }
-.feed-actions { display:flex; gap:0.5rem; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--glass-border-elev); }
-.feed-action-btn { display:flex; align-items:center; gap:0.375rem; padding:0.375rem 0.75rem; background:transparent; border:none; color:var(--outline-elev); cursor:pointer; font-size:0.8rem; border-radius:0.375rem; }
-.feed-action-btn:hover { background:var(--glass-bg-elev); color:var(--gold-elev); }
-.feed-action-btn.liked { color:#f87171; }
-</style>
+{# FAB #}
+<button class="fab-btn" id="fab-btn" title="Nueva publicación">
+    <span class="material-symbols-outlined" style="font-size: 1.75rem; font-variation-settings: 'FILL' 1;">add</span>
+</button>
+
+{# Post Modal #}
+<div class="post-modal" id="post-modal">
+    <div class="post-modal-overlay" onclick="document.getElementById('post-modal').classList.remove('active')"></div>
+    <div class="post-modal-content">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-[var(--on-surface-elev)]">Crear Señal</h3>
+            <button onclick="document.getElementById('post-modal').classList.remove('active')" class="text-[var(--outline-elev)] hover:text-[var(--on-surface-elev)]">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs uppercase text-[var(--gold-elev)] font-bold">Activo</label>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <button class="px-3 py-1 rounded-lg bg-[var(--gold-elev)] text-[var(--void-black)] font-bold text-xs">XAUUSD</button>
+                    <button class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">NAS100</button>
+                    <button class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">EURUSD</button>
+                    <button class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">BTCUSDT</button>
+                </div>
+            </div>
+            <div>
+                <label class="text-xs uppercase text-[var(--gold-elev)] font-bold">Dirección</label>
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                    <button class="p-3 rounded-lg bg-green-500/10 border-2 border-green-500 text-green-400 font-bold text-center">📈 BUY</button>
+                    <button class="p-3 rounded-lg bg-white/5 border-2 border-transparent text-red-400 font-bold text-center opacity-50">📉 SELL</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs uppercase text-[var(--gold-elev)] font-bold">Entry</label>
+                    <input type="text" placeholder="0.0000" class="w-full mt-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
+                </div>
+                <div>
+                    <label class="text-xs uppercase text-[#f87171] font-bold">Stop Loss</label>
+                    <input type="text" placeholder="0.0000" class="w-full mt-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-[#f87171]" />
+                </div>
+            </div>
+            <div>
+                <label class="text-xs uppercase text-[var(--outline-elev)] font-bold">Tesis / Aprendizajes</label>
+                <textarea rows="3" placeholder="Escribí tu razonamiento..." class="w-full mt-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-sm resize-none focus:outline-none focus:border-[var(--gold-elev)]"></textarea>
+            </div>
+            <button class="w-full py-3 bg-[var(--gold-elev)] text-[var(--void-black)] rounded-lg font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
+                Publicar Señal
+            </button>
+        </div>
+    </div>
+</div>
 
 <script>
 (function() {
@@ -58,10 +212,37 @@
     const textEl = document.getElementById('post-text');
     const catEl = document.getElementById('post-category');
     const publishBtn = document.getElementById('post-publish');
+    const fabBtn = document.getElementById('fab-btn');
+    const postModal = document.getElementById('post-modal');
     const me = () => (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+    let currentFilter = 'all';
 
     function escapeHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function getCardClass(cat) {
+        if (cat === 'signal') return 'signal';
+        if (cat === 'projection') return 'projection';
+        if (cat === 'result') return 'result-win';
+        if (cat === 'question') return 'question';
+        return '';
+    }
+
+    function getCatClass(cat) {
+        if (cat === 'signal') return 'cat-signal';
+        if (cat === 'projection') return 'cat-projection';
+        if (cat === 'result') return 'cat-result';
+        if (cat === 'question') return 'cat-question';
+        return 'cat-signal';
+    }
+
+    function getCatLabel(cat) {
+        if (cat === 'signal') return 'SEÑAL';
+        if (cat === 'projection') return 'PROYECCIÓN';
+        if (cat === 'result') return 'RESULTADO';
+        if (cat === 'question') return 'PREGUNTA';
+        return 'GENERAL';
     }
 
     async function loadFeed() {
@@ -70,38 +251,45 @@
             listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin datos disponibles</p>';
             return;
         }
-        const posts = Array.isArray(r.data) ? r.data : [];
+        let posts = Array.isArray(r.data) ? r.data : [];
+        if (currentFilter !== 'all') posts = posts.filter(p => (p.cat || 'general') === currentFilter);
         if (posts.length === 0) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin publicaciones. ¡Sé el primero en escribir!</p>';
+            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin publicaciones</p>';
             return;
         }
         listEl.innerHTML = posts.map(p => {
             const initial = (p.author_name || p.author_code || '?').slice(0, 1).toUpperCase();
             const time = p.created_at ? new Date(p.created_at).toLocaleString() : '';
-            const photo = p.photo ? `<img src="${escapeHtml(p.photo)}" class="feed-photo" />` : '';
+            const photo = p.photo ? `<img src="${escapeHtml(p.photo)}" style="max-width:100%;border-radius:0.75rem;margin-top:1rem;" />` : '';
             const likes = p.likes || 0;
             const comments = (p.comments || []).length;
+            const cat = p.cat || 'general';
             return `
-                <article class="glass-card-elev feed-post" data-id="${p.id}">
-                    <div class="feed-header">
-                        <div class="feed-avatar">${escapeHtml(initial)}</div>
-                        <div>
-                            <div class="feed-author">${escapeHtml(p.author_name || p.author_code)}</div>
-                            <div class="feed-time">${escapeHtml(p.author_code)} · ${escapeHtml(time)}</div>
+                <article class="feed-card ${getCardClass(cat)} fade-in-up" data-id="${p.id}" data-cat="${cat}">
+                    <div class="p-5">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="feed-avatar">${escapeHtml(initial)}</div>
+                            <div class="flex-1">
+                                <div class="feed-author">${escapeHtml(p.author_name || p.author_code)}</div>
+                                <div class="feed-time">${escapeHtml(p.author_code)} · ${escapeHtml(time)}</div>
+                            </div>
+                            <span class="feed-cat ${getCatClass(cat)}">${getCatLabel(cat)}</span>
                         </div>
-                        <span class="feed-cat">${escapeHtml(p.cat || 'general')}</span>
-                    </div>
-                    <div class="feed-text">${escapeHtml(p.text || '')}</div>
-                    ${photo}
-                    <div class="feed-actions">
-                        <button class="feed-action-btn" data-action="like" data-id="${p.id}">
-                            <span class="material-symbols-elev text-base">favorite</span>
-                            <span>${likes}</span>
-                        </button>
-                        <button class="feed-action-btn" data-action="comment" data-id="${p.id}">
-                            <span class="material-symbols-elev text-base">chat_bubble</span>
-                            <span>${comments}</span>
-                        </button>
+                        <div style="font-size:0.9375rem;line-height:1.6;color:var(--on-surface-elev);white-space:pre-wrap;word-break:break-word;">${escapeHtml(p.text || '')}</div>
+                        ${photo}
+                        <div class="feed-actions">
+                            <button class="feed-action-btn" data-action="like" data-id="${p.id}">
+                                <span class="material-symbols-outlined text-[18px]">thumb_up</span>
+                                <span>${likes}</span>
+                            </button>
+                            <button class="feed-action-btn" data-action="comment" data-id="${p.id}">
+                                <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+                                <span>${comments}</span>
+                            </button>
+                            <button class="feed-action-btn ml-auto" data-action="share" data-id="${p.id}">
+                                <span class="material-symbols-outlined text-[18px]">share</span>
+                            </button>
+                        </div>
                     </div>
                 </article>
             `;
@@ -111,19 +299,13 @@
     async function publish() {
         const text = textEl.value.trim();
         if (!text) return;
-
         publishBtn.disabled = true;
         const r = await apiFetch('/api/feed', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                code: me(),
-                text: text,
-                cat: catEl.value,
-            })
+            body: JSON.stringify({ code: me(), text: text, cat: catEl.value })
         });
         publishBtn.disabled = false;
-
         if (r.ok && r.data && (r.data.success || r.data.id)) {
             textEl.value = '';
             if (window.apiToast) apiToast('Publicación creada', 'success');
@@ -147,25 +329,32 @@
         }
     }
 
+    // Filter tabs
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            currentFilter = pill.dataset.filter;
+            loadFeed();
+        });
+    });
+
+    // FAB
+    if (fabBtn) {
+        fabBtn.addEventListener('click', () => {
+            if (postModal) postModal.classList.add('active');
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         publishBtn.addEventListener('click', publish);
-
         listEl.addEventListener('click', (e) => {
             const likeBtn = e.target.closest('[data-action="like"]');
-            if (likeBtn) {
-                toggleLike(likeBtn.dataset.id, likeBtn);
-                return;
-            }
+            if (likeBtn) { toggleLike(likeBtn.dataset.id, likeBtn); return; }
             const commentBtn = e.target.closest('[data-action="comment"]');
-            if (commentBtn) {
-                if (window.apiToast) apiToast('Comentarios próximamente', 'info');
-            }
+            if (commentBtn) { if (window.apiToast) apiToast('Comentarios próximamente', 'info'); }
         });
-
-        function boot() {
-            if (me()) loadFeed();
-            else setTimeout(boot, 1000);
-        }
+        function boot() { if (me()) loadFeed(); else setTimeout(boot, 1000); }
         if (window.TNSVT_USER) boot();
         else window.addEventListener('tnsvt:user-loaded', boot, { once: true });
     });
