@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#050308" />
+    <title>{% block title %}T.N.S.V.T{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    {# Public shell loads ONLY the tokens + home styles.
+       NO Sanctum CSS (no elev/v2/glass-premium) — clean boundary. #}
+    <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/home.css') }}" />
+
+    {% block stylesheets %}{% endblock %}
+</head>
+
+<body>
+
+{% include 'public/_public_nav.html.twig' with {} %}
+
+{# api_helper is needed because the login form calls /api/auth/login #}
+{% include '_partials/api_helper.html.twig' with {} %}
+
+<div class="public-shell">
+    {% block content %}{% endblock %}
+</div>
+
+<div class="public-floats">
+    {% block floats %}{% endblock %}
+</div>
+
+{% block javascripts %}{% endblock %}
+</body>
+</html>

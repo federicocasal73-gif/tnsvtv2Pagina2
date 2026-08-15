@@ -1,0 +1,355 @@
+/* assets/styles/home.css
+ *
+ * Styles for the public-facing T.N.S.V.T. surfaces (landing + login).
+ * Extracted from the legacy inline <style> block in templates/home.html.twig
+ * during the Home/Login split (Phase 5 of the TNSVT reorganization).
+ *
+ * Loaded ONLY by templates/public/home.html.twig and templates/public/login.html.twig.
+ * The Sanctum-authenticated shell loads its own (different) CSS bundle.
+ */
+
+:root {
+    --gold: #f2ca50;
+    --gold-bright: #ffe088;
+    --violet: #8a3cff;
+    --violet-glow: rgba(138, 60, 255, 0.3);
+    --bg-void: #050308;
+    --bg-deep: #100b1c;
+}
+
+body {
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(138, 60, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(242, 202, 80, 0.06) 0%, transparent 40%),
+        linear-gradient(135deg, #050308 0%, #100b1c 50%, #16121f 100%);
+    color: #e9def6;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f2ca50' fill-opacity='0.015'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    animation: subtle-drift 120s linear infinite;
+}
+
+@keyframes subtle-drift {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(-30px, -20px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* ─── Hero ─── */
+.home-container {
+    max-width: 1200px;
+    width: 100%;
+}
+.hero {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.cross {
+    font-size: 2rem;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 24px rgba(242, 202, 80, 0.4);
+}
+.logo {
+    font-family: 'Cinzel', serif;
+    font-size: 4rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    background: linear-gradient(135deg, #f2ca50 0%, #ffe088 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+}
+.tagline {
+    font-size: 0.9rem;
+    color: #99907c;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+.verse {
+    font-style: italic;
+    color: #d0c5af;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* ─── Animated background orbs ─── */
+.bg-orbs { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+.orb {
+    position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4;
+    animation: orb-float 20s ease-in-out infinite;
+}
+.orb-1 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(242,202,80,0.3), transparent 70%); top: -10%; left: -10%; animation-delay: 0s; }
+.orb-2 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(138,60,255,0.25), transparent 70%); bottom: -10%; right: -10%; animation-delay: -7s; }
+.orb-3 { width: 250px; height: 250px; background: radial-gradient(circle, rgba(242,202,80,0.15), transparent 70%); top: 40%; right: 20%; animation-delay: -14s; }
+@keyframes orb-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -40px) scale(1.1); }
+    66% { transform: translate(-20px, 30px) scale(0.95); }
+}
+
+/* ─── Floating particles ─── */
+.particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.particle {
+    position: absolute; width: 3px; height: 3px; background: rgba(242,202,80,0.6);
+    border-radius: 50%; animation: particle-rise 15s linear infinite;
+    box-shadow: 0 0 6px rgba(242,202,80,0.4);
+}
+@keyframes particle-rise {
+    0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(-100px) translateX(50px); opacity: 0; }
+}
+
+/* ─── Live stats strip ─── */
+.stats-strip {
+    display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;
+    margin: 1.5rem 0; position: relative; z-index: 1;
+}
+.stat-item {
+    text-align: center; padding: 0.75rem 1.25rem;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(242,202,80,0.1);
+    border-radius: 0.75rem; backdrop-filter: blur(10px);
+    transition: transform 0.3s, border-color 0.3s;
+}
+.stat-item:hover { transform: translateY(-3px); border-color: rgba(242,202,80,0.3); }
+.stat-value {
+    font-size: 1.5rem; font-weight: 700;
+    background: linear-gradient(135deg, #f2ca50, #ffe088);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-label { font-size: 0.65rem; color: #99907c; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.25rem; }
+.stat-live { display: inline-block; width: 6px; height: 6px; background: #4ade80; border-radius: 50%; margin-right: 4px; animation: stat-pulse 2s infinite; }
+@keyframes stat-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ─── Login card (used by login.html.twig AND home.html.twig fallback) ─── */
+.login-card {
+    max-width: 420px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(242, 202, 80, 0.15);
+    border-radius: 1rem;
+    box-shadow:
+        0 0 40px rgba(242, 202, 80, 0.05),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+    position: relative;
+    z-index: 1;
+}
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    border-radius: 2px;
+}
+.login-card h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--gold-elev, #f2ca50);
+}
+.form-field { margin-bottom: 1rem; }
+.form-field label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #99907c;
+    margin-bottom: 0.375rem;
+}
+.form-field input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.5rem;
+    color: #e9def6;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+.form-field input:focus {
+    outline: none;
+    border-color: #f2ca50;
+}
+.login-submit {
+    width: 100%;
+    padding: 0.875rem;
+    margin-top: 0.5rem;
+    background: linear-gradient(135deg, #f2ca50 0%, #ffe088 50%, #f2ca50 100%);
+    background-size: 200% 200%;
+    color: #241a00;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    box-shadow: 0 4px 15px rgba(242, 202, 80, 0.25);
+}
+.login-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background-position: 100% 100%;
+    box-shadow: 0 8px 30px rgba(242, 202, 80, 0.45);
+}
+.login-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-error {
+    display: none;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(248, 113, 113, 0.15);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    border-radius: 0.5rem;
+    color: #fca5a5;
+    font-size: 0.85rem;
+    text-align: center;
+}
+.login-success {
+    display: none;
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(52, 211, 153, 0.15);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    border-radius: 0.5rem;
+    color: #6ee7b7;
+    font-size: 0.85rem;
+    text-align: center;
+}
+.login-hint {
+    margin-top: 1rem;
+    padding: 0.625rem;
+    background: rgba(242, 202, 80, 0.08);
+    border-radius: 0.375rem;
+    color: #99907c;
+    font-size: 0.75rem;
+    text-align: center;
+    line-height: 1.5;
+}
+.login-hint code {
+    background: rgba(0,0,0,0.3);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    color: #f2ca50;
+    font-family: 'Space Grotesk', monospace;
+}
+.toggle-mode {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #99907c;
+}
+.toggle-mode a {
+    color: #f2ca50;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* ─── Features grid ─── */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 3rem;
+    position: relative;
+    z-index: 1;
+}
+.feature {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(242, 202, 80, 0.12);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: #e9def6;
+    transition: all 0.3s ease;
+    display: block;
+    text-align: center;
+    position: relative;
+}
+.feature::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, transparent 60%, rgba(242, 202, 80, 0.08) 100%);
+    pointer-events: none;
+}
+.feature:hover {
+    background: linear-gradient(135deg, rgba(242, 202, 80, 0.08) 0%, rgba(138, 60, 255, 0.05) 100%);
+    border-color: rgba(242, 202, 80, 0.35);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(138, 60, 255, 0.15);
+}
+.feature-icon {
+    font-size: 2rem;
+    color: #f2ca50;
+    margin-bottom: 0.5rem;
+}
+.feature-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.feature-desc {
+    font-size: 0.85rem;
+    color: #99907c;
+}
+
+/* ─── Public nav (simple top-right entry on landing) ─── */
+.public-nav {
+    position: fixed;
+    top: 1rem;
+    right: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+.public-nav a {
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    color: var(--gold);
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+.public-nav a:hover {
+    border-color: rgba(242, 202, 80, 0.4);
+    background: rgba(242, 202, 80, 0.06);
+}
+.public-nav a.cta {
+    background: rgba(242, 202, 80, 0.15);
+    border-color: rgba(242, 202, 80, 0.4);
+}

@@ -1,0 +1,23 @@
+{# _public_nav.html.twig — Top-right nav for public pages.
+
+   Shows context-aware links depending on whether the user is authenticated
+   and whether the current page is the landing or the login form.
+
+   On landing: "Entrar" CTA on the right
+   On login:   nothing (the form is the entry point)
+#}
+<nav class="public-nav">
+    {% if app.user %}
+        <a href="/sanctum" class="cta">
+            <span class="material-symbols-elev align-middle" style="font-size: 1rem;">login</span>
+            Ir al Sanctum
+        </a>
+    {% else %}
+        {% if app.request.pathInfo != '/login' %}
+            <a href="/login">
+                <span class="material-symbols-elev align-middle" style="font-size: 1rem;">login</span>
+                Entrar
+            </a>
+        {% endif %}
+    {% endif %}
+</nav>

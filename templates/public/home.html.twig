@@ -1,0 +1,121 @@
+{% extends 'public/shell.html.twig' %}
+
+{% block title %}T.N.S.V.T — Reino del Cristo Íntegro{% endblock %}
+
+{% block content %}
+    {# ─── Animated background ─── #}
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="particles" id="particles"></div>
+
+    <div class="home-container">
+        <div class="hero">
+            <div class="cross">✝</div>
+            <h1 class="logo">T.N.S.V.T</h1>
+            <p class="tagline">Reino del Cristo Íntegro</p>
+            <p class="verse">"Por mí, los reyes reinan y los príncipes gobiernan con justicia." — Proverbios 8:15</p>
+        </div>
+
+        {# ─── Live platform stats ─── #}
+        <div class="stats-strip">
+            <div class="stat-item">
+                <div class="stat-value" id="stat-traders">—</div>
+                <div class="stat-label"><span class="stat-live"></span>Traders Activos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-trades">—</div>
+                <div class="stat-label">Trades Hoy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-pnl">—</div>
+                <div class="stat-label">PnL Global</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">99.9%</div>
+                <div class="stat-label"><span class="stat-live"></span>Uptime</div>
+            </div>
+        </div>
+
+        {# ─── Features (all gated — link to /login for unauth users) ─── #}
+        <div class="features">
+            <a href="/login" class="feature">
+                <div class="feature-icon material-symbols-elev">dashboard</div>
+                <div class="feature-title">Sanctum</div>
+                <div class="feature-desc">Command center con KPIs, tasks, audit y settings</div>
+            </a>
+            <a href="/login" class="feature">
+                <div class="feature-icon material-symbols-elev">edit_note</div>
+                <div class="feature-title">Trading Journal</div>
+                <div class="feature-desc">Bitácora de operaciones, métricas y análisis</div>
+            </a>
+            <a href="/login" class="feature">
+                <div class="feature-icon material-symbols-elev">calendar_month</div>
+                <div class="feature-title">Calendario</div>
+                <div class="feature-desc">Eventos macro con filtros de país e impacto</div>
+            </a>
+            <a href="/login" class="feature">
+                <div class="feature-icon material-symbols-elev">chat</div>
+                <div class="feature-title">Mensajes</div>
+                <div class="feature-desc">Conversaciones, grupos y adjuntos</div>
+            </a>
+            <a href="/login" class="feature">
+                <div class="feature-icon material-symbols-elev">forum</div>
+                <div class="feature-title">Feed</div>
+                <div class="feature-desc">Salón del Cónclave con señales y resultados</div>
+            </a>
+            <a href="/login" class="feature">
+                <div class="feature-icon material-symbols-elev">menu_book</div>
+                <div class="feature-title">Diario</div>
+                <div class="feature-desc">Bitácora privada cifrada extremo a extremo</div>
+            </a>
+        </div>
+    </div>
+
+    <script>
+    // Generate floating particles
+    (function() {
+        const container = document.getElementById('particles');
+        if (!container) return;
+        for (let i = 0; i < 25; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDelay = -(Math.random() * 15) + 's';
+            p.style.animationDuration = (10 + Math.random() * 10) + 's';
+            p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
+            container.appendChild(p);
+        }
+    })();
+
+    // Load live platform stats (best-effort, anonymous-friendly)
+    (function() {
+        apiFetch('/api/journal/stats').then(r => {
+            if (!r || !r.data) return;
+            if (r.data.total !== undefined) {
+                const el = document.getElementById('stat-trades');
+                if (el) el.textContent = r.data.total || 0;
+            }
+            if (r.data.total_pnl !== undefined) {
+                const el = document.getElementById('stat-pnl');
+                if (el) {
+                    const pnl = parseFloat(r.data.total_pnl);
+                    el.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
+                    el.style.background = pnl >= 0
+                        ? 'linear-gradient(135deg, #4ade80, #22c55e)'
+                        : 'linear-gradient(135deg, #f87171, #ef4444)';
+                    el.style.webkitBackgroundClip = 'text';
+                }
+            }
+        }).catch(() => {});
+
+        apiFetch('/api/users/all').then(r => {
+            if (!r || !r.data || !r.data.users) return;
+            const el = document.getElementById('stat-traders');
+            if (el) el.textContent = r.data.users.length || 0;
+        }).catch(() => {});
+    })();
+    </script>
+{% endblock %}

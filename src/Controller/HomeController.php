@@ -8,28 +8,43 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 /**
- * HomeController — root URL redirect.
- * Fixes the 404 on / by redirecting to /sanctum.
- * Also serves a small landing page with feature links.
+ * HomeController — public surface (landing + login).
+ *
+ * After the Home/Login split (Phase 5), the responsibilities are:
+ *   /       → landing only (no login form). Auth users → redirect /sanctum.
+ *   /home   → alt landing (kept for backwards compatibility).
+ *   /login  → dedicated login form (no marketing).
+ *
+ * The Sanctum-app shell (sidebar, KPIs, etc.) lives under /sanctum/* — see
+ * Admin\SanctumController and SanctumModuleController.
  */
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'home', methods: ['GET'])]
     public function index(): Response
     {
-        // Check if user is authenticated - if so, go straight to sanctum
         $user = $this->getUser();
         if ($user) {
             return new RedirectResponse('/sanctum');
         }
 
-        // Show landing page for anonymous users with link to features
-        return $this->render('home.html.twig');
+        return $this->render('public/home.html.twig');
     }
 
     #[Route('/home', name: 'home_alt', methods: ['GET'])]
     public function home(): Response
     {
-        return $this->render('home.html.twig');
+        return $this->render('public/home.html.twig');
+    }
+
+    #[Route('/login', name: 'login', methods: ['GET'])]
+    public function login(): Response
+    {
+        $user = $this->getUser();
+        if ($user) {
+            return new RedirectResponse('/sanctum');
+        }
+
+        return $this->render('public/login.html.twig');
     }
 }
