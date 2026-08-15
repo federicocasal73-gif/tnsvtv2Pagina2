@@ -4,9 +4,11 @@ namespace App\Controller\Api;
 
 use App\Entity\JournalEntry;
 use App\Entity\User;
+use App\Event\TradeSavedEvent;
 use App\Repository\JournalEntryRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +23,7 @@ class SyncController extends AbstractController
         private UserRepository $userRepository,
         private JournalEntryRepository $journalEntryRepository,
         private LoggerInterface $logger,
+        private EventDispatcherInterface $eventDispatcher,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -159,6 +162,10 @@ class SyncController extends AbstractController
         // Asignar IDs generados a los creates pendientes
         foreach ($pendingCreates as $i => $entry) {
             $results[$i]['server_id'] = $entry->getId();
+            $this->eventDispatcher->dispatch(
+                new TradeSavedEvent($entry, $user, isNew: true),
+                TradeSavedEvent::NAME,
+            );
         }
 
         return $this->json([

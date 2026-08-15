@@ -133,6 +133,7 @@ class PropFirmRuleChecker
             'current_balance' => (float) $account->getCurrentBalance(),
             'drawdown_pct' => $account->getDrawdownPct(),
             'profit_pct' => $account->getProfitPct(),
+            'daily_loss_pct' => $this->getDailyLossPctForUser($account->getUser()),
             'max_drawdown_pct' => $firm ? (float) $firm->getRule('max_drawdown_pct', 10) : null,
             'max_daily_loss_pct' => $firm ? (float) $firm->getRule('max_daily_loss_pct', 5) : null,
             'profit_target_pct' => $firm ? (float) $firm->getRule('profit_target_pct', 10) : null,
@@ -140,7 +141,11 @@ class PropFirmRuleChecker
         ];
     }
 
-    private function getDailyLossPct(User $user, JournalEntry $currentEntry): float
+    /**
+     * Daily loss as percent of account size, computed from today's journal entries.
+     * Public so it can be reused by GuardianSignalCollector and the API.
+     */
+    public function getDailyLossPctForUser(User $user): float
     {
         $todayStart = (new \DateTimeImmutable())->setTime(0, 0, 0);
         $todayEnd = $todayStart->modify('+1 day');
@@ -163,6 +168,11 @@ class PropFirmRuleChecker
 
         $size = (float) ($this->getAccountSize($user));
         return $size > 0 ? round($todayLoss / $size * 100, 2) : 0;
+    }
+
+    private function getDailyLossPct(User $user, JournalEntry $currentEntry): float
+    {
+        return $this->getDailyLossPctForUser($user);
     }
 
     private function getAccountSize(User $user): float

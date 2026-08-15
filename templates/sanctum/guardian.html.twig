@@ -1,0 +1,237 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Guardian · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Guardian · Riesgo & Disciplina{% endblock %}
+{% block topbar_subtitle %}Señales operativas y disciplina de los últimos 30 días{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto">
+
+        {# ─── Toolbar ─── #}
+        <div class="glass-card-elev p-4 mb-6 flex items-center justify-between">
+            <div>
+                <p class="text-sm text-[var(--on-surface-elev)]">Señales calculadas desde tu Journal, Diario, Macro y cuentas PropFirm</p>
+                <p class="text-xs text-[var(--outline-elev)]">Refresh: <span id="last-refresh">--</span></p>
+            </div>
+            <button id="refresh-btn" class="btn-elev-secondary text-xs">
+                <span class="material-symbols-elev align-middle text-sm">refresh</span>
+                Refrescar
+            </button>
+        </div>
+
+        {# ─── Loading skeleton ─── #}
+        <div id="loading-state" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="glass-card-elev p-6 lg:col-span-1">
+                <p class="loading-pulse text-[var(--outline-elev)] text-center py-12">Calculando score...</p>
+            </div>
+            <div class="glass-card-elev p-6 lg:col-span-2">
+                <p class="loading-pulse text-[var(--outline-elev)] text-center py-12">Recolectando señales...</p>
+            </div>
+        </div>
+
+        {# ─── Error state ─── #}
+        <div id="error-state" class="hidden glass-card-elev p-6">
+            <p class="text-red-400 text-center">Error cargando Guardian. Probá refrescar.</p>
+        </div>
+
+        {# ─── Main content (populated by JS) ─── #}
+        <div id="guardian-content" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            {# Score card (left) #}
+            <div class="glass-card-elev p-6 lg:col-span-1">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">shield_person</span>
+                    <h3 class="text-lg font-semibold text-[var(--on-surface-elev)]">Discipline Score</h3>
+                </div>
+
+                <div class="flex flex-col items-center py-4">
+                    <div id="score-value" class="text-6xl font-bold tracking-tight" style="color: var(--gold-elev);">--</div>
+                    <div class="text-sm text-[var(--outline-elev)] mt-1">/ 100</div>
+                    <div id="score-tier" class="mt-3 tier-badge-elev tier-initiate" style="font-size: 0.8rem; letter-spacing: 0.1em;">--</div>
+                </div>
+
+                <div class="mt-6">
+                    <p class="text-xs uppercase tracking-wider text-[var(--outline-elev)] mb-2">Breakdown</p>
+                    <ul id="score-breakdown" class="space-y-1 text-sm">
+                        <li class="text-[var(--outline-elev)] py-2">Sin factores negativos.</li>
+                    </ul>
+                </div>
+
+                <p class="text-xs text-[var(--outline-elev)] mt-4 text-center">
+                    Calculado: <span id="score-computed-at">--</span>
+                </p>
+            </div>
+
+            {# Signals card (right) #}
+            <div class="glass-card-elev p-6 lg:col-span-2">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">notifications_active</span>
+                    <h3 class="text-lg font-semibold text-[var(--on-surface-elev)]">Señales activas</h3>
+                    <span id="signal-count-badge" class="ml-auto text-xs px-2 py-0.5 rounded-full bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--outline-elev)]">0</span>
+                </div>
+
+                <div id="signals-list" class="space-y-3">
+                    <div id="signals-empty" class="hidden text-center py-8">
+                        <span class="material-symbols-elev text-4xl text-green-400">check_circle</span>
+                        <p class="text-sm text-[var(--on-surface-elev)] mt-2">Todo en orden</p>
+                        <p class="text-xs text-[var(--outline-elev)]">Sin señales activas. Tu disciplina está bajo control.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        const SEVERITY_RANK = { danger: 3, warning: 2, info: 1 };
+        const SEVERITY_VISUAL = {
+            danger:  { icon: 'error',          pillClass: 'status-inactive', color: '#f87171' },
+            warning: { icon: 'warning',        pillClass: 'status-pending',  color: 'var(--gold-elev)' },
+            info:    { icon: 'info',           pillClass: 'status-active',   color: 'var(--violet)' },
+        };
+        const TIER_VISUAL = {
+            elite:   { label: 'ELITE',   color: '#ffe088' },
+            strong:  { label: 'STRONG',  color: 'var(--gold-elev)' },
+            steady:  { label: 'STEADY',  color: 'var(--violet)' },
+            caution: { label: 'CAUTION', color: 'var(--gold-elev)' },
+            risk:    { label: 'RISK',    color: '#f87171' },
+        };
+
+        async function loadGuardian() {
+            const [signalsRes, scoreRes] = await Promise.all([
+                apiFetch('/api/guardian/signals', { silent: true }),
+                apiFetch('/api/guardian/score', { silent: true }),
+            ]);
+
+            if (!signalsRes.ok || !scoreRes.ok) {
+                document.getElementById('loading-state').classList.add('hidden');
+                document.getElementById('error-state').classList.remove('hidden');
+                return;
+            }
+
+            renderScore(scoreRes.data);
+            renderSignals(signalsRes.data.signals || []);
+
+            document.getElementById('loading-state').classList.add('hidden');
+            document.getElementById('error-state').classList.add('hidden');
+            document.getElementById('guardian-content').classList.remove('hidden');
+            document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString();
+        }
+
+        function renderScore(data) {
+            const scoreEl = document.getElementById('score-value');
+            const tierEl  = document.getElementById('score-tier');
+            const bdEl    = document.getElementById('score-breakdown');
+            const atEl    = document.getElementById('score-computed-at');
+
+            scoreEl.textContent = (data.score ?? 0);
+
+            const tierVisual = TIER_VISUAL[data.tier] || { label: '—', color: 'var(--outline-elev)' };
+            tierEl.textContent = tierVisual.label;
+            tierEl.style.color = tierVisual.color;
+            tierEl.style.borderColor = tierVisual.color;
+
+            if (data.score >= 75) {
+                scoreEl.style.color = tierVisual.color;
+            } else if (data.score >= 40) {
+                scoreEl.style.color = 'var(--gold-elev)';
+            } else {
+                scoreEl.style.color = '#f87171';
+            }
+
+            if (Array.isArray(data.breakdown) && data.breakdown.length > 0) {
+                bdEl.innerHTML = data.breakdown.map(item => {
+                    const sign = item.delta > 0 ? '+' : '';
+                    return `
+                        <li class="flex items-start gap-2 py-1.5 border-b border-[var(--outline-variant-elev)] border-opacity-30 last:border-0">
+                            <span class="material-symbols-elev text-sm flex-shrink-0" style="color: #f87171;">trending_down</span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[var(--on-surface-elev)] text-sm leading-snug">${escapeHtml(item.label)}</p>
+                                <p class="text-xs text-[var(--outline-elev)] mt-0.5">${escapeHtml(item.source)}</p>
+                            </div>
+                            <span class="font-mono text-sm flex-shrink-0" style="color: #f87171;">${sign}${item.delta}</span>
+                        </li>
+                    `;
+                }).join('');
+            } else {
+                bdEl.innerHTML = '<li class="text-[var(--outline-elev)] py-2">Sin factores negativos.</li>';
+            }
+
+            atEl.textContent = data.computed_at
+                ? new Date(data.computed_at).toLocaleString()
+                : '—';
+        }
+
+        function renderSignals(signals) {
+            const listEl = document.getElementById('signals-list');
+            const emptyEl = document.getElementById('signals-empty');
+            const badgeEl = document.getElementById('signal-count-badge');
+
+            // Remove existing dynamic children (keep the empty placeholder)
+            Array.from(listEl.children).forEach(child => {
+                if (child.id !== 'signals-empty') child.remove();
+            });
+
+            badgeEl.textContent = signals.length;
+
+            if (signals.length === 0) {
+                emptyEl.classList.remove('hidden');
+                return;
+            }
+
+            emptyEl.classList.add('hidden');
+
+            // Insert before the empty placeholder so the placeholder stays last
+            const sorted = signals.slice().sort((a, b) =>
+                (SEVERITY_RANK[b.severity] || 0) - (SEVERITY_RANK[a.severity] || 0)
+            );
+
+            sorted.forEach(sig => {
+                const visual = SEVERITY_VISUAL[sig.severity] || SEVERITY_VISUAL.info;
+                const actionHtml = sig.action_label && sig.action_route
+                    ? `<a href="${escapeHtml(sig.action_route)}" class="text-xs text-[var(--gold-elev)] hover:underline mt-2 inline-flex items-center gap-1">
+                         ${escapeHtml(sig.action_label)}
+                         <span class="material-symbols-elev" style="font-size: 0.875rem;">arrow_forward</span>
+                       </a>`
+                    : '';
+
+                const card = document.createElement('div');
+                card.className = 'p-4 rounded-lg border border-[var(--outline-variant-elev)] bg-[var(--glass-bg-elev)]';
+                card.innerHTML = `
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-elev flex-shrink-0" style="color: ${visual.color}; font-variation-settings: 'FILL' 1;">${visual.icon}</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h4 class="text-sm font-semibold text-[var(--on-surface-elev)]">${escapeHtml(sig.title)}</h4>
+                                <span class="status-pill ${visual.pillClass}" style="font-size: 0.65rem; padding: 0.1rem 0.5rem;">${escapeHtml(sig.severity)}</span>
+                            </div>
+                            <p class="text-sm text-[var(--on-surface-variant-elev)] mt-1 leading-snug">${escapeHtml(sig.message)}</p>
+                            ${actionHtml}
+                        </div>
+                    </div>
+                `;
+                listEl.insertBefore(card, emptyEl);
+            });
+        }
+
+        function escapeHtml(s) {
+            if (s === null || s === undefined) return '';
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        document.getElementById('refresh-btn').addEventListener('click', loadGuardian);
+        document.addEventListener('DOMContentLoaded', loadGuardian);
+        if (document.readyState !== 'loading') loadGuardian();
+    })();
+    </script>
+{% endblock %}

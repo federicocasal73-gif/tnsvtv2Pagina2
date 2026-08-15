@@ -104,7 +104,43 @@
                 <polyline id="kpi-macro-spark" points="0,28 10,25 20,22 30,20 40,18 50,15 60,12 70,10 80,8 90,5 100,3" fill="none" stroke="#8a3cff" stroke-width="1.5" stroke-linecap="round"/>
             </svg>
         </div>
-    </section>
+        </section>
+
+        {# ─── Guardian Widget (Phase 3) ─── #}
+        <section class="glass-card-elev p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">shield_person</span>
+                    Guardian
+                    <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--outline-elev)] font-normal">Risk & Discipline</span>
+                </h3>
+                <a href="/sanctum/guardian" class="text-xs text-[var(--gold-elev)] hover:underline flex items-center gap-1">
+                    Ver completo
+                    <span class="material-symbols-elev" style="font-size: 0.875rem;">arrow_forward</span>
+                </a>
+            </div>
+
+            <div id="guardian-widget" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {# ── Score ── #}
+                <div class="text-center md:border-r border-[var(--outline-variant-elev)] md:pr-6">
+                    <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider mb-2">Discipline</p>
+                    <div id="gw-score" class="text-5xl font-bold" style="color: var(--gold-elev); line-height: 1;">--</div>
+                    <div class="text-xs text-[var(--outline-elev)] mt-1">/ 100</div>
+                    <div id="gw-tier" class="mt-2 inline-block text-xs px-2 py-0.5 rounded-full border" style="border-color: var(--outline-variant-elev); color: var(--outline-elev);">—</div>
+                </div>
+
+                {# ── Top signals ── #}
+                <div class="md:col-span-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Señales activas</p>
+                        <span id="gw-signal-count" class="text-xs text-[var(--outline-elev)]">0</span>
+                    </div>
+                    <div id="gw-signals" class="space-y-2">
+                        <p class="text-center text-[var(--outline-elev)] py-2 loading-pulse text-xs">Cargando...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         {# Recent Signals + Task Sovereignty #}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -660,9 +696,69 @@
         }
     }
 
+    const GW_TIER_COLOR = {
+        elite: '#ffe088', strong: 'var(--gold-elev)', steady: 'var(--violet)',
+        caution: 'var(--gold-elev)', risk: '#f87171',
+    };
+    const GW_SEVERITY_VISUAL = {
+        danger:  { icon: 'error',   color: '#f87171' },
+        warning: { icon: 'warning', color: 'var(--gold-elev)' },
+        info:    { icon: 'info',    color: 'var(--violet)' },
+    };
+
+    async function loadGuardianWidget() {
+        const [scoreRes, sigRes] = await Promise.all([
+            apiFetch('/api/guardian/score', { silent: true }),
+            apiFetch('/api/guardian/signals', { silent: true }),
+        ]);
+        if (scoreRes.ok && scoreRes.data) {
+            const d = scoreRes.data;
+            const scoreEl = document.getElementById('gw-score');
+            const tierEl  = document.getElementById('gw-tier');
+            scoreEl.textContent = d.score ?? 0;
+            const c = GW_TIER_COLOR[d.tier] || 'var(--outline-elev)';
+            scoreEl.style.color = (d.score ?? 0) >= 75 ? c : (d.score >= 40 ? 'var(--gold-elev)' : '#f87171');
+            tierEl.textContent = (d.tier || '—').toUpperCase();
+            tierEl.style.color = c;
+            tierEl.style.borderColor = c;
+        }
+        if (sigRes.ok && sigRes.data) {
+            const signals = sigRes.data.signals || [];
+            const listEl = document.getElementById('gw-signals');
+            const countEl = document.getElementById('gw-signal-count');
+            countEl.textContent = signals.length === 0 ? 'Sin señales' : `${signals.length} activas`;
+            if (signals.length === 0) {
+                listEl.innerHTML = `
+                    <div class="flex items-center gap-2 p-2 rounded text-sm text-green-400">
+                        <span class="material-symbols-elev" style="font-size: 1.1rem;">check_circle</span>
+                        <span>Todo en orden · tu disciplina está bajo control</span>
+                    </div>`;
+                return;
+            }
+            const top3 = signals.slice(0, 3);
+            listEl.innerHTML = top3.map(s => {
+                const v = GW_SEVERITY_VISUAL[s.severity] || GW_SEVERITY_VISUAL.info;
+                const action = s.action_label && s.action_route
+                    ? `<a href="${escapeHtml(s.action_route)}" class="text-xs text-[var(--gold-elev)] hover:underline ml-auto">${escapeHtml(s.action_label)} →</a>`
+                    : '';
+                return `
+                    <div class="flex items-center gap-2 p-2 rounded hover:bg-[var(--glass-bg-elev)] transition-colors">
+                        <span class="material-symbols-elev flex-shrink-0" style="color: ${v.color}; font-size: 1.1rem;">${v.icon}</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-[var(--on-surface-elev)] truncate">${escapeHtml(s.title)}</p>
+                            <p class="text-xs text-[var(--outline-elev)] truncate">${escapeHtml(s.message)}</p>
+                        </div>
+                        ${action}
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
     // Wire up events
     document.addEventListener('DOMContentLoaded', () => {
         loadDashboard();
+        loadGuardianWidget();
         document.getElementById('quick-add-task').addEventListener('click', openCreateTask);
         document.querySelectorAll('[data-action="open-create-task"]').forEach(b => b.addEventListener('click', openCreateTask));
         document.querySelectorAll('[data-action="close-create-task"]').forEach(b => b.addEventListener('click', closeCreateTask));
@@ -676,6 +772,7 @@
             }
         });
         setInterval(loadDashboard, 60000);
+        setInterval(loadGuardianWidget, 90000);
     });
     </script>
     <script src="{{ asset('js/modules/sparklines.js') }}"></script>

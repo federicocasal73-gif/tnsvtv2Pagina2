@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\JournalEntry;
 use App\Entity\JournalSetting;
 use App\Entity\User;
+use App\Event\TradeSavedEvent;
 use App\Repository\ConnectionRepository;
 use App\Repository\JournalEntryRepository;
 use App\Repository\JournalPermissionRepository;
@@ -13,6 +14,7 @@ use App\Repository\TradingAccountRepository;
 use App\Util\JournalPhotoList;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,6 +32,7 @@ class JournalController extends AbstractController
         private JournalPermissionRepository $permissionRepo,
         private JournalSettingRepository $settingRepo,
         private TradingAccountRepository $accountRepo,
+        private EventDispatcherInterface $eventDispatcher,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -184,6 +187,11 @@ class JournalController extends AbstractController
         $this->em->persist($entry);
         $this->em->flush();
 
+        $this->eventDispatcher->dispatch(
+            new TradeSavedEvent($entry, $currentUser, isNew: true),
+            TradeSavedEvent::NAME,
+        );
+
         return $this->json(['success' => true, 'id' => $entry->getId()], 201);
     }
 
@@ -232,6 +240,10 @@ class JournalController extends AbstractController
         }
 
         $this->em->flush();
+        $this->eventDispatcher->dispatch(
+            new TradeSavedEvent($entry, $currentUser, isNew: false),
+            TradeSavedEvent::NAME,
+        );
         return $this->json(['success' => true]);
     }
 

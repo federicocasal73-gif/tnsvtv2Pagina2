@@ -139,6 +139,19 @@
         <button class="journal-nav-btn">Stats</button>
     </nav>
 
+    {# ─── Guardian Pre-Trade Banner (Phase 3) ─── #}
+    <div id="guardian-banner" class="hidden mb-4 p-4 rounded-lg border" style="border-color: var(--outline-variant-elev); background: var(--glass-bg-elev);">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">shield_person</span>
+                Guardian — señales activas
+            </h3>
+            <a href="/sanctum/guardian" class="text-xs text-[var(--gold-elev)] hover:underline">Ver completo →</a>
+        </div>
+        <div id="guardian-banner-list" class="space-y-1.5"></div>
+        <p class="text-xs text-[var(--outline-elev)] mt-2">Estas señales no bloquean el registro. Guardian es tu coach, no tu carcelero.</p>
+    </div>
+
     {# ─── Toolbar ─── #}
     <div class="journal-card mb-4 flex flex-wrap items-center gap-3">
         <button id="btn-new-trade" class="btn-primary flex items-center gap-2">
@@ -377,6 +390,7 @@
             if (window.apiToast) apiToast(id ? 'Trade actualizado' : 'Trade creado', 'success');
             closeModal();
             loadTrades();
+            loadGuardianBanner(); // refresh after save — subscriber may have produced new alerts
         } else {
             const msg = (r.data && (r.data.error || r.data.message)) || 'Error';
             errEl.textContent = msg;
@@ -390,9 +404,53 @@
         if (r.ok && r.data && r.data.success) {
             if (window.apiToast) apiToast('Trade eliminado', 'success');
             loadTrades();
+            loadGuardianBanner();
         } else {
             if (window.apiToast) apiToast('Error al eliminar', 'error');
         }
+    }
+
+    const JOURNAL_SEVERITY_VISUAL = {
+        danger:  { icon: 'error',   color: '#f87171' },
+        warning: { icon: 'warning', color: 'var(--gold-elev)' },
+        info:    { icon: 'info',    color: 'var(--violet)' },
+    };
+
+    async function loadGuardianBanner() {
+        const banner = document.getElementById('guardian-banner');
+        const listEl = document.getElementById('guardian-banner-list');
+        if (!banner || !listEl) return;
+
+        const r = await apiFetch('/api/guardian/signals', { silent: true });
+        if (!r.ok || !r.data) {
+            banner.classList.add('hidden');
+            return;
+        }
+        const signals = r.data.signals || [];
+        // Filter to most actionable: risk.* types (most relevant for pre-trade context)
+        const risk = signals.filter(s => s.type.startsWith('risk.'));
+        const top = (risk.length > 0 ? risk : signals).slice(0, 3);
+
+        if (top.length === 0) {
+            banner.classList.add('hidden');
+            return;
+        }
+
+        listEl.innerHTML = top.map(s => {
+            const v = JOURNAL_SEVERITY_VISUAL[s.severity] || JOURNAL_SEVERITY_VISUAL.info;
+            const action = s.action_label && s.action_route
+                ? `<a href="${s.action_route}" class="text-xs text-[var(--gold-elev)] hover:underline ml-auto whitespace-nowrap">${s.action_label} →</a>`
+                : '';
+            return `
+                <div class="flex items-center gap-2 text-sm py-1">
+                    <span class="material-symbols-elev flex-shrink-0" style="color: ${v.color}; font-size: 1.1rem;">${v.icon}</span>
+                    <span class="text-[var(--on-surface-elev)]">${s.title}</span>
+                    <span class="text-xs text-[var(--outline-elev)] truncate">· ${s.message}</span>
+                    ${action}
+                </div>
+            `;
+        }).join('');
+        banner.classList.remove('hidden');
     }
 
     // Event handlers
@@ -434,10 +492,14 @@
         function boot() {
             if (currentUserCode()) {
                 loadTrades();
+                loadGuardianBanner();
             } else {
                 // Try once more after a short delay; if still no user, give up.
                 setTimeout(() => {
-                    if (currentUserCode()) loadTrades();
+                    if (currentUserCode()) {
+                        loadTrades();
+                        loadGuardianBanner();
+                    }
                     else listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12">Sin sesión</p>';
                 }, 1000);
             }
