@@ -12,45 +12,13 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
-    <link rel="stylesheet" href="{{ asset('styles/elev.css') }}" />
-    <link rel="stylesheet" href="{{ asset('styles/v2-tokens.css') }}" />
-    <link rel="stylesheet" href="{{ asset('styles/v2-components.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/components.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/v2-sparklines.css') }}" />
-    <link rel="stylesheet" href="{{ asset('styles/tokens-elev.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/animations.css') }}" />
-    <link rel="stylesheet" href="{{ asset('styles/glass-premium.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/glow.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/shell.css') }}" />
 
     {% block stylesheets %}{% endblock %}
-    <style>
-        .sanctum-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.5rem; color: var(--on-surface-variant-elev); font-size: 0.875rem; font-weight: 500; border-left: 2px solid transparent; transition: all 0.2s ease; text-decoration: none; }
-        .sanctum-link:hover { background: linear-gradient(90deg, rgba(242, 202, 80, 0.06) 0%, transparent 100%); color: var(--on-surface-elev); border-left-color: rgba(242, 202, 80, 0.2); }
-        .sanctum-link.active { background: linear-gradient(90deg, rgba(242, 202, 80, 0.12) 0%, rgba(242, 202, 80, 0.02) 100%); color: var(--gold-elev); border-left-color: var(--gold-elev); box-shadow: inset 0 0 20px rgba(242, 202, 80, 0.05); }
-        .kpi-card { background: var(--glass-bg-elev); backdrop-filter: blur(20px); border: 1px solid var(--glass-border-elev); border-radius: 0.75rem; padding: 1.25rem 1.5rem; transition: all 0.3s ease; }
-        .kpi-card:hover { border-color: rgba(212, 175, 55, 0.3); background: var(--glass-bg-strong-elev); }
-        .kpi-label { font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--outline-elev); margin: 0; }
-        .kpi-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; color: var(--gold-elev); margin: 0.5rem 0 0.25rem; line-height: 1.1; }
-        .kpi-meta { font-family: 'Space Grotesk', sans-serif; font-size: 0.75rem; color: var(--on-surface-variant-elev); }
-        .tier-initiate { background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, transparent 100%); border-left-color: var(--tier-initiate-elev); }
-        .tier-aspirant { background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%); border-left-color: var(--tier-aspirant-elev); }
-        .tier-1 { background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, transparent 100%); border-left-color: var(--tier-1-elev); }
-        .tier-2 { background: linear-gradient(135deg, rgba(197, 160, 40, 0.2) 0%, transparent 100%); border-left-color: var(--tier-2-elev); }
-        .tier-3-zenith { background: linear-gradient(135deg, rgba(242, 202, 80, 0.3) 0%, transparent 100%); border-left-color: var(--tier-3-zenith-elev); }
-        .tier-master { background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, transparent 100%); border-left-color: var(--tier-master-elev); }
-        .status-pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
-        .status-active { background: rgba(242, 202, 80, 0.15); color: var(--gold-elev); border: 1px solid rgba(242, 202, 80, 0.3); }
-        .status-pending { background: rgba(153, 144, 124, 0.15); color: var(--outline-elev); border: 1px solid var(--outline-variant-elev); }
-        .status-completed { background: rgba(52, 199, 89, 0.15); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.3); }
-        .status-inactive { background: rgba(107, 114, 128, 0.15); color: var(--outline-elev); border: 1px solid var(--outline-variant-elev); }
-        .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--outline-elev); border-bottom: 1px solid var(--outline-variant-elev); }
-        .data-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--outline-variant-elev); font-size: 0.875rem; }
-        .data-table tr:hover td { background: var(--glass-bg-elev); }
-        .btn-action { padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; border: 1px solid; background: transparent; }
-        .btn-toggle { color: var(--gold-elev); border-color: var(--gold-elev); }
-        .btn-toggle:hover { background: rgba(242, 202, 80, 0.1); }
-        .loading-pulse { animation: pulse 1.5s ease-in-out infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    </style>
 </head>
 
 <body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased">
@@ -73,17 +41,29 @@
         </div>
 
         <nav class="flex-1 overflow-y-auto py-4">
-            {# ═══ PRINCIPAL ═══ #}
+            {# ═══ ⌂ INICIO ═══ #}
             <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
                 <span class="material-symbols-elev">dashboard</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="/profile" class="sanctum-link" data-page="profile">
-                <span class="material-symbols-elev">person</span>
-                <span>Mi Perfil</span>
+                <span>Inicio</span>
             </a>
 
-            {# ═══ TRADING ═══ #}
+            {# ═══ 👤 MI CUENTA ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Mi cuenta</div>
+            <a href="/profile" class="sanctum-link" data-page="profile">
+                <span class="material-symbols-elev">person</span>
+                <span>Perfil</span>
+            </a>
+            <a href="{{ path('account_settings') }}" class="sanctum-link" data-page="account-settings">
+                <span class="material-symbols-elev">settings</span>
+                <span>Configuración</span>
+            </a>
+            <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
+                <span class="material-symbols-elev">notifications_active</span>
+                <span>Notificaciones</span>
+                <span id="bell-badge" class="hidden ml-auto px-1.5 rounded-full bg-[var(--gold-elev)] text-black text-[0.65rem] font-bold leading-tight py-0.5">0</span>
+            </a>
+
+            {# ═══ ⚔ TRADING ═══ #}
             <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Trading</div>
             <a href="/journal" class="sanctum-link" data-page="journal">
                 <span class="material-symbols-elev">edit_note</span>
@@ -98,27 +78,60 @@
                 <span>Leaderboard</span>
             </a>
 
-            {# ═══ SOCIAL ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Social</div>
-            <a href="/chat" class="sanctum-link" data-page="chat">
-                <span class="material-symbols-elev">chat</span>
-                <span>Chat</span>
+            {# ═══ 🎓 FORMACIÓN ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Formación</div>
+            <a href="/campus" class="sanctum-link" data-page="campus">
+                <span class="material-symbols-elev">school</span>
+                <span>Campus</span>
             </a>
+
+            {# ═══ � MENTE & MACRO ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Mente & Macro</div>
+            <a href="/macro" class="sanctum-link" data-page="macro">
+                <span class="material-symbols-elev">event_upcoming</span>
+                <span>Macroeconomía</span>
+            </a>
+            <a href="/oracle" class="sanctum-link" data-page="oracle">
+                <span class="material-symbols-elev">auto_awesome</span>
+                <span>Oráculo</span>
+            </a>
+            <a href="/sanctum/guardian" class="sanctum-link" data-page="guardian">
+                <span class="material-symbols-elev">shield_person</span>
+                <span>Guardian</span>
+            </a>
+            <a href="/diario" class="sanctum-link" data-page="diario">
+                <span class="material-symbols-elev">menu_book</span>
+                <span>Diario</span>
+            </a>
+            <a href="/frequencies" class="sanctum-link">
+                <span class="material-symbols-elev">graphic_eq</span>
+                <span>Frecuencias</span>
+            </a>
+
+            {# ═══ 👥 COMUNIDAD ═══ #}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Comunidad</div>
+
+            {# Social #}
+            <div class="px-6 my-1 text-[9px] uppercase tracking-wider text-[var(--outline-elev)] opacity-30 pl-10">Social</div>
             <a href="/feed" class="sanctum-link" data-page="feed">
                 <span class="material-symbols-elev">forum</span>
                 <span>Feed</span>
             </a>
-            <a href="/clan" class="sanctum-link" data-page="clan">
-                <span class="material-symbols-elev">groups</span>
-                <span>Clan</span>
-            </a>
             <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
                 <span class="material-symbols-elev">share</span>
-                <span>Journal Sharing</span>
+                <span>Conexiones</span>
+            </a>
+            <a href="/chat" class="sanctum-link" data-page="chat">
+                <span class="material-symbols-elev">chat</span>
+                <span>Chat</span>
+            </a>
+            <a href="/clan" class="sanctum-link" data-page="clan">
+                <span class="material-symbols-elev">groups</span>
+                <span>Clanes</span>
             </a>
 
-            {# ═══ COMPETENCIA ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Competición</div>
+            {# Compete #}
+            <div class="px-6 my-1 text-[9px] uppercase tracking-wider text-[var(--outline-elev)] opacity-30 pl-10">Compete</div>
             <a href="/tournaments" class="sanctum-link" data-page="tournaments">
                 <span class="material-symbols-emoji">🏆</span>
                 <span>Torneos</span>
@@ -136,50 +149,20 @@
                 <span>Honor</span>
             </a>
 
-            {# ═══ EDUCACIÓN ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Educación</div>
-            <a href="/campus" class="sanctum-link" data-page="campus">
-                <span class="material-symbols-elev">school</span>
-                <span>Campus</span>
-            </a>
-
-            {# ═══ ECONOMÍA ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Economía</div>
-            <a href="/shop" class="sanctum-link" data-page="shop">
-                <span class="material-symbols-elev">store</span>
-                <span>Tienda</span>
-            </a>
+            {# Wallet #}
+            <div class="px-6 my-1 text-[9px] uppercase tracking-wider text-[var(--outline-elev)] opacity-30 pl-10">Wallet</div>
             <a href="/wallet" class="sanctum-link" data-page="wallet">
                 <span class="material-symbols-elev">account_balance_wallet</span>
                 <span>Wallet</span>
             </a>
-
-            {# ═══ HERRAMIENTAS ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Herramientas</div>
-            <a href="/oracle" class="sanctum-link" data-page="oracle">
-                <span class="material-symbols-elev">auto_awesome</span>
-                <span>Oráculo</span>
-            </a>
-            <a href="/macro" class="sanctum-link" data-page="macro">
-                <span class="material-symbols-elev">event_upcoming</span>
-                <span>Macro</span>
-            </a>
-            <a href="/frequencies" class="sanctum-link">
-                <span class="material-symbols-elev">graphic_eq</span>
-                <span>Frecuencias</span>
-            </a>
-            <a href="/diario" class="sanctum-link" data-page="diario">
-                <span class="material-symbols-elev">menu_book</span>
-                <span>Diario</span>
-            </a>
-            <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
-                <span class="material-symbols-elev">notifications_active</span>
-                <span>Notificaciones</span>
-                <span id="bell-badge" class="hidden ml-auto px-1.5 rounded-full bg-[var(--gold-elev)] text-black text-[0.65rem] font-bold leading-tight py-0.5">0</span>
+            <a href="/shop" class="sanctum-link" data-page="shop">
+                <span class="material-symbols-elev">store</span>
+                <span>Tienda</span>
             </a>
 
-            {# ═══ ADMIN ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Administración</div>
+            {# ═══ ⚙ ADMIN (solo visible para ROLE_ADMIN) ═══ #}
+            {% if is_granted('ROLE_ADMIN') %}
+            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Admin</div>
             <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
                 <span class="material-symbols-elev">group</span>
                 <span>Usuarios</span>
@@ -200,6 +183,7 @@
                 <span class="material-symbols-elev">monitoring</span>
                 <span>Monitoring</span>
             </a>
+            {% endif %}
         </nav>
 
         <div class="p-4 border-t border-[var(--outline-variant-elev)]">

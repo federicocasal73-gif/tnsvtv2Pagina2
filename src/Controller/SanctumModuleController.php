@@ -234,6 +234,22 @@ class SanctumModuleController extends AbstractController
         return $this->render('sanctum/honor.html.twig');
     }
 
+    // ──── GUARDIAN ────
+
+    #[Route('/sanctum/guardian', name: 'sanctum_guardian', methods: ['GET'])]
+    public function guardian(): Response
+    {
+        return $this->render('sanctum/guardian.html.twig');
+    }
+
+    // ──── ACCOUNT SETTINGS (user personal preferences) ────
+
+    #[Route('/account/settings', name: 'account_settings', methods: ['GET'])]
+    public function accountSettings(): Response
+    {
+        return $this->render('sanctum/account_settings.html.twig');
+    }
+
     // ──── PROFILE ────
 
     #[Route('/profile', name: 'sanctum_profile', methods: ['GET'])]
