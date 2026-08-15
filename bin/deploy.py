@@ -20,7 +20,7 @@ HOST = "185.173.111.201"
 PORT = 65002
 USER = "u310596868"
 KEYFILE = os.path.expanduser(r"~\.ssh\id_hostinger_v2")
-REMOTE_DIR = "/home/u310596868/domains/lightskyblue-turtle-221397.hostingersite.com/public_html"
+REMOTE_DIR = "/home/u310596868/domains/tnsvt.com/public_html"
 LOCAL_ROOT = Path(__file__).resolve().parent.parent
 SSH_PASSPHRASE = os.environ.get("SSH_PASSPHRASE", None)
 
