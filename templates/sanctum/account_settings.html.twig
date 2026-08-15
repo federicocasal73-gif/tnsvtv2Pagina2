@@ -1,0 +1,270 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Configuración · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Mi configuración{% endblock %}
+{% block topbar_subtitle %}Preferencias personales — solo vos{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+
+    {# ─── Toolbar ─── #}
+    <div class="glass-card-elev p-4 mb-6 flex items-center justify-between">
+        <div>
+            <p class="text-sm text-[var(--on-surface-elev)]">Tus preferencias personales. La configuración del sistema está en Admin → Settings.</p>
+            <p class="text-xs text-[var(--outline-elev)]">Última edición: <span id="last-saved">—</span></p>
+        </div>
+        <button id="save-btn" class="btn-elev-secondary text-xs">
+            <span class="material-symbols-elev align-middle text-sm">save</span>
+            Guardar
+        </button>
+    </div>
+
+    {# ─── Loading ─── #}
+    <div id="loading-state" class="glass-card-elev p-8 text-center">
+        <p class="loading-pulse text-[var(--outline-elev)]">Cargando tus preferencias...</p>
+    </div>
+
+    {# ─── Error ─── #}
+    <div id="error-state" class="hidden glass-card-elev p-6">
+        <p class="text-red-400 text-center">Error cargando tus preferencias.</p>
+    </div>
+
+    {# ─── Main content ─── #}
+    <div id="settings-content" class="hidden space-y-6">
+
+        {# ── Tema ── #}
+        <section class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] mb-4 flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">palette</span>
+                Apariencia
+            </h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-[var(--outline-elev)] block mb-2">Tema</label>
+                    <div class="flex gap-3 flex-wrap">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="dark" class="peer sr-only" checked />
+                            <div class="peer-checked:border-[var(--gold-elev)] peer-checked:bg-[var(--glass-bg-strong-elev)] border border-[var(--outline-variant-elev)] rounded-lg p-3 hover:border-[var(--gold-elev)] transition-colors">
+                                <span class="material-symbols-elev block">dark_mode</span>
+                                <span class="text-sm block mt-1">Oscuro</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="light" class="peer sr-only" disabled />
+                            <div class="opacity-40 cursor-not-allowed border border-[var(--outline-variant-elev)] rounded-lg p-3">
+                                <span class="material-symbols-elev block">light_mode</span>
+                                <span class="text-sm block mt-1">Claro (próximamente)</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="theme" value="auto" class="peer sr-only" disabled />
+                            <div class="opacity-40 cursor-not-allowed border border-[var(--outline-variant-elev)] rounded-lg p-3">
+                                <span class="material-symbols-elev block">settings_brightness</span>
+                                <span class="text-sm block mt-1">Auto (próximamente)</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-[var(--outline-elev)] block mb-2">Densidad</label>
+                    <div class="flex gap-3 flex-wrap">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="density" value="comfortable" class="peer sr-only" checked />
+                            <div class="peer-checked:border-[var(--gold-elev)] peer-checked:bg-[var(--glass-bg-strong-elev)] border border-[var(--outline-variant-elev)] rounded-lg p-3 hover:border-[var(--gold-elev)] transition-colors">
+                                <span class="text-sm block">Cómoda</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="density" value="compact" class="peer sr-only" />
+                            <div class="peer-checked:border-[var(--gold-elev)] peer-checked:bg-[var(--glass-bg-strong-elev)] border border-[var(--outline-variant-elev)] rounded-lg p-3 hover:border-[var(--gold-elev)] transition-colors">
+                                <span class="text-sm block">Compacta</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ── Notificaciones ── #}
+        <section class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] mb-4 flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">notifications_active</span>
+                Notificaciones
+            </h3>
+            <div class="space-y-3">
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" id="notif-trade" checked class="mt-1" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Alertas de trading</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Cuando Guardian detecte drawdown, daily loss o violación</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" id="notif-macro" checked class="mt-1" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Eventos macro</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Cuando empieza una ventana de no-trade (15 min antes)</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" id="notif-community" checked class="mt-1" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Comunidad</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Mensajes, menciones, requests de conexión</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" id="notif-frequencies" class="mt-1" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Recordatorios de frecuencia</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Daily reminders para sesiones de práctica</p>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        {# ── Idioma & zona horaria ── #}
+        <section class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] mb-4 flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">language</span>
+                Idioma y zona horaria
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-[var(--outline-elev)] block mb-2">Idioma</label>
+                    <select id="locale" class="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]">
+                        <option value="es-AR" selected>Español (Argentina)</option>
+                        <option value="es-ES">Español (España)</option>
+                        <option value="en-US">English (US)</option>
+                        <option value="pt-BR">Português (Brasil)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs uppercase tracking-wider text-[var(--outline-elev)] block mb-2">Zona horaria</label>
+                    <select id="tz" class="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]">
+                        <option value="America/Argentina/Buenos_Aires" selected>Buenos Aires (UTC-3)</option>
+                        <option value="America/New_York">New York (UTC-5)</option>
+                        <option value="Europe/Madrid">Madrid (UTC+1)</option>
+                        <option value="UTC">UTC</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        {# ── Seguridad ── #}
+        <section class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] mb-4 flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">lock</span>
+                Seguridad
+            </h3>
+            <div class="space-y-3">
+                <a href="/profile" class="flex items-center justify-between p-3 rounded-lg hover:bg-[var(--glass-bg-elev)]">
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Cambiar contraseña</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Solo admins pueden cambiar contraseña actualmente</p>
+                    </div>
+                    <span class="material-symbols-elev text-[var(--outline-elev)]">chevron_right</span>
+                </a>
+                <a href="/profile" class="flex items-center justify-between p-3 rounded-lg hover:bg-[var(--glass-bg-elev)]">
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Dispositivos conectados</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Ver y revocar sesiones activas</p>
+                    </div>
+                    <span class="material-symbols-elev text-[var(--outline-elev)]">chevron_right</span>
+                </a>
+                <a href="/profile" class="flex items-center justify-between p-3 rounded-lg hover:bg-[var(--glass-bg-elev)]">
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">API keys</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Para integraciones externas (próximamente)</p>
+                    </div>
+                    <span class="material-symbols-elev text-[var(--outline-elev)]">chevron_right</span>
+                </a>
+            </div>
+        </section>
+
+        <p class="text-xs text-[var(--outline-elev)] text-center py-4">
+            Estas preferencias se guardan localmente en tu navegador por ahora.
+            La persistencia en servidor está planificada.
+        </p>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    const KEY = 'tnsvt_user_prefs_v1';
+
+    function loadPrefs() {
+        try {
+            return JSON.parse(localStorage.getItem(KEY) || '{}');
+        } catch (_) {
+            return {};
+        }
+    }
+
+    function savePrefs(prefs) {
+        try {
+            localStorage.setItem(KEY, JSON.stringify(prefs));
+        } catch (_) {
+            // localStorage disabled or full
+        }
+    }
+
+    function applyPrefs(prefs) {
+        if (prefs.theme) {
+            const radio = document.querySelector(`input[name="theme"][value="${prefs.theme}"]`);
+            if (radio && !radio.disabled) radio.checked = true;
+        }
+        if (prefs.density) {
+            const radio = document.querySelector(`input[name="density"][value="${prefs.density}"]`);
+            if (radio) radio.checked = true;
+        }
+        if (prefs.locale) document.getElementById('locale').value = prefs.locale;
+        if (prefs.tz) document.getElementById('tz').value = prefs.tz;
+        if (typeof prefs.notif_trade === 'boolean') document.getElementById('notif-trade').checked = prefs.notif_trade;
+        if (typeof prefs.notif_macro === 'boolean') document.getElementById('notif-macro').checked = prefs.notif_macro;
+        if (typeof prefs.notif_community === 'boolean') document.getElementById('notif-community').checked = prefs.notif_community;
+        if (typeof prefs.notif_frequencies === 'boolean') document.getElementById('notif-frequencies').checked = prefs.notif_frequencies;
+        if (prefs.saved_at) document.getElementById('last-saved').textContent = new Date(prefs.saved_at).toLocaleString();
+    }
+
+    function readPrefs() {
+        return {
+            theme: document.querySelector('input[name="theme"]:checked')?.value || 'dark',
+            density: document.querySelector('input[name="density"]:checked')?.value || 'comfortable',
+            locale: document.getElementById('locale').value,
+            tz: document.getElementById('tz').value,
+            notif_trade: document.getElementById('notif-trade').checked,
+            notif_macro: document.getElementById('notif-macro').checked,
+            notif_community: document.getElementById('notif-community').checked,
+            notif_frequencies: document.getElementById('notif-frequencies').checked,
+            saved_at: new Date().toISOString(),
+        };
+    }
+
+    // Show content after a brief load (no async call yet — preferences are local)
+    document.addEventListener('DOMContentLoaded', () => {
+        const prefs = loadPrefs();
+        applyPrefs(prefs);
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('settings-content').classList.remove('hidden');
+    });
+    if (document.readyState !== 'loading') {
+        const prefs = loadPrefs();
+        applyPrefs(prefs);
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('settings-content').classList.remove('hidden');
+    }
+
+    document.getElementById('save-btn').addEventListener('click', () => {
+        savePrefs(readPrefs());
+        document.getElementById('last-saved').textContent = new Date().toLocaleString();
+        if (window.apiToast) apiToast('Preferencias guardadas', 'success');
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+# .github/workflows/ci.yml
+#
+# TNSVT CI — runs on every push and PR.
+# Validates: PHP syntax, secrets audit, templates present, Guardian services.
+# Does NOT run the full Symfony app (no DB available in CI yet).
+#
+# Required for: green badge, automatic pre-deploy checks, early warning.
+#
+# Triggers:
+#   - push to main → full check
+#   - pull_request → full check
+#
+# Future work:
+#   - Add a `test` job that runs PHPUnit against a SQLite DB
+#   - Add a `lint:twig` step that uses twigcs
+
+name: TNSVT CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs when a new commit lands on the same branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-deploy-check:
+    name: Pre-deploy verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, mbstring, intl
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install Composer dependencies (no-dev for speed)
+        run: composer install --no-dev --prefer-dist --no-interaction --no-scripts
+
+      - name: Install Composer dev dependencies for tests
+        run: composer install --no-interaction --no-scripts
+
+      - name: Run pre-deploy-check.sh
+        run: ./bin/pre-deploy-check.sh
+
+      - name: PHP syntax check (all .php files)
+        run: |
+          find src templates bin -type f -name '*.php' -print0 \
+            | xargs -0 -I {} sh -c 'php -l "$1" >/dev/null 2>&1 || { echo "Syntax error in: $1"; php -l "$1"; exit 1; }' _ {}
+
+      - name: Verify no secrets committed
+        run: |
+          # Refuse the build if .env.local is tracked
+          if git ls-files --error-unmatch .env.local >/dev/null 2>&1; then
+            echo "::error::.env.local is tracked in git. Rotate secrets + remove from index."
+            exit 1
+          fi
+
+          # Refuse the build if .env contains a real JWT passphrase
+          if grep -qE '^JWT_PASSPHRASE=[a-f0-9]{20,}' .env 2>/dev/null; then
+            echo "::error::.env contains a real JWT_PASSPHRASE. Replace with placeholder."
+            exit 1
+          fi
+
+          # Refuse the build if Mercure default secret is anywhere
+          if grep -rqE 'dev-secret-change-in-production!!' .env .env.local 2>/dev/null; then
+            echo "::error::Mercure default secret still present."
+            exit 1
+          fi
+
+          echo "Secrets check OK."
+
+      - name: Verify Guardian services present
+        run: |
+          files=(
+              "src/Service/Guardian/GuardianSignal.php"
+              "src/Service/Guardian/GuardianSignalCollector.php"
+              "src/Service/Guardian/DisciplineScoreCalculator.php"
+              "src/Controller/Api/GuardianController.php"
+              "src/Event/TradeSavedEvent.php"
+              "src/EventSubscriber/GuardianSubscriber.php"
+          )
+          missing=0
+          for f in "${files[@]}"; do
+              if [ ! -f "$f" ]; then
+                  echo "::error::missing: $f"
+                  missing=$((missing + 1))
+              fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+
+      - name: Verify templates split (Phase 5)
+        run: |
+          [ ! -f templates/home.html.twig ] \
+              && echo "Legacy templates/home.html.twig correctly removed." \
+              || { echo "::error::Legacy templates/home.html.twig still present."; exit 1; }
+          [ -f templates/public/home.html.twig ] || { echo "::error::missing templates/public/home.html.twig"; exit 1; }
+          [ -f templates/public/login.html.twig ] || { echo "::error::missing templates/public/login.html.twig"; exit 1; }
+
+  # ─── Future: phpunit + functional tests ──────────────────────────────
+  # test:
+  #   name: PHPUnit
+  #   runs-on: ubuntu-latest
+  #   needs: pre-deploy-check
+  #   services:
+  #     mysql:
+  #       image: mysql:8.0
+  #       env:
+  #         MYSQL_ROOT_PASSWORD: test
+  #       ports: ['3306:3306']
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: shivammathur/setup-php@v2
+  #       with: { php-version: '8.4' }
+  #     - run: composer install --no-interaction
+  #     - run: php bin/console doctrine:database:create --env=test
+  #     - run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+  #     - run: vendor/bin/phpunit

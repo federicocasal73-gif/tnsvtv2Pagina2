@@ -10,38 +10,38 @@ security:
         dev:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
-
-        # TNSVT Reino v2: SINGLE firewall with 3 chained authenticators.
-        # Priority order is the order they appear in `custom_authenticators`:
-        #   1° JwtAuthenticator        — reads Authorization: Bearer
-        #   2° LegacyHeaderAuthenticator — reads X-Game-Code (backcompat)
-        #   3° CodeAuthenticator        — reads PHP session
         main:
             lazy: true
-            stateless: false
             provider: app_user_provider
             custom_authenticators:
-                - App\Security\JwtAuthenticator
-                - App\Security\LegacyHeaderAuthenticator
                 - App\Security\CodeAuthenticator
-            entry_point: App\Security\JwtAuthenticator
             logout:
                 path: /api/auth/logout
+            entry_point: App\Security\CodeAuthenticator
 
     access_control:
-        # Public endpoints
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/logout, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/check, roles: PUBLIC_ACCESS }
-        - { path: ^/api/health, roles: PUBLIC_ACCESS }
-        - { path: ^/api/mercadopago/webhook, roles: PUBLIC_ACCESS }
-        - { path: ^/api/binance-pay/webhook, roles: PUBLIC_ACCESS }
-        - { path: ^/api/link-preview/preview, roles: PUBLIC_ACCESS }
-        # Sanctum admin panel
-        - { path: ^/sanctum, roles: ROLE_ADMIN }
-        # Everything else under /api requires authentication
-        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/music/stream, roles: PUBLIC_ACCESS }
+        - { path: ^/api/music/playlist, roles: PUBLIC_ACCESS }
+        - { path: ^/api/music, roles: PUBLIC_ACCESS }
+        - { path: ^/api/devices, roles: PUBLIC_ACCESS }
+        - { path: ^/api/notifications, roles: PUBLIC_ACCESS }
+        - { path: ^/api/feed, roles: PUBLIC_ACCESS }
+        - { path: ^/api/chat, roles: PUBLIC_ACCESS }
+        - { path: ^/api/tasks, roles: PUBLIC_ACCESS }
+        - { path: ^/api/academia, roles: PUBLIC_ACCESS }
+        - { path: ^/api/frequencies/presets, roles: PUBLIC_ACCESS }
+        # Admin-only Sanctum sub-routes. The catch-all ^/sanctum below opens the
+        # rest (notably /sanctum/dashboard, which HomeController redirects every
+        # authenticated user to). Fix for the 403 that blocked regular users.
+        - { path: ^/sanctum/(users|audit|tasks|settings|monitoring), roles: ROLE_ADMIN }
+        - { path: ^/api/sanctum, roles: ROLE_ADMIN }
+        - { path: ^/sanctum, roles: ROLE_USER }
+        # User account personal preferences (Phase 7 — settings split).
+        - { path: ^/account/settings, roles: ROLE_USER }
+        - { path: ^/, roles: PUBLIC_ACCESS }
 
 when@test:
     security:
