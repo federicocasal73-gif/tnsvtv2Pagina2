@@ -1,0 +1,180 @@
+/* assets/styles/shell.css
+ *
+ * Styles extracted from the inline <style> block in templates/shell.html.twig.
+ * The shell (Sanctum authenticated area) has its own small set of UI primitives
+ * (sanctum-link, kpi-card, tier badges, status pills, data tables, action
+ * buttons) used by every page that extends shell.html.twig.
+ *
+ * These styles are NOT in home.css (public shell) — clean boundary.
+ */
+
+/* ─── Sidebar link ─── */
+.sanctum-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    color: var(--on-surface-variant-elev);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-left: 2px solid transparent;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+.sanctum-link:hover {
+    background: linear-gradient(90deg, rgba(242, 202, 80, 0.06) 0%, transparent 100%);
+    color: var(--on-surface-elev);
+    border-left-color: rgba(242, 202, 80, 0.2);
+}
+.sanctum-link.active {
+    background: linear-gradient(90deg, rgba(242, 202, 80, 0.12) 0%, rgba(242, 202, 80, 0.02) 100%);
+    color: var(--gold-elev);
+    border-left-color: var(--gold-elev);
+    box-shadow: inset 0 0 20px rgba(242, 202, 80, 0.05);
+}
+
+/* ─── KPI cards ─── */
+.kpi-card {
+    background: var(--glass-bg-elev);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    transition: all 0.3s ease;
+}
+.kpi-card:hover {
+    border-color: rgba(212, 175, 55, 0.3);
+    background: var(--glass-bg-strong-elev);
+}
+.kpi-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--outline-elev);
+    margin: 0;
+}
+.kpi-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gold-elev);
+    margin: 0.5rem 0 0.25rem;
+    line-height: 1.1;
+}
+.kpi-meta {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    color: var(--on-surface-variant-elev);
+}
+
+/* ─── Tier badges ─── */
+.tier-initiate {
+    background: linear-gradient(135deg, rgba(107, 114, 128, 0.2) 0%, transparent 100%);
+    border-left-color: var(--tier-initiate-elev);
+}
+.tier-aspirant {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, transparent 100%);
+    border-left-color: var(--tier-aspirant-elev);
+}
+.tier-1 {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, transparent 100%);
+    border-left-color: var(--tier-1-elev);
+}
+.tier-2 {
+    background: linear-gradient(135deg, rgba(197, 160, 40, 0.2) 0%, transparent 100%);
+    border-left-color: var(--tier-2-elev);
+}
+.tier-3-zenith {
+    background: linear-gradient(135deg, rgba(242, 202, 80, 0.3) 0%, transparent 100%);
+    border-left-color: var(--tier-3-zenith-elev);
+}
+.tier-master {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, transparent 100%);
+    border-left-color: var(--tier-master-elev);
+}
+
+/* ─── Status pills ─── */
+.status-pill {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.status-active {
+    background: rgba(242, 202, 80, 0.15);
+    color: var(--gold-elev);
+    border: 1px solid rgba(242, 202, 80, 0.3);
+}
+.status-pending {
+    background: rgba(153, 144, 124, 0.15);
+    color: var(--outline-elev);
+    border: 1px solid var(--outline-variant-elev);
+}
+.status-completed {
+    background: rgba(52, 199, 89, 0.15);
+    color: #34c759;
+    border: 1px solid rgba(52, 199, 89, 0.3);
+}
+.status-inactive {
+    background: rgba(107, 114, 128, 0.15);
+    color: var(--outline-elev);
+    border: 1px solid var(--outline-variant-elev);
+}
+
+/* ─── Data tables ─── */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.data-table th {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--outline-elev);
+    border-bottom: 1px solid var(--outline-variant-elev);
+}
+.data-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--outline-variant-elev);
+    font-size: 0.875rem;
+}
+.data-table tr:hover td {
+    background: var(--glass-bg-elev);
+}
+
+/* ─── Action buttons ─── */
+.btn-action {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid;
+    background: transparent;
+}
+.btn-toggle {
+    color: var(--gold-elev);
+    border-color: var(--gold-elev);
+}
+.btn-toggle:hover {
+    background: rgba(242, 202, 80, 0.1);
+}
+
+/* ─── Loading pulse ─── */
+.loading-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
