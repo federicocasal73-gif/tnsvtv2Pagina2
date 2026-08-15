@@ -26,3 +26,28 @@
 ###> tnsvt v2 dev artifacts ###
 /public/index_dev.php
 ###< tnsvt v2 dev artifacts ###
+
+###> tnsvt v2 deployment ###
+# Stitch design exploration (27 mockup HTMLs + screenshots)
+# Kept locally for reference; should be moved to docs/ or removed before any
+# production commit. NOT a source artifact.
+stitch_tnsvt_app_m_vil/
+###< tnsvt v2 deployment ###
+
+###> tnsvt v2 uploads ###
+# User-uploaded content (chat, campus, link previews). Created at runtime.
+public/uploads/
+###< tnsvt v2 uploads ###
+
+###> tnsvt v2 IDE / OS ###
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+###< tnsvt v2 IDE / OS ###
+
+###> tnsvt v2 build outputs ###
+/public/build/
+###< tnsvt v2 build outputs ###
