@@ -82,8 +82,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · `[!]` blocked
 - [x] **CSS Merge 1: tokens (3 → 1)** (Phase 9 done — see `CSS-MERGE-PLAN.md`)
 - [x] **CSS Merge 2: glow (3 → 1)** (Phase 9 done — see `CSS-MERGE-PLAN.md`)
 - [x] **CSS Merge 3: components (2 → 1)** (Phase 9 done — see `CSS-MERGE-PLAN.md`)
-- [ ] **CSS cleanup** (deferred): remove `--v2-*` aliases from tokens.css,
-      migrate components.css + glow.css to `-elev` suffix only
+- [x] **CSS cleanup — `--v2-*` aliases removed** (Phase 10 done — tokens migrated
+      to `-elev`, components.css uses `-elev` vars only, 0 refs remain)
+- [ ] **CSS cleanup (deferred)**: migrate glow.css to `-elev` suffix only
+      (no-suffix aliases `--gold`, `--violet-glow` still needed by glow/home)
 - [ ] AI (Oracle is the AI surface today — verify scope)
 - [ ] **Home/Login split** — `home.html.twig` → `public/home.html.twig` +
       `public/login.html.twig`

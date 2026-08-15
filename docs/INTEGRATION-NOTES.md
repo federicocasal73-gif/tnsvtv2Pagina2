@@ -3,10 +3,11 @@
 Build log for the Guardian surface (Phase 1: API + Phase 2: UI + Phase 3: event-driven),
 the Sidebar 5-macro restructure (Phase 4), the Home/Login split (Phase 5),
 the Deploy tooling (Phase 6), the CI pipeline (Phase 7), the Settings split +
-shell.html.twig inline CSS extraction (Phase 8), and the CSS consolidation (Phase 9).
+shell.html.twig inline CSS extraction (Phase 8), the CSS consolidation (Phase 9),
+and the legacy `--v2-*` alias cleanup (Phase 10).
 
 **Date:** 2026-08-14/15
-**Phase:** F4 Integrate — Phases 1 through 9 all done (CSS consolidation complete)
+**Phase:** F4 Integrate — Phases 1 through 10 all done (CSS consolidation + cleanup complete)
 **Scope:** additive only — no migrations, no entity changes, no route deletions
 (except orphan `templates/home.html.twig` removed in Phase 5;
 `tokens-elev.css`, `v2-tokens.css`, `glass-premium.css`, `apk-glowup.css`,
@@ -584,17 +585,33 @@ except for 3 conflict classes which already had v2 versions winning in cascade).
 
 ### Known caveats (deferred cleanup)
 
-- `tokens.css` still has `--v2-*` aliases (no longer used after Phase 9.D)
+- ✅ **DONE Phase 10:** All `--v2-*` aliases removed; `components.css` migrated
+  to `-elev` variables. 0 references remain in `assets/`.
 - `tokens.css` still has no-suffix aliases (`--gold`, etc., used by glow.css)
-- `components.css` uses `--v2-*` references throughout
+- Keyframes `v2-*` remain in `components.css` (non-functional naming, harmless)
 
 These are all harmless and can be cleaned up in a future "tokens cleanup" pass.
+
+### Phase 10 — Cleanup of legacy `--v2-*` aliases
+
+- Missing canonical `-elev` tokens added to `tokens.css`:
+  `--violet-elev`, `--violet-mid-elev`, `--violet-dim-elev`, `--violet-line-elev`,
+  `--muted-elev`, `--on-surface-dim-elev`, `--glass-border-gold-elev`,
+  `--glass-blur-elev`, `--glow-gold-elev`, `--glow-gold-strong-elev`,
+  `--glow-violet-elev`, `--glow-violet-strong-elev`
+- `components.css`: every `var(--v2-*)` reference migrated to the matching
+  `var(--*-elev)`; gradient layers inlined; hardcoded transition values kept
+- All `--v2-*` alias definitions removed from `tokens.css`
+- No-suffix aliases (`--gold`, `--gold-bright`, `--violet`, `--violet-glow`)
+  kept intentionally — still consumed by `glow.css` and `home.css`
+- **Verification:** `rg "var\(--v2-" assets/` → 0 matches; PHP lint → clean
 
 ### Verification
 
 - ✅ All PHP files lint clean
 - ✅ All shell.html.twig and templates parse OK
-- ✅ 5 CSS files deleted (tokens-elev, v2-tokens, glass-premium, apk-glowup, web-glowup, elev, v2-components)
+- ✅ 7 CSS files deleted (tokens-elev, v2-tokens, glass-premium, apk-glowup, web-glowup, elev, v2-components)
 - ✅ 3 CSS files created (tokens new, glow, components)
 - ✅ No new templates or controllers touched in Phase 9
+- ✅ 0 `var(--v2-*)` references remaining (Phase 10 cleanup verified via ripgrep)
 - ✅ Baseline screenshots captured (27 files in docs/screenshots/baseline-2026-08-14/)

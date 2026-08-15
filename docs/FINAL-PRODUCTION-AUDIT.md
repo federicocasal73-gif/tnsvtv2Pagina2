@@ -37,6 +37,8 @@ Resolved since initial audit:
 - [x] CSS Merge 2 (glow) complete (Phase 9)
 - [x] CSS Merge 3 (components) complete (Phase 9)
 - [x] CSS bundle consolidated: 14 → 9 canonical files (60% reduction)
+- [x] Phase 10 — legacy `--v2-*` aliases removed; `components.css` migrated to
+  `-elev` vars; missing tokens added to `tokens.css`; 0 `var(--v2-*)` refs remain
 
 Remaining blockers:
 

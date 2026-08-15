@@ -25,6 +25,17 @@ document is the **executable plan** to consolidate to a clean target state.
   `.glass-card-elev`, `.status-active`, `.btn-elev-secondary` use the
   v2-components.css version (it was already winning in cascade). `elev.css`
   and `v2-components.css` deleted. `shell.html.twig` load list updated.
+- [x] **Phase 10 — Cleanup of legacy `--v2-*` aliases.** Missing `-elev` tokens
+  added to `tokens.css` (`--violet-elev`, `--violet-mid-elev`,
+  `--violet-dim-elev`, `--violet-line-elev`, `--muted-elev`,
+  `--on-surface-dim-elev`, `--glass-border-gold-elev`, `--glass-blur-elev`,
+  `--glow-gold-elev`, `--glow-gold-strong-elev`, `--glow-violet-elev`,
+  `--glow-violet-strong-elev`). `components.css` migrated from `var(--v2-*)`
+  to `var(--*-elev)` (gradients inline, transitions hardcoded). All `--v2-*`
+  aliases removed from `tokens.css`. Verified: **0 `var(--v2-*)` references
+  remaining** in `assets/`; PHP lint passes on both files. The no-suffix
+  aliases (`--gold`, `--gold-bright`, `--violet`, `--violet-glow`) are kept
+  intentionally for `glow.css`/`home.css` compatibility.
 
 ---
 
@@ -51,13 +62,13 @@ behavior preserved.
 
 ## Known caveats (deferred cleanup)
 
-- `tokens.css` still has `--v2-*` aliases (for v2-components.css usage that's
-  now migrated to components.css). These can be removed in a future
-  "tokens cleanup" pass.
+- ✅ **DONE Phase 10:** All `--v2-*` aliases removed and `components.css` migrated
+  to `-elev` variables. 0 references remain.
 - `tokens.css` still has `--gold`, `--gold-bright`, `--violet`, `--violet-glow`
   no-suffix aliases (for glow.css usage). Migration of glow.css to -elev
   suffix is deferred.
-- `components.css` uses `--v2-*` references throughout. Same cleanup applies.
+- Keyframes named `v2-*` (`@keyframes v2-*`) remain in `components.css` — purely
+  cosmetic/non-functional naming, safe to ignore.
 
 ---
 
