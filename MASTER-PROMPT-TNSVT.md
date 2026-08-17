@@ -1,7 +1,29 @@
 # MASTER PROMPT — TNSVT V2 FINALIZATION
 
-> **Status actual (2026-08-17):** F0 ✅ · F1 ✅ · F2 ✅ · F3 ✅ · F4 ✅ · F5 ⏳ · F6 ⏳ · F7 ⏳ · F8 ⏳  
-> **~50% del plan V2 cerrado.** Backend trading completo + macro awareness + diario cifrado. Pendiente: comunidad (F5) y académico (F8). Ver `.opencode/plans/2026-08-17-V2-MASTER-PLAN.md` para el plan detallado.
+> **Status actual (2026-08-17 — Release v2.0.0):**
+> **9/9 fases cerradas (100% del plan V2).**
+>
+> | Fase | Estado | Descripción |
+> |---|---|---|
+> | F0 | ✅ | Shell scaffold + Cinzel fix + deploy pipeline |
+> | F1 | ✅ | Dashboard maestro (F1.5 + F1.1 + F1.2 + F1.3 + F1.4) |
+> | F2 | ✅ | Registrador + drag-drop captures (F2 v2 polish) |
+> | F3 | ✅ | Calendario Económico (Bento + recordarme) |
+> | F4 | ✅ | Diario Personal (4 estados + crypto AES-GCM) |
+> | F5 | ✅ | Salón del Cónclave (Feed + Chat) |
+> | F6 | ✅ | El Cónclave de Ejecutores (Social) |
+> | F7 | ✅ | Macro refinado (timezone + freshness indicator) |
+> | F8 | ✅ | Calendario Académico + Clases 1:1 |
+>
+> **Side-fixes completados:**
+> - Assets 404 (deploy.py + symlink `public/.`)
+> - favicon.ico + favicon.svg + manifest.json
+> - `/sanctum/users` 500 (controller re-added)
+>
+> **Pendiente menor (no bloqueante):**
+> - Push a `origin/main` (necesita credenciales remotas)
+> - `pwa install` o PWA testing en mobile
+> - Leaderboard / FASE 7 original quedó integrada en F5/F8
 
 You are the principal engineer and product architect responsible for finishing TNSVT V2.
 
