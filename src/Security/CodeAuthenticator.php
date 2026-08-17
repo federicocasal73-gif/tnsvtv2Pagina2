@@ -92,9 +92,11 @@ class CodeAuthenticator extends AbstractAuthenticator implements AuthenticationE
 
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
+        $path = $request->getPathInfo();
         $expectsJson = $request->isXmlHttpRequest()
             || in_array('application/json', $request->getAcceptableContentTypes(), true)
-            || str_starts_with($request->getPathInfo(), '/api/');
+            || str_starts_with($path, '/api/')
+            || str_starts_with($path, '/sanctum/api/');
 
         if ($expectsJson) {
             return new JsonResponse([
