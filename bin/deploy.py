@@ -174,6 +174,14 @@ ROOT_FILES = [
     # .env.local is NEVER uploaded (sensitive)
 ]
 
+# Public-root files: live at /favicon.* and /manifest.json (Hostinger doc root is /public_html/)
+# These are uploaded to the doc root level (not /public/ subdir) so they're served at /<name>
+PUBLIC_ROOT_FILES = [
+    "favicon.ico",
+    "favicon.svg",
+    "manifest.json",
+]
+
 
 # ===== Surgical mode helpers =====
 def is_forbidden_surgical(rel_path: str) -> str | None:
@@ -341,6 +349,25 @@ def main():
                     print(f"    ✗ {root_file}: {e}")
             else:
                 print(f"    - (skip) {root_file} no existe")
+
+        # Upload public-root files (live at /favicon.*, /manifest.json)
+        # These are in local public/ but uploaded to the doc-root level (not /public/ subdir)
+        # so that the browser URL /favicon.ico resolves to public_html/favicon.ico
+        if PUBLIC_ROOT_FILES:
+            print(f"\n  ▸ public-root files (favicon, manifest)...")
+            for pf in PUBLIC_ROOT_FILES:
+                # Use public/<filename> as source but upload to REMOTE_DIR/<filename> (not REMOTE_DIR/public/<filename>)
+                local_pf = LOCAL_ROOT / "public" / pf
+                if local_pf.exists():
+                    remote_pf = REMOTE_DIR + "/" + pf
+                    try:
+                        sftp.put(str(local_pf), remote_pf)
+                        print(f"    ✓ {pf}")
+                        total_uploaded += 1
+                    except Exception as e:
+                        print(f"    ✗ {pf}: {e}")
+                else:
+                    print(f"    - (skip) public/{pf} no existe")
 
     print(f"\n  TOTAL: {total_uploaded} files uploaded")
 

@@ -1,323 +1,664 @@
 {% extends 'shell.html.twig' %}
 
-{% block title %}Social · T.N.S.V.T{% endblock %}
+{% block title %}El Cónclave · T.N.S.V.T{% endblock %}
 
-{% block topbar_title %}Social{% endblock %}
-{% block topbar_subtitle %}Conexiones y acceso a Journals de otros miembros.{% endblock %}
+{% block topbar_title %}El Cónclave de Ejecutores{% endblock %}
+{% block topbar_subtitle %}"Solo rodeado de quienes te hacen mejor trader."{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ══════ F6 — Social (V1) ══════ */
+    .social-wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding-bottom: 4rem;
+    }
+    .social-header {
+        text-align: center;
+        margin-bottom: 1.25rem;
+        padding-top: 1.5rem;
+    }
+    .social-header h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 1.7rem;
+        margin: 0;
+    }
+    .social-header p {
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+        margin: 0.4rem 0 0;
+    }
+
+    .social-tabs {
+        display: flex;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 9999px;
+        padding: 0.3rem;
+        margin-bottom: 1rem;
+        max-width: 540px;
+    }
+    .social-tab {
+        flex: 1;
+        padding: 0.55rem 0.85rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: transparent;
+        border: none;
+        border-radius: 9999px;
+        color: var(--outline-elev);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.15s, background 0.15s;
+    }
+    .social-tab:hover { color: var(--on-surface-elev); }
+    .social-tab.active {
+        background: rgba(242, 202, 80, 0.18);
+        color: var(--gold-elev);
+    }
+    .social-tab .badge {
+        display: inline-block;
+        margin-left: 0.35rem;
+        padding: 0.1rem 0.45rem;
+        border-radius: 9999px;
+        background: var(--gold-elev);
+        color: var(--void-black, #050308);
+        font-size: 0.65rem;
+        font-weight: 700;
+    }
+    .social-tab .badge.muted { background: rgba(255,255,255,0.1); color: var(--outline-elev); }
+
+    .social-search {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.5rem;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        margin-bottom: 1rem;
+    }
+    .social-search:focus { outline: none; border-color: var(--gold-elev); }
+
+    .social-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 0.85rem;
+    }
+    .social-card {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1rem 1.15rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        transition: border-color 0.15s;
+    }
+    .social-card:hover { border-color: rgba(242, 202, 80, 0.25); }
+    .social-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--void-black, #050308);
+        flex-shrink: 0;
+    }
+    .social-body { flex-grow: 1; min-width: 0; }
+    .social-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--on-surface-elev);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .social-code {
+        font-size: 0.72rem;
+        color: var(--outline-elev);
+        font-family: monospace;
+    }
+    .social-role {
+        display: inline-block;
+        font-size: 0.62rem;
+        padding: 0.1rem 0.5rem;
+        border-radius: 9999px;
+        background: rgba(138, 60, 255, 0.18);
+        color: #c4a0ff;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .social-role.admin { background: rgba(248, 113, 113, 0.18); color: #f87171; }
+    .social-role.mentor { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
+    .social-role.analyst { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
+    .social-role.trader { background: rgba(242, 202, 80, 0.18); color: var(--gold-elev); }
+
+    .social-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .social-btn {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        padding: 0.45rem 0.85rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        border-radius: 0.4rem;
+        cursor: pointer;
+        border: none;
+        transition: all 0.15s;
+    }
+    .social-btn.primary {
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
+        color: var(--void-black, #050308);
+    }
+    .social-btn.pending { background: rgba(251, 191, 36, 0.18); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+    .social-btn.connected { background: rgba(74, 222, 128, 0.18); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); cursor: default; }
+    .social-btn.danger { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); }
+    .social-btn.danger:hover { background: rgba(248, 113, 113, 0.15); }
+    .social-btn.accept { background: rgba(74, 222, 128, 0.18); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); }
+    .social-btn.deny { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); }
+    .social-btn.ghost {
+        background: transparent;
+        color: var(--outline-elev);
+        border: 1px solid var(--glass-border-elev);
+    }
+    .social-btn.ghost:hover { color: var(--on-surface-elev); border-color: var(--on-surface-elev); }
+
+    .social-card-row {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.6rem;
+        padding: 0.85rem 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        margin-bottom: 0.6rem;
+    }
+    .social-card-row.pending { border-left: 3px solid #fbbf24; }
+    .social-card-row.connected { border-left: 3px solid #4ade80; }
+    .social-card-row.declined { border-left: 3px solid #f87171; opacity: 0.6; }
+    .social-card-meta {
+        font-size: 0.75rem;
+        color: var(--outline-elev);
+    }
+    .social-card-topic {
+        font-weight: 600;
+        font-size: 0.92rem;
+        color: var(--on-surface-elev);
+    }
+
+    .social-privacy-card {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .social-privacy-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.05rem;
+        color: var(--gold-elev);
+        margin: 0 0 0.5rem;
+    }
+    .social-privacy-options {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.85rem;
+    }
+    .social-privacy-opt {
+        padding: 0.6rem 1rem;
+        border-radius: 0.5rem;
+        background: transparent;
+        border: 1px solid var(--glass-border-elev);
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .social-privacy-opt:hover { border-color: var(--gold-elev); }
+    .social-privacy-opt.active {
+        background: rgba(242, 202, 80, 0.18);
+        color: var(--gold-elev);
+        border-color: var(--gold-elev);
+    }
+    .social-privacy-desc {
+        font-size: 0.78rem;
+        color: var(--outline-elev);
+        margin: 0.35rem 0 0;
+        line-height: 1.4;
+    }
+
+    .social-loading, .social-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--outline-elev);
+        font-style: italic;
+    }
+
+    .social-toast {
+        position: fixed; top: 1rem; right: 1rem; z-index: 50;
+        background: var(--void-black, #050308);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.85rem;
+        color: var(--on-surface-elev);
+        font-size: 0.85rem;
+        display: none;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .social-toast.visible { display: block; }
+    .social-toast.success { border-color: #4ade80; color: #bbf7d0; }
+    .social-toast.error { border-color: #f87171; color: #fecaca; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-    {# ─── Tabs ─── #}
-    <div class="glass-card-elev p-4 mb-4">
-        <div class="flex gap-2 mb-3 border-b border-[var(--outline-variant-elev)] pb-2">
-            <button data-tab="users" class="social-tab px-4 py-2 rounded text-sm font-semibold bg-[var(--glass-bg-elev)] text-[var(--gold-elev)]">Buscar usuarios</button>
-            <button data-tab="received" class="social-tab px-4 py-2 rounded text-sm">Solicitudes recibidas <span id="received-badge" class="hidden ml-1 px-2 rounded-full bg-[var(--gold-elev)] text-black text-xs font-bold">0</span></button>
-            <button data-tab="sent" class="social-tab px-4 py-2 rounded text-sm">Solicitudes enviadas <span id="sent-badge" class="hidden ml-1 px-2 rounded-full bg-[var(--outline-elev)] text-white text-xs">0</span></button>
-            <button data-tab="connections" class="social-tab px-4 py-2 rounded text-sm">Conexiones <span id="conn-badge" class="hidden ml-1 px-2 rounded-full bg-[var(--outline-elev)] text-white text-xs">0</span></button>
-        </div>
+<div class="social-wrap">
 
-        {# Users list #}
-        <div id="tab-users" class="social-panel">
-            <p class="text-xs text-[var(--outline-elev)] mb-3">Otros miembros del Sanctum. Click para enviar solicitud de acceso a su journal.</p>
-            <div id="users-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                <p class="text-center text-[var(--outline-elev)] py-8 col-span-full">Cargando...</p>
-            </div>
-        </div>
+    <header class="social-header">
+        <h1 class="text-cinzel-display">EL CÓNCLAVE DE EJECUTORES</h1>
+        <p>Solo rodeado de quienes te hacen mejor trader</p>
+    </header>
 
-        {# Received requests #}
-        <div id="tab-received" class="social-panel hidden">
-            <p class="text-xs text-[var(--outline-elev)] mb-3">Solicitudes que otros miembros enviaron para ver tu journal.</p>
-            <div id="received-list" class="space-y-2">
-                <p class="text-center text-[var(--outline-elev)] py-8">Cargando...</p>
-            </div>
-        </div>
+    <nav class="social-tabs" id="social-tabs" role="tablist">
+        <button class="social-tab active" data-tab="users"      type="button">Buscar<span class="badge" id="badge-users" hidden>0</span></button>
+        <button class="social-tab"        data-tab="requests"   type="button">Solicitudes<span class="badge muted" id="badge-requests" hidden>0</span></button>
+        <button class="social-tab"        data-tab="connections" type="button">Conexiones<span class="badge muted" id="badge-connections" hidden>0</span></button>
+        <button class="social-tab"        data-tab="privacy"    type="button">Privacidad</button>
+    </nav>
 
-        {# Sent requests #}
-        <div id="tab-sent" class="social-panel hidden">
-            <p class="text-xs text-[var(--outline-elev)] mb-3">Solicitudes que enviaste a otros miembros.</p>
-            <div id="sent-list" class="space-y-2">
-                <p class="text-center text-[var(--outline-elev)] py-8">Cargando...</p>
-            </div>
+    {# ─── Tab: Buscar usuarios ─── #}
+    <section id="tab-users" class="social-tab-panel">
+        <input type="text" id="social-search" class="social-search" placeholder="Buscar por nombre o código..." autocomplete="off" />
+        <div id="users-list" class="social-grid">
+            <p class="social-loading" style="grid-column: 1 / -1;">Cargando miembros del Sanctum...</p>
         </div>
+    </section>
 
-        {# Connections #}
-        <div id="tab-connections" class="social-panel hidden">
-            <p class="text-xs text-[var(--outline-elev)] mb-3">Miembros con los que tenés conexión. Click para ver su journal o eliminar.</p>
-            <div id="conn-list" class="space-y-2">
-                <p class="text-center text-[var(--outline-elev)] py-8">Cargando...</p>
-            </div>
+    {# ─── Tab: Solicitudes (recibidas) ─── #}
+    <section id="tab-requests" class="social-tab-panel" hidden>
+        <p style="font-size: 0.85rem; color: var(--outline-elev); margin: 0 0 0.75rem 0;">
+            Solicitudes que otros miembros enviaron para acceder a tu journal.
+        </p>
+        <div id="received-list">
+            <p class="social-empty">Cargando solicitudes recibidas...</p>
         </div>
-    </div>
+    </section>
+
+    {# ─── Tab: Conexiones ─── #}
+    <section id="tab-connections" class="social-tab-panel" hidden>
+        <p style="font-size: 0.85rem; color: var(--outline-elev); margin: 0 0 0.75rem 0;">
+            Ejecutores con los que tenés acceso bidireccional a sus journals.
+        </p>
+        <div id="conn-list">
+            <p class="social-empty">Cargando conexiones...</p>
+        </div>
+    </section>
+
+    {# ─── Tab: Privacidad ─── #}
+    <section id="tab-privacy" class="social-tab-panel" hidden>
+        <p style="font-size: 0.85rem; color: var(--outline-elev); margin: 0 0 1rem 0;">
+            Controla quién puede ver tu journal. Esta preferencia la respetan todos los miembros.
+        </p>
+        <div class="social-privacy-card" id="privacy-card">
+            <h3 class="social-privacy-title">Visibilidad de tu Journal</h3>
+            <p class="social-privacy-desc">Elegí quién puede ver tu bitácora de trading y estadísticas.</p>
+            <div class="social-privacy-options" id="privacy-options">
+                <button class="social-privacy-opt" data-vis="public"      type="button">🌍 Público</button>
+                <button class="social-privacy-opt" data-vis="connections" type="button">👥 Solo conexiones</button>
+                <button class="social-privacy-opt" data-vis="private"     type="button">🔒 Privado</button>
+            </div>
+            <p class="social-privacy-desc" id="privacy-current" style="margin-top:1rem;">
+                Estado actual: <strong id="privacy-current-value">—</strong>
+            </p>
+        </div>
+    </section>
+
 </div>
 
-<style>
-.social-tab.active {
-    background: var(--glass-bg-elev) !important;
-    color: var(--gold-elev) !important;
-}
-.social-user-card {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: var(--glass-bg-elev);
-    border: 1px solid var(--glass-border-elev);
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-}
-.social-user-card:hover {
-    border-color: var(--gold-elev);
-}
-.social-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    color: var(--on-primary-elev);
-    flex-shrink: 0;
-}
-</style>
+<div class="social-toast" id="social-toast"></div>
 
 <script>
 (function() {
     'use strict';
-    var me = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
-    var currentTab = 'users';
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, function(m) {
-            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
-        });
+    // ══════ F6 — Social state ══════
+    const me = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+    let _tab = 'users';
+    let _allUsers = [];
+    let _myRequests = [];
+    let _connections = [];
+    let _privacy = 'connections';
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
-
     function initials(name) {
-        return (name || '?').slice(0, 2).toUpperCase();
+        return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+    }
+    function toast(msg, type) {
+        const t = document.getElementById('social-toast');
+        t.textContent = msg;
+        t.className = 'social-toast visible ' + (type || 'success');
+        setTimeout(() => t.classList.remove('visible'), 2800);
+    }
+    function fmtDate(iso) {
+        try { return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }); }
+        catch (e) { return iso; }
     }
 
-    function statusBadge(status) {
-        var map = {
-            'owner': '<span class="px-2 py-1 rounded-full bg-[var(--gold-elev)] text-black text-xs font-bold">Tú</span>',
-            'connected': '<span class="px-2 py-1 rounded-full bg-emerald-700 text-emerald-200 text-xs">Conectado</span>',
-            'pending_sent': '<span class="px-2 py-1 rounded-full bg-amber-700 text-amber-200 text-xs">Pendiente enviada</span>',
-            'pending_received': '<span class="px-2 py-1 rounded-full bg-blue-700 text-blue-200 text-xs">Pendiente recibida</span>',
-            'none': '<button class="btn-elev-secondary text-xs connect-btn">Conectar</button>',
-            'blocked': '<span class="px-2 py-1 rounded-full bg-red-900 text-red-300 text-xs">Bloqueado</span>'
-        };
-        return map[status] || '';
+    function switchTab(name) {
+        _tab = name;
+        document.querySelectorAll('.social-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        document.querySelectorAll('.social-tab-panel').forEach(p => p.hidden = (p.id !== 'tab-' + name));
+        if (name === 'users')        renderUsers();
+        if (name === 'requests')     renderReceived();
+        if (name === 'connections')  renderConnections();
+        if (name === 'privacy')      renderPrivacy();
+    }
+
+    // ─── USERS (buscar) ───
+    function userCard(u, accessStatus) {
+        const isMe = u.code === me;
+        const status = accessStatus || (isMe ? 'self' : (u.access_status || 'none'));
+        let action = '';
+        if (isMe) {
+            action = '<span class="social-btn primary" style="opacity:0.6;cursor:default;">Sos vos</span>';
+        } else if (status === 'connected' || status === 'accepted') {
+            action = '<button type="button" class="social-btn connected" disabled>✓ Conectado</button>';
+        } else if (status === 'pending' || status === 'sent') {
+            action = '<button type="button" class="social-btn pending" disabled>⏳ Pendiente</button>';
+        } else if (status === 'declined' || status === 'rejected') {
+            action = '<button type="button" class="social-btn ghost" data-action="request" data-code="' + esc(u.code) + '">Reenviar</button>';
+        } else if (status === 'blocked') {
+            action = '<span class="social-btn danger" style="opacity:0.5;cursor:default;">Bloqueado</span>';
+        } else {
+            action = '<button type="button" class="social-btn primary" data-action="request" data-code="' + esc(u.code) + '">+ Conectar</button>';
+        }
+        const roleClass = ['admin', 'mentor', 'analyst', 'trader'].includes((u.role || '').toLowerCase())
+            ? u.role.toLowerCase() : 'trader';
+        return `
+            <article class="social-card">
+                <div class="social-avatar">${esc(initials(u.name))}</div>
+                <div class="social-body">
+                    <div class="social-name">
+                        ${esc(u.name || '—')}
+                        ${u.role ? `<span class="social-role ${esc(roleClass)}">${esc(u.role)}</span>` : ''}
+                    </div>
+                    <div class="social-code">${esc(u.code)}</div>
+                </div>
+                <div class="social-actions">${action}</div>
+            </article>
+        `;
     }
 
     async function loadUsers() {
-        var r = await apiFetch('/sanctum/social/api/users?user_code=' + encodeURIComponent(me));
-        var list = document.getElementById('users-list');
-        if (!r.ok || !r.data || !r.data.users) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-full">Sin datos</p>';
-            return;
+        const list = document.getElementById('users-list');
+        list.innerHTML = '<p class="social-loading" style="grid-column: 1 / -1;">Cargando...</p>';
+        try {
+            const q = document.getElementById('social-search').value.trim();
+            const url = '/social/api/users' + (q ? '?q=' + encodeURIComponent(q) : '');
+            const r = await apiFetch(url, { silent: true });
+            if (!r.ok || !r.data || !Array.isArray(r.data.users)) {
+                list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros para mostrar.</p>';
+                return;
+            }
+            _allUsers = r.data.users;
+            document.getElementById('badge-users').textContent = _allUsers.length;
+            document.getElementById('badge-users').hidden = _allUsers.length === 0;
+            if (_allUsers.length === 0) {
+                list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros. Probá con otra búsqueda.</p>';
+                return;
+            }
+            list.innerHTML = _allUsers.map(u => userCard(u)).join('');
+            list.querySelectorAll('[data-action="request"]').forEach(b => {
+                b.addEventListener('click', () => sendRequest(b.dataset.code));
+            });
+        } catch (e) {
+            list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin conexión.</p>';
         }
-        var users = r.data.users;
-        list.innerHTML = users.map(function(u) {
-            return '<div class="social-user-card" data-code="' + escapeHtml(u.code) + '">'
-                + '<div class="social-avatar">' + escapeHtml(initials(u.name)) + '</div>'
-                + '<div class="flex-1 min-w-0">'
-                + '<div class="font-semibold text-sm">' + escapeHtml(u.name) + '</div>'
-                + '<div class="text-xs text-[var(--outline-elev)]">' + escapeHtml(u.code) + (u.is_admin ? ' • admin' : '') + '</div>'
-                + '</div>'
-                + '<div data-status="' + escapeHtml(u.status) + '">' + statusBadge(u.status) + '</div>'
-                + '</div>';
-        }).join('');
-
-        list.querySelectorAll('.connect-btn').forEach(function(btn) {
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                var card = btn.closest('.social-user-card');
-                sendRequest(card.dataset.code);
-            });
-        });
     }
 
-    async function loadReceivedRequests() {
-        var r = await apiFetch('/api/access-request?user_code=' + encodeURIComponent(me));
-        var list = document.getElementById('received-list');
-        if (!r.ok || !r.data || !r.data.received) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin solicitudes</p>';
-            return;
+    // ─── REQUESTS (recibidas) ───
+    function requestCard(r) {
+        return `
+            <article class="social-card-row pending" data-id="${esc(r.id)}">
+                <div class="social-avatar">${esc(initials(r.requester_name || r.requester_code))}</div>
+                <div class="social-body">
+                    <div class="social-card-topic">${esc(r.requester_name || r.requester_code)}</div>
+                    <div class="social-card-meta">${esc(r.requester_code)} · ${fmtDate(r.created_at)}</div>
+                </div>
+                <div class="social-actions">
+                    <button type="button" class="social-btn accept" data-action="accept"  data-id="${esc(r.id)}">Aceptar</button>
+                    <button type="button" class="social-btn deny"   data-action="deny"    data-id="${esc(r.id)}">Rechazar</button>
+                </div>
+            </article>
+        `;
+    }
+
+    async function loadReceived() {
+        const list = document.getElementById('received-list');
+        list.innerHTML = '<p class="social-empty">Cargando...</p>';
+        try {
+            const r = await apiFetch('/api/access-request?user_code=' + encodeURIComponent(me), { silent: true });
+            if (!r.ok || !r.data) {
+                list.innerHTML = '<p class="social-empty">Sin datos.</p>';
+                return;
+            }
+            const items = Array.isArray(r.data) ? r.data : (r.data.requests || []);
+            // Filter only incoming pending for me
+            _myRequests = items.filter(x => x.target_code === me && x.status === 'pending');
+            const pending = document.getElementById('badge-requests');
+            pending.textContent = _myRequests.length;
+            pending.hidden = _myRequests.length === 0;
+            if (_myRequests.length === 0) {
+                list.innerHTML = '<p class="social-empty">No tenés solicitudes pendientes.</p>';
+                return;
+            }
+            list.innerHTML = _myRequests.map(requestCard).join('');
+            list.querySelectorAll('[data-action="accept"]').forEach(b =>
+                b.addEventListener('click', () => respondRequest(parseInt(b.dataset.id, 10), 'accepted'))
+            );
+            list.querySelectorAll('[data-action="deny"]').forEach(b =>
+                b.addEventListener('click', () => respondRequest(parseInt(b.dataset.id, 10), 'rejected'))
+            );
+        } catch (e) {
+            list.innerHTML = '<p class="social-empty">Sin conexión.</p>';
         }
-        var recs = r.data.received;
-        if (recs.length === 0) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin solicitudes recibidas</p>';
-            document.getElementById('received-badge').classList.add('hidden');
-            return;
+    }
+
+    function renderReceived() {
+        // Reload fresh data when tab opens
+        loadReceived();
+    }
+
+    // ─── CONNECTIONS ───
+    function connectionCard(c) {
+        return `
+            <article class="social-card-row connected" data-id="${esc(c.id)}">
+                <div class="social-avatar">${esc(initials(c.connected_name || c.connected_code))}</div>
+                <div class="social-body">
+                    <div class="social-card-topic">${esc(c.connected_name || 'Conexión')}</div>
+                    <div class="social-card-meta">${esc(c.connected_code)} · desde ${fmtDate(c.created_at)}</div>
+                </div>
+                <div class="social-actions">
+                    <a href="/u/${esc(c.connected_code)}" class="social-btn ghost">Ver perfil</a>
+                    <button type="button" class="social-btn danger" data-action="remove" data-id="${esc(c.id)}">Eliminar</button>
+                </div>
+            </article>
+        `;
+    }
+
+    async function loadConnections() {
+        const list = document.getElementById('conn-list');
+        list.innerHTML = '<p class="social-empty">Cargando...</p>';
+        try {
+            const r = await apiFetch('/api/connections?user_code=' + encodeURIComponent(me), { silent: true });
+            if (!r.ok || !r.data) {
+                list.innerHTML = '<p class="social-empty">Sin conexiones.</p>';
+                return;
+            }
+            _connections = r.data.connections || [];
+            const badge = document.getElementById('badge-connections');
+            badge.textContent = _connections.length;
+            badge.hidden = _connections.length === 0;
+            if (_connections.length === 0) {
+                list.innerHTML = '<p class="social-empty">Sin conexiones todavía. Buscá usuarios y enviá solicitudes.</p>';
+                return;
+            }
+            list.innerHTML = _connections.map(connectionCard).join('');
+            list.querySelectorAll('[data-action="remove"]').forEach(b => {
+                b.addEventListener('click', () => removeConnection(parseInt(b.dataset.id, 10)));
+            });
+        } catch (e) {
+            list.innerHTML = '<p class="social-empty">Sin conexión.</p>';
         }
-        document.getElementById('received-badge').textContent = recs.length;
-        document.getElementById('received-badge').classList.remove('hidden');
-        list.innerHTML = recs.map(function(r) {
-            return '<div class="glass-card-elev p-3 flex items-center gap-3">'
-                + '<div class="social-avatar">' + escapeHtml(initials(r.requester_name)) + '</div>'
-                + '<div class="flex-1">'
-                + '<div class="font-semibold">' + escapeHtml(r.requester_name) + '</div>'
-                + '<div class="text-xs text-[var(--outline-elev)]">' + escapeHtml(r.requester_code) + ' • ' + escapeHtml(r.created_at) + '</div>'
-                + '</div>'
-                + '<button class="btn-elev-secondary text-xs" data-id="' + r.id + '" data-action="accept">Aceptar</button>'
-                + '<button class="btn-elev-secondary text-xs" data-id="' + r.id + '" data-action="reject" style="color:#f87171">Rechazar</button>'
-                + '</div>';
-        }).join('');
-
-        list.querySelectorAll('[data-action]').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                respondRequest(parseInt(btn.dataset.id), btn.dataset.action);
-            });
-        });
     }
 
-    function loadSentRequests() {
-        apiFetch('/api/access-request?user_code=' + encodeURIComponent(me)).then(function(r) {
-            var list = document.getElementById('sent-list');
-            if (!r.ok || !r.data || !r.data.sent) {
-                list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin solicitudes enviadas</p>';
-                return;
-            }
-            var sents = r.data.sent;
-            if (sents.length === 0) {
-                list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin solicitudes enviadas</p>';
-                document.getElementById('sent-badge').classList.add('hidden');
-                return;
-            }
-            document.getElementById('sent-badge').textContent = sents.length;
-            document.getElementById('sent-badge').classList.remove('hidden');
-            list.innerHTML = sents.map(function(s) {
-                var color = s.status === 'accepted' ? 'text-emerald-400' : s.status === 'rejected' ? 'text-red-400' : 'text-amber-400';
-                return '<div class="glass-card-elev p-3 flex items-center gap-3">'
-                    + '<div class="social-avatar">' + escapeHtml(initials(s.target_name)) + '</div>'
-                    + '<div class="flex-1">'
-                    + '<div class="font-semibold">' + escapeHtml(s.target_name) + '</div>'
-                    + '<div class="text-xs text-[var(--outline-elev)]">' + escapeHtml(s.target_code) + '</div>'
-                    + '</div>'
-                    + '<span class="text-xs ' + color + ' font-semibold">' + s.status.toUpperCase() + '</span>'
-                    + '</div>';
-            }).join('');
-        });
+    function renderConnections() {
+        loadConnections();
     }
 
-    function loadConnections() {
-        apiFetch('/api/connections?user_code=' + encodeURIComponent(me)).then(function(r) {
-            var list = document.getElementById('conn-list');
-            if (!r.ok || !r.data || !r.data.connections) {
-                list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin conexiones</p>';
-                return;
+    // ─── PRIVACY ───
+    async function loadPrivacy() {
+        try {
+            const r = await apiFetch('/api/journal/settings?code=' + encodeURIComponent(me), { silent: true });
+            if (r.ok && r.data) {
+                const v = r.data.visibility || r.data.setup_token ? 'connections' : 'public';
+                _privacy = v;
+            } else {
+                _privacy = 'connections';
             }
-            var conns = r.data.connections;
-            if (conns.length === 0) {
-                list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin conexiones todavía</p>';
-                document.getElementById('conn-badge').classList.add('hidden');
-                return;
-            }
-            document.getElementById('conn-badge').textContent = conns.length;
-            document.getElementById('conn-badge').classList.remove('hidden');
-            list.innerHTML = conns.map(function(c) {
-                return '<div class="glass-card-elev p-3 flex items-center gap-3">'
-                    + '<div class="social-avatar">' + escapeHtml(initials(c.user_name)) + '</div>'
-                    + '<div class="flex-1">'
-                    + '<div class="font-semibold">' + escapeHtml(c.user_name) + '</div>'
-                    + '<div class="text-xs text-[var(--outline-elev)]">' + escapeHtml(c.user_code) + ' • desde ' + escapeHtml(c.created_at.slice(0, 10)) + '</div>'
-                    + '</div>'
-                    + '<button class="btn-elev-secondary text-xs" data-id="' + c.id + '" data-action="view-journal">Ver journal</button>'
-                    + '<button class="btn-elev-secondary text-xs" data-id="' + c.id + '" data-action="remove" style="color:#f87171">Eliminar</button>'
-                    + '</div>';
-            }).join('');
-
-            list.querySelectorAll('[data-action="remove"]').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    removeConnection(parseInt(btn.dataset.id));
-                });
+            document.getElementById('privacy-current-value').textContent = labelForPrivacy(_privacy);
+            document.querySelectorAll('.social-privacy-opt').forEach(b => {
+                b.classList.toggle('active', b.dataset.vis === _privacy);
             });
-            list.querySelectorAll('[data-action="view-journal"]').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var card = btn.closest('.glass-card-elev');
-                    var name = card.querySelector('.font-semibold').textContent;
-                    window.location.href = '/sanctum/social?view_user=' + encodeURIComponent(name);
-                });
-            });
-        });
+        } catch (e) {
+            document.getElementById('privacy-current-value').textContent = '—';
+        }
     }
 
+    function labelForPrivacy(v) {
+        return ({
+            'public': '🌍 Público — todo el Sanctum puede ver tu journal',
+            'connections': '👥 Solo conexiones — sólo conexiones aceptadas',
+            'private': '🔒 Privado — sólo vos (los demás requieren solicitud)',
+        })[v] || v;
+    }
+
+    function renderPrivacy() {
+        loadPrivacy();
+    }
+
+    // ─── ACTIONS ───
     async function sendRequest(targetCode) {
-        var r = await apiFetch('/api/access-request?user_code=' + encodeURIComponent(me), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_code: me, target_code: targetCode })
-        });
-        if (r.ok && r.data && r.data.success) {
-            if (window.apiToast) apiToast('Solicitud enviada', 'success');
-            loadUsers();
-            loadSentRequests();
-        } else {
-            var msg = (r.data && r.data.error) || 'Error';
-            if (window.apiToast) apiToast(msg, 'error');
+        try {
+            const r = await apiFetch('/api/access-request?code=' + encodeURIComponent(me), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_code: me, target_code: targetCode })
+            });
+            if (r.ok && r.data && r.data.success) {
+                toast('Solicitud enviada a ' + targetCode, 'success');
+                loadUsers();
+            } else {
+                toast((r.data && r.data.error) || 'Error al enviar solicitud', 'error');
+            }
+        } catch (e) {
+            toast('Error de red', 'error');
         }
     }
 
-    async function respondRequest(id, action) {
-        var status = action === 'accept' ? 'accepted' : 'rejected';
-        var r = await apiFetch('/api/access-request/' + id + '?user_code=' + encodeURIComponent(me), {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_code: me, status: status })
-        });
-        if (r.ok && r.data && r.data.success) {
-            if (window.apiToast) apiToast('Solicitud ' + (status === 'accepted' ? 'aceptada' : 'rechazada'), 'success');
-            loadReceivedRequests();
-            loadUsers();
-        } else {
-            var msg = (r.data && r.data.error) || 'Error';
-            if (window.apiToast) apiToast(msg, 'error');
+    async function respondRequest(id, status) {
+        try {
+            const r = await apiFetch('/api/access-request/' + id + '?code=' + encodeURIComponent(me), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_code: me, status: status })
+            });
+            if (r.ok && r.data && r.data.success) {
+                toast('Solicitud ' + (status === 'accepted' ? 'aceptada' : 'rechazada'), 'success');
+                loadReceived();
+                loadUsers();
+            } else {
+                toast((r.data && r.data.error) || 'Error', 'error');
+            }
+        } catch (e) {
+            toast('Error de red', 'error');
         }
     }
 
     async function removeConnection(id) {
         if (!confirm('¿Eliminar esta conexión?')) return;
-        var r = await apiFetch('/api/connections/' + id + '?user_code=' + encodeURIComponent(me), {
-            method: 'DELETE',
-            silent: true
-        });
-        if (r.ok) {
-            if (window.apiToast) apiToast('Conexión eliminada', 'success');
-            loadConnections();
-            loadUsers();
-        }
-    }
-
-    function showTab(name) {
-        currentTab = name;
-        document.querySelectorAll('.social-tab').forEach(function(t) {
-            t.classList.toggle('active', t.dataset.tab === name);
-        });
-        document.querySelectorAll('.social-panel').forEach(function(p) {
-            p.classList.toggle('hidden', p.id !== 'tab-' + name);
-        });
-        if (name === 'received') loadReceivedRequests();
-        else if (name === 'sent') loadSentRequests();
-        else if (name === 'connections') loadConnections();
-        else loadUsers();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.social-tab').forEach(function(t) {
-            t.addEventListener('click', function() { showTab(t.dataset.tab); });
-        });
-
-        function boot() {
-            if (me) {
-                loadUsers();
-                loadReceivedRequests();
-                loadSentRequests();
+        try {
+            const r = await apiFetch('/api/connections/' + id + '?code=' + encodeURIComponent(me), {
+                method: 'DELETE',
+                silent: true
+            });
+            if (r.ok) {
+                toast('Conexión eliminada', 'success');
                 loadConnections();
-            } else setTimeout(boot, 500);
+            } else {
+                toast('Error al eliminar', 'error');
+            }
+        } catch (e) {
+            toast('Error de red', 'error');
         }
-        if (window.TNSVT_USER) boot();
-        else window.addEventListener('tnsvt:user-loaded', boot, { once: true });
+    }
+
+    async function setPrivacy(vis) {
+        try {
+            const r = await apiFetch('/api/journal/settings?code=' + encodeURIComponent(me), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: me, visibility: vis })
+            });
+            if (r.ok && r.data && r.data.success) {
+                _privacy = vis;
+                document.getElementById('privacy-current-value').textContent = labelForPrivacy(vis);
+                document.querySelectorAll('.social-privacy-opt').forEach(b => {
+                    b.classList.toggle('active', b.dataset.vis === vis);
+                });
+                toast('Privacidad actualizada', 'success');
+            } else {
+                toast((r.data && r.data.error) || 'Error al actualizar', 'error');
+            }
+        } catch (e) {
+            toast('Error de red', 'error');
+        }
+    }
+
+    // ─── WIRE ───
+    function wire() {
+        document.querySelectorAll('.social-tab').forEach(t => {
+            t.addEventListener('click', () => switchTab(t.dataset.tab));
+        });
+        let searchT = null;
+        document.getElementById('social-search').addEventListener('input', () => {
+            clearTimeout(searchT);
+            searchT = setTimeout(() => loadUsers(), 200);
+        });
+        document.querySelectorAll('.social-privacy-opt').forEach(b => {
+            b.addEventListener('click', () => setPrivacy(b.dataset.vis));
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        wire();
+        switchTab('users');
     });
 })();
 </script>
