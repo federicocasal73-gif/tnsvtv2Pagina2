@@ -152,7 +152,12 @@ SURGICAL_FORBIDDEN = [
 UPLOAD_PLAN = [
     ("bin", "bin"),
     ("config", "config"),
-    ("public", "public"),
+    # NOTE: "public" is intentionally NOT in UPLOAD_PLAN.
+    # The Hostinger doc root IS /public_html/ (index.php + .htaccess at that level).
+    # The "public" subdir is now a symlink to the project root so asset-map:compile
+    # writes to /public_html/assets/ (the correct serving path).
+    # Uploading local/public/ to remote/public_html/public/ would overwrite the symlink
+    # and re-introduce the bug where compile output went to public_html/public/assets/.
     ("src", "src"),
     ("templates", "templates"),
     ("assets", "assets"),
