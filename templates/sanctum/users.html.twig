@@ -7,19 +7,6 @@
 
 {% block stylesheets %}
 <style>
-    .admin-card {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        transition: all 0.3s ease;
-    }
-    .admin-card:hover {
-        border-color: rgba(242, 202, 80, 0.2);
-        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
-    }
     .stat-mini-admin {
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid rgba(255, 255, 255, 0.05);
@@ -111,112 +98,6 @@
     .audio-wave-bar:nth-child(3) { animation-delay: 0.2s; }
     .audio-wave-bar:nth-child(4) { animation-delay: 0.3s; }
     .audio-wave-bar:nth-child(5) { animation-delay: 0.4s; }
-</style>
-{% endblock %}
-
-{% block content %}
-    <div class="max-w-7xl mx-auto">
-        {# Header #}
-        <div class="text-center mb-6">
-            <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-2">Trono de Control</p>
-            <h1 class="font-headline-lg text-headline-lg shimmer-text">Comando de Reino</h1>
-        </div>
-
-        {# Global Kingdom Stats #}
-        <div class="grid grid-cols-3 gap-3 mb-6">
-            <div class="stat-mini-admin">
-                <div class="stat-mini-admin-value" id="admin-stat-total">0</div>
-                <div class="stat-mini-admin-label">Total Users</div>
-            </div>
-            <div class="stat-mini-admin">
-                <div class="stat-mini-admin-value" id="admin-stat-signals">0</div>
-                <div class="stat-mini-admin-label">Señales</div>
-            </div>
-            <div class="stat-mini-admin">
-                <div class="stat-mini-admin-value text-green-400" id="admin-stat-pnl">+$0</div>
-                <div class="stat-mini-admin-label">Total PnL</div>
-            </div>
-        </div>
-
-        {# Alert Mode Switch #}
-        <div class="admin-card">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center border border-red-500/20">
-                    <span class="material-symbols-elev text-red-400">warning</span>
-                </div>
-                <div class="flex-1">
-                    <p class="font-label-md text-label-md font-bold text-[var(--on-surface-elev)]">Modo Alerta Alta Precisión</p>
-                    <p class="text-[10px] text-[var(--outline-elev)] uppercase tracking-wider">Protocolo de Emergencia</p>
-                </div>
-                <div class="alert-toggle" id="alert-mode-toggle" onclick="this.classList.toggle('active')"></div>
-            </div>
-        </div>
-
-        {# Audio Player Mini #}
-        <div class="audio-player-mini">
-            <div class="flex items-center gap-5 mb-4 relative z-10">
-                <div class="w-16 h-16 rounded-lg overflow-hidden shadow-2xl relative bg-[var(--primary-container,#d4af37)]/20 flex items-center justify-center">
-                    <div class="audio-wave">
-                        <div class="audio-wave-bar"></div>
-                        <div class="audio-wave-bar"></div>
-                        <div class="audio-wave-bar"></div>
-                        <div class="audio-wave-bar"></div>
-                        <div class="audio-wave-bar"></div>
-                    </div>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest">Global Temple Broadcast</span>
-                        <span class="w-1.5 h-1.5 rounded-full bg-[var(--primary)] pulse-gold"></span>
-                    </div>
-                    <p class="font-title-md text-title-md font-bold text-[var(--starlight-white,#FDFCF8)] leading-tight">Sinfonía Atmosférica Nro. 4</p>
-                    <p class="text-xs text-[var(--outline-elev)]">Frecuencia de Cónclave · 432Hz</p>
-                </div>
-            </div>
-            <div class="flex items-center justify-center gap-6 relative z-10">
-                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
-                    <span class="material-symbols-elev text-2xl">skip_previous</span>
-                </button>
-                <button class="w-12 h-12 rounded-full bg-[var(--primary)] text-[var(--void-black,#050308)] flex items-center justify-center gold-glow-elev hover:scale-110 transition-transform">
-                    <span class="material-symbols-elev text-3xl" style="font-variation-settings: 'FILL' 1;">pause</span>
-                </button>
-                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
-                    <span class="material-symbols-elev text-2xl">skip_next</span>
-                </button>
-            </div>
-        </div>
-
-        {# Toolbar #}
-        <div class="admin-card flex items-center justify-between flex-wrap gap-4">
-            <div>
-                <h2 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
-                    <span class="material-symbols-elev text-[var(--gold-elev)]">groups</span>
-                    Lista de Adeptos
-                </h2>
-                <p class="text-xs text-[var(--outline-elev)]">Gestión de miembros y tiers del Sanctum</p>
-            </div>
-            <div class="flex gap-3 items-center">
-                <input id="search-input" type="text" placeholder="Buscar por código..." class="px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
-                <select id="filter-tier" class="px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm">
-                    <option value="">Todos los tiers</option>
-                    <option value="INITIATE">Initiate</option>
-                    <option value="ASPIRANT">Aspirant</option>
-                    <option value="TIER_1">Tier 1</option>
-                    <option value="TIER_2">Tier 2</option>
-                    <option value="TIER_3_ZENITH">Tier 3 Zenith</option>
-                    <option value="MASTER">Master</option>
-                </select>
-                <button id="refresh-btn" class="btn-elev-secondary text-xs">
-                    <span class="material-symbols-elev align-middle text-sm">refresh</span>
-                </button>
-            </div>
-        </div>
-
-        {# User grid #}
-        <div id="users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <p class="col-span-full text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando adeptos...</p>
-        </div>
-    </div>
     .user-card {
         position: relative;
         background: var(--glass-bg-elev);
@@ -308,7 +189,113 @@
     .status-pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 1rem; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
     .status-pill.active { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
     .status-pill.inactive { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); }
-    </style>
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="max-w-7xl mx-auto">
+        {# Header #}
+        <div class="text-center mb-6">
+            <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-2">Trono de Control</p>
+            <h1 class="font-headline-lg text-headline-lg shimmer-text">Comando de Reino</h1>
+        </div>
+
+        {# Global Kingdom Stats #}
+        <div class="grid grid-cols-3 gap-3 mb-6">
+            <div class="stat-mini-admin">
+                <div class="stat-mini-admin-value" id="admin-stat-total">0</div>
+                <div class="stat-mini-admin-label">Total Users</div>
+            </div>
+            <div class="stat-mini-admin">
+                <div class="stat-mini-admin-value" id="admin-stat-signals">0</div>
+                <div class="stat-mini-admin-label">Señales</div>
+            </div>
+            <div class="stat-mini-admin">
+                <div class="stat-mini-admin-value text-green-400" id="admin-stat-pnl">+$0</div>
+                <div class="stat-mini-admin-label">Total PnL</div>
+            </div>
+        </div>
+
+        {# Alert Mode Switch #}
+        <div class="glass-card-elev">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center border border-red-500/20">
+                    <span class="material-symbols-elev text-red-400">warning</span>
+                </div>
+                <div class="flex-1">
+                    <p class="font-label-md text-label-md font-bold text-[var(--on-surface-elev)]">Modo Alerta Alta Precisión</p>
+                    <p class="text-[10px] text-[var(--outline-elev)] uppercase tracking-wider">Protocolo de Emergencia</p>
+                </div>
+                <div class="alert-toggle" id="alert-mode-toggle" onclick="this.classList.toggle('active')"></div>
+            </div>
+        </div>
+
+        {# Audio Player Mini #}
+        <div class="audio-player-mini">
+            <div class="flex items-center gap-5 mb-4 relative z-10">
+                <div class="w-16 h-16 rounded-lg overflow-hidden shadow-2xl relative bg-[var(--primary-container,#d4af37)]/20 flex items-center justify-center">
+                    <div class="audio-wave">
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                        <div class="audio-wave-bar"></div>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest">Global Temple Broadcast</span>
+                        <span class="w-1.5 h-1.5 rounded-full bg-[var(--primary)] pulse-gold"></span>
+                    </div>
+                    <p class="font-title-md text-title-md font-bold text-[var(--starlight-white,#FDFCF8)] leading-tight">Sinfonía Atmosférica Nro. 4</p>
+                    <p class="text-xs text-[var(--outline-elev)]">Frecuencia de Cónclave · 432Hz</p>
+                </div>
+            </div>
+            <div class="flex items-center justify-center gap-6 relative z-10">
+                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
+                    <span class="material-symbols-elev text-2xl">skip_previous</span>
+                </button>
+                <button class="w-12 h-12 rounded-full bg-[var(--primary)] text-[var(--void-black,#050308)] flex items-center justify-center gold-glow-elev hover:scale-110 transition-transform">
+                    <span class="material-symbols-elev text-3xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+                </button>
+                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
+                    <span class="material-symbols-elev text-2xl">skip_next</span>
+                </button>
+            </div>
+        </div>
+
+        {# Toolbar #}
+        <div class="glass-card-elev flex items-center justify-between flex-wrap gap-4">
+            <div>
+                <h2 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">groups</span>
+                    Lista de Adeptos
+                </h2>
+                <p class="text-xs text-[var(--outline-elev)]">Gestión de miembros y tiers del Sanctum</p>
+            </div>
+            <div class="flex gap-3 items-center">
+                <input id="search-input" type="text" placeholder="Buscar por código..." class="px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
+                <select id="filter-tier" class="px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm">
+                    <option value="">Todos los tiers</option>
+                    <option value="INITIATE">Initiate</option>
+                    <option value="ASPIRANT">Aspirant</option>
+                    <option value="TIER_1">Tier 1</option>
+                    <option value="TIER_2">Tier 2</option>
+                    <option value="TIER_3_ZENITH">Tier 3 Zenith</option>
+                    <option value="MASTER">Master</option>
+                </select>
+                <button id="refresh-btn" class="btn-elev-secondary text-xs">
+                    <span class="material-symbols-elev align-middle text-sm">refresh</span>
+                </button>
+            </div>
+        </div>
+
+        {# User grid #}
+        <div id="users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <p class="col-span-full text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando adeptos...</p>
+        </div>
+    </div>
+{% endblock %}
 
     <script>
     let allUsers = [];

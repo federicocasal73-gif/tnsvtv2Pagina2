@@ -230,6 +230,46 @@
         </div>
     </div>
 
+    {# Macro Oracle — Faith vs Logic + Session Performance + Scatter #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <div class="macro-card">
+            <h3 class="text-lg font-semibold mb-2 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[var(--gold-elev)]">balance</span>
+                Faith vs Logic
+            </h3>
+            <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">Equilibrio emocional de los últimos 30 días</p>
+            <div class="flex items-center justify-center" style="height: 200px;">
+                <svg id="faith-logic-gauge" width="200" height="200" viewBox="0 0 200 200"></svg>
+            </div>
+            <div class="flex justify-between text-xs mt-2">
+                <span class="text-[var(--gold-elev)]">Faith</span>
+                <span class="text-[var(--outline-elev)]">Logic</span>
+            </div>
+        </div>
+
+        <div class="macro-card">
+            <h3 class="text-lg font-semibold mb-2 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[var(--gold-elev)]">scatter_plot</span>
+                Emotional Bias Scatter
+            </h3>
+            <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">Volatility vs Confidence</p>
+            <div class="relative" style="height: 200px;">
+                <svg id="emotional-scatter" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+        </div>
+
+        <div class="macro-card">
+            <h3 class="text-lg font-semibold mb-2 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-outlined text-[var(--gold-elev)]">schedule</span>
+                Session Performance
+            </h3>
+            <p class="text-xs text-[var(--outline-elev)] mb-4 uppercase tracking-wider">P&L por sesión</p>
+            <div class="relative" style="height: 200px;">
+                <svg id="session-bars" width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
+        </div>
+    </div>
+
     <script>
     let countdownInterval = null;
     let allWindows = [];
@@ -394,8 +434,98 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadAll();
+        renderOracleCharts();
         // Auto-refresh every 60s
         setInterval(loadAll, 60000);
     });
+
+    function renderOracleCharts() {
+        renderFaithLogicGauge();
+        renderEmotionalScatter();
+        renderSessionBars();
+    }
+
+    function renderFaithLogicGauge() {
+        const svg = document.getElementById('faith-logic-gauge');
+        if (!svg) return;
+        const cx = 100, cy = 100, r = 80;
+        const faith = 50; // default balance (0-100)
+        const angle = -90 + (faith / 100) * 180; // semicircle from -90 to +90
+        const rad = (angle * Math.PI) / 180;
+        const needleX = cx + (r - 12) * Math.cos(rad);
+        const needleY = cy + (r - 12) * Math.sin(rad);
+        const svgNS = 'http://www.w3.org/2000/svg';
+        let html = '';
+        // Background arc
+        html += `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}" stroke="rgba(255,255,255,0.08)" stroke-width="12" fill="none"/>`;
+        // Foreground arc (gold)
+        html += `<path d="M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${needleX} ${needleY}" stroke="url(#gauge-grad)" stroke-width="12" fill="none" stroke-linecap="round"/>`;
+        // Gradient
+        html += `<defs><linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f2ca50"/><stop offset="100%" stop-color="#8a3cff"/>
+        </linearGradient></defs>`;
+        // Needle
+        html += `<line x1="${cx}" y1="${cy}" x2="${needleX}" y2="${needleY}" stroke="#f2ca50" stroke-width="2" stroke-linecap="round"/>`;
+        html += `<circle cx="${cx}" cy="${cy}" r="6" fill="#f2ca50"/>`;
+        // Labels
+        html += `<text x="20" y="180" font-size="11" fill="#f2ca50" font-weight="600">FAITH</text>`;
+        html += `<text x="155" y="180" font-size="11" fill="#99907c" font-weight="600">LOGIC</text>`;
+        svg.innerHTML = html;
+    }
+
+    function renderEmotionalScatter() {
+        const svg = document.getElementById('emotional-scatter');
+        if (!svg) return;
+        const points = [];
+        // Generate mock-ish scatter points (low volatility = confidence high)
+        for (let i = 0; i < 30; i++) {
+            const x = Math.random() * 380 + 10;
+            const y = Math.random() * 180 + 10;
+            const r = Math.random() * 4 + 2;
+            const opacity = Math.random() * 0.5 + 0.3;
+            points.push(`<circle cx="${x}" cy="${y}" r="${r}" fill="#f2ca50" fill-opacity="${opacity}" />`);
+        }
+        // Axes
+        const axes = `
+            <line x1="40" y1="180" x2="380" y2="180" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <line x1="40" y1="20" x2="40" y2="180" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+            <text x="20" y="30" font-size="9" fill="#99907c" text-anchor="middle">High</text>
+            <text x="20" y="180" font-size="9" fill="#99907c" text-anchor="middle">Low</text>
+            <text x="380" y="195" font-size="9" fill="#99907c" text-anchor="end">Conf →</text>
+        `;
+        svg.innerHTML = axes + points.join('');
+    }
+
+    function renderSessionBars() {
+        const svg = document.getElementById('session-bars');
+        if (!svg) return;
+        const sessions = [
+            { name: 'Asia', value: -120 },
+            { name: 'London', value: 280 },
+            { name: 'NY', value: 450 },
+            { name: 'Late', value: -80 }
+        ];
+        const max = Math.max(...sessions.map(s => Math.abs(s.value)));
+        const barWidth = 60;
+        const gap = 30;
+        const startX = 50;
+        let html = '';
+        // Axis
+        html += `<line x1="40" y1="170" x2="380" y2="170" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>`;
+        sessions.forEach((s, i) => {
+            const x = startX + i * (barWidth + gap);
+            const height = (Math.abs(s.value) / max) * 130;
+            const y = s.value >= 0 ? 170 - height : 170;
+            const fill = s.value >= 0 ? 'url(#bar-grad-pos)' : '#f87171';
+            html += `<rect x="${x}" y="${y}" width="${barWidth}" height="${height}" fill="${fill}" rx="4" fill-opacity="0.85"/>`;
+            html += `<text x="${x + barWidth/2}" y="190" font-size="10" fill="#99907c" text-anchor="middle">${s.name}</text>`;
+            html += `<text x="${x + barWidth/2}" y="${y - 5}" font-size="10" fill="#f2ca50" text-anchor="middle" font-weight="600">${s.value >= 0 ? '+' : ''}$${s.value}</text>`;
+        });
+        html += `<defs><linearGradient id="bar-grad-pos" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#f2ca50" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#f2ca50" stop-opacity="0.3"/>
+        </linearGradient></defs>`;
+        svg.innerHTML = html;
+    }
     </script>
 {% endblock %}

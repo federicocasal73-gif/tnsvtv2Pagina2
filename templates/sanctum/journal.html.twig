@@ -7,21 +7,7 @@
 
 {% block stylesheets %}
 <style>
-    .journal-card {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .journal-card:hover {
-        border-color: rgba(242, 202, 80, 0.2);
-        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
-    }
-    .journal-card.cosmic {
+    .glass-card-elev.cosmic {
         background: linear-gradient(135deg, rgba(45, 27, 78, 0.5), rgba(22, 17, 33, 0.7));
         border: 1px solid rgba(242, 202, 80, 0.3);
     }
@@ -84,17 +70,17 @@
 
     {# ─── KPI Stats Row (Bento Grid 2x2) ─── #}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="journal-stats">
-        <div class="journal-card text-center">
+        <div class="glass-card-elev text-center">
             <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">analytics</span>
             <p class="kpi-label mt-2">Trades</p>
             <p class="kpi-value gold" id="stat-total">0</p>
         </div>
-        <div class="journal-card text-center">
+        <div class="glass-card-elev text-center">
             <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">trending_up</span>
             <p class="kpi-label mt-2">Win Rate</p>
             <p class="kpi-value gold" id="stat-winrate">0%</p>
         </div>
-        <div class="journal-card text-center col-span-2">
+        <div class="glass-card-elev text-center col-span-2">
             <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">payments</span>
             <p class="kpi-label mt-2">PnL Neto Total</p>
             <p class="text-4xl font-bold text-[var(--gold-elev)] mt-1" id="stat-pnl">$0</p>
@@ -102,7 +88,7 @@
     </div>
 
     {# ─── Equity Curve ─── #}
-    <div class="journal-card mb-6">
+    <div class="glass-card-elev mb-6">
         <div class="flex items-center justify-between mb-4">
             <h3 class="font-title-md text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-[var(--gold-elev)]">show_chart</span>
@@ -153,7 +139,7 @@
     </div>
 
     {# ─── Toolbar ─── #}
-    <div class="journal-card mb-4 flex flex-wrap items-center gap-3">
+    <div class="glass-card-elev mb-4 flex flex-wrap items-center gap-3">
         <button id="btn-new-trade" class="btn-primary flex items-center gap-2">
             <span class="material-symbols-elev align-middle text-sm">add</span>
             Nuevo Trade
@@ -165,7 +151,7 @@
     </div>
 
     {# ─── Trade List ─── #}
-    <div class="journal-card p-0 overflow-hidden">
+    <div class="glass-card-elev p-0 overflow-hidden">
         <div id="trade-list" class="divide-y divide-[var(--outline-variant-elev)]">
             <p class="text-center text-[var(--outline-elev)] py-12 loading-pulse">Cargando journal...</p>
         </div>

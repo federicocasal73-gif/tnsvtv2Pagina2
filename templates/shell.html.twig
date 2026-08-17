@@ -13,7 +13,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
@@ -27,11 +27,19 @@
     {% block stylesheets %}{% endblock %}
 </head>
 
-<body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased"
+<body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased relative"
       data-controller="pwa">
+
+{# ═══ FASE 0 — Fondo estrellado global (V2 identidad visual) ═══ #}
+{# https://tnsvt.com necesita esta identidad en TODAS las páginas. #}
+{% block background %}{% endblock %}
+<script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
 
 {# api_helper MUST be included BEFORE any {% block content %} to ensure window.apiFetch is defined #}
 {% include '_partials/api_helper.html.twig' with {} %}
+
+{# ═══ FASE 0 — Emblema 3D del gateway (solo home) ═══ #}
+{% block gateway_emblem %}{% endblock %}
 
 <div class="flex min-h-screen">
     <aside id="sanctum-sidebar" class="w-64 bg-[var(--surface-elev)] border-r border-[var(--outline-variant-elev)] flex flex-col">
@@ -212,12 +220,16 @@
     </aside>
 
     <main class="flex-1 flex flex-col">
-    <header class="h-16 bg-gradient-to-r from-[var(--surface-elev)] via-[rgba(242,202,80,0.02)] to-[var(--surface-elev)] border-b border-[var(--outline-variant-elev)] flex items-center justify-between px-6">
+    <header class="h-16 bg-[var(--surface-elev)] border-b border-[var(--outline-variant-elev)] flex items-center justify-between px-6">
         <div>
-            <h2 class="text-xl font-semibold text-[var(--on-surface-elev)] tracking-wide">{% block topbar_title %}Command Center{% endblock %}</h2>
-            <p class="text-xs text-[var(--outline-elev)]">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
+            <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Command Center{% endblock %}</h2>
+            <p class="text-xs text-[var(--outline-elev)] italic">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
+            <button class="btn-elev-primary group" title="Invocar Protocolo">
+                <span class="material-symbols-elev text-base">bolt</span>
+                <span>Invoke Protocol</span>
+            </button>
             <button class="btn-elev-ghost relative" title="Notificaciones">
                 <span class="material-symbols-elev">notifications</span>
                 <span id="header-notif-badge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[var(--gold-elev)] text-black text-[10px] font-bold px-1">0</span>

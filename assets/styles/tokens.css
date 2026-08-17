@@ -140,4 +140,61 @@
     --gold-bright: var(--gold-bright-elev);
     --violet: #8a3cff;
     --violet-glow: rgba(138, 60, 255, 0.3);
+
+    /* === FASE 0 — Background stars (V2 identidad visual) ===
+     * Override per template via body class or inline style.
+     */
+    --bg-stars-opacity: 0.6;
+    --bg-stars-color: var(--gold-elev);
+    --bg-stars-density: 30;
+    --bg-gradient-base: var(--void-elev);
+    --bg-gradient-mid: #100b1c;
+    --bg-gradient-end: var(--surface-elev);
+}
+
+/* === FASE 0 — Background canvas overlay (V2 identity) === */
+#bg-shader-canvas {
+    /* The webgl-background.js script creates this canvas. We control its
+     * visibility via opacity; the shader itself renders stars. */
+    opacity: var(--bg-stars-opacity);
+    transition: opacity 0.6s ease;
+}
+
+/* On the gateway, bring the stars to full opacity. */
+body.gateway-emblem #bg-shader-canvas {
+    opacity: 1;
+}
+
+/* === FASE 0 — Cinematic lettering (Cinzel serif, gold + violet) === */
+.text-cinzel-display {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, #f2ca50 0%, #ffe088 50%, #f2ca50 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--gold-elev);
+    text-shadow: 0 0 30px rgba(242, 202, 80, 0.25);
+    filter: drop-shadow(0 0 6px rgba(242, 202, 80, 0.35));
+}
+.text-cinzel-violet {
+    font-family: 'Cinzel', serif;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #d4bbff 0%, #8a3cff 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--secondary-elev);
+}
+.text-cinzel-starlight {
+    font-family: 'Cinzel', serif;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    background: linear-gradient(135deg, #FDFCF8 0%, #ffe088 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--starlight-white-elev);
 }

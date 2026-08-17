@@ -7,21 +7,6 @@
 
 {% block stylesheets %}
 <style>
-    .notif-card {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .notif-card:hover {
-        border-color: rgba(242, 202, 80, 0.2);
-        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
-    }
     .vision-card {
         background: rgba(255, 255, 255, 0.02);
         backdrop-filter: blur(24px);
@@ -123,7 +108,7 @@
 <div class="max-w-3xl mx-auto"
      data-controller="notifications">
     {# ─── Header ─── #}
-    <div class="notif-card flex items-center gap-3">
+    <div class="glass-card-elev flex items-center gap-3">
         <div class="w-12 h-12 rounded-full bg-[var(--gold-elev,#f2ca50)]/10 flex items-center justify-center border border-[var(--gold-elev,#f2ca50)]/30 pulse-gold">
             <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl">notifications_active</span>
         </div>

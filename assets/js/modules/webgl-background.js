@@ -1,6 +1,10 @@
 /**
  * T.N.S.V.T Sacred Glass - WebGL Background Shader
  * Perlin noise with golden glow and stars
+ *
+ * FASE 0: Reads --bg-stars-density and --bg-stars-opacity from CSS custom
+ * properties so the same module can power both the gateway (full) and the
+ * Sanctum shell (subtle).
  */
 (function() {
     'use strict';
@@ -12,6 +16,25 @@
 
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     if (!gl) return;
+
+    // Read CSS custom properties so the same shader can be tuned per view.
+    const rootStyles = getComputedStyle(document.documentElement);
+    const cssDensity = parseFloat(rootStyles.getPropertyValue('--bg-stars-density')) || 30;
+    const cssOpacity = parseFloat(rootStyles.getPropertyValue('--bg-stars-opacity')) || 0.6;
+    const cssGoldRaw = rootStyles.getPropertyValue('--bg-stars-color').trim() || '#f2ca50';
+
+    // Convert hex color to rgb vec3
+    function hexToRgb(hex) {
+        let h = hex.replace('#', '');
+        if (h.length === 3) h = h.split('').map(c => c + c).join('');
+        const num = parseInt(h, 16);
+        return [
+            ((num >> 16) & 255) / 255,
+            ((num >> 8) & 255) / 255,
+            (num & 255) / 255
+        ];
+    }
+    const goldRgb = hexToRgb(cssGoldRaw);
 
     const vertexSrc = `
         attribute vec2 position;
@@ -26,6 +49,8 @@
         precision highp float;
         uniform float u_time;
         uniform vec2 u_resolution;
+        uniform float u_density;
+        uniform vec3 u_gold;
         varying vec2 v_texCoord;
 
         vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
@@ -54,19 +79,20 @@
             vec2 p = uv * 2.0 - 1.0;
             p.x *= u_resolution.x / u_resolution.y;
 
-            float noise = snoise(p * 1.5 + u_time * 0.1);
-            float noise2 = snoise(p * 3.0 - u_time * 0.15);
+            float noise = snoise(p * 1.2 + u_time * 0.04);
+            float noise2 = snoise(p * 2.5 - u_time * 0.06);
 
-            vec3 color1 = vec3(0.020, 0.014, 0.035);  // #050308
+            vec3 color1 = vec3(0.031, 0.023, 0.047);  // warm deep purple
             vec3 color2 = vec3(0.086, 0.067, 0.129);  // #161121
-            vec3 gold = vec3(0.831, 0.686, 0.216);    // #d4af37
+            vec3 gold = u_gold;
 
             vec3 base = mix(color1, color2, noise * 0.5 + 0.5);
-            float goldGlow = smoothstep(0.3, 1.0, noise2 * noise);
-            vec3 finalColor = mix(base, gold * 0.15, goldGlow);
+            float goldGlow = smoothstep(0.4, 1.0, noise2 * noise);
+            vec3 finalColor = mix(base, gold * 0.08, goldGlow);
 
-            float stars = pow(max(0.0, snoise(p * 20.0)), 20.0);
-            finalColor += stars * gold * 0.4;
+            // Stars tuned per-page via --bg-stars-density
+            float stars = pow(max(0.0, snoise(p * u_density)), 25.0);
+            finalColor += stars * gold * 0.5;
 
             gl_FragColor = vec4(finalColor, 1.0);
         }
@@ -103,19 +129,48 @@
 
     const timeLoc = gl.getUniformLocation(program, 'u_time');
     const resLoc = gl.getUniformLocation(program, 'u_resolution');
+    const densityLoc = gl.getUniformLocation(program, 'u_density');
+    const goldLoc = gl.getUniformLocation(program, 'u_gold');
 
     let rafId = null;
+    let cachedW = 0;
+    let cachedH = 0;
+    let cachedDensity = 0;
+    let cachedGold = [0, 0, 0];
+
+    function resize() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        if (w === cachedW && h === cachedH) return;
+        cachedW = w;
+        cachedH = h;
+        canvas.width = w;
+        canvas.height = h;
+    }
 
     function render(time) {
         time *= 0.001;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        resize();
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.uniform1f(timeLoc, time);
         gl.uniform2f(resLoc, canvas.width, canvas.height);
+        // Re-read CSS props each frame so live tuning works.
+        const liveDensity = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bg-stars-density')) || cssDensity;
+        if (liveDensity !== cachedDensity) {
+            cachedDensity = liveDensity;
+            gl.uniform1f(densityLoc, liveDensity);
+        }
+        gl.uniform3f(goldLoc, goldRgb[0], goldRgb[1], goldRgb[2]);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         rafId = requestAnimationFrame(render);
     }
+
+    // Push initial values
+    gl.uniform1f(densityLoc, cssDensity);
+    gl.uniform3f(goldLoc, goldRgb[0], goldRgb[1], goldRgb[2]);
+
+    // Apply opacity from CSS
+    canvas.style.opacity = String(cssOpacity);
 
     // Pause when tab is hidden to save GPU/battery
     document.addEventListener('visibilitychange', () => {
@@ -131,10 +186,7 @@
         }
     });
 
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
+    window.addEventListener('resize', resize);
 
     requestAnimationFrame(render);
 })();

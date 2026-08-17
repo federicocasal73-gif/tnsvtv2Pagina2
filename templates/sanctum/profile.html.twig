@@ -7,21 +7,6 @@
 
 {% block stylesheets %}
 <style>
-    .profile-card {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .profile-card:hover {
-        border-color: rgba(242, 202, 80, 0.2);
-        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
-    }
     .profile-sigil {
         position: relative;
         width: 100px;
@@ -159,7 +144,7 @@
 
 <div class="max-w-2xl mx-auto pb-24">
     {# ─── Profile Hero with 3D Sigil ─── #}
-    <div class="profile-card">
+    <div class="glass-card-elev">
         <div class="text-center mb-4">
             <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Identidad Celestial</p>
         </div>
@@ -207,7 +192,7 @@
     </div>
 
     {# ─── Edit Profile ─── #}
-    <div class="profile-card">
+    <div class="glass-card-elev">
         <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
             <span class="material-symbols-elev">edit</span>
             Editar Perfil
@@ -264,7 +249,7 @@
     </div>
 
     {# ─── Security Settings ─── #}
-    <div class="profile-card">
+    <div class="glass-card-elev">
         <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
             <span class="material-symbols-elev">shield</span>
             Protocolos de Seguridad

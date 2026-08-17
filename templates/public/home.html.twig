@@ -1,25 +1,77 @@
 {% extends 'public/shell.html.twig' %}
 
-{% block title %}T.N.S.V.T — Reino del Cristo Íntegro{% endblock %}
+{% block title %}T.N.S.V.T — Gateway · Reino del Cristo Íntegro{% endblock %}
+
+{% block body_class %}gateway-body gateway-emblem{% endblock %}
+
+{# The Gateway renders its own top app bar (that doubles as the login entry). #}
+{% block public_nav %}{% endblock %}
+
+{% set is_auth = app.user is not null %}
+
+{# FASE 0 — Bring the shader stars to full opacity for the gateway. #}
+{% block background %}
+    <style>
+        :root { --bg-stars-opacity: 1; --bg-stars-density: 45; }
+    </style>
+{% endblock %}
+
+{# FASE 0 — Emblema 3D del gateway (3D icosaedro dorado, hero section). #}
+{% block gateway_emblem %}{% endblock %}
 
 {% block content %}
-    {# ─── Animated background ─── #}
-    <div class="bg-orbs">
-        <div class="orb orb-1"></div>
-        <div class="orb orb-2"></div>
-        <div class="orb orb-3"></div>
-    </div>
-    <div class="particles" id="particles"></div>
+    <a class="gw-skip-link" href="#gw-hero">Skip to content</a>
+    {# ─── WebGL shader background handled in JS ─── #}
 
-    <div class="home-container">
-        <div class="hero">
-            <div class="cross">✝</div>
-            <h1 class="logo">T.N.S.V.T</h1>
-            <p class="tagline">Reino del Cristo Íntegro</p>
-            <p class="verse">"Por mí, los reyes reinan y los príncipes gobiernan con justicia." — Proverbios 8:15</p>
+    {# ─── Top App Bar (Stitch Gateway port) ─── #}
+    <header class="gw-topbar">
+        <div class="gw-brand">
+            <span class="gw-menu material-symbols-elev" aria-hidden="true">menu</span>
+            <span class="gw-brand-sigil material-symbols-elev" aria-hidden="true">token</span>
+            <span class="gw-brand-name">T.N.S.V.T</span>
+            <span class="gw-dot" aria-hidden="true"></span>
         </div>
+        <div class="gw-topbar-actions">
+            {% if is_auth %}
+                <a class="gw-bell" href="/login" aria-label="Notificaciones">
+                    <span class="material-symbols-elev" aria-hidden="true">notifications</span>
+                    <span class="gw-bell-dot" aria-hidden="true"></span>
+                </a>
+                <a class="gw-avatar" href="/login" aria-label="Perfil">
+                    <span class="gw-avatar-initial">T</span>
+                </a>
+            {% else %}
+                <a class="gw-entrar" href="/login">
+                    <span class="material-symbols-elev" aria-hidden="true">login</span> Entrar
+                </a>
+            {% endif %}
+        </div>
+    </header>
 
-        {# ─── Live platform stats ─── #}
+    <main class="gw-main">
+        {# ─── Hero ─── #}
+        <section class="gw-hero" id="gw-hero">
+            <div class="gw-emblem" id="gw-emblem-3d" aria-hidden="true">
+                <div class="gw-ring gw-ring-a"></div>
+                <div class="gw-ring gw-ring-b"></div>
+                <div class="gw-orbit"></div>
+                <div class="gw-core"></div>
+            </div>
+            <p class="gw-kicker">Reino del Cristo Íntegro</p>
+            <h1 class="gw-title">Neuro-Spiritual Value Theory</h1>
+            <p class="gw-sub">Domina tu mente. Regula tu cuerpo. Ejecuta con fe.</p>
+        </section>
+
+        {# ─── Main CTA ─── #}
+        <section class="gw-cta-section">
+            <a class="gw-cta" href="{{ is_auth ? '/sanctum' : '/login' }}">
+                <span class="gw-cta-sheen" aria-hidden="true"></span>
+                <span class="gw-cta-main">† El Cristo Íntegro</span>
+                <span class="gw-cta-hint">⬢ {{ is_auth ? 'TOCA PARA EJECUTAR' : 'TOCA PARA ENTRAR' }} ⬢</span>
+            </a>
+        </section>
+
+        {# ─── Live platform stats (real data) ─── #}
         <div class="stats-strip">
             <div class="stat-item">
                 <div class="stat-value" id="stat-traders">—</div>
@@ -39,60 +91,123 @@
             </div>
         </div>
 
-        {# ─── Features (all gated — link to /login for unauth users) ─── #}
-        <div class="features">
-            <a href="/login" class="feature">
-                <div class="feature-icon material-symbols-elev">dashboard</div>
-                <div class="feature-title">Sanctum</div>
-                <div class="feature-desc">Command center con KPIs, tasks, audit y settings</div>
+        {# ─── Módulos del Templo (bento grid, todas gateadas) ─── #}
+        <section class="gw-modules">
+            <div class="gw-modules-head">
+                <h2 class="gw-modules-title">Módulos del Templo</h2>
+                <span class="gw-modules-phase">Fase 1.0</span>
+            </div>
+
+            <a class="gw-bento gw-fade" style="animation-delay: .1s" href="{{ is_auth ? '/sanctum' : '/login' }}">
+                <span class="gw-bento-icon"><span class="material-symbols-elev" aria-hidden="true">dashboard</span></span>
+                <span class="gw-bento-body">
+                    <span class="gw-bento-title">Sanctum</span>
+                    <span class="gw-bento-desc">Command center con KPIs, tareas y auditoría</span>
+                </span>
+                <span class="gw-bento-chevron material-symbols-elev" aria-hidden="true">chevron_right</span>
             </a>
-            <a href="/login" class="feature">
-                <div class="feature-icon material-symbols-elev">edit_note</div>
-                <div class="feature-title">Trading Journal</div>
-                <div class="feature-desc">Bitácora de operaciones, métricas y análisis</div>
+
+            <a class="gw-bento gw-fade" style="animation-delay: .2s" href="{{ is_auth ? '/journal' : '/login' }}">
+                <span class="gw-bento-icon"><span class="material-symbols-elev" aria-hidden="true">edit_note</span></span>
+                <span class="gw-bento-body">
+                    <span class="gw-bento-title">Trading Journal</span>
+                    <span class="gw-bento-desc">Bitácora de operaciones, métricas y análisis</span>
+                </span>
+                <span class="gw-bento-chevron material-symbols-elev" aria-hidden="true">chevron_right</span>
             </a>
-            <a href="/login" class="feature">
-                <div class="feature-icon material-symbols-elev">calendar_month</div>
-                <div class="feature-title">Calendario</div>
-                <div class="feature-desc">Eventos macro con filtros de país e impacto</div>
+
+            <div class="gw-grid-2">
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .3s" href="{{ is_auth ? '/calendar' : '/login' }}">
+                    <span class="material-symbols-elev" aria-hidden="true">calendar_month</span>
+                    <span>
+                        <span class="gw-tile-title">Calendario Macro</span>
+                        <span class="gw-tile-sub">Los hilos del mundo</span>
+                    </span>
+                </a>
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .4s" href="{{ is_auth ? '/diario' : '/login' }}">
+                    <span class="material-symbols-elev" aria-hidden="true">menu_book</span>
+                    <span>
+                        <span class="gw-tile-title">Diario</span>
+                        <span class="gw-tile-sub">Bitácora privada cifrada</span>
+                    </span>
+                </a>
+            </div>
+
+            <a class="gw-bento gw-bento-accent gw-fade" style="animation-delay: .5s" href="{{ is_auth ? '/feed' : '/login' }}">
+                <span class="gw-bento-icon"><span class="material-symbols-elev" aria-hidden="true">forum</span></span>
+                <span class="gw-bento-body">
+                    <span class="gw-bento-title">Salón del Cónclave</span>
+                    <span class="gw-bento-desc">Señales, resultados y decisiones ejecutadas</span>
+                </span>
+                <span class="material-symbols-elev gw-bento-play" aria-hidden="true">play_circle</span>
             </a>
-            <a href="/login" class="feature">
-                <div class="feature-icon material-symbols-elev">chat</div>
-                <div class="feature-title">Mensajes</div>
-                <div class="feature-desc">Conversaciones, grupos y adjuntos</div>
-            </a>
-            <a href="/login" class="feature">
-                <div class="feature-icon material-symbols-elev">forum</div>
-                <div class="feature-title">Feed</div>
-                <div class="feature-desc">Salón del Cónclave con señales y resultados</div>
-            </a>
-            <a href="/login" class="feature">
-                <div class="feature-icon material-symbols-elev">menu_book</div>
-                <div class="feature-title">Diario</div>
-                <div class="feature-desc">Bitácora privada cifrada extremo a extremo</div>
-            </a>
-        </div>
-    </div>
+
+            <div class="gw-grid-2">
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .6s" href="{{ is_auth ? '/chat' : '/login' }}">
+                    <span class="material-symbols-elev" aria-hidden="true">chat</span>
+                    <span>
+                        <span class="gw-tile-title">Mensajes</span>
+                        <span class="gw-tile-sub">Conversaciones y grupos</span>
+                    </span>
+                </a>
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .7s" href="{{ is_auth ? '/frequencies' : '/login' }}">
+                    <span class="material-symbols-elev" aria-hidden="true">music_note</span>
+                    <span>
+                        <span class="gw-tile-title">Frecuencias</span>
+                        <span class="gw-tile-sub">Sanctum sonoro 432hz</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+
+        {# ─── Divine Wisdom Quote ─── #}
+        <section class="gw-quote">
+            <span class="material-symbols-elev gw-quote-ghost" aria-hidden="true">format_quote</span>
+            <p>“Lo que no se registra, no se domina. El ejecutor honesto cuenta no solo lo que hizo, sino cómo se sintió al hacerlo.”</p>
+        </section>
+    </main>
+
+    {# ─── Bottom Navigation Bar ─── #}
+    <nav class="gw-bottomnav" aria-label="Módulos">
+        <a class="gw-navitem active" href="/">
+            <span class="gw-navpill"><span class="material-symbols-elev" aria-hidden="true">home_max</span></span>
+            <span>Gateway</span>
+        </a>
+        <a class="gw-navitem" href="{{ is_auth ? '/feed' : '/login' }}">
+            <span class="gw-navpill"><span class="material-symbols-elev" aria-hidden="true">group</span></span>
+            <span>Cónclave</span>
+        </a>
+        <a class="gw-navitem" href="{{ is_auth ? '/journal' : '/login' }}">
+            <span class="gw-navpill"><span class="material-symbols-elev" aria-hidden="true">auto_stories</span></span>
+            <span>Journal</span>
+        </a>
+        <a class="gw-navitem" href="{{ is_auth ? '/macro' : '/login' }}">
+            <span class="gw-navpill"><span class="material-symbols-elev" aria-hidden="true">public</span></span>
+            <span>Macro</span>
+        </a>
+    </nav>
+{% endblock %}
+
+{% block floats %}
+    {# ─── Floating minimalist audio chip (Frecuencias module) ─── #}
+    <a class="gw-audio" href="{{ is_auth ? '/frequencies' : '/login' }}" aria-label="Santuario de Frecuencias">
+        <span class="material-symbols-elev gw-audio-icon" aria-hidden="true">music_note</span>
+        <span class="gw-audio-text">
+            <span class="gw-audio-title">Frecuencia 432hz</span>
+            <span class="gw-audio-sub">TNSVT Sanctum</span>
+        </span>
+        <span class="material-symbols-elev" aria-hidden="true">play_arrow</span>
+    </a>
+{% endblock %}
+
+{% block javascripts %}
+    {# Three.js for sacred geometry 3D hero #}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" defer></script>
+    <script src="{{ asset('js/modules/gateway-3d.js') }}" defer></script>
 
     <script>
-    // Generate floating particles
     (function() {
-        const container = document.getElementById('particles');
-        if (!container) return;
-        for (let i = 0; i < 25; i++) {
-            const p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = Math.random() * 100 + '%';
-            p.style.animationDelay = -(Math.random() * 15) + 's';
-            p.style.animationDuration = (10 + Math.random() * 10) + 's';
-            p.style.width = p.style.height = (2 + Math.random() * 3) + 'px';
-            container.appendChild(p);
-        }
-    })();
-
-    // Load live platform stats (best-effort, anonymous-friendly)
-    (function() {
-        apiFetch('/api/journal/stats').then(r => {
+        apiFetch('/api/journal/stats', { redirectOn401: false, silent: true }).then(r => {
             if (!r || !r.data) return;
             if (r.data.total !== undefined) {
                 const el = document.getElementById('stat-trades');
@@ -111,11 +226,48 @@
             }
         }).catch(() => {});
 
-        apiFetch('/api/users/all').then(r => {
+        apiFetch('/api/users/all', { redirectOn401: false, silent: true }).then(r => {
             if (!r || !r.data || !r.data.users) return;
             const el = document.getElementById('stat-traders');
             if (el) el.textContent = r.data.users.length || 0;
         }).catch(() => {});
+
+        // ─── Topbar scroll opacity ───
+        const topbar = document.querySelector('.gw-topbar');
+        if (topbar) {
+            let lastY = 0;
+            window.addEventListener('scroll', function () {
+                const y = window.scrollY || 0;
+                if (y > 40) {
+                    topbar.classList.add('scrolled');
+                } else {
+                    topbar.classList.remove('scrolled');
+                }
+                lastY = y;
+            }, { passive: true });
+        }
+
+        // ─── Bento stagger entrance ───
+        const bentos = document.querySelectorAll('.gw-bento');
+        if (bentos.length && 'IntersectionObserver' in window) {
+            const io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry, i) {
+                    if (entry.isIntersecting) {
+                        const el = entry.target;
+                        el.style.opacity = '0';
+                        el.style.transform = 'translateY(16px)';
+                        el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                        setTimeout(function () {
+                            el.style.opacity = '1';
+                            el.style.transform = 'translateY(0)';
+                            el.setAttribute('data-visible', '');
+                        }, i * 80);
+                        io.unobserve(el);
+                    }
+                });
+            }, { threshold: 0.15 });
+            bentos.forEach(function (b) { io.observe(b); });
+        }
     })();
     </script>
 {% endblock %}

@@ -310,6 +310,9 @@
 
 /* From elev.css — primary (suffix variant) */
 .btn-elev-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     background: linear-gradient(135deg, var(--gold-elev) 0%, var(--gold-bright-elev) 100%);
     color: var(--on-primary-elev);
     border: none;
@@ -317,6 +320,7 @@
     border-radius: 0.5rem;
     font-family: 'Space Grotesk', sans-serif;
     font-weight: 600;
+    font-size: 0.875rem;
     letter-spacing: 0.02em;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -449,56 +453,61 @@
    ═══════════════════════════════════════════════════════════════ */
 
 #sanctum-sidebar {
-    background: linear-gradient(135deg, #050308 0%, #100b1c 50%, #161121 100%);
-    border-right: 1px solid var(--violet-line-elev);
+    background: var(--surface-elev);
+    border-right: 1px solid var(--outline-variant-elev);
     position: relative;
+    overflow: hidden;
 }
 #sanctum-sidebar::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 200px;
-    background: radial-gradient(ellipse at top, rgba(138, 60, 255, 0.15) 0%, transparent 70%);
+    top: 50%;
+    left: -40px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(138, 60, 255, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
     pointer-events: none;
+    transform: translateY(-50%);
 }
 
 .sanctum-link {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.75rem 1.5rem;
-    color: var(--on-surface-dim-elev);
+    padding: 0.625rem 1.5rem;
+    margin: 0.125rem 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--outline-elev);
     font-size: 0.875rem;
     font-weight: 500;
-    border-left: 2px solid transparent;
-    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
     text-decoration: none;
     position: relative;
 }
 .sanctum-link:hover {
-    background: linear-gradient(135deg, rgba(138, 60, 255, 0.1) 0%, transparent 100%);
     color: var(--on-surface-elev);
-    border-left-color: rgba(138, 60, 255, 0.4);
-    transform: translateX(2px);
+    background: rgba(255, 255, 255, 0.03);
 }
 .sanctum-link.active {
-    background: linear-gradient(90deg, rgba(212, 175, 55, 0.15) 0%, rgba(212, 175, 55, 0.02) 100%);
     color: var(--gold-elev);
+    background: rgba(242, 202, 80, 0.08);
     border-left-color: var(--gold-elev);
-    box-shadow: inset 0 0 30px rgba(212, 175, 55, 0.05);
+    font-weight: 600;
+}
+.sanctum-link.active .material-symbols-elev {
+    color: var(--gold-elev);
 }
 .sanctum-link.active::after {
     content: '';
     position: absolute;
     right: 1rem;
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--gold-elev);
-    box-shadow: var(--glow-gold-elev);
-    animation: v2-pulse-gold 2s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--gold-elev);
 }
 
 #bell-badge {
