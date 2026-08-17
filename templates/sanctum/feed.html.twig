@@ -3,214 +3,754 @@
 {% block title %}Salón del Cónclave · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}Salón del Cónclave{% endblock %}
-{% block topbar_subtitle %}"La palabra escrita queda. La palabra dicha se la lleva el viento."{% endblock %}
+{% block topbar_subtitle %}"La palabra escrita queda · La palabra dicha se la lleva el viento."{% endblock %}
 
 {% block stylesheets %}
 <style>
-    .glass-card-elev.signal { border-left: 3px solid var(--gold-elev, #f2ca50); }
-    .glass-card-elev.projection { border-left: 3px solid #8a3cff; }
-    .glass-card-elev.result-win { border-left: 3px solid #4ade80; }
-    .glass-card-elev.result-loss { border-left: 3px solid #f87171; }
-    .glass-card-elev.question { border-left: 3px solid var(--secondary, #d4bbff); }
+    /* ══════ F5 — Salón del Cónclave (Feed + Chat side panel) ══════ */
+    .feed-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 1.5rem;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding-bottom: 4rem;
+    }
+    .feed-main { min-width: 0; }
+    .feed-side { display: flex; flex-direction: column; gap: 1rem; }
 
-    .feed-avatar {
-        width: 40px; height: 40px; border-radius: 50%;
-        border: 2px solid rgba(242, 202, 80, 0.3);
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 1rem; color: var(--on-primary-elev);
-        background: linear-gradient(135deg, var(--gold-elev, #f2ca50), var(--gold-bright-elev, #ffe088));
-    }
-    .feed-author { font-weight: 600; font-size: 0.9375rem; color: var(--starlight-white, #FDFCF8); }
-    .feed-time { font-size: 0.7rem; color: var(--outline-elev, #99907c); }
-    .feed-cat {
-        display: inline-block; padding: 2px 10px; font-size: 0.65rem; font-weight: 700;
-        border-radius: 1rem; text-transform: uppercase; letter-spacing: 0.05em;
-    }
-    .cat-signal { background: rgba(242, 202, 80, 0.15); color: var(--gold-elev, #f2ca50); }
-    .cat-projection { background: rgba(138, 60, 255, 0.15); color: #8a3cff; }
-    .cat-result { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
-    .cat-question { background: rgba(212, 187, 255, 0.15); color: var(--secondary, #d4bbff); }
+    .feed-header { text-align: center; margin-bottom: 1.5rem; }
 
-    .signal-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
-        margin-top: 1rem;
+    .feed-tabs {
+        display: flex;
+        gap: 0;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 9999px;
+        padding: 0.3rem;
+        margin-bottom: 1rem;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
-    .signal-field {
-        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 0.5rem; padding: 0.5rem 0.75rem;
+    .feed-tabs::-webkit-scrollbar { display: none; }
+    .feed-tab {
+        flex: 0 0 auto;
+        padding: 0.5rem 1rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+        background: transparent;
+        border: none;
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
     }
-    .signal-field-label { font-size: 0.6rem; color: var(--outline-elev, #99907c); text-transform: uppercase; letter-spacing: 0.05em; }
-    .signal-field-value { font-size: 1rem; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
-    .signal-field-value.gold { color: var(--gold-elev, #f2ca50); }
-    .signal-field-value.green { color: #4ade80; }
-    .signal-field-value.red { color: #f87171; }
+    .feed-tab:hover { color: var(--on-surface-elev); }
+    .feed-tab.active {
+        background: rgba(242, 202, 80, 0.18);
+        color: var(--gold-elev);
+    }
 
-    .feed-actions {
-        display: flex; gap: 1rem; margin-top: 1rem; padding-top: 1rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .feed-action-btn {
-        display: flex; align-items: center; gap: 0.375rem;
-        padding: 0.375rem 0.75rem; background: transparent; border: none;
-        color: var(--outline-elev, #99907c); cursor: pointer; font-size: 0.8rem;
-        border-radius: 0.375rem; transition: all 0.2s ease;
-    }
-    .feed-action-btn:hover { background: rgba(255, 255, 255, 0.05); color: var(--gold-elev, #f2ca50); }
-    .feed-action-btn.liked { color: #f87171; }
-
-    .composer-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(32px);
-        border: 1px solid rgba(242, 202, 80, 0.15);
-        border-radius: 1rem;
-        padding: 1.5rem;
+    .feed-composer {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
         margin-bottom: 1.5rem;
     }
-
-    .filter-tabs {
-        display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.5rem;
-    }
-
-    .fab-btn {
-        position: fixed; bottom: 6rem; right: 1.5rem;
-        width: 3.5rem; height: 3.5rem; border-radius: 50%;
-        background: var(--gold-elev, #f2ca50); color: var(--void-black, #050308);
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 20px rgba(242, 202, 80, 0.4);
-        cursor: pointer; transition: all 0.3s ease; z-index: 40;
+    .feed-composer-textarea {
+        width: 100%;
+        min-height: 64px;
+        background: transparent;
         border: none;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        resize: vertical;
     }
-    .fab-btn:hover { transform: scale(1.1); box-shadow: 0 6px 30px rgba(242, 202, 80, 0.6); }
-    .fab-btn:active { transform: scale(0.95); }
+    .feed-composer-textarea:focus { outline: none; }
+    .feed-composer-footer {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px dashed var(--glass-border-elev);
+    }
+    .feed-composer-chips {
+        display: flex;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+        flex-grow: 1;
+    }
+    .feed-composer-chip {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 9999px;
+        background: transparent;
+        border: 1px solid var(--glass-border-elev);
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .feed-composer-chip:hover { color: var(--gold-elev); border-color: var(--gold-elev); }
+    .feed-composer-chip.active {
+        background: rgba(242, 202, 80, 0.15);
+        color: var(--gold-elev);
+        border-color: var(--gold-elev);
+    }
+    .feed-composer-submit {
+        padding: 0.55rem 1.2rem;
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
+        color: var(--void-black, #050308);
+        font-family: 'Cinzel', serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.4rem;
+        cursor: pointer;
+    }
+    .feed-composer-submit:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .post-modal {
-        position: fixed; inset: 0; z-index: 100;
-        display: none; align-items: center; justify-content: center;
+    .feed-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    .feed-post {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-left: 3px solid transparent;
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.4rem;
     }
-    .post-modal.active { display: flex; }
-    .post-modal-overlay {
-        position: absolute; inset: 0;
-        background: rgba(5, 3, 8, 0.9); backdrop-filter: blur(8px);
+    .feed-post.cat-signal    { border-left-color: #f2ca50; }
+    .feed-post.cat-projection { border-left-color: #8a3cff; }
+    .feed-post.cat-result-win  { border-left-color: #4ade80; }
+    .feed-post.cat-result-loss { border-left-color: #f87171; }
+    .feed-post.cat-question  { border-left-color: #d4bbff; }
+
+    .feed-post-head {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        margin-bottom: 0.5rem;
     }
-    .post-modal-content {
-        position: relative; width: 100%; max-width: 500px;
-        background: var(--surface-container, #221d2e);
+    .feed-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 2px solid rgba(242, 202, 80, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--void-black, #050308);
+        background: linear-gradient(135deg, var(--gold-elev, #f2ca50), var(--gold-bright-elev, #ffe088));
+        flex-shrink: 0;
+    }
+    .feed-author-block { flex-grow: 1; min-width: 0; }
+    .feed-author-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--on-surface-elev);
+    }
+    .feed-author-meta {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .feed-cat-pill {
+        display: inline-block;
+        padding: 0.15rem 0.65rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .feed-cat-pill.cat-signal     { background: rgba(242, 202, 80, 0.18); color: #f2ca50; }
+    .feed-cat-pill.cat-projection  { background: rgba(138, 60, 255, 0.18); color: #c4a0ff; }
+    .feed-cat-pill.cat-result-win  { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
+    .feed-cat-pill.cat-result-loss { background: rgba(248, 113, 113, 0.18); color: #f87171; }
+    .feed-cat-pill.cat-question    { background: rgba(212, 187, 255, 0.18); color: #d4bbff; }
+    .feed-cat-pill.cat-general     { background: rgba(255, 255, 255, 0.08); color: var(--outline-elev); }
+
+    .feed-post-body {
+        color: var(--on-surface-elev);
+        font-size: 0.95rem;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        margin: 0.5rem 0;
+    }
+    .feed-post-signal {
+        background: rgba(242, 202, 80, 0.06);
         border: 1px solid rgba(242, 202, 80, 0.2);
-        border-radius: 1.5rem; padding: 2rem;
-        z-index: 101;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem 0.75rem;
+    }
+    .feed-post-signal-field-label {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--outline-elev);
+    }
+    .feed-post-signal-field-value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+    .feed-post-signal-field-value.gold { color: var(--gold-elev); }
+    .feed-post-signal-field-value.green { color: #4ade80; }
+    .feed-post-signal-field-value.red { color: #f87171; }
+
+    .feed-post-photo {
+        width: 100%;
+        max-height: 360px;
+        object-fit: cover;
+        border-radius: 0.5rem;
+        margin: 0.5rem 0;
+        border: 1px solid var(--glass-border-elev);
+    }
+    .feed-post-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        margin-top: 0.5rem;
+        border-top: 1px dashed var(--glass-border-elev);
+        flex-wrap: wrap;
+    }
+    .feed-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.4rem 0.7rem;
+        background: transparent;
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 9999px;
+        color: var(--outline-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .feed-action:hover { color: var(--gold-elev); border-color: var(--gold-elev); }
+    .feed-action.liked { color: #f87171; border-color: rgba(248, 113, 113, 0.5); }
+    .feed-action-comment.active { color: var(--gold-elev); border-color: var(--gold-elev); }
+
+    .feed-comments {
+        margin-top: 0.6rem;
+        padding-top: 0.6rem;
+        border-top: 1px dashed var(--glass-border-elev);
+    }
+    .feed-comments[data-collapsed="true"] { display: none; }
+    .feed-comment {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .feed-comment-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: var(--void-black);
+        flex-shrink: 0;
+    }
+    .feed-comment-body {
+        flex-grow: 1;
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+    .feed-comment-author {
+        color: var(--gold-elev);
+        font-weight: 600;
+        margin-right: 0.4rem;
+    }
+    .feed-comment-text { color: var(--on-surface-elev); }
+    .feed-comment-time {
+        color: var(--outline-elev);
+        font-size: 0.65rem;
+        margin-left: 0.5rem;
+    }
+    .feed-comment-form {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.6rem;
+    }
+    .feed-comment-input {
+        flex-grow: 1;
+        padding: 0.4rem 0.6rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.4rem;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.85rem;
+    }
+    .feed-comment-input:focus { outline: none; border-color: var(--gold-elev); }
+    .feed-comment-submit {
+        padding: 0.4rem 0.85rem;
+        background: rgba(242, 202, 80, 0.18);
+        color: var(--gold-elev);
+        border: 1px solid rgba(242, 202, 80, 0.5);
+        border-radius: 0.4rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .feed-side-card {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+    .feed-side-card-header {
+        font-family: 'Cinzel', serif;
+        font-size: 0.9rem;
+        color: var(--gold-elev);
+        margin: 0 0 0.6rem 0;
+    }
+    .feed-side-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .feed-side-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        padding: 0.4rem 0.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 0.4rem;
+    }
+    .feed-side-name { font-weight: 600; font-size: 0.85rem; color: var(--on-surface-elev); }
+    .feed-side-meta { font-size: 0.7rem; color: var(--outline-elev); }
+
+    .feed-loading { text-align: center; padding: 2rem 1rem; color: var(--outline-elev); font-style: italic; font-size: 0.85rem; }
+    .feed-empty {
+        text-align: center;
+        padding: 4rem 1rem;
+        color: var(--outline-elev);
+    }
+    .feed-empty-icon {
+        font-size: 3.5rem;
+        opacity: 0.4;
+        color: var(--gold-elev);
+        margin-bottom: 1rem;
+    }
+
+    @media (max-width: 1024px) {
+        .feed-layout { grid-template-columns: 1fr; }
+        .feed-side { display: none; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto"
-     data-controller="feed">
-    <div class="filter-tabs">
-        <button class="filter-pill active"
-                data-filter="all"
-                data-action="feed#setFilter">Todos</button>
-        <button class="filter-pill"
-                data-filter="signal"
-                data-action="feed#setFilter">Señales</button>
-        <button class="filter-pill"
-                data-filter="result"
-                data-action="feed#setFilter">Resultados</button>
-        <button class="filter-pill"
-                data-filter="projection"
-                data-action="feed#setFilter">Proyecciones</button>
-        <button class="filter-pill"
-                data-filter="question"
-                data-action="feed#setFilter">Preguntas</button>
+<div class="feed-layout">
+
+<main class="feed-main">
+
+    <header class="feed-header">
+        <h1 class="text-cinzel-display" style="font-size:1.7rem;margin:0;">El Salón del Cónclave</h1>
+        <p class="text-xs tracking-widest text-[var(--outline-elev)] uppercase" style="margin-top:0.4rem;">
+            "La palabra escrita queda · La palabra dicha se la lleva el viento"
+        </p>
+    </header>
+
+    <nav class="feed-tabs" id="feed-tabs" role="tablist" aria-label="Filtros de feed">
+        <button class="feed-tab active" data-cat="all"        role="tab" aria-selected="true">Todos</button>
+        <button class="feed-tab"        data-cat="general"     role="tab" aria-selected="false">General</button>
+        <button class="feed-tab"        data-cat="señales"     role="tab" aria-selected="false">Señales</button>
+        <button class="feed-tab"        data-cat="result-win"  role="tab" aria-selected="false">Resultados +</button>
+        <button class="feed-tab"        data-cat="result-loss" role="tab" aria-selected="false">Resultados −</button>
+        <button class="feed-tab"        data-cat="projection"  role="tab" aria-selected="false">Proyección</button>
+        <button class="feed-tab"        data-cat="question"   role="tab" aria-selected="false">Preguntas</button>
+    </nav>
+
+    <article class="feed-composer" aria-label="Composer">
+        <textarea id="composer-text" class="feed-composer-textarea"
+                  placeholder="¿Qué querés compartir con el Cónclave?" maxlength="2000"></textarea>
+        <div class="feed-composer-footer">
+            <div class="feed-composer-chips" id="composer-chips">
+                <button class="feed-composer-chip" data-cat="general"     type="button">General</button>
+                <button class="feed-composer-chip" data-cat="señales"     type="button">Señales</button>
+                <button class="feed-composer-chip" data-cat="result-win"  type="button">Resultado +</button>
+                <button class="feed-composer-chip" data-cat="result-loss" type="button">Resultado −</button>
+                <button class="feed-composer-chip" data-cat="projection"  type="button">Proyección</button>
+                <button class="feed-composer-chip" data-cat="question"    type="button">Pregunta</button>
+            </div>
+            <button id="composer-submit" class="feed-composer-submit" disabled>Publicar</button>
+        </div>
+    </article>
+
+    <div class="feed-list" id="feed-list">
+        <div class="feed-loading" id="feed-loading">Cargando publicaciones...</div>
     </div>
 
-    {# Composer #}
-    <div class="composer-card">
-        <div class="flex items-center gap-2 mb-3">
-            <select class="filter-pill"
-                    style="padding:4px 12px;"
-                    data-feed-target="category">
-                <option value="general" selected>General</option>
-                <option value="signal">Señal</option>
-                <option value="result">Resultado</option>
-                <option value="analysis">Análisis</option>
-            </select>
-        </div>
-        <textarea rows="3" placeholder="¿Qué querés compartir con el Sanctum?"
-                  class="w-full px-4 py-3 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] text-[var(--on-surface-elev)] resize-none focus:outline-none focus:border-[var(--gold-elev)]"
-                  data-feed-target="text"></textarea>
-        <div class="flex items-center justify-end gap-2 mt-3">
-            <button class="btn-primary"
-                    data-feed-target="publishBtn"
-                    data-action="feed#publish">
-                <span class="material-symbols-elev align-middle text-sm">send</span>
-                Publicar
-            </button>
-        </div>
-    </div>
+</main>
 
-    {# Feed list #}
-    <div class="space-y-4"
-         data-feed-target="list">
-        <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando feed...</p>
+<aside class="feed-side">
+    <div class="feed-side-card">
+        <h3 class="feed-side-card-header">Mensajes</h3>
+        <div id="feed-side-conversations" class="feed-side-list">
+            <div class="feed-loading">Cargando...</div>
+        </div>
+        <p style="text-align:center;margin-top:0.5rem;">
+            <a href="/chat" style="color:var(--gold-elev);font-size:0.78rem;text-decoration:none;">Ver todos los mensajes →</a>
+        </p>
     </div>
+    <div class="feed-side-card">
+        <h3 class="feed-side-card-header">Top publicadores</h3>
+        <div id="feed-side-top" class="feed-side-list">
+            <div class="feed-loading">Cargando...</div>
+        </div>
+    </div>
+</aside>
+
 </div>
 
-{# FAB #}
-<button class="fab-btn"
-        data-feed-target="fab"
-        title="Nueva publicación"
-        data-action="feed#openFab">
-    <span class="material-symbols-outlined" style="font-size: 1.75rem; font-variation-settings: 'FILL' 1;">add</span>
-</button>
+<script>
+(function() {
+    'use strict';
 
-{# Post Modal #}
-<div class="post-modal"
-     data-feed-target="modal">
-    <div class="post-modal-overlay"
-         data-action="click->feed#closeFab"></div>
-    <div class="post-modal-content">
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-[var(--on-surface-elev)]">Crear Señal</h3>
-            <button class="text-[var(--outline-elev)] hover:text-[var(--on-surface-elev)]"
-                    data-action="feed#closeFab">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-        <div class="space-y-4">
-            <div>
-                <label class="text-xs uppercase text-[var(--gold-elev)] font-bold">Activo</label>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    <button class="px-3 py-1 rounded-lg bg-[var(--gold-elev)] text-[var(--void-black)] font-bold text-xs">XAUUSD</button>
-                    <button class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">NAS100</button>
-                    <button class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">EURUSD</button>
-                    <button class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-xs">BTCUSDT</button>
+    // ══════ F5 — Salón del Cónclave ══════
+    const state = { category: 'all', activeCat: 'general' };
+    let _likedIds = new Set();
+    const $list = document.getElementById('feed-list');
+    const $loading = document.getElementById('feed-loading');
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function relTime(iso) {
+        try {
+            const d = new Date(iso);
+            const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+            if (diff < 60)   return 'hace ' + diff + 's';
+            if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + 'm';
+            if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + 'h';
+            return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+        } catch (e) { return ''; }
+    }
+    function catLabel(cat) {
+        return ({
+            'general': 'General', 'señales': 'Señal', 'result-win': 'Resultado +',
+            'result-loss': 'Resultado −', 'projection': 'Proyección', 'question': 'Pregunta'
+        })[cat] || cat;
+    }
+    function catClass(cat) {
+        return ({
+            'general': 'cat-general', 'señales': 'cat-signal', 'result-win': 'cat-result-win',
+            'result-loss': 'cat-result-loss', 'projection': 'cat-projection', 'question': 'cat-question'
+        })[cat] || 'cat-general';
+    }
+    function initials(name) {
+        return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    async function loadFeed() {
+        if (!$list) return;
+        $list.innerHTML = '<div class="feed-loading">Cargando publicaciones...</div>';
+        try {
+            const r = await apiFetch(`/api/feed?category=${encodeURIComponent(state.category)}`, { silent: true });
+            if (!r.ok || !r.data || !Array.isArray(r.data)) {
+                $list.innerHTML = '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">error</span><p>Sin datos disponibles.</p></div>';
+                return;
+            }
+            const me = window.TNSVT_USER ? window.TNSVT_USER.code : '';
+            renderFeed(r.data, me);
+        } catch (e) {
+            $list.innerHTML = '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">cloud_off</span><p>Sin conexión.</p></div>';
+        }
+    }
+
+    function renderFeed(posts, meCode) {
+        if (posts.length === 0) {
+            $list.innerHTML = `
+                <div class="feed-empty">
+                    <span class="material-symbols-elev feed-empty-icon">forum</span>
+                    <p style="font-size:1rem;color:var(--on-surface-elev);">No hay publicaciones todavía.</p>
+                    <p>Sé el primero en escribir.</p>
                 </div>
-            </div>
-            <div>
-                <label class="text-xs uppercase text-[var(--gold-elev)] font-bold">Dirección</label>
-                <div class="grid grid-cols-2 gap-3 mt-2">
-                    <button class="p-3 rounded-lg bg-green-500/10 border-2 border-green-500 text-green-400 font-bold text-center">📈 BUY</button>
-                    <button class="p-3 rounded-lg bg-white/5 border-2 border-transparent text-red-400 font-bold text-center opacity-50">📉 SELL</button>
+            `;
+            return;
+        }
+
+        $list.innerHTML = posts.map(p => {
+            const cat = p.cat || 'general';
+            const cls = catClass(cat);
+            const sig = p.signal;
+            const sigHtml = sig && typeof sig === 'object' ? `
+                <div class="feed-post-signal">
+                    ${Object.entries(sig).slice(0, 4).map(([k, v]) => `
+                        <div>
+                            <div class="feed-post-signal-field-label">${esc(k.replace(/_/g, ' '))}</div>
+                            <div class="feed-post-signal-field-value gold">${esc(String(v))}</div>
+                        </div>
+                    `).join('')}
                 </div>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="text-xs uppercase text-[var(--gold-elev)] font-bold">Entry</label>
-                    <input type="text" placeholder="0.0000" class="w-full mt-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
+            ` : '';
+            const photoHtml = p.photo ? `<img class="feed-post-photo" src="${esc(p.photo)}" alt="captura" loading="lazy" />` : '';
+            const comments = Array.isArray(p.comments) ? p.comments : [];
+            const myPost = meCode && p.author_code === meCode;
+            const liked = _likedIds.has(p.id);
+
+            return `
+                <article class="feed-post cat-${esc(cat)}" data-id="${p.id}">
+                    <header class="feed-post-head">
+                        <div class="feed-avatar">${esc(initials(p.author_name))}</div>
+                        <div class="feed-author-block">
+                            <div class="feed-author-name">${esc(p.author_name || 'Anónimo')}</div>
+                            <div class="feed-author-meta">
+                                <span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span>
+                                <span>· ${esc(relTime(p.created_at))}</span>
+                            </div>
+                        </div>
+                        ${myPost ? `
+                            <button type="button" class="feed-action feed-post-delete" data-id="${p.id}" aria-label="Eliminar publicación">
+                                <span class="material-symbols-elev" style="font-size:1rem;">delete</span>
+                            </button>
+                        ` : ''}
+                    </header>
+                    <div class="feed-post-body">${esc(p.text || '')}</div>
+                    ${sigHtml}
+                    ${photoHtml}
+                    <div class="feed-post-actions">
+                        <button type="button" class="feed-action feed-like-btn ${liked ? 'liked' : ''}" data-id="${p.id}">
+                            <span class="material-symbols-elev" style="font-size:1.05rem;">favorite</span>
+                            <span data-likes-count>${p.likes || 0}</span>
+                        </button>
+                        <button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}">
+                            <span class="material-symbols-elev" style="font-size:1.05rem;">chat_bubble</span>
+                            <span data-comments-count>${comments.length}</span>
+                        </button>
+                    </div>
+                    <div class="feed-comments" data-id="${p.id}" data-collapsed="true">
+                        ${comments.map(c => `
+                            <div class="feed-comment">
+                                <div class="feed-comment-avatar">${esc(initials(c.author))}</div>
+                                <div class="feed-comment-body">
+                                    <span class="feed-comment-author">${esc(c.author || '')}</span>
+                                    <span class="feed-comment-text">${esc(c.text || '')}</span>
+                                    <span class="feed-comment-time">${esc(relTime(c.date))}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                        <form class="feed-comment-form" data-id="${p.id}">
+                            <input type="text" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" />
+                            <button type="submit" class="feed-comment-submit">Comentar</button>
+                        </form>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        // Wire actions
+        $list.querySelectorAll('.feed-like-btn').forEach(b => {
+            b.addEventListener('click', () => likePost(parseInt(b.dataset.id, 10), b));
+        });
+        $list.querySelectorAll('.feed-toggle-comments').forEach(b => {
+            b.addEventListener('click', () => {
+                const id = parseInt(b.dataset.id, 10);
+                const c = $list.querySelector(`.feed-comments[data-id="${id}"]`);
+                const collapsed = c.getAttribute('data-collapsed') === 'true';
+                c.setAttribute('data-collapsed', collapsed ? 'false' : 'true');
+                b.classList.toggle('active', !collapsed);
+                if (!collapsed) {
+                    const input = c.querySelector('.feed-comment-input');
+                    if (input) input.focus();
+                }
+            });
+        });
+        $list.querySelectorAll('.feed-comment-form').forEach(f => {
+            f.addEventListener('submit', e => {
+                e.preventDefault();
+                const id = parseInt(f.dataset.id, 10);
+                const input = f.querySelector('.feed-comment-input');
+                const text = input.value.trim();
+                if (!text) return;
+                input.disabled = true;
+                apiFetch(`/api/feed/${id}/comment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                }).then(r => {
+                    input.disabled = false;
+                    if (r.ok && r.data && r.data.success) {
+                        input.value = '';
+                        loadFeed();
+                    } else {
+                        alert(r.data && r.data.error ? r.data.error : 'Error al comentar');
+                    }
+                }).catch(() => { input.disabled = false; });
+            });
+        });
+        $list.querySelectorAll('.feed-post-delete').forEach(b => {
+            b.addEventListener('click', () => {
+                const id = parseInt(b.dataset.id, 10);
+                if (!confirm('¿Eliminar esta publicación?')) return;
+                apiFetch(`/api/feed/${id}`, { method: 'DELETE' })
+                    .then(r => { if (r.ok) loadFeed(); });
+            });
+        });
+    }
+
+    async function likePost(id, btn) {
+        const liked = btn.classList.contains('liked');
+        const action = liked ? 'unlike' : 'like';
+        const r = await apiFetch(`/api/feed/${id}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action })
+        });
+        if (r.ok && r.data && typeof r.data.likes === 'number') {
+            const countEl = btn.querySelector('[data-likes-count]');
+            countEl.textContent = r.data.likes;
+            btn.classList.toggle('liked');
+            if (!liked) _likedIds.add(id); else _likedIds.delete(id);
+        }
+    }
+
+    // ─── Composer ───
+    const $text = document.getElementById('composer-text');
+    const $submit = document.getElementById('composer-submit');
+    const $chips = document.getElementById('composer-chips');
+
+    function updateSubmitState() {
+        $submit.disabled = !($text.value.trim().length > 0 && state.activeCat);
+    }
+
+    $text.addEventListener('input', updateSubmitState);
+    $chips.querySelectorAll('.feed-composer-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            $chips.querySelectorAll('.feed-composer-chip').forEach(c => c.classList.toggle('active', c === chip));
+            state.activeCat = chip.dataset.cat;
+            updateSubmitState();
+        });
+    });
+    // Default active chip
+    $chips.querySelector('[data-cat="general"]').classList.add('active');
+
+    $submit.addEventListener('click', async () => {
+        const text = $text.value.trim();
+        if (!text || !state.activeCat) return;
+        $submit.disabled = true;
+        $submit.textContent = 'Publicando...';
+        try {
+            const r = await apiFetch('/api/feed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, cat: state.activeCat })
+            });
+            if (r.ok && r.data && r.data.success) {
+                $text.value = '';
+                await loadFeed();
+            } else {
+                alert(r.data && r.data.error ? r.data.error : 'Error al publicar');
+            }
+        } finally {
+            $submit.textContent = 'Publicar';
+            updateSubmitState();
+        }
+    });
+
+    // ─── Tabs ───
+    document.querySelectorAll('#feed-tabs .feed-tab').forEach(t => {
+        t.addEventListener('click', () => {
+            document.querySelectorAll('#feed-tabs .feed-tab').forEach(x => x.classList.toggle('active', x === t));
+            document.querySelectorAll('#feed-tabs .feed-tab').forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
+            state.category = t.dataset.cat;
+            loadFeed();
+        });
+    });
+
+    // ─── Side panel — recent conversations ───
+    async function loadSideConversations() {
+        const el = document.getElementById('feed-side-conversations');
+        if (!el) return;
+        try {
+            const r = await apiFetch('/api/chat/conversations', { silent: true });
+            if (!r.ok || !r.data || !Array.isArray(r.data)) {
+                el.innerHTML = '<div class="feed-loading">Sin datos</div>';
+                return;
+            }
+            const items = (r.data || []).slice(0, 5);
+            if (items.length === 0) {
+                el.innerHTML = '<div class="feed-loading" style="font-style:normal;">Sin conversaciones aún</div>';
+                return;
+            }
+            el.innerHTML = items.map(c => `
+                <a class="feed-side-row" href="/chat" style="text-decoration:none;color:inherit;">
+                    <div class="feed-avatar" style="width:30px;height:30px;font-size:0.75rem;">${esc(initials(c.name || c.title || 'C'))}</div>
+                    <div style="flex-grow:1;min-width:0;">
+                        <div class="feed-side-name">${esc(c.name || c.title || 'Conversación')}</div>
+                        <div class="feed-side-meta">${esc((c.last_message || '').slice(0, 40))}</div>
+                    </div>
+                </a>
+            `).join('');
+        } catch (e) {
+            el.innerHTML = '<div class="feed-loading">Sin conexión</div>';
+        }
+    }
+
+    async function loadSideTop() {
+        const el = document.getElementById('feed-side-top');
+        if (!el) return;
+        try {
+            const r = await apiFetch('/api/feed?category=all&limit=20', { silent: true });
+            if (!r.ok || !r.data || !Array.isArray(r.data)) {
+                el.innerHTML = '<div class="feed-loading">Sin datos</div>';
+                return;
+            }
+            // Aggregate posts by author
+            const tally = {};
+            r.data.forEach(p => {
+                const name = p.author_name || 'Anónimo';
+                tally[name] = (tally[name] || 0) + 1;
+            });
+            const ranking = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            if (ranking.length === 0) {
+                el.innerHTML = '<div class="feed-loading" style="font-style:normal;">Sin datos aún</div>';
+                return;
+            }
+            el.innerHTML = ranking.map(([name, count]) => `
+                <div class="feed-side-row">
+                    <div class="feed-avatar" style="width:30px;height:30px;font-size:0.75rem;">${esc(initials(name))}</div>
+                    <div style="flex-grow:1;">
+                        <div class="feed-side-name">${esc(name)}</div>
+                        <div class="feed-side-meta">${count} publicaciones</div>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-xs uppercase text-[#f87171] font-bold">Stop Loss</label>
-                    <input type="text" placeholder="0.0000" class="w-full mt-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-[#f87171]" />
-                </div>
-            </div>
-            <div>
-                <label class="text-xs uppercase text-[var(--outline-elev)] font-bold">Tesis / Aprendizajes</label>
-                <textarea rows="3" placeholder="Escribí tu razonamiento..." class="w-full mt-1 px-3 py-2 rounded bg-white/5 border border-white/10 text-sm resize-none focus:outline-none focus:border-[var(--gold-elev)]"></textarea>
-            </div>
-            <button class="w-full py-3 bg-[var(--gold-elev)] text-[var(--void-black)] rounded-lg font-bold uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
-                Publicar Señal
-            </button>
-        </div>
-    </div>
-</div>
+            `).join('');
+        } catch (e) {
+            el.innerHTML = '<div class="feed-loading">Sin conexión</div>';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadFeed();
+        loadSideConversations();
+        loadSideTop();
+        // Refresh feed every 60s (silent)
+        setInterval(() => { loadFeed(); loadSideConversations(); loadSideTop(); }, 60 * 1000);
+    });
+})();
+</script>
 {% endblock %}

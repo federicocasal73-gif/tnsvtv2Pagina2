@@ -3,105 +3,624 @@
 {% block title %}Mensajes · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}Mensajes{% endblock %}
-{% block topbar_subtitle %}Conversaciones, grupos y adjuntos entre miembros del Sanctum.{% endblock %}
+{% block topbar_subtitle %}Conversaciones 1:1 y grupos del Sanctum.{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .chat-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 1rem;
+        max-width: 1280px;
+        margin: 0 auto;
+        height: calc(100vh - 8rem);
+        min-height: 540px;
+    }
+    .chat-pane {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-width: 0;
+    }
+    .chat-pane-header {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--glass-border-elev);
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .chat-tabs {
+        display: inline-flex;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 9999px;
+        padding: 0.2rem;
+    }
+    .chat-tab {
+        padding: 0.3rem 0.7rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: transparent;
+        border: none;
+        border-radius: 9999px;
+        color: var(--outline-elev);
+        cursor: pointer;
+    }
+    .chat-tab.active {
+        background: rgba(242, 202, 80, 0.18);
+        color: var(--gold-elev);
+    }
+    .chat-search {
+        flex-grow: 1;
+        min-width: 100px;
+        padding: 0.35rem 0.65rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.4rem;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.85rem;
+    }
+    .chat-search:focus { outline: none; border-color: var(--gold-elev); }
+    .chat-new-dm-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.35rem 0.65rem;
+        background: rgba(242, 202, 80, 0.18);
+        border: 1px solid rgba(242, 202, 80, 0.5);
+        color: var(--gold-elev);
+        border-radius: 0.4rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .chat-list { flex-grow: 1; overflow-y: auto; }
+    .chat-conv {
+        display: flex;
+        gap: 0.7rem;
+        padding: 0.75rem;
+        cursor: pointer;
+        border-bottom: 1px solid var(--outline-variant-elev);
+        transition: background 0.15s;
+    }
+    .chat-conv:hover { background: rgba(242, 202, 80, 0.06); }
+    .chat-conv.active { background: rgba(242, 202, 80, 0.12); border-left: 3px solid var(--gold-elev); }
+    .chat-conv-avatar {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.85rem;
+        color: var(--void-black);
+        flex-shrink: 0;
+    }
+    .chat-conv-body { flex-grow: 1; min-width: 0; }
+    .chat-conv-name {
+        font-weight: 600; font-size: 0.92rem; color: var(--on-surface-elev);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .chat-conv-preview {
+        font-size: 0.74rem; color: var(--outline-elev);
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .chat-conv-meta {
+        text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;
+    }
+    .chat-conv-time { font-size: 0.65rem; color: var(--outline-elev); }
+    .chat-conv-unread {
+        background: var(--gold-elev);
+        color: var(--void-black);
+        font-size: 0.65rem; font-weight: 700;
+        padding: 0.1rem 0.45rem;
+        border-radius: 9999px;
+        min-width: 18px; text-align: center;
+    }
+    .chat-list-empty {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--outline-elev);
+        font-style: italic;
+    }
+
+    .chat-conv-header {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--glass-border-elev);
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+    .chat-conv-header-name {
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        color: var(--gold-elev);
+    }
+    .chat-conv-header-status {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+    }
+    .chat-messages {
+        flex-grow: 1; overflow-y: auto;
+        padding: 1rem 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .chat-empty {
+        flex-grow: 1;
+        display: flex; align-items: center; justify-content: center;
+        flex-direction: column; gap: 0.5rem;
+        color: var(--outline-elev);
+    }
+    .chat-empty-icon {
+        font-size: 3rem;
+        opacity: 0.3; color: var(--gold-elev);
+    }
+    .chat-msg {
+        display: flex; gap: 0.5rem; max-width: 80%;
+    }
+    .chat-msg.own { margin-left: auto; flex-direction: row-reverse; }
+    .chat-msg-avatar {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: var(--glass-bg-elev);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.7rem; font-weight: 700;
+        color: var(--outline-elev);
+        flex-shrink: 0;
+    }
+    .chat-msg.own .chat-msg-avatar {
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+        color: var(--void-black);
+    }
+    .chat-msg-bubble {
+        padding: 0.55rem 0.85rem;
+        background: var(--glass-bg-elev);
+        border-radius: 0.75rem 0.75rem 0.75rem 0.25rem;
+        max-width: 100%;
+    }
+    .chat-msg.own .chat-msg-bubble {
+        background: rgba(242, 202, 80, 0.18);
+        border: 1px solid rgba(242, 202, 80, 0.4);
+        border-radius: 0.75rem 0.75rem 0.25rem 0.75rem;
+    }
+    .chat-msg-content {
+        font-size: 0.88rem;
+        line-height: 1.4;
+        word-break: break-word;
+        white-space: pre-wrap;
+    }
+    .chat-msg-meta {
+        font-size: 0.65rem;
+        color: var(--outline-elev);
+        margin-top: 0.25rem;
+    }
+
+    .chat-composer {
+        padding: 0.75rem 1rem;
+        border-top: 1px solid var(--glass-border-elev);
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+    .chat-composer-textarea {
+        flex-grow: 1;
+        min-height: 40px;
+        max-height: 120px;
+        padding: 0.55rem 0.85rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.5rem;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.9rem;
+        resize: none;
+    }
+    .chat-composer-textarea:focus { outline: none; border-color: var(--gold-elev); }
+    .chat-send-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.55rem 1rem;
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
+        color: var(--void-black);
+        font-family: 'Cinzel', serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.4rem;
+        cursor: pointer;
+    }
+    .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* New DM modal */
+    .chat-modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        display: none; align-items: center; justify-content: center;
+        z-index: 100;
+    }
+    .chat-modal-overlay.open { display: flex; }
+    .chat-modal {
+        background: var(--void-black);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        width: 100%; max-width: 460px;
+        max-height: 90vh; overflow-y: auto;
+    }
+    .chat-modal-header {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--glass-border-elev);
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .chat-modal-title { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold-elev); margin: 0; }
+    .chat-modal-close {
+        background: transparent; border: none;
+        color: var(--outline-elev);
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+    }
+    .chat-modal-body { padding: 1rem 1.25rem; }
+    .chat-user-result {
+        display: flex; gap: 0.6rem; align-items: center;
+        padding: 0.6rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 0.4rem;
+        margin-bottom: 0.4rem;
+        cursor: pointer;
+    }
+    .chat-user-result:hover { background: rgba(242, 202, 80, 0.06); }
+
+    @media (max-width: 880px) {
+        .chat-layout { grid-template-columns: 1fr; }
+        .chat-list-pane { max-height: 35vh; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto h-[calc(100vh-7rem)] flex gap-4"
-     data-controller="chat">
-    {# ─── Conversation list ─── #}
-    <aside class="w-80 glass-card-elev flex flex-col overflow-hidden">
-        <div class="p-3 border-b border-[var(--glass-border-elev)] flex gap-2">
-            <button class="btn-action btn-toggle flex-1 text-xs"
-                    data-action="chat#openNewDm">
-                <span class="material-symbols-elev align-middle text-sm">add</span>
+<div class="chat-layout">
+
+    {# ─── Lista conversaciones ─── #}
+    <aside class="chat-pane chat-list-pane">
+        <div class="chat-pane-header">
+            <div class="chat-tabs" id="chat-tabs">
+                <button class="chat-tab active" data-tab="all"    type="button">Todos</button>
+                <button class="chat-tab"        data-tab="unread" type="button">No leídos</button>
+                <button class="chat-tab"        data-tab="groups" type="button">Grupos</button>
+            </div>
+            <input type="text" class="chat-search" id="chat-search" placeholder="Buscar..." />
+            <button type="button" class="chat-new-dm-btn" id="chat-new-dm-btn">
+                <span class="material-symbols-elev" style="font-size:1rem;">add_comment</span>
                 Nuevo DM
             </button>
-            <button class="btn-action btn-toggle flex-1 text-xs"
-                    data-action="chat#placeholderGroup">
-                <span class="material-symbols-elev align-middle text-sm">group_add</span>
-                Grupo
-            </button>
         </div>
-        <div class="flex-1 overflow-y-auto divide-y divide-[var(--outline-variant-elev)]"
-             data-chat-target="list">
-            <p class="text-center text-[var(--outline-elev)] py-8 text-sm">Cargando conversaciones...</p>
+        <div class="chat-list" id="chat-list">
+            <p class="chat-list-empty">Cargando conversaciones...</p>
         </div>
     </aside>
 
-    {# ─── Messages pane ─── #}
-    <section class="flex-1 glass-card-elev flex flex-col overflow-hidden">
-        <div class="p-3 border-b border-[var(--glass-border-elev)] flex items-center gap-3"
-             data-chat-target="header">
-            <p class="text-[var(--outline-elev)] text-sm">Selecciona una conversación para empezar</p>
+    {# ─── Panel de mensajes ─── #}
+    <section class="chat-pane">
+        <div class="chat-conv-header" id="chat-conv-header" style="display:none;">
+            <div class="chat-conv-avatar" id="chat-conv-avatar">C</div>
+            <div>
+                <div class="chat-conv-header-name" id="chat-conv-name">Conversación</div>
+                <div class="chat-conv-header-status" id="chat-conv-status">en línea</div>
+            </div>
         </div>
-        <div class="flex-1 overflow-y-auto p-4 space-y-2"
-             data-chat-target="messages">
-            <p class="text-center text-[var(--outline-elev)] py-12 text-sm">Sin mensajes</p>
+        <div class="chat-messages" id="chat-messages">
+            <div class="chat-empty" id="chat-empty-default">
+                <span class="material-symbols-elev chat-empty-icon">forum</span>
+                <p>Selecciona una conversación para empezar.</p>
+            </div>
         </div>
-        <div class="p-3 border-t border-[var(--glass-border-elev)] flex items-center gap-2"
-             data-chat-target="composer"
-             style="display:none;">
-            <textarea rows="1" placeholder="Escribe un mensaje..."
-                      class="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] resize-none"
-                      style="font-family: inherit;"
-                      data-chat-target="input"
-                      data-action="keydown->chat#onInputKeydown"></textarea>
-            <input type="file" accept="image/*,video/*,audio/*,.pdf" style="display:none;"
-                   data-chat-target="file" />
-            <button class="btn-action btn-toggle"
-                    title="Adjuntar"
-                    data-action="chat#triggerFile">
-                <span class="material-symbols-elev">attach_file</span>
-            </button>
-            <button class="btn-primary"
-                    data-chat-target="sendBtn"
-                    data-action="chat#sendMessage">
-                <span class="material-symbols-elev align-middle text-sm">send</span>
+        <div class="chat-composer" id="chat-composer" style="display:none;">
+            <textarea id="chat-input" class="chat-composer-textarea"
+                      placeholder="Escribe un mensaje..." rows="1"></textarea>
+            <button id="chat-send" class="chat-send-btn" disabled>
+                <span class="material-symbols-elev" style="font-size:1rem;">send</span>
+                Enviar
             </button>
         </div>
     </section>
+
 </div>
 
-{# ─── New DM modal ─── #}
-<div data-chat-target="newDmModal"
-     data-action="click->chat#backdropClick"
-     style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:100; align-items:center; justify-content:center;">
-    <div class="glass-card-elev" style="width:100%; max-width:420px;">
-        <div class="flex items-center justify-between p-4 border-b border-[var(--glass-border-elev)]">
-            <h2 class="text-base font-semibold">Nuevo mensaje directo</h2>
-            <button class="text-[var(--outline-elev)] hover:text-white"
-                    data-action="chat#closeNewDm">
+{# ─── Modal: Nuevo DM ─── #}
+<div class="chat-modal-overlay" id="chat-new-dm-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
+    <div class="chat-modal">
+        <div class="chat-modal-header">
+            <h2 id="chat-modal-title" class="chat-modal-title">Nuevo mensaje directo</h2>
+            <button type="button" class="chat-modal-close" id="chat-modal-close" aria-label="Cerrar">
                 <span class="material-symbols-elev">close</span>
             </button>
         </div>
-        <div class="p-4 space-y-3">
-            <label class="kpi-label block">Buscar usuario</label>
-            <input type="text" placeholder="Código o nombre..."
-                   class="form-input w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)]"
-                   data-chat-target="dmSearch"
-                   data-action="input->chat#onSearchInput" />
-            <div class="space-y-1 max-h-64 overflow-y-auto"
-                 data-chat-target="dmResults"></div>
+        <div class="chat-modal-body">
+            <input type="text" id="chat-dm-search" class="chat-search" style="width:100%;margin-bottom:0.75rem;"
+                   placeholder="Buscar por código o nombre..." autocomplete="off" />
+            <div id="chat-dm-results">
+                <p class="chat-list-empty">Escribí un código o nombre para buscar...</p>
+            </div>
         </div>
     </div>
 </div>
 
-<style>
-.conv-row { display:flex; align-items:center; gap:0.75rem; padding:0.75rem; cursor:pointer; transition:background 0.15s; }
-.conv-row:hover { background: var(--glass-bg-elev); }
-.conv-row.active { background: var(--glass-bg-strong-elev); border-left: 2px solid var(--gold-elev); }
-.conv-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--gold-elev),var(--gold-bright-elev)); display:flex; align-items:center; justify-content:center; font-weight:600; color:var(--on-primary-elev); flex-shrink:0; }
-.conv-name { font-weight:500; font-size:0.875rem; }
-.conv-preview { font-size:0.75rem; color:var(--outline-elev); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.conv-time { font-size:0.65rem; color:var(--outline-elev); margin-left:auto; flex-shrink:0; }
-.conv-unread { background:var(--gold-elev); color:var(--on-primary-elev); font-size:0.65rem; font-weight:600; padding:0.125rem 0.5rem; border-radius:1rem; }
-.msg-row { display:flex; gap:0.5rem; max-width:80%; }
-.msg-row.own { margin-left:auto; flex-direction:row-reverse; }
-.msg-avatar { width:28px; height:28px; border-radius:50%; background:var(--glass-bg-elev); display:flex; align-items:center; justify-content:center; font-size:0.75rem; flex-shrink:0; }
-.msg-bubble { padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border-radius:0.75rem; }
-.msg-row.own .msg-bubble { background:var(--gold-elev); color:var(--on-primary-elev); }
-.msg-content { font-size:0.875rem; word-break:break-word; }
-.msg-meta { font-size:0.65rem; opacity:0.6; margin-top:0.25rem; }
-.msg-photo { max-width:240px; border-radius:0.5rem; margin-top:0.5rem; }
-</style>
+<script>
+(function() {
+    'use strict';
+
+    // ══════ F5 — Chat ══════
+    const state = { tab: 'all', search: '', activeConvId: null, conversations: [] };
+    const $list = document.getElementById('chat-list');
+    const $convHeader = document.getElementById('chat-conv-header');
+    const $messages = document.getElementById('chat-messages');
+    const $input = document.getElementById('chat-input');
+    const $send = document.getElementById('chat-send');
+    const $composer = document.getElementById('chat-composer');
+    const $empty = document.getElementById('chat-empty-default');
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function initials(name) {
+        return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+    }
+    function relTime(iso) {
+        try {
+            const d = new Date(iso);
+            const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+            if (diff < 60)   return 'ahora';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+            return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+        } catch (e) { return ''; }
+    }
+    function fmtTime(iso) {
+        try {
+            const d = new Date(iso);
+            return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) { return ''; }
+    }
+
+    async function loadConversations() {
+        if (!$list) return;
+        try {
+            const r = await apiFetch('/api/chat/conversations', { silent: true });
+            if (!r.ok || !r.data) {
+                $list.innerHTML = '<p class="chat-list-empty">Sin datos</p>';
+                return;
+            }
+            const items = Array.isArray(r.data) ? r.data : (r.data.conversations || []);
+            state.conversations = items;
+            renderConversations();
+        } catch (e) {
+            $list.innerHTML = '<p class="chat-list-empty">Sin conexión</p>';
+        }
+    }
+
+    function renderConversations() {
+        let items = state.conversations.slice();
+        if (state.tab === 'groups') {
+            items = items.filter(c => c.is_group === true || c.type === 'group');
+        }
+        if (state.tab === 'unread') {
+            items = items.filter(c => (c.unread || 0) > 0);
+        }
+        if (state.search) {
+            const q = state.search.toLowerCase();
+            items = items.filter(c => (c.name || c.title || '').toLowerCase().includes(q));
+        }
+
+        if (items.length === 0) {
+            $list.innerHTML = `<p class="chat-list-empty">No hay conversaciones${state.search ? ' que coincidan con la búsqueda' : ''}.</p>`;
+            return;
+        }
+
+        $list.innerHTML = items.map(c => {
+            const id = c.id || c.conversation_id;
+            const name = c.name || c.title || 'Conversación';
+            const isActive = String(state.activeConvId) === String(id);
+            const unread = c.unread || 0;
+            const preview = c.last_message_preview || c.last_message || (c.lastMessage || '');
+            const time = c.last_message_at || c.last_message_time || c.updated_at || '';
+            return `
+                <div class="chat-conv ${isActive ? 'active' : ''}" data-id="${esc(id)}">
+                    <div class="chat-conv-avatar">${esc(initials(name))}</div>
+                    <div class="chat-conv-body">
+                        <div class="chat-conv-name">${esc(name)}</div>
+                        <div class="chat-conv-preview">${esc(preview.slice(0, 60))}</div>
+                    </div>
+                    <div class="chat-conv-meta">
+                        <span class="chat-conv-time">${esc(relTime(time))}</span>
+                        ${unread > 0 ? `<span class="chat-conv-unread">${unread}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        $list.querySelectorAll('.chat-conv').forEach(el => {
+            el.addEventListener('click', () => openConversation(el.dataset.id));
+        });
+    }
+
+    async function openConversation(id) {
+        state.activeConvId = id;
+        renderConversations();
+        const conv = state.conversations.find(c => String(c.id || c.conversation_id) === String(id));
+        if (conv) {
+            document.getElementById('chat-conv-name').textContent = conv.name || conv.title || 'Conversación';
+            document.getElementById('chat-conv-avatar').textContent = initials(conv.name || conv.title || 'C');
+        }
+        $convHeader.style.display = 'flex';
+        $composer.style.display = 'flex';
+        $empty.style.display = 'none';
+        $messages.innerHTML = '<p class="chat-list-empty">Cargando mensajes...</p>';
+        try {
+            const r = await apiFetch(`/api/chat/conversations/${id}/messages`, { silent: true });
+            if (!r.ok || !r.data) {
+                $messages.innerHTML = '<p class="chat-list-empty">Sin mensajes</p>';
+                return;
+            }
+            const items = Array.isArray(r.data) ? r.data : (r.data.messages || []);
+            renderMessages(items, id);
+            // Mark as read
+            apiFetch(`/api/chat/conversations/${id}/read`, { method: 'POST' }, { silent: true });
+            // Update unread in state
+            const c = state.conversations.find(c => String(c.id || c.conversation_id) === String(id));
+            if (c) c.unread = 0;
+        } catch (e) {
+            $messages.innerHTML = '<p class="chat-list-empty">Error al cargar mensajes</p>';
+        }
+    }
+
+    function renderMessages(items, convId) {
+        if (items.length === 0) {
+            $messages.innerHTML = '<p class="chat-list-empty">Sin mensajes — escribí el primero.</p>';
+            return;
+        }
+        const me = window.TNSVT_USER ? window.TNSVT_USER.code : null;
+        $messages.innerHTML = items.map(m => {
+            const mine = me && (m.author_code === me || m.sender_code === me || m.from_code === me);
+            const authorName = m.author || m.author_name || m.sender_name || m.from_name || (mine ? 'Vos' : '—');
+            return `
+                <div class="chat-msg ${mine ? 'own' : ''}" data-id="${esc(m.id || '')}">
+                    <div class="chat-msg-avatar">${esc(initials(authorName))}</div>
+                    <div>
+                        <div class="chat-msg-bubble">
+                            <div class="chat-msg-content">${esc(m.text || m.content || m.message || '')}</div>
+                            ${m.photo ? `<img class="chat-msg-photo" style="display:block;max-width:240px;border-radius:0.5rem;margin-top:0.4rem;" src="${esc(m.photo)}" />` : ''}
+                        </div>
+                        <div class="chat-msg-meta">${esc(authorName)}${m.date || m.created_at ? ' · ' + esc(fmtTime(m.date || m.created_at)) : ''}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        $messages.scrollTop = $messages.scrollHeight;
+    }
+
+    function updateSend() {
+        $send.disabled = !($input.value.trim().length > 0 && state.activeConvId);
+    }
+
+    $input.addEventListener('input', updateSend);
+    $input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!$send.disabled) $send.click();
+        }
+    });
+
+    $send.addEventListener('click', async () => {
+        const text = $input.value.trim();
+        if (!text || !state.activeConvId) return;
+        $send.disabled = true;
+        try {
+            const r = await apiFetch(`/api/chat/conversations/${state.activeConvId}/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            if (r.ok && r.data) {
+                $input.value = '';
+                await openConversation(state.activeConvId);
+            } else {
+                alert(r.data && r.data.error ? r.data.error : 'Error al enviar');
+            }
+        } finally {
+            updateSend();
+        }
+    });
+
+    // ─── Tabs ───
+    document.querySelectorAll('#chat-tabs .chat-tab').forEach(t => {
+        t.addEventListener('click', () => {
+            document.querySelectorAll('#chat-tabs .chat-tab').forEach(x => x.classList.toggle('active', x === t));
+            state.tab = t.dataset.tab;
+            renderConversations();
+        });
+    });
+
+    // ─── Search ───
+    let searchTimer = null;
+    document.getElementById('chat-search').addEventListener('input', e => {
+        state.search = e.target.value;
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(renderConversations, 150);
+    });
+
+    // ─── New DM modal ───
+    const $modal = document.getElementById('chat-new-dm-modal');
+    document.getElementById('chat-new-dm-btn').addEventListener('click', () => {
+        $modal.classList.add('open');
+        document.getElementById('chat-dm-search').value = '';
+        document.getElementById('chat-dm-search').focus();
+        document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
+    });
+    document.getElementById('chat-modal-close').addEventListener('click', () => $modal.classList.remove('open'));
+    $modal.addEventListener('click', e => { if (e.target === $modal) $modal.classList.remove('open'); });
+
+    let dmTimer = null;
+    document.getElementById('chat-dm-search').addEventListener('input', e => {
+        const q = e.target.value.trim();
+        clearTimeout(dmTimer);
+        if (!q) {
+            document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
+            return;
+        }
+        dmTimer = setTimeout(async () => {
+            try {
+                const r = await apiFetch(`/api/chat/users?search=${encodeURIComponent(q)}`, { silent: true });
+                if (!r.ok || !r.data) return;
+                const users = Array.isArray(r.data) ? r.data : (r.data.users || []);
+                if (users.length === 0) {
+                    document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Sin resultados</p>';
+                    return;
+                }
+                document.getElementById('chat-dm-results').innerHTML = users.slice(0, 8).map(u => `
+                    <div class="chat-user-result" data-code="${esc(u.code)}" data-name="${esc(u.name || u.code)}">
+                        <div class="chat-conv-avatar">${esc(initials(u.name || u.code))}</div>
+                        <div>
+                            <div style="font-weight:600;">${esc(u.name || u.code)}</div>
+                            <div style="font-size:0.7rem;color:var(--outline-elev);">${esc(u.code)}</div>
+                        </div>
+                    </div>
+                `).join('');
+                document.querySelectorAll('#chat-dm-results .chat-user-result').forEach(el => {
+                    el.addEventListener('click', async () => {
+                        const code = el.dataset.code;
+                        try {
+                            const cr = await apiFetch('/api/chat/conversations', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ code, name: el.dataset.name })
+                            });
+                            if (cr.ok && cr.data) {
+                                $modal.classList.remove('open');
+                                await loadConversations();
+                                const newId = cr.data.id || cr.data.conversation_id || code;
+                                openConversation(newId);
+                            }
+                        } catch (e) { console.error(e); }
+                    });
+                });
+            } catch (e) { console.error(e); }
+        }, 250);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadConversations();
+        setInterval(loadConversations, 30 * 1000);
+    });
+})();
+</script>
 {% endblock %}
