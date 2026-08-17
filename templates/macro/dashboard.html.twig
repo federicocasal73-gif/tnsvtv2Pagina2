@@ -141,6 +141,28 @@
         padding: 1.25rem 1.4rem;
         position: relative;
         overflow: hidden;
+    }
+
+    /* F7 — Timezone selector + freshness indicator */
+    .bento-tz {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.4rem;
+        color: var(--on-surface-elev);
+        cursor: pointer;
+        transition: border-color 0.15s;
+    }
+    .bento-tz:hover, .bento-tz:focus { border-color: var(--gold-elev); outline: none; }
+    #bento-last-update {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+    }
+    #bento-last-update.stale { color: #fbbf24; opacity: 1; }
         transition: border-color 0.2s ease, transform 0.2s ease;
     }
     .bento-grid-f3 .bento-card::before {
@@ -368,6 +390,14 @@
         font-size: 0.8rem;
         padding: 1.5rem 0;
         list-style: none;
+        line-height: 1.5;
+    }
+    .bento-pair-empty .material-symbols-outlined {
+        font-size: 1.8rem;
+        opacity: 0.4;
+        color: var(--gold-elev);
+        display: block;
+        margin: 0 auto 0.4rem;
     }
     @media (max-width: 640px) {
         .bento-countdown { font-size: 1.5rem; }
@@ -386,10 +416,20 @@
                 <span class="material-symbols-outlined text-[var(--gold-elev)]">view_in_ar</span>
                 MACRO BENTO
             </h2>
-            <div class="flex items-center gap-2 text-xs text-[var(--outline-elev)]" id="bento-counter">
-                <span id="bento-counter-text">Cargando…</span>
-                <span class="material-symbols-outlined text-base">refresh</span>
-                <button type="button" id="bento-refresh" class="text-[var(--gold-elev)] hover:underline" title="Refrescar">↻</button>
+            <div class="flex items-center gap-3 flex-wrap" id="bento-counter">
+                <span id="bento-counter-text" class="text-xs text-[var(--outline-elev)]">Cargando…</span>
+                <select id="bento-tz" class="bento-tz" title="Zona horaria" aria-label="Zona horaria">
+                    <option value="America/Argentina/Buenos_Aires">🇦🇷 AR</option>
+                    <option value="America/New_York">🇺🇸 NY</option>
+                    <option value="America/Los_Angeles">🇺🇸 LA</option>
+                    <option value="America/Sao_Paulo">🇧🇷 BR</option>
+                    <option value="Europe/Madrid">🇪🇸 ES</option>
+                    <option value="Europe/London">🇬🇧 UK</option>
+                    <option value="Asia/Tokyo">🇯🇵 JP</option>
+                    <option value="UTC">🌐 UTC</option>
+                </select>
+                <span class="text-xs text-[var(--outline-elev)]" id="bento-last-update">—</span>
+                <button type="button" id="bento-refresh" class="text-[var(--gold-elev)] hover:underline" title="Refrescar ahora">↻</button>
             </div>
         </div>
 
@@ -619,18 +659,43 @@
     async function loadMacroBento() {
         const grid = document.getElementById('bento-counter-text');
         if (!grid) return;
+        const tz = (document.getElementById('bento-tz') || { value: 'America/Argentina/Buenos_Aires' }).value;
         try {
-            const r = await apiFetch('/api/macro/bento?tz=America/Argentina/Buenos_Aires', { silent: true });
+            const r = await apiFetch('/api/macro/bento?tz=' + encodeURIComponent(tz), { silent: true });
             if (!r.ok || !r.data || !r.data.success) {
                 grid.textContent = 'Sin datos';
                 return;
             }
             _bentoState = r.data;
             renderBento(r.data);
+            updateBentoLastUpdate();
         } catch (e) {
             grid.textContent = 'Sin conexión';
         }
     }
+
+    // F7 — Freshness indicator (relative time + auto-refresh countdown)
+    let _bentoLastUpdate = null;
+    function updateBentoLastUpdate() {
+        _bentoLastUpdate = new Date();
+        const el = document.getElementById('bento-last-update');
+        if (!el) return;
+        el.textContent = 'Recién';
+        el.classList.remove('stale');
+    }
+    function tickBentoFreshness() {
+        if (!_bentoLastUpdate) return;
+        const el = document.getElementById('bento-last-update');
+        if (!el) return;
+        const secs = Math.floor((Date.now() - _bentoLastUpdate.getTime()) / 1000);
+        if (secs < 5)        el.textContent = 'Recién';
+        else if (secs < 60)  el.textContent = `hace ${secs}s`;
+        else if (secs < 3600) el.textContent = `hace ${Math.floor(secs/60)}m`;
+        else                 el.textContent = `hace ${Math.floor(secs/3600)}h`;
+        if (secs > 600) el.classList.add('stale');
+        else el.classList.remove('stale');
+    }
+    setInterval(tickBentoFreshness, 5 * 1000);
 
     function renderBento(data) {
         const next = data.next_critical;
@@ -737,7 +802,13 @@
             }).join('');
         } else {
             pairsTitle.textContent = 'Sin próximo evento';
-            pairsList.innerHTML = '<li class="bento-pair-empty">Sin próximo evento crítico</li>';
+            pairsList.innerHTML = `
+                <li class="bento-pair-empty">
+                    <span class="material-symbols-outlined">sailing</span>
+                    Mar en calma.
+                    <br>El próximo evento crítico activará la lista.
+                </li>
+            `;
         }
 
         // === Reminder persistence ===
@@ -847,7 +918,21 @@
         const remindBtn = document.getElementById('bento-remind-btn');
         const muteBtn = document.getElementById('bento-mute-btn');
         const refreshBtn = document.getElementById('bento-refresh');
+        const tzSelect = document.getElementById('bento-tz');
         if (!remindBtn) return;
+
+        // F7 — restore saved TZ + react to changes
+        if (tzSelect) {
+            const saved = localStorage.getItem('tnsvt_macro_tz');
+            if (saved) {
+                const opt = Array.from(tzSelect.options).find(o => o.value === saved);
+                if (opt) tzSelect.value = saved;
+            }
+            tzSelect.addEventListener('change', () => {
+                localStorage.setItem('tnsvt_macro_tz', tzSelect.value);
+                loadMacroBento();
+            });
+        }
 
         remindBtn.addEventListener('click', async () => {
             if (!_bentoState || !_bentoState.next_critical || !_bentoState.window) {
