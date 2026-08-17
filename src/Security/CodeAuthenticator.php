@@ -4,6 +4,7 @@ namespace App\Security;
 
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -15,12 +16,14 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CodeAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     public function __construct(
         private UserRepository $userRepository,
         private UserPasswordHasherInterface $passwordHasher,
+        private UrlGeneratorInterface $urlGenerator,
     ) {}
 
     public function supports(Request $request): ?bool
@@ -73,14 +76,10 @@ class CodeAuthenticator extends AbstractAuthenticator implements AuthenticationE
         $user->setLastLogin(new \DateTimeImmutable());
         $this->userRepository->getEntityManager()->flush();
 
-        return new JsonResponse([
-            'success' => true,
-            'user' => [
-                'code' => $user->getCode(),
-                'name' => $user->getName(),
-                'isAdmin' => in_array('ROLE_ADMIN', $user->getRoles(), true),
-            ],
-        ]);
+        // Return null so the AuthController can build its own response
+        // (which includes the JWT token + refresh_token).
+        // Returning a Response here would OVERRIDE the controller's response.
+        return null;
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
@@ -93,9 +92,17 @@ class CodeAuthenticator extends AbstractAuthenticator implements AuthenticationE
 
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
-        return new JsonResponse([
-            'success' => false,
-            'error' => 'Se requiere autenticación',
-        ], Response::HTTP_UNAUTHORIZED);
+        $expectsJson = $request->isXmlHttpRequest()
+            || in_array('application/json', $request->getAcceptableContentTypes(), true)
+            || str_starts_with($request->getPathInfo(), '/api/');
+
+        if ($expectsJson) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'Se requiere autenticación',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        return new RedirectResponse($this->urlGenerator->generate('login'));
     }
 }
