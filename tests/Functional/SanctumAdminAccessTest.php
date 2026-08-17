@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional;
 
 use App\Service\Auth\JwtService;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SanctumAdminAccessTest extends ApiTestCase
 {
@@ -21,9 +22,7 @@ class SanctumAdminAccessTest extends ApiTestCase
         ];
     }
 
-    /**
-     * @dataProvider adminOnlyEndpoints
-     */
+    #[DataProvider('adminOnlyEndpoints')]
     public function testAnonymousRequestIsRejected(string $method, string $path): void
     {
         $this->client->request($method, $path);
@@ -32,9 +31,7 @@ class SanctumAdminAccessTest extends ApiTestCase
         $this->assertSame(401, $response->getStatusCode(), "Anonymous request to {$method} {$path} must return 401");
     }
 
-    /**
-     * @dataProvider adminOnlyEndpoints
-     */
+    #[DataProvider('adminOnlyEndpoints')]
     public function testRegularUserIsForbidden(string $method, string $path): void
     {
         $user = $this->createUser(['code' => 'NORMAL01', 'name' => 'Regular User']);
@@ -52,9 +49,7 @@ class SanctumAdminAccessTest extends ApiTestCase
         $this->assertSame(403, $response->getStatusCode(), "Regular user request to {$method} {$path} must return 403");
     }
 
-    /**
-     * @dataProvider adminOnlyEndpoints
-     */
+    #[DataProvider('adminOnlyEndpoints')]
     public function testAdminCanAccess(string $method, string $path): void
     {
         $admin = $this->createAdmin(['code' => 'ADM001', 'name' => 'Admin User']);
