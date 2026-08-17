@@ -1,0 +1,107 @@
+/*
+ * TNSVT Reino v2 - Accessibility & Reduced Motion
+ *
+ * Respects the OS-level "Reduce Motion" preference.
+ * Disables infinite animations, transitions, and scroll-snap.
+ * Keeps semantic animations (modal fade-in) but at 0.01ms duration
+ * (effectively instant) to preserve layout integrity.
+ *
+ * Apply via @media query — no JS required.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Explicitly stop these specific animations that distract even with reduced motion */
+    .live-dot,
+    .live-dot-notif,
+    .cf-fab,
+    .cf-bubble,
+    .cf-typing-dots span,
+    .cf-panel,
+    .freq-ring,
+    .audio-wave-bar,
+    .bell-badge,
+    .pulse-gold,
+    .pulse-aura,
+    .pulse-aura-elev,
+    .v2-pulse-gold,
+    .v2-pulse-violet,
+    .countdown-display,
+    .tj-cal-cell.today,
+    .tj-today-pulse,
+    .pulse-dot,
+    .status-dot,
+    .pulseGlow,
+    .pulseCircle,
+    .pulse-status,
+    .live-indicator-header,
+    .live-dot-notif,
+    .scan-sweep::after,
+    .reveal-path {
+        animation: none !important;
+    }
+
+    /* Disable WebGL/Three.js for users with reduced motion */
+    .bg-shader-canvas,
+    .sacred-sigil-container,
+    #sacred-sigil-container {
+        display: none !important;
+    }
+}
+
+/* Skeleton loader utility (replaces the plain "Cargando…" text) */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--glass-bg-elev, rgba(255, 255, 255, 0.02)) 0%,
+        var(--glass-bg-strong-elev, rgba(255, 255, 255, 0.05)) 50%,
+        var(--glass-bg-elev, rgba(255, 255, 255, 0.02)) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: 0.375rem;
+    display: inline-block;
+    min-height: 1em;
+}
+
+.skeleton-line {
+    height: 0.875rem;
+    margin: 0.5rem 0;
+    border-radius: 0.25rem;
+}
+
+.skeleton-block {
+    height: 6rem;
+    margin: 1rem 0;
+    border-radius: 0.5rem;
+}
+
+.skeleton-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+}
+
+/* Page-load fade-in (replaces abrupt loading states) */
+.fade-in-page {
+    animation: fade-in-page 0.3s ease-out;
+}
+
+@keyframes fade-in-page {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

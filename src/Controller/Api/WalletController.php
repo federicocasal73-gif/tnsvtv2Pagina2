@@ -174,23 +174,4 @@ class WalletController extends AbstractController
             'new_balance_usd' => $user->getWalletBalance(),
         ], 200);
     }
-
-    /**
-     * Endpoint auxiliar para tests/devuelve user actual (por X-Game-Code)
-     */
-    #[Route('/me', name: 'api_wallet_me', methods: ['GET'])]
-    public function me(Request $request): JsonResponse
-    {
-        $user = $this->getCurrentUser($request);
-        if (!$user) {
-            return new JsonResponse(['error' => 'No autenticado'], 401);
-        }
-        return new JsonResponse([
-            'user_id' => $user->getId(),
-            'username' => $user->getCode(),
-            'display_name' => $user->getName(),
-            'is_active' => $user->isActive(),
-            'roles' => $user->getRoles(),
-        ], 200);
-    }
 }

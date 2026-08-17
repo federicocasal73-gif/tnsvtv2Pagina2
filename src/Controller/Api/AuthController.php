@@ -2,6 +2,7 @@
 
 namespace App\Controller\Api;
 
+use OpenApi\Attributes as OA;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Auth\JwtService;
@@ -45,6 +46,22 @@ class AuthController extends AbstractController
     }
 
     #[Route('/login', name: 'api_auth_login', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/auth/login',
+        summary: 'Iniciar sesión',
+        description: 'Autentica a un usuario. Los usuarios regulares envían code + name; los administradores envían code + password.',
+        tags: ['Autenticación'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(ref: '#/components/schemas/LoginRequest')
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Login correcto, devuelve JWT + refresh token', content: new OA\JsonContent(ref: '#/components/schemas/LoginResponse')),
+            new OA\Response(response: 400, description: 'Código requerido o campos faltantes'),
+            new OA\Response(response: 401, description: 'Código inválido o credenciales incorrectas'),
+            new OA\Response(response: 429, description: 'Demasiados intentos (rate limit)'),
+        ],
+    )]
     public function login(
         Request $request,
         UserRepository $userRepository,
@@ -94,7 +111,10 @@ class AuthController extends AbstractController
 
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
         $tokenStorage->setToken($token);
-        $request->getSession()->save();
+        // Only save session if it has been started (skip in stateless contexts like JWT-only APIs and tests)
+        if ($request->hasSession() && $request->getSession()->isStarted()) {
+            $request->getSession()->save();
+        }
 
         // ===== TNSVT Reino v2: emit JWT + refresh token additively =====
         // Frontend can use either:
@@ -108,6 +128,26 @@ class AuthController extends AbstractController
     }
 
     #[Route('/refresh', name: 'api_auth_refresh', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/auth/refresh',
+        summary: 'Renovar token',
+        description: 'Rota el refresh token y devuelve un nuevo access token + refresh token.',
+        tags: ['Autenticación'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'code', type: 'string', example: 'ABCD01'),
+                    new OA\Property(property: 'refresh_token', type: 'string'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Tokens renovados'),
+            new OA\Response(response: 400, description: 'Campos faltantes'),
+            new OA\Response(response: 401, description: 'Refresh token inválido o expirado'),
+        ],
+    )]
     public function refresh(
         Request $request,
         UserRepository $userRepository,
@@ -135,6 +175,15 @@ class AuthController extends AbstractController
     }
 
     #[Route('/logout', name: 'api_auth_logout', methods: ['POST', 'GET'])]
+    #[OA\Post(
+        path: '/api/auth/logout',
+        summary: 'Cerrar sesión',
+        description: 'Invalida la sesión PHP y limpia el token storage. Acepta POST y GET para compatibilidad.',
+        tags: ['Autenticación'],
+        responses: [
+            new OA\Response(response: 200, description: 'Sesión cerrada'),
+        ],
+    )]
     public function logout(
         Request $request,
         TokenStorageInterface $tokenStorage,
@@ -150,6 +199,15 @@ class AuthController extends AbstractController
     }
 
     #[Route('/check', name: 'api_auth_check', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/auth/check',
+        summary: 'Verificar sesión',
+        description: 'Devuelve el estado de autenticación del usuario actual. Requiere JWT Bearer.',
+        tags: ['Autenticación'],
+        responses: [
+            new OA\Response(response: 200, description: 'Estado de autenticación'),
+        ],
+    )]
     public function check(#[CurrentUser] ?User $user): JsonResponse
     {
         if (!$user) {

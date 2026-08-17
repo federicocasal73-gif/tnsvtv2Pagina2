@@ -10,7 +10,6 @@ use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Service\ImageValidationService;
-use App\Service\PushService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,7 +28,6 @@ class ChatController extends AbstractController
         private ConversationRepository $conversationRepository,
         private MessageRepository $messageRepository,
         private UserRepository $userRepository,
-        private PushService $pushService,
         private ImageValidationService $imageValidation,
     ) {
         $this->avatarDir = dirname(__DIR__, 3) . '/public/uploads/avatars';

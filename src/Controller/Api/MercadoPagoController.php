@@ -114,45 +114,37 @@ class MercadoPagoController extends AbstractController
 
     /**
      * Webhook de IPN de MercadoPago.
-     * MP envia POST con JSON: { action, data: { id } }
-     * Tambien soporta query params: ?topic=payment&id=123
-     * La firma X-Signature se verifica si MP_WEBHOOK_SECRET está configurado.
+     * MP envía POST con JSON: { action, data: { id } } o ?topic=payment&id=123
+     * SEGURIDAD: la firma X-Signature es OBLIGATORIA — si MP_WEBHOOK_SECRET no
+     * está configurado, el webhook responde 503 para evitar que un atacante
+     * acredita wallets sin pago real.
      */
-    #[Route('/webhook', name: 'api_mp_webhook', methods: ['POST', 'GET'])]
+    #[Route('/webhook', name: 'api_mp_webhook', methods: ['POST'])]
     public function webhook(Request $request): JsonResponse
     {
         if (!$this->mp->isConfigured()) {
             return new JsonResponse(['error' => 'MP not configured'], 501);
         }
 
-        // Verify X-Signature if webhook secret is configured
         $webhookSecret = $_ENV['MP_WEBHOOK_SECRET'] ?? $_SERVER['MP_WEBHOOK_SECRET'] ?? '';
-        if ($webhookSecret !== '') {
-            $signature = $request->headers->get('X-Signature', '');
-            if (!$this->verifyMPSignature($signature, $request, $webhookSecret)) {
-                $this->logger->warning('[MP] Invalid webhook signature');
-                return new JsonResponse(['error' => 'invalid_signature'], 401);
-            }
+        if ($webhookSecret === '') {
+            $this->logger->error('[MP] Webhook secret not configured — refusing webhook for security');
+            return new JsonResponse(['error' => 'webhook_not_configured'], 503);
         }
 
-        // GET: ?topic=payment&id=123 (MP envía asi en sandbox)
-        if ($request->isMethod('GET')) {
-            $topic = $request->query->get('topic');
-            $paymentId = $request->query->get('id');
-            if ($topic === 'payment' && $paymentId) {
-                $this->processPaymentNotification((string) $paymentId);
-            }
-            return new JsonResponse(['ok' => true]);
+        $signature = $request->headers->get('X-Signature', '');
+        if (!$this->verifyMPSignature($signature, $request, $webhookSecret)) {
+            $this->logger->warning('[MP] Invalid webhook signature');
+            return new JsonResponse(['error' => 'invalid_signature'], 401);
         }
 
-        // POST: JSON body
         $body = json_decode($request->getContent(), true);
-        if (!is_array($body)) {
+        if (!is_array($body) && empty($request->query->get('id'))) {
             return new JsonResponse(['error' => 'invalid_json'], 400);
         }
 
-        $action = $body['action'] ?? $body['type'] ?? '';
-        $data = $body['data'] ?? [];
+        $action = is_array($body) ? ($body['action'] ?? $body['type'] ?? '') : '';
+        $data = is_array($body) ? ($body['data'] ?? []) : [];
         $paymentId = $data['id'] ?? $request->query->get('id') ?? '';
 
         if ($action === 'payment.created' || $action === 'payment.updated' || $paymentId) {

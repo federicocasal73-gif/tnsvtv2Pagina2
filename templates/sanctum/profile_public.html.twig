@@ -6,8 +6,10 @@
 {% block topbar_subtitle %}Perfil de usuario en el Reino.{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <div id="profile-container">
+<div class="max-w-2xl mx-auto"
+     data-controller="profile-public"
+     data-profile-public-user-code-value="{{ app.request.attributes.get('code') ?? '' }}">
+    <div data-profile-public-target="container">
         <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando perfil...</p>
     </div>
 </div>
@@ -24,56 +26,4 @@
 .profile-stat-value { font-size: 1.25rem; font-weight: 700; color: var(--gold-elev); }
 .profile-stat-label { font-size: 0.7rem; color: var(--outline-elev); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
 </style>
-
-<script>
-(function() {
-    'use strict';
-    const container = document.getElementById('profile-container');
-    // Extract code from URL: /u/CODE
-    const pathParts = window.location.pathname.split('/');
-    const code = pathParts[2] || '';
-
-    if (!code) {
-        container.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Usuario no especificado.</p>';
-        return;
-    }
-
-    apiFetch('/api/profile/' + encodeURIComponent(code)).then(r => {
-        if (!r.success) {
-            container.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Usuario no encontrado.</p>';
-            return;
-        }
-        const u = r.user;
-        document.title = (u.name || u.code) + ' · T.N.S.V.T';
-        container.innerHTML = `
-            <div class="glass-card-elev profile-header">
-                <div class="profile-avatar">
-                    ${u.avatar_url ? `<img src="${u.avatar_url}" alt="">` : '<span>' + (u.name || '?').charAt(0) + '</span>'}
-                </div>
-                <div class="profile-name">${u.name || '—'}</div>
-                <div class="profile-code">${u.code || '—'}</div>
-                <span class="tier-badge-elev profile-tier">${u.tier || 'INITIATE'}</span>
-                ${u.is_admin ? '<span class="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white font-semibold ml-2">ADMIN</span>' : ''}
-                <div class="profile-stats">
-                    <div class="profile-stat">
-                        <div class="profile-stat-value">${u.reputation || 0}</div>
-                        <div class="profile-stat-label">Reputación</div>
-                    </div>
-                    <div class="profile-stat">
-                        <div class="profile-stat-value">${u.coins || 0}</div>
-                        <div class="profile-stat-label">Coins</div>
-                    </div>
-                    <div class="profile-stat">
-                        <div class="profile-stat-value">$${u.wallet_balance || '0'}</div>
-                        <div class="profile-stat-label">Wallet</div>
-                    </div>
-                </div>
-            </div>
-            ${r.is_owner ? '<div class="text-center mt-4"><a href="/profile" class="btn-primary">Editar Mi Perfil</a></div>' : ''}
-        `;
-    }).catch(() => {
-        container.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>';
-    });
-})();
-</script>
 {% endblock %}

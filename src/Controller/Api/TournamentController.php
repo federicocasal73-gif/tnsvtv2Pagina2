@@ -508,8 +508,11 @@ class TournamentController extends AbstractController
 
         $adminUser = $this->getUser();
         if (!$adminUser) {
-            // Header auth - usar el primer admin
-            $adminUser = $this->userRepository->findOneBy(['code' => 'ADMIN01']);
+            // No authenticated user — fail with 401 rather than silently using ADMIN01 fallback
+            return new JsonResponse([
+                'error' => 'No autenticado',
+                'error_code' => 'unauthenticated',
+            ], 401);
         }
 
         $t = new Tournament();
@@ -530,7 +533,7 @@ class TournamentController extends AbstractController
         // Audit log de la accion admin
         $this->auditLogger->log(
             AdminAuditLog::ACTION_TOURNAMENT_CREATE,
-            'admin',
+            $adminUser->getCode(),
             AdminAuditLog::RESULT_SUCCESS,
             ['tournament_id' => $t->getId(), 'name' => $name, 'entry_fee' => $entryFee, 'duration_days' => $durationDays, 'max_players' => $maxPlayers]
         );
@@ -640,7 +643,7 @@ class TournamentController extends AbstractController
         // Audit log
         $this->auditLogger->log(
             AdminAuditLog::ACTION_TOURNAMENT_CLOSE,
-            'admin',
+            $adminUser->getCode(),
             AdminAuditLog::RESULT_SUCCESS,
             ['tournament_id' => $t->getId(), 'participants' => count($winners), 'prize_pool' => $prizePool]
         );
@@ -700,7 +703,7 @@ class TournamentController extends AbstractController
         // Audit log
         $this->auditLogger->log(
             AdminAuditLog::ACTION_TOURNAMENT_CANCEL,
-            'admin',
+            $adminUser->getCode(),
             AdminAuditLog::RESULT_SUCCESS,
             ['tournament_id' => $t->getId(), 'refunded' => $t->getEntries()->count(), 'amount_refunded' => $entryFee]
         );

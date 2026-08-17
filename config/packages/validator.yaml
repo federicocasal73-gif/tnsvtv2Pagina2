@@ -5,7 +5,15 @@ framework:
         #auto_mapping:
         #    App\Entity\: []
 
+        # Check passwords against the "Have I Been Pwned" database.
+        # Adds ~5-10ms latency to password validation (1 hash lookup per character).
+        # Enable in production to reject leaked passwords.
+        not_compromised_password: true
+
+        email_validation_mode: 'html5'
+
 when@test:
     framework:
         validation:
+            # Disable in tests to avoid external HTTP calls and speed up suite
             not_compromised_password: false

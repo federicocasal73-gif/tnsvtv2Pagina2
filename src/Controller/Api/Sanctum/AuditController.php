@@ -6,12 +6,15 @@ use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Sanctum Audit Log API — Phase 1a.
  * Returns admin_audit_log entries with pagination + filters.
+ * Admin-only: only ROLE_ADMIN can read admin action history.
  */
 #[Route('/sanctum/api/audit', name: 'sanctum_api_audit_')]
+#[IsGranted('ROLE_ADMIN')]
 class AuditController extends AbstractController
 {
     public function __construct(

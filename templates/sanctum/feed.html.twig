@@ -116,30 +116,45 @@
 {% endblock %}
 
 {% block content %}
-{# Filter Tabs #}
-<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto"
+     data-controller="feed">
     <div class="filter-tabs">
-        <button class="filter-pill active" data-filter="all">Todos</button>
-        <button class="filter-pill" data-filter="signal">Señales</button>
-        <button class="filter-pill" data-filter="result">Resultados</button>
-        <button class="filter-pill" data-filter="projection">Proyecciones</button>
-        <button class="filter-pill" data-filter="question">Preguntas</button>
+        <button class="filter-pill active"
+                data-filter="all"
+                data-action="feed#setFilter">Todos</button>
+        <button class="filter-pill"
+                data-filter="signal"
+                data-action="feed#setFilter">Señales</button>
+        <button class="filter-pill"
+                data-filter="result"
+                data-action="feed#setFilter">Resultados</button>
+        <button class="filter-pill"
+                data-filter="projection"
+                data-action="feed#setFilter">Proyecciones</button>
+        <button class="filter-pill"
+                data-filter="question"
+                data-action="feed#setFilter">Preguntas</button>
     </div>
 
     {# Composer #}
     <div class="composer-card">
         <div class="flex items-center gap-2 mb-3">
-            <select id="post-category" class="filter-pill" style="padding:4px 12px;">
+            <select class="filter-pill"
+                    style="padding:4px 12px;"
+                    data-feed-target="category">
                 <option value="general" selected>General</option>
                 <option value="signal">Señal</option>
                 <option value="result">Resultado</option>
                 <option value="analysis">Análisis</option>
             </select>
         </div>
-        <textarea id="post-text" rows="3" placeholder="¿Qué querés compartir con el Sanctum?"
-                  class="w-full px-4 py-3 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] text-[var(--on-surface-elev)] resize-none focus:outline-none focus:border-[var(--gold-elev)]"></textarea>
+        <textarea rows="3" placeholder="¿Qué querés compartir con el Sanctum?"
+                  class="w-full px-4 py-3 rounded-lg bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] text-[var(--on-surface-elev)] resize-none focus:outline-none focus:border-[var(--gold-elev)]"
+                  data-feed-target="text"></textarea>
         <div class="flex items-center justify-end gap-2 mt-3">
-            <button id="post-publish" class="btn-primary">
+            <button class="btn-primary"
+                    data-feed-target="publishBtn"
+                    data-action="feed#publish">
                 <span class="material-symbols-elev align-middle text-sm">send</span>
                 Publicar
             </button>
@@ -147,23 +162,30 @@
     </div>
 
     {# Feed list #}
-    <div id="feed-list" class="space-y-4">
+    <div class="space-y-4"
+         data-feed-target="list">
         <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando feed...</p>
     </div>
 </div>
 
 {# FAB #}
-<button class="fab-btn" id="fab-btn" title="Nueva publicación">
+<button class="fab-btn"
+        data-feed-target="fab"
+        title="Nueva publicación"
+        data-action="feed#openFab">
     <span class="material-symbols-outlined" style="font-size: 1.75rem; font-variation-settings: 'FILL' 1;">add</span>
 </button>
 
 {# Post Modal #}
-<div class="post-modal" id="post-modal">
-    <div class="post-modal-overlay" onclick="document.getElementById('post-modal').classList.remove('active')"></div>
+<div class="post-modal"
+     data-feed-target="modal">
+    <div class="post-modal-overlay"
+         data-action="click->feed#closeFab"></div>
     <div class="post-modal-content">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-[var(--on-surface-elev)]">Crear Señal</h3>
-            <button onclick="document.getElementById('post-modal').classList.remove('active')" class="text-[var(--outline-elev)] hover:text-[var(--on-surface-elev)]">
+            <button class="text-[var(--outline-elev)] hover:text-[var(--on-surface-elev)]"
+                    data-action="feed#closeFab">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
@@ -204,162 +226,4 @@
         </div>
     </div>
 </div>
-
-<script>
-(function() {
-    'use strict';
-    const listEl = document.getElementById('feed-list');
-    const textEl = document.getElementById('post-text');
-    const catEl = document.getElementById('post-category');
-    const publishBtn = document.getElementById('post-publish');
-    const fabBtn = document.getElementById('fab-btn');
-    const postModal = document.getElementById('post-modal');
-    const me = () => (window.TNSVT_USER && window.TNSVT_USER.code) || '';
-    let currentFilter = 'all';
-
-    function escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    function getCardClass(cat) {
-        if (cat === 'signal') return 'signal';
-        if (cat === 'projection') return 'projection';
-        if (cat === 'result') return 'result-win';
-        if (cat === 'question') return 'question';
-        return '';
-    }
-
-    function getCatClass(cat) {
-        if (cat === 'signal') return 'cat-signal';
-        if (cat === 'projection') return 'cat-projection';
-        if (cat === 'result') return 'cat-result';
-        if (cat === 'question') return 'cat-question';
-        return 'cat-signal';
-    }
-
-    function getCatLabel(cat) {
-        if (cat === 'signal') return 'SEÑAL';
-        if (cat === 'projection') return 'PROYECCIÓN';
-        if (cat === 'result') return 'RESULTADO';
-        if (cat === 'question') return 'PREGUNTA';
-        return 'GENERAL';
-    }
-
-    async function loadFeed() {
-        const r = await apiFetch('/api/feed');
-        if (!r.ok || !r.data) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin datos disponibles</p>';
-            return;
-        }
-        let posts = Array.isArray(r.data) ? r.data : [];
-        if (currentFilter !== 'all') posts = posts.filter(p => (p.cat || 'general') === currentFilter);
-        if (posts.length === 0) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin publicaciones</p>';
-            return;
-        }
-        listEl.innerHTML = posts.map(p => {
-            const initial = (p.author_name || p.author_code || '?').slice(0, 1).toUpperCase();
-            const time = p.created_at ? new Date(p.created_at).toLocaleString() : '';
-            const photo = p.photo ? `<img src="${escapeHtml(p.photo)}" style="max-width:100%;border-radius:0.75rem;margin-top:1rem;" />` : '';
-            const likes = p.likes || 0;
-            const comments = (p.comments || []).length;
-            const cat = p.cat || 'general';
-            return `
-                <article class="feed-card ${getCardClass(cat)} fade-in-up" data-id="${p.id}" data-cat="${cat}">
-                    <div class="p-5">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="feed-avatar">${escapeHtml(initial)}</div>
-                            <div class="flex-1">
-                                <div class="feed-author">${escapeHtml(p.author_name || p.author_code)}</div>
-                                <div class="feed-time">${escapeHtml(p.author_code)} · ${escapeHtml(time)}</div>
-                            </div>
-                            <span class="feed-cat ${getCatClass(cat)}">${getCatLabel(cat)}</span>
-                        </div>
-                        <div style="font-size:0.9375rem;line-height:1.6;color:var(--on-surface-elev);white-space:pre-wrap;word-break:break-word;">${escapeHtml(p.text || '')}</div>
-                        ${photo}
-                        <div class="feed-actions">
-                            <button class="feed-action-btn" data-action="like" data-id="${p.id}">
-                                <span class="material-symbols-outlined text-[18px]">thumb_up</span>
-                                <span>${likes}</span>
-                            </button>
-                            <button class="feed-action-btn" data-action="comment" data-id="${p.id}">
-                                <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
-                                <span>${comments}</span>
-                            </button>
-                            <button class="feed-action-btn ml-auto" data-action="share" data-id="${p.id}">
-                                <span class="material-symbols-outlined text-[18px]">share</span>
-                            </button>
-                        </div>
-                    </div>
-                </article>
-            `;
-        }).join('');
-    }
-
-    async function publish() {
-        const text = textEl.value.trim();
-        if (!text) return;
-        publishBtn.disabled = true;
-        const r = await apiFetch('/api/feed', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: me(), text: text, cat: catEl.value })
-        });
-        publishBtn.disabled = false;
-        if (r.ok && r.data && (r.data.success || r.data.id)) {
-            textEl.value = '';
-            if (window.apiToast) apiToast('Publicación creada', 'success');
-            await loadFeed();
-        } else {
-            const msg = (r.data && (r.data.error || r.data.message)) || 'Error';
-            if (window.apiToast) apiToast(msg, 'error');
-        }
-    }
-
-    async function toggleLike(postId, btn) {
-        const r = await apiFetch(`/api/feed/${postId}/like`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: me() })
-        });
-        if (r.ok && r.data && r.data.likes !== undefined) {
-            btn.classList.add('liked');
-            const span = btn.querySelector('span:last-child');
-            if (span) span.textContent = r.data.likes;
-        }
-    }
-
-    // Filter tabs
-    document.querySelectorAll('.filter-pill').forEach(pill => {
-        pill.addEventListener('click', () => {
-            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            currentFilter = pill.dataset.filter;
-            loadFeed();
-        });
-    });
-
-    // FAB
-    if (fabBtn) {
-        fabBtn.addEventListener('click', () => {
-            if (postModal) postModal.classList.add('active');
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        publishBtn.addEventListener('click', publish);
-        listEl.addEventListener('click', (e) => {
-            const likeBtn = e.target.closest('[data-action="like"]');
-            if (likeBtn) { toggleLike(likeBtn.dataset.id, likeBtn); return; }
-            const commentBtn = e.target.closest('[data-action="comment"]');
-            if (commentBtn) { if (window.apiToast) apiToast('Comentarios próximamente', 'info'); }
-        });
-        function boot() { if (me()) loadFeed(); else setTimeout(boot, 1000); }
-        if (window.TNSVT_USER) boot();
-        else window.addEventListener('tnsvt:user-loaded', boot, { once: true });
-    });
-})();
-</script>
-
-{% include '_partials/tabbar.html.twig' %}
 {% endblock %}

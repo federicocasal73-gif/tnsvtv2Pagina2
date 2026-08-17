@@ -3,14 +3,16 @@
 namespace App\Controller\Api;
 
 use App\Entity\AcademiaContent;
+use App\Entity\User;
+use App\Message\NotificationDispatch;
 use App\Repository\AcademiaContentRepository;
 use App\Security\AdminAuthTrait;
-use App\Service\PushService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/academia')]
@@ -21,7 +23,7 @@ class AcademiaController extends AbstractController
     public function __construct(
         private EntityManagerInterface $em,
         private AcademiaContentRepository $academiaRepository,
-        private PushService $pushService,
+        private MessageBusInterface $bus,
     ) {}
 
     #[Route('', name: 'api_academia_list', methods: ['GET'])]
@@ -29,8 +31,9 @@ class AcademiaController extends AbstractController
     {
         $courses = $this->academiaRepository->findAllOrdered();
 
-        $data = array_map(function (AcademiaContent $c) {
+        $data = array_map(static function (AcademiaContent $c): array {
             $lessons = $c->getLessons();
+            $decoded = is_string($lessons) ? json_decode($lessons, true) : $lessons;
             return [
                 'id' => $c->getId(),
                 'title' => $c->getTitle(),
@@ -39,7 +42,7 @@ class AcademiaController extends AbstractController
                 'video_url' => $c->getVideoUrl(),
                 'locked' => $c->isLocked(),
                 'orden' => $c->getOrden(),
-                'lecciones' => $lessons ? (is_array($lessons) ? $lessons : json_decode($lessons, true)) : [],
+                'lecciones' => is_array($decoded) ? $decoded : [],
             ];
         }, $courses);
 
@@ -51,24 +54,22 @@ class AcademiaController extends AbstractController
     {
         $this->requireAdmin($request);
         $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return $this->json(['error' => 'JSON inválido'], Response::HTTP_BAD_REQUEST);
+        }
 
         $course = new AcademiaContent();
-        $course->setTitle($data['title'] ?? '');
-        $course->setEmoji($data['emoji'] ?? '📚');
-        $course->setDescription($data['descripcion'] ?? '');
-        $course->setVideoUrl($data['video_url'] ?? null);
-        $course->setLocked($data['locked'] ?? true);
+        $course->setTitle((string) ($data['title'] ?? ''));
+        $course->setEmoji((string) ($data['emoji'] ?? '📚'));
+        $course->setDescription((string) ($data['descripcion'] ?? ''));
+        $course->setVideoUrl(isset($data['video_url']) ? (string) $data['video_url'] : null);
+        $course->setLocked((bool) ($data['locked'] ?? true));
         $course->setOrden((int) ($data['orden'] ?? 99));
 
         $this->em->persist($course);
         $this->em->flush();
 
-        $this->pushService->broadcast(
-            'academia',
-            sprintf('%s Nuevo curso en Academia: %s', $course->getEmoji() ?: '📚', $course->getTitle()),
-            ['course_id' => (string) $course->getId()],
-            link: 'academia'
-        );
+        $this->notifyAllUsers('academia', sprintf('%s Nuevo curso: %s', $course->getEmoji() ?: '📚', $course->getTitle()), 'academia');
 
         return $this->json(['success' => true, 'id' => $course->getId()], Response::HTTP_CREATED);
     }
@@ -83,38 +84,38 @@ class AcademiaController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return $this->json(['error' => 'JSON inválido'], Response::HTTP_BAD_REQUEST);
+        }
 
-        if (isset($data['title'])) $course->setTitle($data['title']);
-        if (isset($data['emoji'])) $course->setEmoji($data['emoji']);
-        if (isset($data['descripcion'])) $course->setDescription($data['descripcion']);
-        if (isset($data['video_url'])) $course->setVideoUrl($data['video_url']);
-        if (isset($data['locked'])) $course->setLocked($data['locked']);
+        if (isset($data['title'])) $course->setTitle((string) $data['title']);
+        if (isset($data['emoji'])) $course->setEmoji((string) $data['emoji']);
+        if (isset($data['descripcion'])) $course->setDescription((string) $data['descripcion']);
+        if (isset($data['video_url'])) $course->setVideoUrl((string) $data['video_url']);
+        if (isset($data['locked'])) $course->setLocked((bool) $data['locked']);
         if (isset($data['orden'])) $course->setOrden((int) $data['orden']);
 
         $this->em->flush();
 
-        $this->pushService->broadcast(
-            'academia',
-            sprintf('Curso actualizado: %s', $course->getTitle()),
-            ['course_id' => (string) $course->getId()],
-            link: 'academia'
-        );
+        $this->notifyAllUsers('academia', sprintf('Curso actualizado: %s', $course->getTitle()), 'academia');
 
-        return $this->json(['success' => true]);
+        return $this->json(['success' => true, 'id' => $course->getId()]);
     }
 
-    #[Route('/{id}', name: 'api_academia_delete', methods: ['DELETE'])]
-    public function delete(int $id, Request $request): JsonResponse
+    /**
+     * Queues a NotificationDispatch for every active user.
+     * Background handler persists + pushes via FCM.
+     */
+    private function notifyAllUsers(string $type, string $content, ?string $link): void
     {
-        $this->requireAdmin($request);
-        $course = $this->academiaRepository->find($id);
-        if (!$course) {
-            return $this->json(['error' => 'No encontrado'], Response::HTTP_NOT_FOUND);
+        $users = $this->em->getRepository(User::class)->findBy(['active' => true]);
+        foreach ($users as $user) {
+            $this->bus->dispatch(new NotificationDispatch(
+                userId: $user->getId(),
+                type: $type,
+                content: $content,
+                link: $link,
+            ));
         }
-
-        $this->em->remove($course);
-        $this->em->flush();
-
-        return $this->json(['success' => true]);
     }
 }

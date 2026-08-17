@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+    <entity name="Symfony\Component\Messenger\Transport\Doctrine\Entity\MessengerMessages" table="messenger_messages" repository-class="Symfony\Component\Messenger\Transport\Doctrine\Entity\MessengerMessagesRepository">
+        <indexes>
+            <index name="IDX_75EA56E0E6D5C6AA" columns="queue_name"/>
+            <index name="IDX_75EA56E0FB7336F0" columns="available_at"/>
+            <index name="IDX_75EA56E0B84B9AA0" columns="delivered_at"/>
+        </indexes>
+        <id name="id" type="bigint">
+            <generator strategy="IDENTITY"/>
+        </id>
+        <field name="body" type="text" nullable="false"/>
+        <field name="headers" type="text" nullable="false"/>
+        <field name="queueName" type="string" column="queue_name" length="190" nullable="false"/>
+        <field name="createdAt" type="datetime_immutable" column="created_at" nullable="false"/>
+        <field name="availableAt" type="datetime_immutable" column="available_at" nullable="false"/>
+        <field name="deliveredAt" type="datetime_immutable" column="delivered_at" nullable="true"/>
+    </entity>
+</doctrine-mapping>

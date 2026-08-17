@@ -28,6 +28,50 @@ framework:
             interval: '1 minute'
             cache_pool: 'cache.rate_limiter'
 
+        # Auth endpoints: stricter limits
+        # A.6 - protect endpoints that previously had no rate limit
+        auth_login:
+            policy: 'fixed_window'
+            limit: 10
+            interval: '1 minute'
+            cache_pool: 'cache.rate_limiter'
+
+        auth_refresh:
+            policy: 'fixed_window'
+            limit: 10
+            interval: '1 minute'
+            cache_pool: 'cache.rate_limiter'
+
+        auth_check:
+            policy: 'fixed_window'
+            limit: 60
+            interval: '1 minute'
+            cache_pool: 'cache.rate_limiter'
+
+        devices_register:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '1 hour'
+            cache_pool: 'cache.rate_limiter'
+
+        wallet_read:
+            policy: 'fixed_window'
+            limit: 30
+            interval: '1 minute'
+            cache_pool: 'cache.rate_limiter'
+
+        wallet_withdraw:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '1 hour'
+            cache_pool: 'cache.rate_limiter'
+
+        academia_verify:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '15 minutes'
+            cache_pool: 'cache.rate_limiter'
+
     cache:
         pools:
             cache.rate_limiter:

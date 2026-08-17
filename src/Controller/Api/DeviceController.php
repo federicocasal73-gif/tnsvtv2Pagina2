@@ -7,8 +7,10 @@ use App\Repository\DeviceRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/devices')]
@@ -18,11 +20,18 @@ class DeviceController extends AbstractController
         private EntityManagerInterface $em,
         private DeviceRepository $deviceRepository,
         private UserRepository $userRepository,
+        #[Autowire(service: 'limiter.devices_register')]
+        private RateLimiterFactory $devicesLimiter,
     ) {}
 
     #[Route('/register', name: 'api_device_register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
+        $limiter = $this->devicesLimiter->create($request->getClientIp() ?? 'anon');
+        if (!$limiter->consume(1)->isAccepted()) {
+            return $this->json(['error' => 'Demasiados registros. Probá en una hora.'], 429);
+        }
+
         $data = json_decode($request->getContent(), true);
 
         $userCode = trim($data['user_code'] ?? '');

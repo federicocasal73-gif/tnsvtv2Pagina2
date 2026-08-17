@@ -16,6 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Admin-only CRUD for global settings.
  */
 #[Route('/sanctum/api/settings', name: 'sanctum_api_settings_')]
+#[IsGranted('ROLE_ADMIN')]
 class SettingsController extends AbstractController
 {
     public function __construct(

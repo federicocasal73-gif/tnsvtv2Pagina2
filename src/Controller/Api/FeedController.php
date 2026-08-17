@@ -10,7 +10,6 @@ use App\Repository\UserRepository;
 use App\Security\RateLimiterTrait;
 use App\Service\ImageValidationService;
 use App\Service\LinkPreview\LinkPreviewService;
-use App\Service\PushService;
 use App\Service\RateLimiterService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,7 +28,6 @@ class FeedController extends AbstractController
         private FeedPostRepository $feedPostRepository,
         private LikedPostRepository $likedPostRepository,
         private UserRepository $userRepository,
-        private PushService $pushService,
         private RateLimiterService $rateLimiter,
         private LinkPreviewService $linkPreviewService,
         private ImageValidationService $imageValidation,

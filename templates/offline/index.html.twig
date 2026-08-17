@@ -1,0 +1,30 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Sin conexión · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Sin conexión{% endblock %}
+{% block topbar_subtitle %}No pudimos conectar al servidor.{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto text-center py-16">
+    <div class="text-6xl mb-4 opacity-60">⚡</div>
+    <h1 class="text-2xl font-semibold text-[var(--on-surface-elev)] mb-2">Estás sin conexión</h1>
+    <p class="text-[var(--outline-elev)] mb-6">
+        El Reino está temporalmente fuera de alcance. Verificá tu conexión a internet y volvé a intentar.
+    </p>
+    <button onclick="location.reload()"
+            class="btn-primary inline-flex items-center gap-2">
+        <span class="material-symbols-elev align-middle text-sm">refresh</span>
+        Reintentar
+    </button>
+
+    <div class="mt-12 text-left glass-card-elev p-6">
+        <h2 class="text-sm uppercase tracking-wider text-[var(--gold-elev)] mb-3">Mientras esperás</h2>
+        <ul class="space-y-2 text-sm text-[var(--on-surface-variant-elev)]">
+            <li>📊 Revisá los datos del último trade cargado</li>
+            <li>📝 Anotá ideas para tu próximo setup</li>
+            <li>🧘 Meditá antes del próximo trade</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

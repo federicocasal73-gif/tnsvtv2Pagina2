@@ -1,0 +1,390 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "T.N.S.V.T Sanctum API",
+        "description": "REST API para la plataforma T.N.S.V.T — torneos, chat, feed, billetera y endpoints admin. Autenticación vía JWT Bearer token.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/",
+            "description": "API base"
+        }
+    ],
+    "paths": {
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Iniciar sesión",
+                "description": "Autentica a un usuario. Los usuarios regulares envían code + name; los administradores envían code + password.",
+                "operationId": "af6e42d3f2ecf7f91a2060ba6d75c10a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login correcto, devuelve JWT + refresh token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Código requerido o campos faltantes"
+                    },
+                    "401": {
+                        "description": "Código inválido o credenciales incorrectas"
+                    },
+                    "429": {
+                        "description": "Demasiados intentos (rate limit)"
+                    }
+                }
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Renovar token",
+                "description": "Rota el refresh token y devuelve un nuevo access token + refresh token.",
+                "operationId": "db186911374018b083528858578d3180",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "ABCD01"
+                                    },
+                                    "refresh_token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tokens renovados"
+                    },
+                    "400": {
+                        "description": "Campos faltantes"
+                    },
+                    "401": {
+                        "description": "Refresh token inválido o expirado"
+                    }
+                }
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Cerrar sesión",
+                "description": "Invalida la sesión PHP y limpia el token storage. Acepta POST y GET para compatibilidad.",
+                "operationId": "d5a9d7d44648c5b6fca7b278c340af98",
+                "responses": {
+                    "200": {
+                        "description": "Sesión cerrada"
+                    }
+                }
+            }
+        },
+        "/api/auth/check": {
+            "get": {
+                "tags": [
+                    "Autenticación"
+                ],
+                "summary": "Verificar sesión",
+                "description": "Devuelve el estado de autenticación del usuario actual. Requiere JWT Bearer.",
+                "operationId": "27ceb6a8f1d593b394ab649d62ac8bcf",
+                "responses": {
+                    "200": {
+                        "description": "Estado de autenticación"
+                    }
+                }
+            }
+        },
+        "/api/docs/openapi.json": {
+            "get": {
+                "tags": [
+                    "Documentation"
+                ],
+                "summary": "OpenAPI 3.1 specification",
+                "description": "Returns the full OpenAPI 3.1 document for the Sanctum API.",
+                "operationId": "6b461d5c25169533791861a3a4df62a5",
+                "responses": {
+                    "200": {
+                        "description": "OpenAPI 3.1 document",
+                        "content": {
+                            "application/json": {}
+                        }
+                    },
+                    "503": {
+                        "description": "Spec not generated yet"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ApiError": {
+                "description": "Cuerpo de error uniforme de la API",
+                "required": [
+                    "success",
+                    "error"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "error": {
+                        "type": "string",
+                        "example": "No autenticado"
+                    },
+                    "error_code": {
+                        "type": "string",
+                        "example": "unauthenticated",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "LoginRequest": {
+                "description": "Cuerpo de la petición de login",
+                "required": [
+                    "code"
+                ],
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "example": "ABCD01"
+                    },
+                    "name": {
+                        "description": "Requerido para usuarios no-admin",
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "password": {
+                        "description": "Requerido solo para administradores",
+                        "type": "string",
+                        "format": "password"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginResponse": {
+                "description": "Respuesta de login exitoso",
+                "required": [
+                    "success",
+                    "user",
+                    "token",
+                    "refresh_token",
+                    "expires_in"
+                ],
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/User"
+                    },
+                    "token": {
+                        "description": "JWT access token (15 min TTL)",
+                        "type": "string"
+                    },
+                    "refresh_token": {
+                        "description": "JWT refresh token (7 día TTL)",
+                        "type": "string"
+                    },
+                    "expires_in": {
+                        "type": "integer",
+                        "example": 900
+                    }
+                },
+                "type": "object"
+            },
+            "Notification": {
+                "description": "Notificación de usuario",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "example": "tournament_created"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "link": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "read": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "description": "Usuario de la plataforma T.N.S.V.T",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "code": {
+                        "type": "string",
+                        "example": "ABCD01"
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Juan Pérez"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@tnsvt.com",
+                        "nullable": true
+                    },
+                    "active": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "tier": {
+                        "type": "string",
+                        "example": "INITIATE",
+                        "enum": [
+                            "INITIATE",
+                            "ASPIRANT",
+                            "TIER_1",
+                            "TIER_2",
+                            "TIER_3_ZENITH",
+                            "MASTER"
+                        ]
+                    },
+                    "isAdmin": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "roles": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "ROLE_USER"
+                        ]
+                    },
+                    "wallet_balance": {
+                        "type": "string",
+                        "example": "100.50"
+                    },
+                    "coins": {
+                        "type": "integer",
+                        "example": 250
+                    },
+                    "reputation": {
+                        "type": "number",
+                        "example": 12.5
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "WalletTransaction": {
+                "description": "Transacción de billetera",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "deposit",
+                            "withdraw",
+                            "tournament_prize",
+                            "tournament_entry",
+                            "manual"
+                        ]
+                    },
+                    "amount": {
+                        "type": "string",
+                        "example": "-25.00"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "is_credit": {
+                        "type": "boolean"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "confirmed",
+                            "rejected"
+                        ]
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Token JWT obtenido de POST /api/auth/login",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Autenticación",
+            "description": "Autenticación"
+        },
+        {
+            "name": "Documentation",
+            "description": "Documentation"
+        }
+    ]
+}

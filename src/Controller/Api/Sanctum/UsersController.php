@@ -2,16 +2,20 @@
 
 namespace App\Controller\Api\Sanctum;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Sanctum Users API — Phase 1a.
  * Lists users with filters (tier, active, code).
+ * Admin-only: contains PII (email, walletBalance, coins, reputation).
  */
 #[Route('/sanctum/api/users', name: 'sanctum_api_users_')]
+#[IsGranted('ROLE_ADMIN')]
 class UsersController extends AbstractController
 {
     public function __construct(
@@ -71,7 +75,7 @@ class UsersController extends AbstractController
         // Audit log
         $admin = $this->getUser();
         $this->userRepository->getEntityManager()->getConnection()->executeStatement(
-            "INSERT INTO admin_audit_log (admin_code, action, result, ip, user_agent, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
+            "INSERT INTO admin_audit_log (admin_code, action, result, ip, user_agent, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)",
             [
                 $admin?->getCode() ?? 'unknown',
                 'user.tier.change',

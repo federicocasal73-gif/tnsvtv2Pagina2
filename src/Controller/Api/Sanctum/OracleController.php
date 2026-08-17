@@ -90,7 +90,7 @@ class OracleController extends AbstractController
     }
 
     #[Route('/global-stats', name: 'global_stats', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[IsGranted('ROLE_ADMIN')]
     public function globalStats(Request $request): JsonResponse
     {
         $days = max(1, min(365, (int)$request->query->get('days', 30)));

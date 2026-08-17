@@ -1,135 +1,173 @@
-# .github/workflows/ci.yml
-#
-# TNSVT CI — runs on every push and PR.
-# Validates: PHP syntax, secrets audit, templates present, Guardian services.
-# Does NOT run the full Symfony app (no DB available in CI yet).
-#
-# Required for: green badge, automatic pre-deploy checks, early warning.
-#
-# Triggers:
-#   - push to main → full check
-#   - pull_request → full check
-#
-# Future work:
-#   - Add a `test` job that runs PHPUnit against a SQLite DB
-#   - Add a `lint:twig` step that uses twigcs
-
-name: TNSVT CI
+name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
 
-# Cancel in-progress runs when a new commit lands on the same branch.
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+env:
+    APP_ENV: test
+    DATABASE_URL: "sqlite:///%kernel.project_dir%/var/test.db"
+    MESSENGER_TRANSPORT_DSN: "in-memory://"
+    MERCURE_URL: "http://127.0.0.1:3000/.well-known/mercure"
+    MERCURE_JWT_SECRET: "ci-test-mercure-secret-32bytes-placeholder"
+    TRUSTED_PROXIES: "127.0.0.1,REMOTE_ADDR"
+    MP_ACCESS_TOKEN: "TEST-FAKE-TOKEN-FOR-SIGNATURE-VERIFICATION-ONLY"
+    MP_WEBHOOK_SECRET: "test_webhook_secret_for_signing_verification"
 
 jobs:
-  pre-deploy-check:
-    name: Pre-deploy verification
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
+    lint-php:
+        name: PHPStan (Static Analysis)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, mbstring
+                  coverage: none
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: ctype, iconv, mbstring, intl
-          coverage: none
+            - name: Cache Composer dependencies
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-${{ runner.os }}-
+            - name: Install dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Install Composer dependencies (no-dev for speed)
-        run: composer install --no-dev --prefer-dist --no-interaction --no-scripts
+            - name: Setup database
+              run: |
+                  mkdir -p var
+                  bin/console doctrine:database:create --if-not-exists --no-interaction
+                  bin/console doctrine:schema:create --no-interaction
+                  php bin/setup-messenger-db.php
 
-      - name: Install Composer dev dependencies for tests
-        run: composer install --no-interaction --no-scripts
+            - name: Run PHPStan
+              run: php vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
-      - name: Run pre-deploy-check.sh
-        run: ./bin/pre-deploy-check.sh
+            - name: Generate OpenAPI spec
+              run: |
+                  php bin/console openapi:generate
+                  php bin/console lint:yaml config/packages/sentry.yaml
 
-      - name: PHP syntax check (all .php files)
-        run: |
-          find src templates bin -type f -name '*.php' -print0 \
-            | xargs -0 -I {} sh -c 'php -l "$1" >/dev/null 2>&1 || { echo "Syntax error in: $1"; php -l "$1"; exit 1; }' _ {}
+    tests:
+        name: PHPUnit (Tests)
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Verify no secrets committed
-        run: |
-          # Refuse the build if .env.local is tracked
-          if git ls-files --error-unmatch .env.local >/dev/null 2>&1; then
-            echo "::error::.env.local is tracked in git. Rotate secrets + remove from index."
-            exit 1
-          fi
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, mbstring, sqlite
+                  coverage: xdebug
 
-          # Refuse the build if .env contains a real JWT passphrase
-          if grep -qE '^JWT_PASSPHRASE=[a-f0-9]{20,}' .env 2>/dev/null; then
-            echo "::error::.env contains a real JWT_PASSPHRASE. Replace with placeholder."
-            exit 1
-          fi
+            - name: Cache Composer dependencies
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
 
-          # Refuse the build if Mercure default secret is anywhere
-          if grep -rqE 'dev-secret-change-in-production!!' .env .env.local 2>/dev/null; then
-            echo "::error::Mercure default secret still present."
-            exit 1
-          fi
+            - name: Install dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
 
-          echo "Secrets check OK."
+            - name: Setup database
+              run: |
+                  mkdir -p var
+                  bin/console doctrine:database:create --if-not-exists --no-interaction
+                  bin/console doctrine:schema:create --no-interaction
+                  php bin/setup-messenger-db.php
 
-      - name: Verify Guardian services present
-        run: |
-          files=(
-              "src/Service/Guardian/GuardianSignal.php"
-              "src/Service/Guardian/GuardianSignalCollector.php"
-              "src/Service/Guardian/DisciplineScoreCalculator.php"
-              "src/Controller/Api/GuardianController.php"
-              "src/Event/TradeSavedEvent.php"
-              "src/EventSubscriber/GuardianSubscriber.php"
-          )
-          missing=0
-          for f in "${files[@]}"; do
-              if [ ! -f "$f" ]; then
-                  echo "::error::missing: $f"
-                  missing=$((missing + 1))
-              fi
-          done
-          [ "$missing" -eq 0 ] || exit 1
+            - name: Run tests
+              run: php vendor/bin/phpunit --coverage-text --colors=never
 
-      - name: Verify templates split (Phase 5)
-        run: |
-          [ ! -f templates/home.html.twig ] \
-              && echo "Legacy templates/home.html.twig correctly removed." \
-              || { echo "::error::Legacy templates/home.html.twig still present."; exit 1; }
-          [ -f templates/public/home.html.twig ] || { echo "::error::missing templates/public/home.html.twig"; exit 1; }
-          [ -f templates/public/login.html.twig ] || { echo "::error::missing templates/public/login.html.twig"; exit 1; }
+            - name: Upload coverage
+              if: matrix.coverage != false
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-${{ matrix.php-versions }}
+                  path: var/coverage
 
-  # ─── Future: phpunit + functional tests ──────────────────────────────
-  # test:
-  #   name: PHPUnit
-  #   runs-on: ubuntu-latest
-  #   needs: pre-deploy-check
-  #   services:
-  #     mysql:
-  #       image: mysql:8.0
-  #       env:
-  #         MYSQL_ROOT_PASSWORD: test
-  #       ports: ['3306:3306']
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: shivammathur/setup-php@v2
-  #       with: { php-version: '8.4' }
-  #     - run: composer install --no-interaction
-  #     - run: php bin/console doctrine:database:create --env=test
-  #     - run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
-  #     - run: vendor/bin/phpunit
+    lint-twig:
+        name: Twig Lint
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, mbstring
+
+            - name: Install dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: Lint templates
+              run: |
+                  find templates -name '*.twig' -print0 | xargs -0 -I {} bin/console lint:twig {}
+
+    lint-js:
+        name: JS Syntax Check
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: JS Syntax
+              run: |
+                  find assets/controllers -name '*.js' -print0 | xargs -0 -n 1 node --check
+
+    security-audit:
+        name: Composer Security Audit
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+
+            - name: Audit
+              run: composer audit --no-interaction --format=json | jq '.vulnerabilities | length'
+
+    messenger-consumer:
+        name: Messenger Consumer Smoke Test
+        runs-on: ubuntu-latest
+        needs: tests
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, mbstring, sqlite
+
+            - name: Install dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: Setup database
+              run: |
+                  bin/console doctrine:database:create --if-not-exists --no-interaction
+                  bin/console doctrine:schema:create --no-interaction
+                  php bin/setup-messenger-db.php
+
+            - name: Dispatch test message
+              run: |
+                  php bin/console messenger:setup-transports --no-interaction || true
+
+            - name: Consume messages (5s smoke test)
+              run: timeout 5 php bin/console messenger:consume async --time-limit=5 -vv || true

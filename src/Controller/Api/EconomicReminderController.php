@@ -11,8 +11,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/economic-reminders')]
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 class EconomicReminderController extends AbstractController
 {
     public function __construct(
@@ -21,11 +23,21 @@ class EconomicReminderController extends AbstractController
         private UserRepository $userRepository,
     ) {}
 
+    private function currentUser(): ?User
+    {
+        $user = $this->getUser();
+        return $user instanceof User ? $user : null;
+    }
+
     #[Route('/schedule', name: 'api_economic_reminder_schedule', methods: ['POST'])]
     public function schedule(Request $request): JsonResponse
     {
+        $user = $this->currentUser();
+        if (!$user) {
+            return $this->json(['error' => 'No autenticado'], 401);
+        }
+
         $data = json_decode($request->getContent(), true);
-        $userCode = trim((string)($data['user_code'] ?? $request->query->get('user_code') ?? ''));
         $eventDate = trim((string)($data['event_date'] ?? ''));
         $eventTime = trim((string)($data['event_time'] ?? ''));
         $tz = trim((string)($data['timezone'] ?? 'America/Argentina/Buenos_Aires'));
@@ -35,13 +47,8 @@ class EconomicReminderController extends AbstractController
         $currency = trim((string)($data['event_currency'] ?? ''));
         $importance = (int)($data['event_importance'] ?? 3);
 
-        if ($userCode === '' || $eventDate === '' || $eventTime === '' || $title === '') {
-            return $this->json(['error' => 'Faltan user_code, event_date, event_time o event_title'], 400);
-        }
-
-        $user = $this->userRepository->findByCode($userCode);
-        if (!$user) {
-            return $this->json(['error' => 'Usuario no encontrado'], 404);
+        if ($eventDate === '' || $eventTime === '' || $title === '') {
+            return $this->json(['error' => 'Faltan event_date, event_time o event_title'], 400);
         }
 
         $existing = $this->reminderRepository->findExisting($user, $eventDate, $eventTime);
@@ -90,13 +97,9 @@ class EconomicReminderController extends AbstractController
     #[Route('/list', name: 'api_economic_reminder_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
-        $userCode = trim((string)$request->query->get('user_code') ?? '');
-        if ($userCode === '') {
-            return $this->json(['error' => 'user_code requerido'], 400);
-        }
-        $user = $this->userRepository->findByCode($userCode);
+        $user = $this->currentUser();
         if (!$user) {
-            return $this->json(['error' => 'Usuario no encontrado'], 404);
+            return $this->json(['error' => 'No autenticado'], 401);
         }
 
         $reminders = $this->reminderRepository->findByUser($user);
@@ -123,13 +126,17 @@ class EconomicReminderController extends AbstractController
     #[Route('/{id}/cancel', name: 'api_economic_reminder_cancel', methods: ['POST', 'DELETE'])]
     public function cancel(int $id, Request $request): JsonResponse
     {
+        $user = $this->currentUser();
+        if (!$user) {
+            return $this->json(['error' => 'No autenticado'], 401);
+        }
+
         $reminder = $this->reminderRepository->find($id);
         if (!$reminder) {
             return $this->json(['error' => 'Reminder no encontrado'], 404);
         }
 
-        $userCode = trim((string)($request->query->get('user_code') ?? ''));
-        if ($userCode !== '' && $reminder->getUser()?->getCode() !== $userCode) {
+        if ($reminder->getUser()?->getCode() !== $user->getCode()) {
             return $this->json(['error' => 'No autorizado'], 403);
         }
 

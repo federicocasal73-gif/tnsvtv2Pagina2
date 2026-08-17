@@ -4,6 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#050308" />
+    <link rel="manifest" href="{{ asset('manifest.json') }}" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Sanctum" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/icons/icon-192.png') }}" />
     <title>{% block title %}T.N.S.V.T — Sanctum{% endblock %}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -17,11 +22,13 @@
     <link rel="stylesheet" href="{{ asset('styles/animations.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/glow.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/shell.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/accessibility.css') }}" />
 
     {% block stylesheets %}{% endblock %}
 </head>
 
-<body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased">
+<body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased"
+      data-controller="pwa">
 
 {# api_helper MUST be included BEFORE any {% block content %} to ensure window.apiFetch is defined #}
 {% include '_partials/api_helper.html.twig' with {} %}
@@ -227,6 +234,8 @@
 <div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50">
     {% block floats %}{% endblock %}
 </div>
+
+{% block importmap %}{{ importmap('app') }}{% endblock %}
 
 <script>
 (function() {

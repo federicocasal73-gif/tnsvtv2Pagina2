@@ -104,6 +104,8 @@
     const timeLoc = gl.getUniformLocation(program, 'u_time');
     const resLoc = gl.getUniformLocation(program, 'u_resolution');
 
+    let rafId = null;
+
     function render(time) {
         time *= 0.001;
         canvas.width = window.innerWidth;
@@ -112,8 +114,22 @@
         gl.uniform1f(timeLoc, time);
         gl.uniform2f(resLoc, canvas.width, canvas.height);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        requestAnimationFrame(render);
+        rafId = requestAnimationFrame(render);
     }
+
+    // Pause when tab is hidden to save GPU/battery
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        } else {
+            if (rafId === null) {
+                rafId = requestAnimationFrame(render);
+            }
+        }
+    });
 
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;

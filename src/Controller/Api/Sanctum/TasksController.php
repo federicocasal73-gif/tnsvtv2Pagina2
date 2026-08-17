@@ -22,6 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  *   POST   /sanctum/api/tasks/reorder      bulk update orden
  */
 #[Route('/sanctum/api/tasks', name: 'sanctum_api_tasks_')]
+#[IsGranted('ROLE_ADMIN')]
 class TasksController extends AbstractController
 {
     public function __construct(
@@ -82,7 +83,7 @@ class TasksController extends AbstractController
 
         // Log to admin_audit_log
         $this->em->getConnection()->executeStatement(
-            "INSERT INTO admin_audit_log (admin_code, action, result, ip, user_agent, created_at) VALUES (?, ?, 'success', ?, ?, NOW())",
+            "INSERT INTO admin_audit_log (admin_code, action, result, ip, user_agent, created_at) VALUES (?, ?, 'success', ?, ?, CURRENT_TIMESTAMP)",
             [
                 $this->getUser()?->getCode() ?? 'unknown',
                 'task.create',

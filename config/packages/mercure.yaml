@@ -1,0 +1,13 @@
+mercure:
+    default_hub: default
+
+    hubs:
+        default:
+            # URL where the Mercure hub is running
+            # - Local dev: run `mercure` binary on port 3000
+            # - Production: deploy mercure separately, e.g., https://mercure.tnsvt.com/.well-known/mercure
+            url: '%env(MERCURE_URL)%'
+            # JWT used to publish (default is shared with subscribe for dev)
+            jwt:
+                secret: '%env(MERCURE_JWT_SECRET)%'
+                algorithm: HS256

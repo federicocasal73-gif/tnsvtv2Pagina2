@@ -7,10 +7,13 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Sanctum Dashboard API — Phase 1a.
  * Returns real KPIs from the DB.
+ * Admin-only: KPIs are global (total users, global PnL, server health,
+ * recent admin actions) and would leak business intel to regular users.
  *
  * Schema notes:
  * - tasks table has NO 'status' column (only 'active' boolean)
@@ -20,6 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * - admin_audit_log has 'action' (string) + 'result' (string)
  */
 #[Route('/sanctum/api/dashboard', name: 'sanctum_api_dashboard_')]
+#[IsGranted('ROLE_ADMIN')]
 class DashboardController extends AbstractController
 {
     public function __construct(

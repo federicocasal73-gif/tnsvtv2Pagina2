@@ -14,9 +14,10 @@ security:
             lazy: true
             provider: app_user_provider
             custom_authenticators:
+                - App\Security\JwtAuthenticator
                 - App\Security\CodeAuthenticator
-            logout:
-                path: /api/auth/logout
+            # Logout path removed — AuthController::logout handles it directly to
+            # return a JSON response instead of Symfony's default 302 redirect
             entry_point: App\Security\CodeAuthenticator
 
     access_control:

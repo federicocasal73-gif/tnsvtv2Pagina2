@@ -44,26 +44,30 @@
         </div>
     </div>
 
-    {# ─── Events Table ─── #}
-    <div class="glass-card-elev p-0 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Hora</th>
-                        <th>País</th>
-                        <th>Evento</th>
-                        <th>Impacto</th>
-                        <th>Actual</th>
-                        <th>Previsión</th>
-                        <th>Anterior</th>
-                    </tr>
-                </thead>
-                <tbody id="cal-list">
-                    <tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>
-                </tbody>
-            </table>
-        </div>
+    {# ─── Events Table (Turbo Frame — instant filter updates) ─── #}
+    <div class="glass-card-elev p-0 overflow-hidden"
+         data-controller="calendar-events"
+         data-calendar-events-url-value="{{ path('app_calendar_widget') }}">
+        <turbo-frame id="cal-events-frame">
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>País</th>
+                            <th>Evento</th>
+                            <th>Impacto</th>
+                            <th>Actual</th>
+                            <th>Previsión</th>
+                            <th>Anterior</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cal-list">
+                        <tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </turbo-frame>
     </div>
 </div>
 

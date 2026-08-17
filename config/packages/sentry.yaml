@@ -1,0 +1,28 @@
+when@prod:
+    sentry:
+        dsn: '%env(SENTRY_DSN)%'
+        options:
+            environment: '%env(SENTRY_ENVIRONMENT)%'
+            release: '%env(APP_VERSION)%'
+            # Never send personal data (names, codes, emails) to Sentry
+            send_default_pii: false
+            # Sampling: 100% errors, conservative traces to keep quota predictable
+            traces_sample_rate: 0.1
+            enable_tracing: true
+            # Don't alert on expected console/messenger noise
+            ignore_exceptions:
+                - 'Symfony\Component\Console\Exception\CommandNotFoundException'
+        messenger:
+            enabled: true
+            capture_soft_fails: false
+
+when@dev:
+    sentry:
+        dsn: '%env(SENTRY_DSN)%'
+        register_error_handler: false
+        messenger:
+            enabled: false
+
+when@test:
+    sentry:
+        dsn: null

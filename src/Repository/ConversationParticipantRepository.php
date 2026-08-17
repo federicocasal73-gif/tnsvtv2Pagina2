@@ -15,4 +15,16 @@ class ConversationParticipantRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, ConversationParticipant::class);
     }
+
+    /**
+     * @return ConversationParticipant[]
+     */
+    public function findByConversation(int $conversationId): array
+    {
+        return $this->createQueryBuilder('cp')
+            ->where('cp.conversation = :conv')
+            ->setParameter('conv', $conversationId)
+            ->getQuery()
+            ->getResult();
+    }
 }

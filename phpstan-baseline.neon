@@ -1,0 +1,1177 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_string\(\) with array\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: src/Controller/Api/AcademiaController.php
+
+		-
+			message: '#^Call to protected method getEntityManager\(\) of class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository\<object\>\.$#'
+			identifier: method.protected
+			count: 1
+			path: src/Controller/Api/AuthController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getCoins\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: src/Controller/Api/BetController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 9
+			path: src/Controller/Api/BetController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:setCoins\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: src/Controller/Api/BetController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\PlayerBet\:\:setChallenger\(\) expects App\\Entity\\User\|null, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/BetController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getCoins\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/BracketController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: src/Controller/Api/BracketController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:setCoins\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/BracketController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\TournamentBracketEntry\:\:setUser\(\) expects App\\Entity\\User\|null, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/BracketController.php
+
+		-
+			message: '#^Call to an undefined method App\\Entity\\User\:\:isAdmin\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/CampusAdminController.php
+
+		-
+			message: '#^Class App\\Controller\\Api\\CampusLessonProgress not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Controller/Api/CampusAdminController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\CampusAdminController\:\:getEnrollmentRepo\(\) should return App\\Repository\\CampusEnrollmentRepository but returns Doctrine\\ORM\\EntityRepository\<App\\Entity\\CampusEnrollment\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/Api/CampusAdminController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\CampusAdminController\:\:getProgressRepo\(\) should return App\\Repository\\CampusLessonProgressRepository but returns Doctrine\\ORM\\EntityRepository\<App\\Controller\\Api\\CampusLessonProgress\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/Api/CampusAdminController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\CampusAdminController\:\:getSubmissionRepo\(\) should return App\\Repository\\CampusSubmissionRepository but returns Doctrine\\ORM\\EntityRepository\<App\\Entity\\CampusSubmission\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/Api/CampusAdminController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\CampusAdminController\:\:getUserRepo\(\) should return App\\Repository\\UserRepository but returns Doctrine\\ORM\\EntityRepository\<App\\Entity\\User\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Controller/Api/CampusAdminController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Controller/Api/CampusUploadController.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: src/Controller/Api/CampusUploadController.php
+
+		-
+			message: '#^Access to an undefined property App\\Controller\\Api\\ChatController\:\:\$pushService\.$#'
+			identifier: property.notFound
+			count: 2
+			path: src/Controller/Api/ChatController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getCode\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getCoins\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 8
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getName\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:setCoins\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\Clan\:\:setLeader\(\) expects App\\Entity\\User\|null, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\ClanMember\:\:setUser\(\) expects App\\Entity\\User\|null, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\ClanMessage\:\:setSender\(\) expects App\\Entity\\User\|null, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/ClanController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: src/Controller/Api/DailyChallengeController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\DailyChallengeEntry\:\:setUser\(\) expects App\\Entity\\User\|null, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/DailyChallengeController.php
+
+		-
+			message: '#^Constant App\\Controller\\Api\\DolarController\:\:CACHE_KEY is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: src/Controller/Api/DolarController.php
+
+		-
+			message: '#^Access to constant PESSIMISTIC_WRITE on an unknown class Doctrine\\ORM\\LockMode\.$#'
+			identifier: class.notFound
+			count: 4
+			path: src/Controller/Api/DuelController.php
+
+		-
+			message: '#^Property App\\Controller\\Api\\EconomicReminderController\:\:\$userRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controller/Api/EconomicReminderController.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityRepository\<App\\Entity\\EventMission\>\:\:findByEvent\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/EventController.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityRepository\<App\\Entity\\EventMissionProgress\>\:\:countCompleted\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/EventController.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityRepository\<App\\Entity\\EventMissionProgress\>\:\:findOrCreateUserProgress\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/EventController.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityRepository\<App\\Entity\\SpecialEvent\>\:\:findActive\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/EventController.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityRepository\<App\\Entity\\SpecialEvent\>\:\:findRecent\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/EventController.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityRepository\<App\\Entity\\SpecialEvent\>\:\:findUpcoming\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/EventController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/EventController.php
+
+		-
+			message: '#^Access to an undefined property App\\Controller\\Api\\FeedController\:\:\$pushService\.$#'
+			identifier: property.notFound
+			count: 3
+			path: src/Controller/Api/FeedController.php
+
+		-
+			message: '#^Call to function is_string\(\) with non\-empty\-array will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: src/Controller/Api/FeedController.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Controller/Api/FeedController.php
+
+		-
+			message: '#^Offset 0 on array\{list\<string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controller/Api/FeedController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type App\\Entity\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Controller/Api/FeedController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\FrequencySession\:\:setUser\(\) expects App\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/FrequencyController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\UserFrequency\:\:setUser\(\) expects App\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/FrequencyController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Repository\\FrequencySessionRepository\:\:findActiveByUser\(\) expects App\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/FrequencyController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Repository\\FrequencySessionRepository\:\:getTotalMinutesForUser\(\) expects App\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/FrequencyController.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Repository\\UserFrequencyRepository\:\:findByUser\(\) expects App\\Entity\\User, Symfony\\Component\\Security\\Core\\User\\UserInterface\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/FrequencyController.php
+
+		-
+			message: '#^Call to an undefined method App\\Controller\\Api\\GameController\:\:requireAdmin\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/GameController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/HonorBoardController.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: src/Controller/Api/JournalController.php
+
+		-
+			message: '#^Method Psr\\EventDispatcher\\EventDispatcherInterface\:\:dispatch\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: src/Controller/Api/JournalController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type DateTimeImmutable\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: src/Controller/Api/JournalController.php
+
+		-
+			message: '#^Access to constant PERIOD_ALL_TIME on an unknown class App\\Controller\\Api\\GameLeaderboardEntry\.$#'
+			identifier: class.notFound
+			count: 1
+			path: src/Controller/Api/LeaderboardController.php
+
+		-
+			message: '#^Call to an undefined method App\\Controller\\Api\\LeaderboardController\:\:getEntityManager\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/LeaderboardController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getId\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: src/Controller/Api/LeaderboardController.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: src/Controller/Api/LeaderboardController.php
+
+		-
+			message: '#^Parameter \#1 \$array of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: src/Controller/Api/LeaderboardController.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: src/Controller/Api/LeaderboardController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\MusicController\:\:requireAdmin\(\) invoked with 2 parameters, 0 required\.$#'
+			identifier: arguments.count
+			count: 7
+			path: src/Controller/Api/MusicController.php
+
+		-
+			message: '#^Access to constant HTTP_NOT_FOUND on an unknown class App\\Controller\\Api\\Response\.$#'
+			identifier: class.notFound
+			count: 2
+			path: src/Controller/Api/NotificationController.php
+
+		-
+			message: '#^Access to constant HTTP_UNAUTHORIZED on an unknown class App\\Controller\\Api\\Response\.$#'
+			identifier: class.notFound
+			count: 3
+			path: src/Controller/Api/NotificationController.php
+
+		-
+			message: '#^Call to an undefined method App\\Entity\\User\:\:setAvatarUrl\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Controller/Api/ProfileController.php
+
+		-
+			message: '#^Property App\\Controller\\Api\\Sanctum\\DashboardController\:\:\$userRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controller/Api/Sanctum/DashboardController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getCode\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/Sanctum/TasksController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getCode\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/Sanctum/UsersController.php
+
+		-
+			message: '#^Call to protected method getEntityManager\(\) of class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository\<object\>\.$#'
+			identifier: method.protected
+			count: 3
+			path: src/Controller/Api/Sanctum/UsersController.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\TradeRepository\:\:computeStatsForUser\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/SocialController.php
+
+		-
+			message: '#^Method Psr\\EventDispatcher\\EventDispatcherInterface\:\:dispatch\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Controller/Api/SyncController.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:getCode\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/Api/TournamentController.php
+
+		-
+			message: '#^Parameter \#1 \$u of method App\\Entity\\Tournament\:\:setCreatedBy\(\) expects App\\Entity\\User\|null, Symfony\\Component\\Security\\Core\\User\\UserInterface given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Controller/Api/TournamentController.php
+
+		-
+			message: '#^Property App\\Controller\\Api\\TournamentController\:\:\$txRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Controller/Api/TournamentController.php
+
+		-
+			message: '#^Undefined variable\: \$adminUser$#'
+			identifier: variable.undefined
+			count: 2
+			path: src/Controller/Api/TournamentController.php
+
+		-
+			message: '#^Method App\\Controller\\Api\\UserController\:\:requireAdmin\(\) invoked with 2 parameters, 0 required\.$#'
+			identifier: arguments.count
+			count: 6
+			path: src/Controller/Api/UserController.php
+
+		-
+			message: '#^Comparison operation "\<" between int\<min, \-1\> and 0 is always true\.$#'
+			identifier: smaller.alwaysTrue
+			count: 1
+			path: src/Controller/CalendarController.php
+
+		-
+			message: '#^Offset ''EU''\|''US'' on array\{US\: ''🇺🇸 USD'', EU\: ''🇪🇺 EUR'', GB\: ''🇬🇧 GBP'', JP\: ''🇯🇵 JPY'', CA\: ''🇨🇦 CAD'', AU\: ''🇦🇺 AUD'', CH\: ''🇨🇭 CHF'', CN\: ''🇨🇳 CNY'', \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controller/CalendarController.php
+
+		-
+			message: '#^Offset ''country_code'' on array\{time\: ''03\:00'', country_code\: ''US'', currency\: ''USD'', title\: ''Cambio Empleo ADP'', original_title\: ''ADP Non\-Farm…'', importance\: 3, actual\: ''—'', forecast\: ''150K'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''IPC Anual \(CPI YY\)'', original_title\: ''CPI YY'', importance\: 3, actual\: ''—'', forecast\: ''3\.1%%'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''IPC Mensual \(CPI MM\)'', original_title\: ''CPI MM'', importance\: 3, actual\: ''—'', forecast\: ''0\.2%%'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''Nóminas No…'', original_title\: ''Non\-Farm Payrolls'', importance\: 3, actual\: ''—'', forecast\: ''180K'', \.\.\.\}\|array\{time\: ''10\:00'', country_code\: ''EU'', currency\: ''EUR'', title\: ''PMI Manufacturero'', original_title\: ''Manufacturing PMI'', importance\: 2, actual\: ''—'', forecast\: ''47\.5'', \.\.\.\}\|array\{time\: ''14\:00'', country_code\: ''US'', currency\: ''USD'', title\: ''Decisión Tasa de…'', original_title\: ''Interest Rate…'', importance\: 3, actual\: ''—'', forecast\: ''5\.50%%'', \.\.\.\}\|array\{time\: ''14\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''Conferencia de…'', original_title\: ''FOMC Press…'', importance\: 3, actual\: ''—'', forecast\: ''—'', \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controller/CalendarController.php
+
+		-
+			message: '#^Offset ''currency'' on array\{time\: ''03\:00'', country_code\: ''US'', currency\: ''USD'', title\: ''Cambio Empleo ADP'', original_title\: ''ADP Non\-Farm…'', importance\: 3, actual\: ''—'', forecast\: ''150K'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''IPC Anual \(CPI YY\)'', original_title\: ''CPI YY'', importance\: 3, actual\: ''—'', forecast\: ''3\.1%%'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''IPC Mensual \(CPI MM\)'', original_title\: ''CPI MM'', importance\: 3, actual\: ''—'', forecast\: ''0\.2%%'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''Nóminas No…'', original_title\: ''Non\-Farm Payrolls'', importance\: 3, actual\: ''—'', forecast\: ''180K'', \.\.\.\}\|array\{time\: ''10\:00'', country_code\: ''EU'', currency\: ''EUR'', title\: ''PMI Manufacturero'', original_title\: ''Manufacturing PMI'', importance\: 2, actual\: ''—'', forecast\: ''47\.5'', \.\.\.\}\|array\{time\: ''14\:00'', country_code\: ''US'', currency\: ''USD'', title\: ''Decisión Tasa de…'', original_title\: ''Interest Rate…'', importance\: 3, actual\: ''—'', forecast\: ''5\.50%%'', \.\.\.\}\|array\{time\: ''14\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''Conferencia de…'', original_title\: ''FOMC Press…'', importance\: 3, actual\: ''—'', forecast\: ''—'', \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controller/CalendarController.php
+
+		-
+			message: '#^Offset ''time'' on array\{time\: ''03\:00'', country_code\: ''US'', currency\: ''USD'', title\: ''Cambio Empleo ADP'', original_title\: ''ADP Non\-Farm…'', importance\: 3, actual\: ''—'', forecast\: ''150K'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''IPC Anual \(CPI YY\)'', original_title\: ''CPI YY'', importance\: 3, actual\: ''—'', forecast\: ''3\.1%%'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''IPC Mensual \(CPI MM\)'', original_title\: ''CPI MM'', importance\: 3, actual\: ''—'', forecast\: ''0\.2%%'', \.\.\.\}\|array\{time\: ''08\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''Nóminas No…'', original_title\: ''Non\-Farm Payrolls'', importance\: 3, actual\: ''—'', forecast\: ''180K'', \.\.\.\}\|array\{time\: ''10\:00'', country_code\: ''EU'', currency\: ''EUR'', title\: ''PMI Manufacturero'', original_title\: ''Manufacturing PMI'', importance\: 2, actual\: ''—'', forecast\: ''47\.5'', \.\.\.\}\|array\{time\: ''14\:00'', country_code\: ''US'', currency\: ''USD'', title\: ''Decisión Tasa de…'', original_title\: ''Interest Rate…'', importance\: 3, actual\: ''—'', forecast\: ''5\.50%%'', \.\.\.\}\|array\{time\: ''14\:30'', country_code\: ''US'', currency\: ''USD'', title\: ''Conferencia de…'', original_title\: ''FOMC Press…'', importance\: 3, actual\: ''—'', forecast\: ''—'', \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controller/CalendarController.php
+
+		-
+			message: '#^Offset 0\|1\|2\|3\|4\|5\|6 on array\{0, 0, 0, 0, 1, 7, 1\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/Controller/CalendarController.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityRepository\<App\\Entity\\User\>\:\:findByCode\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Controller/SanctumModuleController.php
+
+		-
+			message: '#^Property App\\Entity\\AcademiaContent\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/AcademiaContent.php
+
+		-
+			message: '#^Property App\\Entity\\AccessRequest\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/AccessRequest.php
+
+		-
+			message: '#^Property App\\Entity\\AdminAuditLog\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/AdminAuditLog.php
+
+		-
+			message: '#^Property App\\Entity\\ApiKey\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ApiKey.php
+
+		-
+			message: '#^Property App\\Entity\\Block\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Block.php
+
+		-
+			message: '#^Property App\\Entity\\BracketMatch\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/BracketMatch.php
+
+		-
+			message: '#^Property App\\Entity\\CampusAssignment\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusAssignment.php
+
+		-
+			message: '#^Property App\\Entity\\CampusCourse\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusCourse.php
+
+		-
+			message: '#^Property App\\Entity\\CampusEnrollment\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusEnrollment.php
+
+		-
+			message: '#^Property App\\Entity\\CampusFeedback\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusFeedback.php
+
+		-
+			message: '#^Property App\\Entity\\CampusLesson\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusLesson.php
+
+		-
+			message: '#^Property App\\Entity\\CampusLessonProgress\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusLessonProgress.php
+
+		-
+			message: '#^Property App\\Entity\\CampusMaterial\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusMaterial.php
+
+		-
+			message: '#^Property App\\Entity\\CampusModule\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusModule.php
+
+		-
+			message: '#^Property App\\Entity\\CampusSubmission\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CampusSubmission.php
+
+		-
+			message: '#^Property App\\Entity\\Clan\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Clan.php
+
+		-
+			message: '#^Property App\\Entity\\ClanMember\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ClanMember.php
+
+		-
+			message: '#^Property App\\Entity\\ClanMessage\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ClanMessage.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: src/Entity/ClanObjective.php
+
+		-
+			message: '#^Property App\\Entity\\ClanObjective\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ClanObjective.php
+
+		-
+			message: '#^Property App\\Entity\\Connection\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Connection.php
+
+		-
+			message: '#^Property App\\Entity\\Conversation\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Conversation.php
+
+		-
+			message: '#^Property App\\Entity\\ConversationParticipant\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ConversationParticipant.php
+
+		-
+			message: '#^Property App\\Entity\\CtraderConnection\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/CtraderConnection.php
+
+		-
+			message: '#^Property App\\Entity\\DailyChallenge\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/DailyChallenge.php
+
+		-
+			message: '#^Property App\\Entity\\DailyChallengeEntry\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/DailyChallengeEntry.php
+
+		-
+			message: '#^Property App\\Entity\\Device\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Device.php
+
+		-
+			message: '#^Property App\\Entity\\DiaryEntry\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/DiaryEntry.php
+
+		-
+			message: '#^Property App\\Entity\\Duel\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Duel.php
+
+		-
+			message: '#^Property App\\Entity\\DuelRound\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/DuelRound.php
+
+		-
+			message: '#^Property App\\Entity\\EconomicReminder\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/EconomicReminder.php
+
+		-
+			message: '#^Property App\\Entity\\EconomicReminder\:\:\$status \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/EconomicReminder.php
+
+		-
+			message: '#^Property App\\Entity\\EconomicReminder\:\:\$timezone \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/EconomicReminder.php
+
+		-
+			message: '#^Property App\\Entity\\EventMission\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/EventMission.php
+
+		-
+			message: '#^Property App\\Entity\\EventMissionProgress\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/EventMissionProgress.php
+
+		-
+			message: '#^Property App\\Entity\\FeedPost\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/FeedPost.php
+
+		-
+			message: '#^Property App\\Entity\\FrequencyPreset\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/FrequencyPreset.php
+
+		-
+			message: '#^Property App\\Entity\\FrequencySession\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/FrequencySession.php
+
+		-
+			message: '#^Property App\\Entity\\GameLeaderboardEntry\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/GameLeaderboardEntry.php
+
+		-
+			message: '#^Property App\\Entity\\GameScore\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/GameScore.php
+
+		-
+			message: '#^Property App\\Entity\\HonorBoard\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/HonorBoard.php
+
+		-
+			message: '#^Property App\\Entity\\JournalEntry\:\:\$id \(string\|null\) is never assigned string so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/JournalEntry.php
+
+		-
+			message: '#^Property App\\Entity\\JournalPermission\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/JournalPermission.php
+
+		-
+			message: '#^Property App\\Entity\\JournalSetting\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/JournalSetting.php
+
+		-
+			message: '#^Property App\\Entity\\LikedPost\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/LikedPost.php
+
+		-
+			message: '#^Property App\\Entity\\LinkPreview\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/LinkPreview.php
+
+		-
+			message: '#^Property App\\Entity\\MarketCandle\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/MarketCandle.php
+
+		-
+			message: '#^Property App\\Entity\\Message\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Message.php
+
+		-
+			message: '#^Property App\\Entity\\ModuleProgress\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ModuleProgress.php
+
+		-
+			message: '#^Property App\\Entity\\MonitorEvent\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/MonitorEvent.php
+
+		-
+			message: '#^Property App\\Entity\\Notification\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Notification.php
+
+		-
+			message: '#^Property App\\Entity\\PlayerBet\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/PlayerBet.php
+
+		-
+			message: '#^Property App\\Entity\\PropFirm\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/PropFirm.php
+
+		-
+			message: '#^Property App\\Entity\\PropFirmAccount\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/PropFirmAccount.php
+
+		-
+			message: '#^Property App\\Entity\\PropFirmAlert\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/PropFirmAlert.php
+
+		-
+			message: '#^Property App\\Entity\\ShopItem\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ShopItem.php
+
+		-
+			message: '#^Property App\\Entity\\ShopPurchase\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/ShopPurchase.php
+
+		-
+			message: '#^Property App\\Entity\\SpecialEvent\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/SpecialEvent.php
+
+		-
+			message: '#^Property App\\Entity\\Task\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Task.php
+
+		-
+			message: '#^Property App\\Entity\\Tournament\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Tournament.php
+
+		-
+			message: '#^Property App\\Entity\\TournamentBracket\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/TournamentBracket.php
+
+		-
+			message: '#^Property App\\Entity\\TournamentBracketEntry\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/TournamentBracketEntry.php
+
+		-
+			message: '#^Property App\\Entity\\TournamentEntry\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/TournamentEntry.php
+
+		-
+			message: '#^Property App\\Entity\\Trade\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/Trade.php
+
+		-
+			message: '#^Property App\\Entity\\TradeSnapshot\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/TradeSnapshot.php
+
+		-
+			message: '#^Property App\\Entity\\TraderProfile\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/TraderProfile.php
+
+		-
+			message: '#^Property App\\Entity\\TradingAccount\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/TradingAccount.php
+
+		-
+			message: '#^Property App\\Entity\\User\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/User.php
+
+		-
+			message: '#^Property App\\Entity\\User\:\:\$journalSetting \(App\\Entity\\JournalSetting\|null\) is never assigned App\\Entity\\JournalSetting so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/User.php
+
+		-
+			message: '#^Property App\\Entity\\User\:\:\$tier \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/User.php
+
+		-
+			message: '#^Property App\\Entity\\UserFrequency\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/UserFrequency.php
+
+		-
+			message: '#^Property App\\Entity\\WalletTransaction\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/WalletTransaction.php
+
+		-
+			message: '#^Method App\\Service\\PushNotificationService\:\:sendToUser\(\) invoked with 5 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/MessageHandler/ChatMessageHandler.php
+
+		-
+			message: '#^Call to protected method getEntityManager\(\) of class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository\<object\>\.$#'
+			identifier: method.protected
+			count: 1
+			path: src/MessageHandler/DeviceRegisteredHandler.php
+
+		-
+			message: '#^Property App\\MessageHandler\\DeviceRegisteredHandler\:\:\$logger is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/MessageHandler/DeviceRegisteredHandler.php
+
+		-
+			message: '#^Method App\\Service\\PushNotificationService\:\:sendToUser\(\) invoked with 5 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/MessageHandler/NotificationHandler.php
+
+		-
+			message: '#^Method App\\Service\\PushNotificationService\:\:sendToUser\(\) invoked with 5 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/MessageHandler/TournamentNotificationHandler.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Repository/FrequencySessionRepository.php
+
+		-
+			message: '#^Access to undefined constant App\\Repository\\GameLeaderboardEntryRepository\:\:PERIOD_ALL_TIME\.$#'
+			identifier: classConstant.notFound
+			count: 1
+			path: src/Repository/GameLeaderboardEntryRepository.php
+
+		-
+			message: '#^Call to an undefined method Doctrine\\ORM\\EntityManagerInterface\:\:merge\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Repository/MarketCandleRepository.php
+
+		-
+			message: '#^Variable \$max on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: src/Repository/TaskRepository.php
+
+		-
+			message: '#^Property App\\Scheduler\\MainSchedule\:\:\$em is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Scheduler/MainSchedule.php
+
+		-
+			message: '#^Property App\\Scheduler\\MainSchedule\:\:\$logger is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Scheduler/MainSchedule.php
+
+		-
+			message: '#^Property App\\Scheduler\\MainSchedule\:\:\$reminderRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Scheduler/MainSchedule.php
+
+		-
+			message: '#^Property App\\Scheduler\\MainSchedule\:\:\$userRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Scheduler/MainSchedule.php
+
+		-
+			message: '#^Property App\\Scheduler\\PurgeExpiredTokensHandler\:\:\$deviceRepository is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Scheduler/PurgeExpiredTokensHandler.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\TournamentEntryRepository\:\:findActiveTournaments\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Scheduler/RecomputeLeaderboardsHandler.php
+
+		-
+			message: '#^Call to an undefined method App\\Repository\\TournamentEntryRepository\:\:findLeaderboard\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Scheduler/RecomputeLeaderboardsHandler.php
+
+		-
+			message: '#^Property App\\Scheduler\\RecomputeLeaderboardsHandler\:\:\$tradeSnapshots is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Scheduler/RecomputeLeaderboardsHandler.php
+
+		-
+			message: '#^Call to an undefined method Symfony\\Component\\Security\\Core\\User\\UserInterface\:\:setLastLogin\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Security/CodeAuthenticator.php
+
+		-
+			message: '#^Call to protected method getEntityManager\(\) of class Doctrine\\Bundle\\DoctrineBundle\\Repository\\ServiceEntityRepository\<object\>\.$#'
+			identifier: method.protected
+			count: 1
+			path: src/Security/CodeAuthenticator.php
+
+		-
+			message: '#^Parameter \#4 \$timestamp of method App\\Service\\BinancePayService\:\:callAPI\(\) expects int, float given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Service/BinancePayService.php
+
+		-
+			message: '#^Property App\\Service\\BinancePayService\:\:\$apiKey \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Service/BinancePayService.php
+
+		-
+			message: '#^Property App\\Service\\BinancePayService\:\:\$secretKey \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Service/BinancePayService.php
+
+		-
+			message: '#^Call to function method_exists\(\) with Symfony\\Component\\HttpFoundation\\File\\UploadedFile and ''getSize'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Service/CampusStorage.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 4
+			path: src/Service/CampusStorage.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between Symfony\\Component\\HttpFoundation\\File\\File and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Service/CampusStorage.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between \-25\|\-10\|\-3 and 0 will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Service/Guardian/DisciplineScoreCalculator.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Service/Guardian/GuardianSignalCollector.php
+
+		-
+			message: '#^Property App\\Service\\LinkPreview\\FaviconService\:\:\$http is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/LinkPreview/FaviconService.php
+
+		-
+			message: '#^Property App\\Service\\LinkPreview\\FaviconService\:\:\$logger is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/LinkPreview/FaviconService.php
+
+		-
+			message: '#^Property App\\Service\\Macro\\NoTradeWindowService\:\:\$repo is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/Macro/NoTradeWindowService.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Service/MarketDataService.php
+
+		-
+			message: '#^Property App\\Service\\MercadoPagoService\:\:\$accessToken \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Service/MercadoPagoService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Service/Migration/LegacyDataMigrator.php
+
+		-
+			message: '#^Property App\\Service\\Migration\\LegacyDataMigrator\:\:\$logger is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/Migration/LegacyDataMigrator.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Service/Monitoring/MonitoringService.php
+
+		-
+			message: '#^Property App\\Service\\Monitoring\\MonitoringService\:\:\$logger is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/Monitoring/MonitoringService.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: src/Service/Oracle/OracleMetricsService.php
+
+		-
+			message: '#^Property App\\Service\\Oracle\\OracleMetricsService\:\:\$snapshotRepo is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/Oracle/OracleMetricsService.php
+
+		-
+			message: '#^Property App\\Service\\Oracle\\OracleMetricsService\:\:\$userRepo is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/Oracle/OracleMetricsService.php
+
+		-
+			message: '#^Property App\\Service\\PropFirmRuleChecker\:\:\$alertRepo is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: src/Service/PropFirmRuleChecker.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Service/TournamentMailer.php
+
+		-
+			message: '#^Parameter \#1 \$array \(non\-empty\-list\<string\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: src/Util/JournalPhotoList.php
