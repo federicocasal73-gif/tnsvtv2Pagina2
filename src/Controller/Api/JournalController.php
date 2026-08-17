@@ -446,19 +446,280 @@ class JournalController extends AbstractController
         $wins = 0;
         $losses = 0;
         $totalPnl = 0.0;
+        $grossProfit = 0.0;
+        $grossLoss = 0.0;
+        $sumWin = 0.0;
+        $sumLoss = 0.0;
+        $bestTrade = null;
+        $worstTrade = null;
+
         foreach ($trades as $t) {
             $pnl = $t->getPnl() !== null ? (float) $t->getPnl() : 0.0;
             $totalPnl += $pnl;
-            if ($pnl >= 0) $wins++;
-            else $losses++;
+            $result = $t->getResult();
+
+            // F1.2: usar campo `result` (WIN/LOSS) en vez de pnl>=0 para contar wins/losses
+            if ($result === 'WIN') {
+                $wins++;
+                $grossProfit += $pnl;
+                $sumWin += $pnl;
+            } elseif ($result === 'LOSS') {
+                $losses++;
+                $grossLoss += abs($pnl);
+                $sumLoss += abs($pnl);
+            }
+
+            if ($bestTrade === null || $pnl > $bestTrade) {
+                $bestTrade = $pnl;
+            }
+            if ($worstTrade === null || $pnl < $worstTrade) {
+                $worstTrade = $pnl;
+            }
         }
+
+        // F1.2: Profit Factor = gross_profit / gross_loss (sin losses → cap a 99.99)
+        $profitFactor = $grossLoss > 0
+            ? round($grossProfit / $grossLoss, 2)
+            : ($grossProfit > 0 ? 99.99 : 0.0);
+
+        // F1.2: Expectancy = (win_rate * avg_win) - (loss_rate * avg_loss)
+        $winRate = $total > 0 ? $wins / $total : 0.0;
+        $lossRate = $total > 0 ? $losses / $total : 0.0;
+        $avgWin = $wins > 0 ? $sumWin / $wins : 0.0;
+        $avgLoss = $losses > 0 ? $sumLoss / $losses : 0.0;
+        $expectancy = ($winRate * $avgWin) - ($lossRate * $avgLoss);
+
         return [
-            'total' => $total,
-            'wins' => $wins,
-            'losses' => $losses,
-            'win_rate' => $total > 0 ? round($wins / $total * 100, 1) : 0,
-            'total_pnl' => round($totalPnl, 2),
+            'total'         => $total,
+            'wins'          => $wins,
+            'losses'        => $losses,
+            'win_rate'      => $total > 0 ? round($wins / $total * 100, 1) : 0.0,
+            'total_pnl'     => round($totalPnl, 2),
+            'profit_factor' => $profitFactor,
+            'expectancy'    => round($expectancy, 2),
+            'avg_win'       => round($avgWin, 2),
+            'avg_loss'      => round($avgLoss, 2),
+            'gross_profit'  => round($grossProfit, 2),
+            'gross_loss'    => round($grossLoss, 2),
+            'best_trade'    => $bestTrade !== null ? round($bestTrade, 2) : null,
+            'worst_trade'   => $worstTrade !== null ? round($worstTrade, 2) : null,
         ];
+    }
+
+    #[Route('/calendar-monthly', name: 'api_journal_calendar_monthly', methods: ['GET'])]
+    public function calendarMonthly(Request $request): JsonResponse
+    {
+        $currentUser = $this->getCurrentUser($request);
+        if (!$currentUser) return $this->json(['error' => 'Unauthorized'], 401);
+
+        $trades = $this->loadEntriesForOwner($currentUser, $request);
+
+        $now = new \DateTimeImmutable();
+        $year  = (int) $request->query->get('year',  (int) $now->format('Y'));
+        $month = (int) $request->query->get('month', (int) $now->format('n'));
+        if ($month < 1 || $month > 12) $month = (int) $now->format('n');
+        if ($year < 2000 || $year > 2100) $year = (int) $now->format('Y');
+
+        $monthStart = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
+        $monthEnd   = $monthStart->modify('+1 month');
+
+        // Aggregate by day-key (Y-m-d) for the requested month
+        $byDay = [];
+        $totalPnl = 0.0;
+        $wins = 0;
+        $losses = 0;
+        $breakeven = 0;
+        $open = 0;
+
+        foreach ($trades as $t) {
+            $d = $t->getDate();
+            if (!$d) continue;
+            if ($d < $monthStart || $d >= $monthEnd) continue;
+            $key = $d->format('Y-m-d');
+            if (!isset($byDay[$key])) {
+                $byDay[$key] = [
+                    'date'         => $key,
+                    'pnl'          => 0.0,
+                    'trade_count'  => 0,
+                    'wins'         => 0,
+                    'losses'       => 0,
+                    'breakeven'    => 0,
+                    'has_open'     => false,
+                    'trades'       => [],
+                ];
+            }
+            $pnl = $t->getPnl() !== null ? (float) $t->getPnl() : 0.0;
+            $byDay[$key]['pnl'] += $pnl;
+            $byDay[$key]['trade_count']++;
+            $result = $t->getResult();
+            if ($result === 'OPEN') { $byDay[$key]['has_open'] = true; $open++; }
+            elseif ($result === 'WIN') $byDay[$key]['wins']++;
+            elseif ($result === 'LOSS') $byDay[$key]['losses']++;
+            elseif ($result === 'BE')  $byDay[$key]['breakeven']++;
+            $byDay[$key]['trades'][] = [
+                'id'         => $t->getId() !== null ? (int) $t->getId() : null,
+                'date'       => $d->format('c'),
+                'asset'      => $t->getAsset(),
+                'direction'  => $t->getDirection(),
+                'result'     => $t->getResult(),
+                'pnl'        => round($pnl, 2),
+                'entry'      => $t->getEntry(),
+                'sl'         => $t->getSl(),
+                'tp'         => $t->getTp(),
+                'ratio'      => $t->getRatio(),
+                'notes'      => $t->getNotes(),
+            ];
+            $totalPnl += $pnl;
+            if ($result === 'WIN') $wins++;
+            elseif ($result === 'LOSS') $losses++;
+            elseif ($result === 'BE')  $breakeven++;
+        }
+        $monthTradeCount = array_sum(array_map(fn($d) => $d['trade_count'], $byDay));
+
+        // Rolling 6 months P&L (current month - 5 .. current month)
+        $monthlyPnl = [];
+        $cursor = $monthStart->modify('-5 months');
+        for ($i = 0; $i < 6; $i++) {
+            $cursorEnd = $cursor->modify('+1 month');
+            $mPnl = 0.0;
+            $mWins = 0;
+            $mLosses = 0;
+            $mCount = 0;
+            foreach ($trades as $t) {
+                $d = $t->getDate();
+                if (!$d) continue;
+                if ($d < $cursor || $d >= $cursorEnd) continue;
+                $mPnl += $t->getPnl() !== null ? (float) $t->getPnl() : 0.0;
+                $mCount++;
+                if ($t->getResult() === 'WIN') $mWins++;
+                elseif ($t->getResult() === 'LOSS') $mLosses++;
+            }
+            $monthlyPnl[] = [
+                'month' => $cursor->format('Y-m'),
+                'pnl'   => round($mPnl, 2),
+                'wins'  => $mWins,
+                'losses'=> $mLosses,
+                'trade_count' => $mCount,
+            ];
+            $cursor = $cursorEnd;
+        }
+
+        $monthNames = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+        ];
+
+        return $this->json([
+            'success'   => true,
+            'year'      => $year,
+            'month_num' => $month,
+            'month_name'=> $monthNames[$month] ?? '',
+            'month'     => sprintf('%04d-%02d', $year, $month),
+            'summary'   => [
+                'total_pnl'   => round($totalPnl, 2),
+                'trade_count' => $monthTradeCount,
+                'wins'        => $wins,
+                'losses'      => $losses,
+                'breakeven'   => $breakeven,
+                'open'        => $open,
+                'win_rate'    => $monthTradeCount > 0 ? round(($wins / $monthTradeCount) * 100, 1) : 0.0,
+            ],
+            'days'        => array_values($byDay),
+            'monthly_pnl' => $monthlyPnl,
+        ]);
+    }
+
+    #[Route('/equity-curve', name: 'api_journal_equity_curve', methods: ['GET'])]
+    public function equityCurve(Request $request): JsonResponse
+    {
+        $currentUser = $this->getCurrentUser($request);
+        if (!$currentUser) return $this->json(['error' => 'Unauthorized'], 401);
+
+        $trades = $this->loadEntriesForOwner($currentUser, $request);
+        usort($trades, fn(JournalEntry $a, JournalEntry $b) => $a->getDate() <=> $b->getDate());
+
+        $accountSize = (float) ($request->query->get('account_size', 10000));
+
+        // F1.1 — range filter
+        $range = strtolower(trim((string) $request->query->get('range', 'all')));
+        if (!in_array($range, ['all', '30d', '7d'], true)) {
+            $range = 'all';
+        }
+        if ($range !== 'all' && !empty($trades)) {
+            $now = new \DateTimeImmutable();
+            $cutoff = match ($range) {
+                '30d'    => $now->modify('-30 days'),
+                '7d'     => $now->modify('-7 days'),
+                default  => null,
+            };
+            if ($cutoff !== null) {
+                $trades = array_values(array_filter(
+                    $trades,
+                    fn(JournalEntry $t) => $t->getDate() !== null && $t->getDate() >= $cutoff,
+                ));
+            }
+        }
+
+        $balance = $accountSize;
+        $peak = $accountSize;
+        $low = $accountSize;
+        $points = [];
+        $wins = 0;
+        $losses = 0;
+        $breakeven = 0;
+        $maxDrawdownPct = 0.0;
+
+        foreach ($trades as $t) {
+            $pnl = $t->getPnl() !== null ? (float) $t->getPnl() : 0.0;
+            $balance += $pnl;
+            if ($balance > $peak) $peak = $balance;
+            if ($balance < $low)  $low = $balance;
+            $dd = $peak - $balance;
+            $ddPct = $peak > 0 ? ($dd / $peak) * 100 : 0.0;
+            if ($ddPct > $maxDrawdownPct) $maxDrawdownPct = $ddPct;
+
+            $result = $t->getResult();
+            if ($result === 'WIN') $wins++;
+            elseif ($result === 'LOSS') $losses++;
+            elseif ($result === 'BE') $breakeven++;
+
+            $points[] = [
+                'date'         => $t->getDate()?->format('c'),
+                'balance'      => round($balance, 2),
+                'peak'         => round($peak, 2),
+                'pnl'          => round($pnl, 2),
+                'asset'        => $t->getAsset(),
+                'direction'    => $t->getDirection(),
+                'result'       => $t->getResult(),
+                'drawdown_pct' => round($ddPct, 2),
+            ];
+        }
+
+        $count = count($trades);
+        $winRate = $count > 0 ? round(($wins / $count) * 100, 1) : 0.0;
+        $totalReturn = $balance - $accountSize;
+        $totalReturnPct = $accountSize > 0 ? round(($totalReturn / $accountSize) * 100, 2) : 0.0;
+
+        return $this->json([
+            'success'      => true,
+            'range'        => $range,
+            'account_size' => $accountSize,
+            'summary'      => [
+                'current'           => round($balance, 2),
+                'peak'              => round($peak, 2),
+                'low'               => round($low, 2),
+                'total_pnl'         => round($totalReturn, 2),
+                'total_return_pct'  => $totalReturnPct,
+                'max_drawdown_pct'  => round($maxDrawdownPct, 2),
+                'trade_count'       => $count,
+                'wins'              => $wins,
+                'losses'            => $losses,
+                'breakeven'         => $breakeven,
+                'win_rate'          => $winRate,
+            ],
+            'points' => $points,
+        ]);
     }
 
     #[Route('/drawdown', name: 'api_journal_drawdown', methods: ['GET'])]

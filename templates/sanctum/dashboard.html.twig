@@ -227,6 +227,286 @@
         opacity: 0.6;
         margin-bottom: 1rem;
     }
+
+    /* ══════ F1.1 — Equity Curve ══════ */
+    .equity-curve-card { position: relative; }
+    .ec-range-tabs {
+        display: inline-flex;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 9999px;
+        padding: 0.2rem;
+    }
+    .ec-tab {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        background: transparent;
+        border: none;
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: color 0.2s, background 0.2s;
+    }
+    .ec-tab:hover { color: var(--on-surface-elev); }
+    .ec-tab.active {
+        color: var(--gold-elev);
+        background: rgba(242, 202, 80, 0.12);
+    }
+    .ec-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    .ec-stat-label {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+    }
+    .ec-stat-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--gold-elev);
+        line-height: 1;
+    }
+    .ec-stat-meta {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+    }
+    .ec-stat-value.pos { color: #4ade80; }
+    .ec-stat-value.neg { color: #f87171; }
+    .ec-tooltip {
+        position: absolute;
+        background: rgba(8, 5, 14, 0.95);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.75rem;
+        pointer-events: none;
+        z-index: 10;
+        min-width: 180px;
+        transform: translate(-50%, calc(-100% - 8px));
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .ec-tooltip[hidden] { display: none; }
+    .ec-point { transition: r 0.15s; }
+    .ec-point:hover { r: 5; }
+    .ec-legend {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+    }
+    .ec-legend-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.35rem;
+        vertical-align: middle;
+    }
+
+    /* ══════ F1.2 — Stats Row ══════ */
+    .stats-row .kpi-card-elev { padding: 1rem 1.1rem; }
+    .stats-row .kpi-value-elev { font-size: 1.55rem; }
+    .stats-row .kpi-value-elev.pos { color: #4ade80; }
+    .stats-row .kpi-value-elev.neg { color: #f87171; }
+    .stats-row .kpi-value-elev.muted { color: var(--outline-elev); }
+
+    /* ══════ F1.3 — Calendario Mensual ══════ */
+    .cal-nav-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 0.375rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .cal-nav-btn:hover {
+        color: var(--gold-elev);
+        border-color: var(--gold-elev);
+    }
+    .cal-today-btn {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.35rem 0.7rem;
+        border-radius: 0.375rem;
+        background: transparent;
+        border: 1px solid var(--glass-border-elev);
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .cal-today-btn:hover {
+        color: var(--gold-elev);
+        border-color: var(--gold-elev);
+        background: rgba(242, 202, 80, 0.06);
+    }
+    .cal-month-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 0.35rem;
+    }
+    .cal-month-day-header {
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--outline-elev);
+        text-align: center;
+        padding: 0.4rem 0 0.6rem;
+        opacity: 0.7;
+    }
+    .cal-month-day {
+        aspect-ratio: 1 / 1;
+        min-height: 64px;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-left: 3px solid transparent;
+        border-radius: 0.4rem;
+        padding: 0.35rem;
+        cursor: pointer;
+        transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .cal-month-day:hover:not(.outside) {
+        transform: translateY(-1px);
+        border-color: rgba(242, 202, 80, 0.35);
+        box-shadow: 0 4px 12px rgba(242, 202, 80, 0.08);
+    }
+    .cal-month-day.outside {
+        opacity: 0.25;
+        cursor: default;
+        pointer-events: none;
+    }
+    .cal-month-day.today {
+        box-shadow: 0 0 0 1.5px var(--gold-elev);
+    }
+    .cal-month-day.wins { border-left-color: #4ade80; }
+    .cal-month-day.losses { border-left-color: #f87171; }
+    .cal-month-day.mixed { border-left-color: #fbbf24; }
+    .cal-month-day.has-open { border-left-color: #8a3cff; }
+    .cal-month-day-num {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--on-surface-elev);
+        line-height: 1;
+    }
+    .cal-month-day.today .cal-month-day-num {
+        color: var(--gold-elev);
+    }
+    .cal-month-day-pnl {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-align: right;
+        line-height: 1;
+    }
+    .cal-month-day-pnl.pos { color: #4ade80; }
+    .cal-month-day-pnl.neg { color: #f87171; }
+    .cal-month-day-pnl.zero { color: var(--outline-elev); }
+    .cal-month-day-count {
+        font-size: 0.6rem;
+        color: var(--outline-elev);
+        text-align: right;
+        line-height: 1;
+        opacity: 0.7;
+    }
+    .cal-legend {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+        flex-wrap: wrap;
+    }
+
+    /* ══════ F1.3 — Modal detalle día ══════ */
+    .cal-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 1rem;
+    }
+    .cal-modal-content {
+        background: linear-gradient(135deg, var(--surface-elev) 0%, rgba(16, 11, 28, 0.95) 100%);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 1rem;
+        width: 100%;
+        max-width: 720px;
+        max-height: 90vh;
+        overflow: auto;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    .cal-modal-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--glass-border-elev);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        background: linear-gradient(135deg, rgba(242, 202, 80, 0.05) 0%, transparent 100%);
+    }
+    .cal-modal-body {
+        padding: 1.25rem 1.5rem;
+    }
+    .cal-trades-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+    .cal-trades-table th {
+        text-align: left;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--outline-elev);
+        padding: 0.4rem 0.6rem;
+        border-bottom: 1px solid var(--glass-border-elev);
+        font-weight: 600;
+    }
+    .cal-trades-table td {
+        padding: 0.5rem 0.6rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .cal-trades-table tbody tr:hover {
+        background: rgba(242, 202, 80, 0.04);
+    }
+    .cal-trades-table .pnl-pos { color: #4ade80; font-weight: 600; }
+    .cal-trades-table .pnl-neg { color: #f87171; font-weight: 600; }
+    .cal-trades-empty {
+        text-align: center;
+        color: var(--outline-elev);
+        padding: 2rem;
+    }
+
+    /* ══════ F1.4 (placeholders) — P&L Mensual Bar Chart ══════ */
+    .monthly-pnl-svg { width: 100%; height: 260px; }
+    .monthly-bar { transition: opacity 0.15s; cursor: pointer; }
+    .monthly-bar:hover { opacity: 0.85; }
+    .monthly-pnl-axis-text { font-size: 10px; fill: rgba(255,255,255,0.45); font-family: 'Space Grotesk'; }
 </style>
 {% endblock %}
 
@@ -261,53 +541,192 @@
     {# ══════ F1.5 — Tab Routing (default: dashboard) ══════ #}
     {% if tab == 'dashboard' %}
 
-    {# Hero Metrics Row - 4 KPI Cards #}
-    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="kpi-card-elev" data-card="globalPnl">
-            <div class="flex justify-between items-start">
-                <span class="kpi-label-elev">Global PnL</span>
-                <span class="material-symbols-elev text-[var(--gold-elev)]">trending_up</span>
+    {# ══════ F1.1 — Equity Curve (Fila 1) ══════ #}
+    <section class="glass-card-elev p-6 equity-curve-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">timeline</span>
+                <span class="text-cinzel-display text-base tracking-wider">EQUITY CURVE</span>
+            </h3>
+            <div class="ec-range-tabs" id="ec-range-tabs" role="tablist" aria-label="Range">
+                <button type="button" class="ec-tab active" data-range="all" role="tab" aria-selected="true">Todo</button>
+                <button type="button" class="ec-tab" data-range="30d" role="tab" aria-selected="false">30d</button>
+                <button type="button" class="ec-tab" data-range="7d" role="tab" aria-selected="false">7d</button>
             </div>
-            <p class="kpi-value-elev" id="kpi-pnl-value">$0</p>
-            <p class="kpi-meta-elev"><span id="kpi-pnl-meta">— calculating</span></p>
-            <svg class="w-full h-8 mt-2" viewBox="0 0 100 30" preserveAspectRatio="none">
-                <polyline id="kpi-pnl-spark" points="0,25 10,22 20,20 30,18 40,15 50,12 60,10 70,8 80,5 90,3 100,2" fill="none" stroke="var(--gold-elev)" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
         </div>
-        <div class="kpi-card-elev" data-card="activeSeekers">
-            <div class="flex justify-between items-start">
-                <span class="kpi-label-elev">Active Seekers</span>
-                <span class="material-symbols-elev text-green-400">groups</span>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="ec-stat">
+                <span class="ec-stat-label">Balance actual</span>
+                <span class="ec-stat-value" id="ec-balance">$0</span>
+                <span class="ec-stat-meta" id="ec-balance-meta">—</span>
             </div>
-            <p class="kpi-value-elev text-green-400" id="kpi-seekers-value">0</p>
-            <p class="kpi-meta-elev"><span class="live-dot"></span><span id="kpi-seekers-meta">0 activos</span></p>
-            <svg class="w-full h-8 mt-2" viewBox="0 0 100 30" preserveAspectRatio="none">
-                <polyline id="kpi-seekers-spark" points="0,20 10,18 20,15 30,17 40,12 50,10 60,8 70,5 80,7 90,3 100,2" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-        </div>
-        <div class="kpi-card-elev" data-card="serverSanctum">
-            <div class="flex justify-between items-start">
-                <span class="kpi-label-elev">Server Sanctum</span>
-                <span class="material-symbols-elev text-green-400">verified</span>
+            <div class="ec-stat">
+                <span class="ec-stat-label">Total return</span>
+                <span class="ec-stat-value" id="ec-return">0.00%</span>
+                <span class="ec-stat-meta" id="ec-return-meta">—</span>
             </div>
-            <p class="kpi-value-elev text-green-400" id="kpi-server-value">99.9%</p>
-            <p class="kpi-meta-elev"><span class="live-dot"></span><span id="kpi-server-meta">Divine Integrity High</span></p>
-            <svg class="w-full h-8 mt-2" viewBox="0 0 100 30" preserveAspectRatio="none">
-                <polyline id="kpi-server-spark" points="0,5 10,4 20,5 30,3 40,4 50,2 60,3 70,2 80,1 90,2 100,1" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-        </div>
-        <div class="kpi-card-elev" data-card="macroSignals">
-            <div class="flex justify-between items-start">
-                <span class="kpi-label-elev">Macro Signals</span>
-                <span class="material-symbols-elev text-purple-400">event_upcoming</span>
+            <div class="ec-stat">
+                <span class="ec-stat-label">Max drawdown</span>
+                <span class="ec-stat-value" id="ec-drawdown">0.00%</span>
+                <span class="ec-stat-meta" id="ec-drawdown-meta">—</span>
             </div>
-            <p class="kpi-value-elev text-purple-400" id="kpi-macro-value">0</p>
-            <p class="kpi-meta-elev"><span id="kpi-macro-meta">Próximas 24h</span></p>
-            <svg class="w-full h-8 mt-2" viewBox="0 0 100 30" preserveAspectRatio="none">
-                <polyline id="kpi-macro-spark" points="0,28 10,25 20,22 30,20 40,18 50,15 60,12 70,10 80,8 90,5 100,3" fill="none" stroke="#8a3cff" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
         </div>
-        </section>
+
+        <svg id="ec-chart" viewBox="0 0 1000 280" preserveAspectRatio="none" class="w-full h-72" aria-label="Equity curve">
+            <defs>
+                <linearGradient id="ec-fill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(242, 202, 80, 0.35)" />
+                    <stop offset="100%" stop-color="rgba(242, 202, 80, 0)" />
+                </linearGradient>
+            </defs>
+            <text id="ec-loading" x="500" y="140" fill="rgba(255,255,255,0.4)" font-size="14" text-anchor="middle" font-family="Space Grotesk">Cargando curva...</text>
+        </svg>
+
+        <div id="ec-tooltip" class="ec-tooltip" hidden></div>
+
+        <div id="ec-empty" class="text-center text-[var(--outline-elev)] py-8" hidden>
+            <span class="material-symbols-elev text-4xl block mb-2 opacity-50">timeline</span>
+            Aún no hay operaciones registradas.
+            <a href="?tab=registrar" class="text-[var(--gold-elev)] hover:underline ml-1">Asentá la primera →</a>
+        </div>
+
+        <div class="ec-legend mt-3">
+            <span><span class="ec-legend-dot" style="background: #4ade80"></span>Win</span>
+            <span><span class="ec-legend-dot" style="background: #f87171"></span>Loss</span>
+            <span><span class="ec-legend-dot" style="background: rgba(255,255,255,0.4)"></span>BE</span>
+            <span class="ml-auto" id="ec-source">—</span>
+        </div>
+    </section>
+
+    {# ══════ F1.3 — Calendario Mensual (Fila 2, izquierda) ══════ #}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <section class="glass-card-elev p-6 calendar-monthly-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">calendar_month</span>
+                <span class="text-cinzel-display text-base tracking-wider">CALENDARIO</span>
+            </h3>
+            <div class="flex items-center gap-2" id="cal-month-nav" role="group" aria-label="Mes">
+                <button type="button" class="cal-nav-btn" id="cal-prev" aria-label="Mes anterior">
+                    <span class="material-symbols-elev text-base">chevron_left</span>
+                </button>
+                <span id="cal-month-title" class="text-sm font-semibold min-w-[140px] text-center">—</span>
+                <button type="button" class="cal-nav-btn" id="cal-next" aria-label="Mes siguiente">
+                    <span class="material-symbols-elev text-base">chevron_right</span>
+                </button>
+                <button type="button" class="cal-today-btn" id="cal-today">Hoy</button>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 mb-3 text-xs text-[var(--outline-elev)]">
+            <span>Total mes: <strong id="cal-month-pnl" class="text-[var(--on-surface-elev)]">$0</strong></span>
+            <span><span id="cal-month-trades">0</span> trades</span>
+            <span><span id="cal-month-wr">0</span>% WR</span>
+        </div>
+
+        <div class="cal-month-grid" id="cal-month-grid" aria-label="Calendario de operaciones">
+            <!-- day headers + day cells injected via JS -->
+            <div class="col-span-7 text-center text-[var(--outline-elev)] py-6 text-xs loading-pulse">Cargando calendario...</div>
+        </div>
+
+        <div class="cal-legend mt-3">
+            <span><span class="ec-legend-dot" style="background: #4ade80"></span>Día ganador</span>
+            <span><span class="ec-legend-dot" style="background: #f87171"></span>Día perdedor</span>
+            <span><span class="ec-legend-dot" style="background: #fbbf24"></span>Mixto</span>
+            <span><span class="ec-legend-dot" style="background: #8a3cff"></span>Abierta</span>
+        </div>
+    </section>
+
+    {# ══════ F1.4 — P&L Mensual Bar Chart (Fila 2, derecha — F1.3 insert) ══════ #}
+    <section class="glass-card-elev p-6 monthly-pnl-card" id="monthly-pnl-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">bar_chart</span>
+                <span class="text-cinzel-display text-base tracking-wider">P&L MENSUAL</span>
+            </h3>
+            <span class="text-xs text-[var(--outline-elev)]">últimos 6 meses</span>
+        </div>
+        <div id="monthly-pnl-chart" class="w-full" style="min-height: 240px;">
+            <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse text-xs">Cargando P&L mensual...</p>
+        </div>
+        <div class="cal-legend mt-3">
+            <span><span class="ec-legend-dot" style="background: #4ade80"></span>Positivo</span>
+            <span><span class="ec-legend-dot" style="background: #f87171"></span>Negativo</span>
+            <span class="ml-auto" id="monthly-pnl-source">—</span>
+        </div>
+    </section>
+    </div>
+
+    {# Day detail modal (F1.3) #}
+    <div id="cal-day-modal" class="cal-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="cal-day-modal-title">
+        <div class="cal-modal-content">
+            <div class="cal-modal-header">
+                <h2 id="cal-day-modal-title" class="text-lg font-semibold">Detalle</h2>
+                <button type="button" class="modal-close" data-action="close-cal-day" aria-label="Cerrar">
+                    <span class="material-symbols-elev">close</span>
+                </button>
+            </div>
+            <div id="cal-day-modal-body" class="cal-modal-body">
+                <!-- table injected via JS -->
+            </div>
+        </div>
+    </div>
+
+{# Hero Metrics Row - 4 KPI Cards #}
+    {# ══════ F1.2 — Stats (reemplaza 4-KPI placeholder de V1) ══════ #}
+    <section class="glass-card-elev p-6 stats-row" aria-label="Estadísticas de trading">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">analytics</span>
+                <span class="text-cinzel-display text-base tracking-wider">ESTADÍSTICAS</span>
+            </h3>
+            <span class="text-xs text-[var(--outline-elev)]">
+                <span id="stats-trade-count">0</span> trades en total
+            </span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="stats-grid">
+            <div class="kpi-card-elev" data-stat="pf">
+                <span class="kpi-label-elev">Profit Factor</span>
+                <p class="kpi-value-elev" id="stats-pf">—</p>
+                <p class="kpi-meta-elev" id="stats-pf-meta">—</p>
+            </div>
+            <div class="kpi-card-elev" data-stat="expect">
+                <span class="kpi-label-elev">Expectativa</span>
+                <p class="kpi-value-elev" id="stats-expect">—</p>
+                <p class="kpi-meta-elev" id="stats-expect-meta">—</p>
+            </div>
+            <div class="kpi-card-elev" data-stat="wr">
+                <span class="kpi-label-elev">Win Rate</span>
+                <p class="kpi-value-elev" id="stats-wr">—</p>
+                <p class="kpi-meta-elev" id="stats-wr-meta">—</p>
+            </div>
+            <div class="kpi-card-elev" data-stat="avg-w">
+                <span class="kpi-label-elev">Avg Win</span>
+                <p class="kpi-value-elev text-green-400" id="stats-avg-w">—</p>
+                <p class="kpi-meta-elev" id="stats-avg-w-meta">—</p>
+            </div>
+            <div class="kpi-card-elev" data-stat="avg-l">
+                <span class="kpi-label-elev">Avg Loss</span>
+                <p class="kpi-value-elev text-red-400" id="stats-avg-l">—</p>
+                <p class="kpi-meta-elev" id="stats-avg-l-meta">—</p>
+            </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-[var(--outline-variant-elev)] grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div>
+                <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Mejor trade</span>
+                <p class="text-green-400 font-bold text-lg" id="stats-best">—</p>
+            </div>
+            <div>
+                <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Peor trade</span>
+                <p class="text-red-400 font-bold text-lg" id="stats-worst">—</p>
+            </div>
+            <div>
+                <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Total P&L</span>
+                <p class="font-bold text-lg" id="stats-total-pnl">—</p>
+            </div>
+        </div>
+    </section>
 
         {# ─── Guardian Widget (Phase 3) ─── #}
         <section class="glass-card-elev p-6">
@@ -431,8 +850,8 @@
         <div class="tab-panel-stub">
             <span class="material-symbols-elev" aria-hidden="true">edit_note</span>
             <h2>REGISTRAR OPERACIÓN</h2>
-            <p>Disponible en <strong>Fase 2</strong>. Asentá tus operaciones cerradas con todos los detalles: activo, dirección, precios, capturas y tips del creador.</p>
-            <a href="/journal" class="btn-elev-primary">Ir al Journal actual</a>
+            <p><strong>Fase 2 ✅</strong> · Abrí el formulario completo para asentar una operación cerrada con todos los detalles: activo, dirección, precios, P&L y notas.</p>
+            <a href="/journal/new" class="btn-elev-primary">Asentar operación nueva →</a>
         </div>
     {% elseif tab == 'trade_log' %}
         <div class="tab-panel-stub">
@@ -896,6 +1315,15 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadDashboard();
         loadGuardianWidget();
+        loadStats();
+        loadEquityCurve('all');
+        wireEquityCurveTabs();
+        // F1.3 — calendar
+        const initialCal = _nowYM();
+        loadCalendarMonthly(initialCal.year, initialCal.month);
+        wireCalendarNav();
+        wireCalendarClicks();
+        wireCalDayModal();
         document.getElementById('quick-add-task').addEventListener('click', openCreateTask);
         document.querySelectorAll('[data-action="open-create-task"]').forEach(b => b.addEventListener('click', openCreateTask));
         document.querySelectorAll('[data-action="close-create-task"]').forEach(b => b.addEventListener('click', closeCreateTask));
@@ -911,6 +1339,554 @@
         setInterval(loadDashboard, 60000);
         setInterval(loadGuardianWidget, 90000);
     });
+
+    // ══════ F1.1 — Equity Curve ══════
+    function fmtUSD(n) {
+        const v = Math.abs(n);
+        if (v >= 1e6) return `$${(n/1e6).toFixed(2)}M`;
+        if (v >= 1e3) return `$${(n/1e3).toFixed(2)}k`;
+        return `$${n.toFixed(2)}`;
+    }
+    function fmtPct(n) {
+        const s = n >= 0 ? '+' : '';
+        return `${s}${n.toFixed(2)}%`;
+    }
+    async function loadEquityCurve(range) {
+        const svg = document.getElementById('ec-chart');
+        // F1.5/F1.1 guard: solo correr cuando el tab dashboard esté renderizado
+        if (!svg) return;
+
+        const url = `/api/journal/equity-curve?range=${encodeURIComponent(range)}&account_size=10000`;
+        const r = await apiFetch(url, { silent: true });
+        if (!r.ok || !r.data || !r.data.success) return;
+
+        const { summary, points, account_size: accountSize, range: serverRange } = r.data;
+
+        // Toggle active tab + aria-selected
+        document.querySelectorAll('#ec-range-tabs .ec-tab').forEach(btn => {
+            const isActive = btn.dataset.range === serverRange;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+
+        // Stats
+        const balanceEl = document.getElementById('ec-balance');
+        const balanceMetaEl = document.getElementById('ec-balance-meta');
+        balanceEl.textContent = fmtUSD(summary.current);
+        balanceMetaEl.textContent = `Peak ${fmtUSD(summary.peak)} · Low ${fmtUSD(summary.low)}`;
+
+        const returnEl = document.getElementById('ec-return');
+        returnEl.textContent = fmtPct(summary.total_return_pct);
+        returnEl.classList.remove('pos', 'neg');
+        returnEl.classList.add(summary.total_return_pct >= 0 ? 'pos' : 'neg');
+        document.getElementById('ec-return-meta').textContent =
+            `${summary.trade_count} trades · ${summary.wins}W / ${summary.losses}L · WR ${summary.win_rate}%`;
+
+        const ddEl = document.getElementById('ec-drawdown');
+        ddEl.textContent = `-${(summary.max_drawdown_pct || 0).toFixed(2)}%`;
+        ddEl.classList.remove('pos', 'neg');
+        ddEl.classList.add('neg');
+        document.getElementById('ec-drawdown-meta').textContent =
+            `Peak-to-trough · ${summary.breakeven} BE`;
+
+        // Empty state
+        const emptyEl = document.getElementById('ec-empty');
+        const loadingEl = document.getElementById('ec-loading');
+        if (loadingEl) loadingEl.remove();
+
+        if (points.length === 0) {
+            svg.hidden = true;
+            emptyEl.hidden = false;
+            document.getElementById('ec-source').textContent = serverRange;
+            return;
+        }
+        svg.hidden = false;
+        emptyEl.hidden = true;
+
+        drawEquitySvg(svg, points, accountSize, serverRange);
+    }
+
+    function drawEquitySvg(svg, points, accountSize, rangeLabel) {
+        const W = 1000, H = 280;
+        const padT = 20, padB = 32, padL = 60, padR = 24;
+        const chartW = W - padL - padR;
+        const chartH = H - padT - padB;
+
+        const balances = points.map(p => p.balance);
+        const min = Math.min(accountSize, ...balances);
+        const max = Math.max(accountSize, ...balances);
+        const range = (max - min) || 1;
+
+        const xs = points.map((_, i) =>
+            points.length === 1
+                ? padL + chartW / 2
+                : padL + (i / (points.length - 1)) * chartW
+        );
+        const ys = points.map(p =>
+            padT + chartH - ((p.balance - min) / range) * chartH
+        );
+
+        const linePath = xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(' ');
+        const fillPath = `${linePath} L ${xs[xs.length-1].toFixed(1)} ${padT+chartH} L ${xs[0].toFixed(1)} ${padT+chartH} Z`;
+        const baselineY = padT + chartH - ((accountSize - min) / range) * chartH;
+
+        // y-axis labels (4 niveles)
+        const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => {
+            const value = min + (max - min) * f;
+            const y = padT + chartH - f * chartH;
+            return `<text x="${padL-8}" y="${y+4}" fill="rgba(255,255,255,0.45)" font-size="10" text-anchor="end" font-family="Space Grotesk">${fmtUSD(value)}</text>`;
+        }).join('');
+
+        svg.innerHTML = `
+            <defs>
+                <linearGradient id="ec-fill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(242, 202, 80, 0.35)" />
+                    <stop offset="100%" stop-color="rgba(242, 202, 80, 0)" />
+                </linearGradient>
+            </defs>
+            <g stroke="rgba(255,255,255,0.06)" stroke-width="1">
+                <line x1="${padL}" x2="${W-padR}" y1="${padT}" y2="${padT}" />
+                <line x1="${padL}" x2="${W-padR}" y1="${padT+chartH/2}" y2="${padT+chartH/2}" />
+                <line x1="${padL}" x2="${W-padR}" y1="${padT+chartH}" y2="${padT+chartH}" />
+            </g>
+            ${yTicks}
+            <line x1="${padL}" x2="${W-padR}" y1="${baselineY.toFixed(1)}" y2="${baselineY.toFixed(1)}"
+                  stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4" stroke-width="1" />
+            <text x="${W-padR}" y="${(baselineY-4).toFixed(1)}" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="end" font-family="Space Grotesk">baseline</text>
+            <path d="${fillPath}" fill="url(#ec-fill)" />
+            <path d="${linePath}" stroke="#f2ca50" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            ${points.map((p, i) => {
+                const color = p.pnl > 0 ? '#4ade80' : p.pnl < 0 ? '#f87171' : 'rgba(255,255,255,0.45)';
+                return `<circle class="ec-point" cx="${xs[i].toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3" fill="${color}" stroke="#0e0a18" stroke-width="1" data-idx="${i}" style="cursor:pointer" />`;
+            }).join('')}
+        `;
+
+        // Hover tooltip
+        const tooltip = document.getElementById('ec-tooltip');
+        const card = svg.closest('.equity-curve-card');
+        svg.querySelectorAll('.ec-point').forEach(circle => {
+            const idx = parseInt(circle.dataset.idx, 10);
+            const p = points[idx];
+            circle.addEventListener('mouseenter', () => {
+                const dateStr = p.date ? new Date(p.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' }) : '—';
+                const pnlSign = p.pnl >= 0 ? '+' : '';
+                const pnlColor = p.pnl >= 0 ? '#4ade80' : '#f87171';
+                tooltip.innerHTML = `
+                    <div class="text-xs">
+                        <div class="flex items-center gap-2 mb-1">
+                            <strong class="text-[var(--gold-elev)]">${escapeHtml(p.asset)} ${escapeHtml(p.direction)}</strong>
+                            <span class="text-[10px] px-1.5 rounded ${p.result === 'WIN' ? 'bg-green-500/20 text-green-300' : p.result === 'LOSS' ? 'bg-red-500/20 text-red-300' : 'bg-white/10 text-white/60'}">${escapeHtml(p.result || '—')}</span>
+                        </div>
+                        <div class="text-[var(--outline-elev)]">${dateStr}</div>
+                        <div class="mt-1">Balance <span class="font-bold">$${p.balance.toLocaleString('es-AR', {minimumFractionDigits: 2})}</span></div>
+                        <div style="color: ${pnlColor}">P&L ${pnlSign}$${Math.abs(p.pnl).toFixed(2)}</div>
+                        ${p.drawdown_pct > 0 ? `<div class="text-[var(--outline-elev)] text-[10px]">DD ${p.drawdown_pct.toFixed(2)}%</div>` : ''}
+                    </div>
+                `;
+                if (card) {
+                    const cardRect = card.getBoundingClientRect();
+                    const svgRect  = svg.getBoundingClientRect();
+                    const xRatio = xs[idx] / W;
+                    const yRatio = ys[idx] / H;
+                    const left = (svgRect.left - cardRect.left) + xRatio * svgRect.width;
+                    const top  = (svgRect.top  - cardRect.top)  + yRatio * svgRect.height;
+                    tooltip.style.left = `${left}px`;
+                    tooltip.style.top  = `${top}px`;
+                    tooltip.hidden = false;
+                }
+            });
+            circle.addEventListener('mouseleave', () => {
+                tooltip.hidden = true;
+            });
+        });
+
+        document.getElementById('ec-source').textContent =
+            `${rangeLabel.toUpperCase()} · ${points.length} ops`;
+    }
+
+    function wireEquityCurveTabs() {
+        const wrap = document.getElementById('ec-range-tabs');
+        if (!wrap) return;
+        wrap.addEventListener('click', e => {
+            const btn = e.target.closest('.ec-tab');
+            if (!btn) return;
+            loadEquityCurve(btn.dataset.range);
+        });
+    }
+
+    // ══════ F1.2 — Stats ══════
+    async function loadStats() {
+        // F1.5/F1.2 guard: solo correr cuando el tab dashboard esté renderizado
+        if (!document.getElementById('stats-pf')) return;
+
+        const r = await apiFetch('/api/journal/stats', { silent: true });
+        if (!r.ok || !r.data || !r.data.success) return;
+        const s = r.data.stats;
+        const hasTrades = s.total > 0;
+
+        // Profit Factor
+        const pfEl = document.getElementById('stats-pf');
+        const pfMetaEl = document.getElementById('stats-pf-meta');
+        pfEl.textContent = hasTrades ? (s.profit_factor >= 99.99 ? '∞' : s.profit_factor.toFixed(2)) : '—';
+        pfEl.classList.remove('pos', 'neg', 'muted');
+        if (!hasTrades) pfEl.classList.add('muted');
+        else if (s.profit_factor >= 1.5) pfEl.classList.add('pos');
+        else if (s.profit_factor < 1) pfEl.classList.add('neg');
+        pfMetaEl.textContent = hasTrades
+            ? `Gross +$${s.gross_profit.toFixed(0)} / -$${s.gross_loss.toFixed(0)}`
+            : 'Sin operaciones';
+
+        // Expectativa
+        const expEl = document.getElementById('stats-expect');
+        expEl.textContent = hasTrades
+            ? (s.expectancy >= 0 ? '+$' : '-$') + Math.abs(s.expectancy).toFixed(2)
+            : '—';
+        expEl.classList.remove('pos', 'neg', 'muted');
+        if (!hasTrades) expEl.classList.add('muted');
+        else expEl.classList.add(s.expectancy >= 0 ? 'pos' : 'neg');
+        document.getElementById('stats-expect-meta').textContent = hasTrades
+            ? 'por trade promedio'
+            : '—';
+
+        // Win Rate
+        const wrEl = document.getElementById('stats-wr');
+        wrEl.textContent = hasTrades ? s.win_rate.toFixed(1) + '%' : '—';
+        wrEl.classList.remove('pos', 'neg', 'muted');
+        if (!hasTrades) wrEl.classList.add('muted');
+        else if (s.win_rate >= 50) wrEl.classList.add('pos');
+        else wrEl.classList.add('neg');
+        document.getElementById('stats-wr-meta').textContent = hasTrades
+            ? `${s.wins}W / ${s.losses}L`
+            : '—';
+
+        // Avg Win
+        document.getElementById('stats-avg-w').textContent = hasTrades && s.avg_win > 0
+            ? '+$' + s.avg_win.toFixed(2)
+            : '—';
+        document.getElementById('stats-avg-w-meta').textContent = hasTrades
+            ? `${s.wins} ops ganadoras`
+            : '—';
+
+        // Avg Loss
+        document.getElementById('stats-avg-l').textContent = hasTrades && s.avg_loss > 0
+            ? '-$' + s.avg_loss.toFixed(2)
+            : '—';
+        document.getElementById('stats-avg-l-meta').textContent = hasTrades
+            ? `${s.losses} ops perdedoras`
+            : '—';
+
+        // Best/Worst/Total
+        document.getElementById('stats-best').textContent = s.best_trade !== null
+            ? '+$' + s.best_trade.toFixed(2)
+            : '—';
+        document.getElementById('stats-worst').textContent = s.worst_trade !== null
+            ? '-$' + Math.abs(s.worst_trade).toFixed(2)
+            : '—';
+        const totalEl = document.getElementById('stats-total-pnl');
+        totalEl.textContent = (s.total_pnl >= 0 ? '+' : '-$') + Math.abs(s.total_pnl).toFixed(2);
+        totalEl.style.color = s.total_pnl >= 0 ? '#4ade80' : '#f87171';
+
+        document.getElementById('stats-trade-count').textContent = s.total;
+    }
+
+    // ══════ F1.3 — Calendar state ══════
+    let _CALstate = null;  // { year, month }
+    function _nowYM() {
+        const d = new Date();
+        return { year: d.getFullYear(), month: d.getMonth() + 1 };
+    }
+    function _pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+    async function loadCalendarMonthly(year, month) {
+        const grid = document.getElementById('cal-month-grid');
+        if (!grid) return;
+        const url = `/api/journal/calendar-monthly?year=${year}&month=${month}`;
+        const r = await apiFetch(url, { silent: true });
+        if (!r.ok || !r.data || !r.data.success) return;
+
+        _CALstate = { year: r.data.year, month: r.data.month_num };
+
+        document.getElementById('cal-month-title').textContent =
+            `${r.data.month_name} ${r.data.year}`;
+        document.getElementById('cal-month-pnl').textContent = fmtUSD(r.data.summary.total_pnl);
+        document.getElementById('cal-month-pnl').style.color =
+            r.data.summary.total_pnl >= 0 ? '#4ade80' : '#f87171';
+        document.getElementById('cal-month-trades').textContent = r.data.summary.trade_count;
+        document.getElementById('cal-month-wr').textContent = r.data.summary.win_rate;
+
+        renderMonthGrid(r.data.year, r.data.month_num, r.data.days);
+        renderMonthlyPnlChart(r.data.monthly_pnl);
+    }
+
+    function renderMonthGrid(year, month, daysByDate) {
+        const grid = document.getElementById('cal-month-grid');
+        const dayMap = Object.fromEntries(daysByDate.map(d => [d.date, d]));
+        const headers = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+        const headerHtml = headers.map(h =>
+            `<div class="cal-month-day-header">${h}</div>`
+        ).join('');
+
+        const firstOfMonth = new Date(year, month - 1, 1);
+        // ISO weekday: Mon=1..Sun=7 → array index: Mon=0..Sun=6
+        const firstIsoWeekday = firstOfMonth.getDay() === 0 ? 7 : firstOfMonth.getDay();
+        const offsetCells = firstIsoWeekday - 1;
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const daysInPrevMonth = new Date(year, month - 1, 0).getDate();
+        const totalCells = Math.ceil((offsetCells + daysInMonth) / 7) * 7;
+
+        const today = new Date();
+        const todayIso = `${today.getFullYear()}-${_pad(today.getMonth() + 1)}-${_pad(today.getDate())}`;
+
+        let bodyHtml = '';
+        for (let i = 0; i < totalCells; i++) {
+            let cellYear = year, cellMonth = month;
+            let cellNum;
+            let outside = false;
+            const dayIndex = i - offsetCells + 1;
+            if (dayIndex < 1) {
+                // previous month
+                cellMonth = month === 1 ? 12 : month - 1;
+                cellYear  = month === 1 ? year - 1 : year;
+                cellNum = daysInPrevMonth + dayIndex;
+                outside = true;
+            } else if (dayIndex > daysInMonth) {
+                // next month
+                cellMonth = month === 12 ? 1 : month + 1;
+                cellYear  = month === 12 ? year + 1 : year;
+                cellNum = dayIndex - daysInMonth;
+                outside = true;
+            } else {
+                cellNum = dayIndex;
+            }
+            const isoDate = `${cellYear}-${_pad(cellMonth)}-${_pad(cellNum)}`;
+            const dayData = !outside ? dayMap[isoDate] : null;
+            const isToday = !outside && isoDate === todayIso;
+
+            const trades = dayData?.trade_count || 0;
+            const pnl = dayData?.pnl || 0;
+            const wins = dayData?.wins || 0;
+            const losses = dayData?.losses || 0;
+            const hasOpen = dayData?.has_open || false;
+
+            let variant = '';
+            if (trades > 0) {
+                if (wins > 0 && losses === 0 && !hasOpen) variant = 'wins';
+                else if (losses > 0 && wins === 0 && !hasOpen) variant = 'losses';
+                else if (hasOpen) variant = 'has-open';
+                else variant = 'mixed';
+            }
+
+            const pnlClass = pnl > 0 ? 'pos' : (pnl < 0 ? 'neg' : 'zero');
+            const pnlSign = pnl > 0 ? '+' : '';
+            const pnlTxt = trades === 0 ? '' : `${pnlSign}$${Math.abs(pnl).toFixed(0)}`;
+            const countTxt = trades === 0 ? '' : `${trades} op${trades>1?'s':''}`;
+
+            bodyHtml += `
+                <div class="cal-month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${variant}"
+                     data-date="${isoDate}"
+                     ${outside ? '' : 'role="button" tabindex="0"'}>
+                    <div class="cal-month-day-num">${cellNum}</div>
+                    <div>
+                        <div class="cal-month-day-pnl ${pnlClass}">${pnlTxt}</div>
+                        <div class="cal-month-day-count">${countTxt}</div>
+                    </div>
+                </div>
+            `;
+        }
+        grid.innerHTML = headerHtml + bodyHtml;
+    }
+
+    function wireCalendarNav() {
+        const prev = document.getElementById('cal-prev');
+        const next = document.getElementById('cal-next');
+        const today = document.getElementById('cal-today');
+        if (!prev || !next || !today) return;
+        prev.addEventListener('click', () => {
+            const s = _CALstate || _nowYM();
+            let m = s.month - 1, y = s.year;
+            if (m < 1) { m = 12; y--; }
+            loadCalendarMonthly(y, m);
+        });
+        next.addEventListener('click', () => {
+            const s = _CALstate || _nowYM();
+            let m = s.month + 1, y = s.year;
+            if (m > 12) { m = 1; y++; }
+            loadCalendarMonthly(y, m);
+        });
+        today.addEventListener('click', () => {
+            const t = _nowYM();
+            loadCalendarMonthly(t.year, t.month);
+        });
+    }
+
+    function wireCalendarClicks() {
+        const grid = document.getElementById('cal-month-grid');
+        if (!grid) return;
+        grid.addEventListener('click', e => {
+            const cell = e.target.closest('.cal-month-day');
+            if (!cell || cell.classList.contains('outside')) return;
+            openCalDayModal(cell.dataset.date);
+        });
+        grid.addEventListener('keydown', e => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            const cell = e.target.closest('.cal-month-day');
+            if (!cell || cell.classList.contains('outside')) return;
+            e.preventDefault();
+            openCalDayModal(cell.dataset.date);
+        });
+    }
+
+    async function openCalDayModal(isoDate) {
+        // Re-fetch from /api/journal/calendar-monthly for the month, then filter day
+        if (!_CALstate) {
+            const t = _nowYM();
+            _CALstate = t;
+        }
+        const r = await apiFetch(`/api/journal/calendar-monthly?year=${_CALstate.year}&month=${_CALstate.month}`, { silent: true });
+        if (!r.ok || !r.data || !r.data.success) return;
+        const dayData = (r.data.days || []).find(d => d.date === isoDate);
+
+        const titleEl = document.getElementById('cal-day-modal-title');
+        titleEl.textContent = `Detalle · ${formatLongDate(isoDate)}`;
+
+        const body = document.getElementById('cal-day-modal-body');
+        if (!dayData || !dayData.trades || dayData.trades.length === 0) {
+            body.innerHTML = '<p class="cal-trades-empty">No hay trades registrados en este día.</p>';
+        } else {
+            const total = dayData.pnl;
+            const totalClass = total >= 0 ? 'pnl-pos' : 'pnl-neg';
+            const totalSign = total >= 0 ? '+' : '';
+            body.innerHTML = `
+                <div class="flex items-center gap-3 mb-3 text-sm">
+                    <span>Total del día: <strong class="${totalClass}">${totalSign}$${Math.abs(total).toFixed(2)}</strong></span>
+                    <span class="text-[var(--outline-elev)]">·</span>
+                    <span>${dayData.trade_count} operacion${dayData.trade_count>1?'es':''}</span>
+                    <span class="text-[var(--outline-elev)]">·</span>
+                    <span><span class="text-green-400">${dayData.wins}W</span> / <span class="text-red-400">${dayData.losses}L</span>${dayData.breakeven ? ` / <span class="text-[var(--outline-elev)]">${dayData.breakeven}BE</span>` : ''}${dayData.has_open ? ` / <span class="text-violet-400">abiertas</span>` : ''}</span>
+                </div>
+                <table class="cal-trades-table">
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Activo</th>
+                            <th>Dir</th>
+                            <th>Result</th>
+                            <th class="text-right">P&L</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${dayData.trades.map(t => {
+                            const date = new Date(t.date);
+                            const hora = `${_pad(date.getHours())}:${_pad(date.getMinutes())}`;
+                            const pnlCls = t.pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
+                            const pnlSign = t.pnl >= 0 ? '+' : '';
+                            return `
+                                <tr>
+                                    <td class="font-mono text-xs text-[var(--outline-elev)]">${hora}</td>
+                                    <td class="font-semibold">${escapeHtml(t.asset || '')}</td>
+                                    <td><span class="px-1.5 py-0.5 rounded text-xs ${t.direction === 'BUY' ? 'bg-green-500/15 text-green-300' : 'bg-red-500/15 text-red-300'}">${escapeHtml(t.direction || '')}</span></td>
+                                    <td><span class="px-1.5 py-0.5 rounded text-xs ${t.result === 'WIN' ? 'bg-green-500/20 text-green-300' : t.result === 'LOSS' ? 'bg-red-500/20 text-red-300' : 'bg-white/10 text-white/60'}">${escapeHtml(t.result || '')}</span></td>
+                                    <td class="text-right ${pnlCls}">${pnlSign}$${Math.abs(t.pnl).toFixed(2)}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        const modal = document.getElementById('cal-day-modal');
+        modal.style.display = 'flex';
+    }
+
+    function wireCalDayModal() {
+        const modal = document.getElementById('cal-day-modal');
+        if (!modal) return;
+        modal.addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeCalDayModal();
+        });
+        document.querySelectorAll('[data-action="close-cal-day"]').forEach(b => {
+            b.addEventListener('click', closeCalDayModal);
+        });
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && modal.style.display === 'flex') closeCalDayModal();
+        });
+    }
+    function closeCalDayModal() {
+        const modal = document.getElementById('cal-day-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function formatLongDate(isoDate) {
+        const [y, m, d] = isoDate.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        return `${dias[date.getDay()]} ${d} de ${meses[date.getMonth()]}, ${y}`;
+    }
+
+    // ══════ F1.4 — P&L Mensual Bar Chart (bonus, mismo endpoint) ══════
+    function renderMonthlyPnlChart(rows) {
+        const wrap = document.getElementById('monthly-pnl-chart');
+        if (!wrap) return;
+        if (!rows || rows.length === 0) {
+            wrap.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-xs">Sin datos.</p>';
+            return;
+        }
+        const W = 720, H = 260;
+        const padT = 20, padB = 36, padL = 56, padR = 16;
+        const chartW = W - padL - padR;
+        const chartH = H - padT - padB;
+        const n = rows.length;
+        const barGap = 0.25;
+        const barW = (chartW / n) * (1 - barGap);
+
+        const vals = rows.map(r => r.pnl);
+        const maxAbs = Math.max(...vals.map(Math.abs), 1);
+        const yMax = Math.ceil(maxAbs * 1.1);
+        const yMin = -yMax;
+        const yRange = yMax - yMin;
+        const zeroY = padT + chartH * (yMax / yRange);
+
+        const xFor = (i) => padL + (i + 0.5) * (chartW / n) - barW / 2;
+        const yFor = (v) => padT + chartH * ((yMax - v) / yRange);
+
+        const monthLabels = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+        const bars = rows.map((r, i) => {
+            const x = xFor(i);
+            const y = yFor(r.pnl);
+            const h = Math.abs(zeroY - y);
+            const color = r.pnl >= 0 ? '#4ade80' : '#f87171';
+            return `
+                <rect class="monthly-bar" x="${x.toFixed(1)}" y="${Math.min(y, zeroY).toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" stroke="#0e0a18" stroke-width="1" rx="3" data-month="${r.month}" />
+                <text class="monthly-pnl-axis-text" x="${(x + barW/2).toFixed(1)}" y="${(padT + chartH + 16).toFixed(1)}" text-anchor="middle">${monthLabels[parseInt(r.month.slice(5), 10) - 1]}</text>
+            `;
+        }).join('');
+
+        // Y-axis ticks
+        const ticks = [-yMax, -yMax/2, 0, yMax/2, yMax].map(v => {
+            const y = yFor(v);
+            return `
+                <line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+                <text class="monthly-pnl-axis-text" x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end">${fmtUSD(v)}</text>
+            `;
+        }).join('');
+
+        wrap.innerHTML = `
+            <svg class="monthly-pnl-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="P&L mensual últimos 6 meses">
+                ${ticks}
+                <line x1="${padL}" x2="${W-padR}" y1="${zeroY.toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4" stroke-width="1" />
+                <text class="monthly-pnl-axis-text" x="${W-padR}" y="${(zeroY-4).toFixed(1)}" text-anchor="end">$0</text>
+                ${bars}
+            </svg>
+        `;
+
+        // source line
+        const tot = vals.reduce((a, b) => a + b, 0);
+        const sign = tot >= 0 ? '+' : '';
+        const srcEl = document.getElementById('monthly-pnl-source');
+        if (srcEl) srcEl.textContent = `6m: ${sign}${fmtUSD(tot)} · ${rows.reduce((a, r) => a + r.trade_count, 0)} ops`;
+    }
+
     </script>
     <script src="{{ asset('js/modules/sparklines.js') }}"></script>
     <script>

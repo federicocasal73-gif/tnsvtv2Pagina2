@@ -130,11 +130,338 @@
         opacity: 1;
         pointer-events: auto;
     }
+
+    /* ══════ F3 — Bento Grid Macro ══════ */
+    .bento-grid-f3 .bento-card {
+        background: var(--glass-bg-elev);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 1rem;
+        padding: 1.25rem 1.4rem;
+        position: relative;
+        overflow: hidden;
+        transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .bento-grid-f3 .bento-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(242, 202, 80, 0.5), transparent);
+    }
+    .bento-grid-f3 .bento-card:hover { border-color: rgba(242, 202, 80, 0.25); }
+    .bento-card-critical::before { background: linear-gradient(90deg, transparent, #f87171, transparent); }
+    .bento-card-window::before   { background: linear-gradient(90deg, transparent, var(--gold-elev), transparent); }
+    .bento-card-pairs::before    { background: linear-gradient(90deg, transparent, #8a3cff, transparent); }
+    .bento-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .bento-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+    }
+    .bento-eyebrow .material-symbols-outlined { font-size: 1rem; }
+    .bento-card-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--gold-elev);
+        margin: 0.3rem 0 0.25rem;
+        line-height: 1.2;
+    }
+    .bento-card-meta {
+        font-size: 0.75rem;
+        color: var(--outline-elev);
+        margin: 0 0 0.75rem 0;
+    }
+    .bento-impact-pill {
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.2rem 0.5rem;
+        border-radius: 9999px;
+        background: rgba(248, 113, 113, 0.18);
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.4);
+        letter-spacing: 0.05em;
+    }
+    .bento-impact-pill.muted { background: rgba(255,255,255,0.05); color: var(--outline-elev); border-color: var(--glass-border-elev); }
+    .bento-status-pill {
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.2rem 0.55rem;
+        border-radius: 9999px;
+        background: rgba(242, 202, 80, 0.15);
+        color: var(--gold-elev);
+        border: 1px solid rgba(242, 202, 80, 0.4);
+        letter-spacing: 0.08em;
+    }
+    .bento-status-pill.active {
+        background: rgba(248, 113, 113, 0.18);
+        color: #f87171;
+        border-color: rgba(248, 113, 113, 0.5);
+        animation: bento-pulse 2s ease-in-out infinite;
+    }
+    .bento-status-pill.clear { background: rgba(74, 222, 128, 0.15); color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
+    @keyframes bento-pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.85; }
+    }
+    .bento-countdown {
+        font-family: 'Cinzel', serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--on-surface-elev);
+        margin: 0.5rem 0 1rem;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+    }
+    .bento-countdown.active { color: #f87171; text-shadow: 0 0 12px rgba(248, 113, 113, 0.35); }
+    .bento-countdown.cleared { color: #4ade80; }
+    .bento-kv {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+        padding-top: 0.6rem;
+        border-top: 1px dashed var(--glass-border-elev);
+    }
+    .bento-kv > div { min-width: 0; }
+    .bento-kv dt {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--outline-elev);
+        margin-bottom: 0.15rem;
+    }
+    .bento-kv dd {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--on-surface-elev);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .bento-window-rule {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+        margin: 0.75rem 0;
+        line-height: 1.4;
+    }
+    .bento-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .bento-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.85rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        background: rgba(242, 202, 80, 0.18);
+        color: var(--gold-elev);
+        border: 1px solid rgba(242, 202, 80, 0.5);
+        border-radius: 0.4rem;
+        cursor: pointer;
+        transition: background 0.15s, transform 0.1s;
+    }
+    .bento-btn-primary:hover { background: rgba(242, 202, 80, 0.28); transform: translateY(-1px); }
+    .bento-btn-primary.active {
+        background: rgba(74, 222, 128, 0.18);
+        color: #4ade80;
+        border-color: rgba(74, 222, 128, 0.5);
+    }
+    .bento-btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: transparent;
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.4rem;
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+    .bento-btn-ghost:hover { color: var(--on-surface-elev); }
+    .bento-reminder-config {
+        margin-top: 0.6rem;
+        padding: 0.5rem 0.7rem;
+        background: rgba(74, 222, 128, 0.08);
+        border: 1px solid rgba(74, 222, 128, 0.3);
+        border-radius: 0.4rem;
+        font-size: 0.7rem;
+        color: #bbf7d0;
+    }
+    .bento-reminder-config[hidden] { display: none; }
+    .bento-pairs-list {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+    .bento-pair-row {
+        display: grid;
+        grid-template-columns: 64px 1fr 38px;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.4rem 0.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 0.4rem;
+    }
+    .bento-pair-name {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: var(--on-surface-elev);
+    }
+    .bento-pair-bar {
+        height: 8px;
+        background: rgba(138, 60, 255, 0.15);
+        border-radius: 9999px;
+        overflow: hidden;
+        position: relative;
+    }
+    .bento-pair-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #8a3cff 0%, var(--gold-elev) 100%);
+        border-radius: 9999px;
+        transition: width 0.4s ease;
+    }
+    .bento-pair-conf {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--gold-elev);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+    }
+    .bento-pair-rationale {
+        font-size: 0.6rem;
+        color: var(--outline-elev);
+        grid-column: 1 / -1;
+        margin-top: 0.2rem;
+        line-height: 1.3;
+    }
+    .bento-pair-empty {
+        text-align: center;
+        color: var(--outline-elev);
+        font-size: 0.8rem;
+        padding: 1.5rem 0;
+        list-style: none;
+    }
+    @media (max-width: 640px) {
+        .bento-countdown { font-size: 1.5rem; }
+        .bento-kv { grid-template-columns: 1fr; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
+
+    {# ══════ F3 — Bento Grid (Próximo Crítico + Ventana + Pares Afectados) ══════ #}
+    <section class="mb-6 bento-grid-f3" aria-label="Bento macro">
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-3">
+            <h2 class="text-cinzel-display text-lg tracking-wider flex items-center gap-2">
+                <span class="material-symbols-outlined text-[var(--gold-elev)]">view_in_ar</span>
+                MACRO BENTO
+            </h2>
+            <div class="flex items-center gap-2 text-xs text-[var(--outline-elev)]" id="bento-counter">
+                <span id="bento-counter-text">Cargando…</span>
+                <span class="material-symbols-outlined text-base">refresh</span>
+                <button type="button" id="bento-refresh" class="text-[var(--gold-elev)] hover:underline" title="Refrescar">↻</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {# 1. Próximo Crítico #}
+            <article class="bento-card bento-card-critical" aria-labelledby="bento-critical-title">
+                <header class="bento-card-header">
+                    <span class="bento-eyebrow"><span class="material-symbols-outlined">local_fire_department</span> Próximo crítico</span>
+                    <span class="bento-impact-pill" id="bento-critical-impact">—</span>
+                </header>
+                <h3 class="bento-card-title" id="bento-critical-title">—</h3>
+                <p class="bento-card-meta">
+                    <span id="bento-critical-country">—</span>
+                    ·
+                    <span id="bento-critical-time">—</span>
+                    (<span id="bento-critical-tz">—</span>)
+                </p>
+                <div class="bento-countdown" id="bento-critical-countdown">—</div>
+
+                <dl class="bento-kv">
+                    <div><dt>Previsión</dt><dd id="bento-critical-forecast">—</dd></div>
+                    <div><dt>Anterior</dt><dd id="bento-critical-previous">—</dd></div>
+                    <div><dt>Actual</dt><dd id="bento-critical-actual">—</dd></div>
+                </dl>
+            </article>
+
+            {# 2. Ventana No-Operar #}
+            <article class="bento-card bento-card-window" aria-labelledby="bento-window-title">
+                <header class="bento-card-header">
+                    <span class="bento-eyebrow">
+                        <span class="material-symbols-outlined">timer</span> Ventana No-Operar
+                    </span>
+                    <span class="bento-status-pill" id="bento-window-status">—</span>
+                </header>
+                <h3 class="bento-card-title" id="bento-window-title">—</h3>
+                <p class="bento-card-meta" id="bento-window-meta">—</p>
+                <div class="bento-countdown" id="bento-window-countdown">—</div>
+                <p class="bento-window-rule">
+                    15' antes · <strong>EVENTO</strong> · 15' después.
+                    <br><span class="text-[var(--outline-elev)]">Disciplina = capital.</span>
+                </p>
+                <div class="bento-actions">
+                    <button type="button" class="bento-btn-primary" id="bento-remind-btn">
+                        <span class="material-symbols-outlined">notifications_active</span>
+                        Recordarme 15' antes
+                    </button>
+                    <button type="button" class="bento-btn-ghost" id="bento-mute-btn">
+                        <span class="material-symbols-outlined">volume_off</span>
+                    </button>
+                </div>
+                <div class="bento-reminder-config" id="bento-reminder-config" hidden>
+                    <span id="bento-reminder-status">Recordatorio configurado para</span>
+                    <strong id="bento-reminder-when">—</strong>
+                </div>
+            </article>
+
+            {# 3. Pares Más Afectados #}
+            <article class="bento-card bento-card-pairs" aria-labelledby="bento-pairs-title">
+                <header class="bento-card-header">
+                    <span class="bento-eyebrow">
+                        <span class="material-symbols-outlined">hub</span> Pares más afectados
+                    </span>
+                    <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">confianza</span>
+                </header>
+                <h3 class="bento-card-title" id="bento-pairs-title">—</h3>
+                <ul class="bento-pairs-list" id="bento-pairs-list">
+                    <li class="bento-pair-empty">Sin próximo evento crítico</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
     {# Header #}
     <div class="text-center mb-8">
         <p class="font-label-sm text-label-sm text-primary uppercase tracking-[0.3em] mb-2">Calendario Económico</p>
@@ -271,6 +598,290 @@
     </div>
 
     <script>
+    // ══════ F3 — Bento Grid ══════
+    let _bentoState = null;
+    let _bentoReminderTimer = null;
+
+    function fmtDuration(seconds) {
+        if (seconds < 0) seconds = 0;
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        if (h > 0) return `${h}h ${String(m).padStart(2,'0')}m`;
+        if (m > 0) return `${m}m ${String(s).padStart(2,'0')}s`;
+        return `${s}s`;
+    }
+
+    function escapeHtmlBento(s) {
+        return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async function loadMacroBento() {
+        const grid = document.getElementById('bento-counter-text');
+        if (!grid) return;
+        try {
+            const r = await apiFetch('/api/macro/bento?tz=America/Argentina/Buenos_Aires', { silent: true });
+            if (!r.ok || !r.data || !r.data.success) {
+                grid.textContent = 'Sin datos';
+                return;
+            }
+            _bentoState = r.data;
+            renderBento(r.data);
+        } catch (e) {
+            grid.textContent = 'Sin conexión';
+        }
+    }
+
+    function renderBento(data) {
+        const next = data.next_critical;
+        const window = data.window;
+
+        // === Counter header ===
+        const counterEl = document.getElementById('bento-counter-text');
+        if (counterEl) {
+            const total = data.upcoming_count || 0;
+            const critical = data.critical_this_week_count || 0;
+            counterEl.textContent = `${total} eventos próximos · ${critical} críticos esta semana`;
+        }
+
+        // === Card 1 — Próximo Crítico ===
+        const impactEl = document.getElementById('bento-critical-impact');
+        const titleEl = document.getElementById('bento-critical-title');
+        const countryEl = document.getElementById('bento-critical-country');
+        const timeEl = document.getElementById('bento-critical-time');
+        const tzEl = document.getElementById('bento-critical-tz');
+        const countdownEl = document.getElementById('bento-critical-countdown');
+        const forecastEl = document.getElementById('bento-critical-forecast');
+        const previousEl = document.getElementById('bento-critical-previous');
+        const actualEl = document.getElementById('bento-critical-actual');
+
+        if (next) {
+            impactEl.textContent = `IMPACT ${next.importance || 3}`;
+            impactEl.classList.remove('muted');
+            titleEl.textContent = next.title || next.original_title || '—';
+            countryEl.textContent = `${next.country || ''} ${next.currency || ''}`.trim() || '—';
+            timeEl.textContent = `${next.date || ''} ${next.time || ''}`;
+            tzEl.textContent = data.tz_label || '—';
+            forecastEl.textContent = next.forecast || '—';
+            previousEl.textContent = next.previous || '—';
+            actualEl.textContent = next.actual || '—';
+            if (data.next_critical.seconds_until_event > 0) {
+                countdownEl.textContent = 'En ' + fmtDuration(data.next_critical.seconds_until_event);
+                countdownEl.classList.remove('active');
+                countdownEl.classList.remove('cleared');
+            } else {
+                countdownEl.textContent = 'EN VIVO';
+                countdownEl.classList.add('active');
+            }
+        } else {
+            impactEl.textContent = '—';
+            impactEl.classList.add('muted');
+            titleEl.textContent = 'Sin eventos críticos próximos';
+            countryEl.textContent = '—'; timeEl.textContent = '—'; tzEl.textContent = '—';
+            forecastEl.textContent = '—'; previousEl.textContent = '—'; actualEl.textContent = '—';
+            countdownEl.textContent = '✓ Libre';
+            countdownEl.classList.add('cleared');
+        }
+
+        // === Card 2 — Ventana ===
+        const winStatusEl = document.getElementById('bento-window-status');
+        const winTitleEl = document.getElementById('bento-window-title');
+        const winMetaEl = document.getElementById('bento-window-meta');
+        const winCountdownEl = document.getElementById('bento-window-countdown');
+        const remindBtn = document.getElementById('bento-remind-btn');
+        const muteBtn = document.getElementById('bento-remind-btn');
+        const reminderConfig = document.getElementById('bento-reminder-config');
+        const reminderWhen = document.getElementById('bento-reminder-when');
+        const reminderStatus = document.getElementById('bento-reminder-status');
+
+        if (window) {
+            winStatusEl.classList.remove('clear', 'active');
+            if (window.is_active) {
+                winStatusEl.textContent = 'ACTIVA';
+                winStatusEl.classList.add('active');
+                winTitleEl.textContent = '⛔ NO OPERAR';
+                winCountdownEl.textContent = 'Ends in ' + fmtDuration(window.seconds_until_end);
+                winCountdownEl.classList.add('active');
+            } else {
+                winStatusEl.textContent = 'PRÓXIMA';
+                winTitleEl.textContent = window.reason || '—';
+                winCountdownEl.textContent = 'En ' + fmtDuration(window.seconds_until_start);
+                winCountdownEl.classList.remove('active');
+            }
+            winMetaEl.textContent = `± 30 min · starts ${formatBsAs(window.starts_at)}`;
+        } else {
+            winStatusEl.textContent = 'CLEAR';
+            winStatusEl.classList.add('clear');
+            winTitleEl.textContent = 'Sin ventanas activas';
+            winCountdownEl.textContent = '✓';
+            winCountdownEl.classList.add('cleared');
+            winMetaEl.textContent = '';
+        }
+
+        // === Card 3 — Pares Afectados ===
+        const pairsTitle = document.getElementById('bento-pairs-title');
+        const pairsList = document.getElementById('bento-pairs-list');
+        const pairs = data.affected_pairs || [];
+        if (pairs.length > 0 && next) {
+            pairsTitle.textContent = `${next.currency || 'USD'} mueve:`;
+            pairsList.innerHTML = pairs.map(p => {
+                const w = Math.max(8, Math.min(100, p.confidence || 0));
+                return `
+                    <li class="bento-pair-row">
+                        <span class="bento-pair-name">${escapeHtmlBento(p.pair)}</span>
+                        <div class="bento-pair-bar"><div class="bento-pair-bar-fill" style="width:${w}%"></div></div>
+                        <span class="bento-pair-conf">${p.confidence}%</span>
+                        <span class="bento-pair-rationale">${escapeHtmlBento(p.rationale)}</span>
+                    </li>
+                `;
+            }).join('');
+        } else {
+            pairsTitle.textContent = 'Sin próximo evento';
+            pairsList.innerHTML = '<li class="bento-pair-empty">Sin próximo evento crítico</li>';
+        }
+
+        // === Reminder persistence ===
+        restoreReminderUI();
+    }
+
+    function formatBsAs(iso) {
+        try {
+            const d = new Date(iso);
+            return d.toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
+        } catch (e) { return iso; }
+    }
+
+    async function requestNotificationPermissionIfNeeded() {
+        if (!('Notification' in window)) return false;
+        if (Notification.permission === 'granted') return true;
+        if (Notification.permission === 'denied') return false;
+        try {
+            const perm = await Notification.requestPermission();
+            return perm === 'granted';
+        } catch (e) { return false; }
+    }
+
+    function setReminder(eventIso, remindBeforeSec = 900) {
+        const eventDt = new Date(eventIso).getTime();
+        if (isNaN(eventDt)) return false;
+        const remindAt = eventDt - remindBeforeSec * 1000;
+        if (remindAt <= Date.now()) return false;
+        localStorage.setItem('tnsvt_bento_reminder', JSON.stringify({
+            eventIso, remindAtSec: remindBeforeSec,
+        }));
+        // Clear any existing timer
+        if (_bentoReminderTimer) clearTimeout(_bentoReminderTimer);
+        const ms = Math.max(0, remindAt - Date.now());
+        _bentoReminderTimer = setTimeout(() => {
+            triggerReminder();
+        }, ms);
+        return true;
+    }
+
+    function clearReminder() {
+        localStorage.removeItem('tnsvt_bento_reminder');
+        if (_bentoReminderTimer) clearTimeout(_bentoReminderTimer);
+        _bentoReminderTimer = null;
+    }
+
+    function triggerReminder() {
+        if (!(_bentoState && _bentoState.next_critical)) return;
+        const evt = _bentoState.next_critical;
+        // Show in-page alert
+        showReminderBanner(evt);
+        // Browser notification if permitted
+        if ('Notification' in window && Notification.permission === 'granted') {
+            try {
+                new Notification('⏰ Recordatorio macro · 15 min', {
+                    body: `${evt.title} ${evt.currency} en 15 min · No operes durante ±30 min.`,
+                    icon: '/assets/icons/icon-192.png',
+                });
+            } catch (e) { /* no-op */ }
+        }
+    }
+
+    function showReminderBanner(evt) {
+        // Insert a transient banner at the top of <main>
+        const main = document.querySelector('main') || document.body;
+        const existing = document.getElementById('bento-reminder-banner');
+        if (existing) existing.remove();
+        const banner = document.createElement('div');
+        banner.id = 'bento-reminder-banner';
+        banner.style.cssText = 'position:sticky;top:0;z-index:50;background:rgba(248,113,113,0.18);border:1px solid #f87171;color:#fecaca;padding:0.6rem 1rem;border-radius:0.4rem;backdrop-filter:blur(8px);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;';
+        banner.innerHTML = `
+            <span><strong>⏰ 15 min para:</strong> ${escapeHtmlBento(evt.title)} (${escapeHtmlBento(evt.currency)}) · cerrá posiciones o esperá</span>
+            <button type="button" id="bento-reminder-dismiss" style="background:transparent;border:1px solid #f87171;color:#fecaca;padding:0.25rem 0.5rem;border-radius:0.3rem;cursor:pointer;">OK</button>
+        `;
+        main.insertBefore(banner, main.firstChild);
+        document.getElementById('bento-reminder-dismiss').addEventListener('click', () => banner.remove());
+    }
+
+    function restoreReminderUI() {
+        const remindBtn = document.getElementById('bento-remind-btn');
+        const reminderConfig = document.getElementById('bento-reminder-config');
+        const reminderWhen = document.getElementById('bento-reminder-when');
+        const stored = localStorage.getItem('tnsvt_bento_reminder');
+        if (!stored) {
+            remindBtn.classList.remove('active');
+            reminderConfig.hidden = true;
+            return;
+        }
+        try {
+            const r = JSON.parse(stored);
+            remindBtn.classList.add('active');
+            reminderConfig.hidden = false;
+            const dt = new Date(r.eventIso);
+            reminderWhen.textContent = dt.toLocaleString('es-AR');
+            // Re-arm timer if needed
+            const remindAt = new Date(r.eventIso).getTime() - r.remindAtSec * 1000;
+            const ms = Math.max(0, remindAt - Date.now());
+            if (ms > 0 && !_bentoReminderTimer) {
+                _bentoReminderTimer = setTimeout(triggerReminder, ms);
+            }
+        } catch (e) {
+            localStorage.removeItem('tnsvt_bento_reminder');
+        }
+    }
+
+    function wireBento() {
+        const remindBtn = document.getElementById('bento-remind-btn');
+        const muteBtn = document.getElementById('bento-mute-btn');
+        const refreshBtn = document.getElementById('bento-refresh');
+        if (!remindBtn) return;
+
+        remindBtn.addEventListener('click', async () => {
+            if (!_bentoState || !_bentoState.next_critical || !_bentoState.window) {
+                alert('No hay un próximo evento crítico para recordarte.');
+                return;
+            }
+            const existing = localStorage.getItem('tnsvt_bento_reminder');
+            if (existing) {
+                if (confirm('¿Cancelar el recordatorio actual?')) {
+                    clearReminder();
+                    restoreReminderUI();
+                }
+                return;
+            }
+            const ok = await requestNotificationPermissionIfNeeded();
+            // Set timer regardless (in-page banner works without permission)
+            const set = setReminder(_bentoState.window.starts_at, 15 * 60);
+            if (!set) {
+                alert('El evento empieza en menos de 15 minutos. Recordatorio no aplica.');
+                return;
+            }
+            restoreReminderUI();
+        });
+        muteBtn && muteBtn.addEventListener('click', () => clearReminder());
+        refreshBtn && refreshBtn.addEventListener('click', () => loadMacroBento());
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        wireBento();
+        loadMacroBento();
+        // Re-fetch every 5 min for freshest data
+        setInterval(loadMacroBento, 5 * 60 * 1000);
+    });
+
     let countdownInterval = null;
     let allWindows = [];
 

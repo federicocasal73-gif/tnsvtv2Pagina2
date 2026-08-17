@@ -1,5 +1,8 @@
 # MASTER PROMPT — TNSVT V2 FINALIZATION
 
+> **Status actual (2026-08-17):** F0 ✅ · F1 ✅ · F2 ✅ · F3 ✅ · F4 ✅ · F5 ⏳ · F6 ⏳ · F7 ⏳ · F8 ⏳  
+> **~50% del plan V2 cerrado.** Backend trading completo + macro awareness + diario cifrado. Pendiente: comunidad (F5) y académico (F8). Ver `.opencode/plans/2026-08-17-V2-MASTER-PLAN.md` para el plan detallado.
+
 You are the principal engineer and product architect responsible for finishing TNSVT V2.
 
 Your job is to transform the existing application into a coherent, maintainable,

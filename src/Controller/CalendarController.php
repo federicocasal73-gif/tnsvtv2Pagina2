@@ -166,6 +166,134 @@ class CalendarController extends AbstractController
         return $response;
     }
 
+    // ══════ F3 — Macro Bento (Próximo Crítico + Ventana + Pares) ══════
+
+    #[Route('/api/macro/bento', name: 'app_macro_bento', methods: ['GET'])]
+    public function macroBento(\Symfony\Component\HttpFoundation\Request $request): JsonResponse
+    {
+        $tz = $this->parseTimezone($request->query->get('tz'));
+        $cacheFile = sys_get_temp_dir() . '/tnsvt_calendar_cache.json';
+        $cacheTtl = 900;
+
+        $events = $this->loadFromCache($cacheFile, $cacheTtl);
+        if ($events === null) {
+            $events = $this->fetchFromTradingView();
+        }
+        if ($events === null || count($events) < 3) {
+            $events = $this->mergeWithFallback($events);
+        }
+        $this->saveToCache($cacheFile, $events);
+        $events = $this->applyTimezone($events, $tz);
+
+        $now = new \DateTimeImmutable('now');
+
+        $upcoming = [];
+        foreach ($events as $e) {
+            if (!isset($e['date'], $e['time'])) continue;
+            $dt = \DateTimeImmutable::createFromFormat('Y-m-d H:i', $e['date'] . ' ' . $e['time']);
+            if ($dt === false || $dt < $now) continue;
+            $e['datetime_local'] = $dt->format('c');
+            $e['seconds_until_event'] = $dt->getTimestamp() - $now->getTimestamp();
+            $e['is_critical'] = ($e['importance'] ?? 0) >= 3;
+            $upcoming[] = $e;
+        }
+
+        $critical = array_values(array_filter($upcoming, fn($e) => $e['is_critical']));
+        usort($critical, fn($a, $b) => ($a['seconds_until_event'] ?? 0) <=> ($b['seconds_until_event'] ?? 0));
+
+        $nextCritical = $critical[0] ?? null;
+
+        $window = null;
+        if ($nextCritical !== null) {
+            $dt = new \DateTimeImmutable($nextCritical['datetime_local']);
+            $windowStart = $dt->modify('-15 minutes');
+            $windowEnd = $dt->modify('+15 minutes');
+            $secondsToStart = $windowStart->getTimestamp() - $now->getTimestamp();
+            $secondsToEnd = $windowEnd->getTimestamp() - $now->getTimestamp();
+            $window = [
+                'starts_at'        => $windowStart->format('c'),
+                'ends_at'          => $windowEnd->format('c'),
+                'seconds_until_start' => max(0, $secondsToStart),
+                'seconds_until_end'   => max(0, $secondsToEnd),
+                'is_active'        => $secondsToStart <= 0 && $secondsToEnd > 0,
+                'pairs_to_avoid'   => $this->pairsForCurrency($nextCritical['currency'] ?? 'USD'),
+                'reason'           => "{$nextCritical['title']} ({$nextCritical['currency']}) · ±30'",
+            ];
+        }
+
+        $criticalThisWeek = array_filter($critical, function($e) use ($now) {
+            return ($e['seconds_until_event'] ?? PHP_INT_MAX) <= 7 * 24 * 3600;
+        });
+
+        return $this->json([
+            'success'                  => true,
+            'tz'                       => $tz,
+            'tz_label'                 => $this->getTzLabel($tz, $this->getOffsetMinutes($tz)),
+            'updated_at'               => $now->format('c'),
+            'upcoming_count'           => count($upcoming),
+            'critical_count'           => count($critical),
+            'critical_this_week_count' => count($criticalThisWeek),
+            'next_critical'            => $nextCritical,
+            'window'                   => $window,
+            'affected_pairs'           => $nextCritical ? $this->pairsForCurrency($nextCritical['currency'] ?? 'USD') : [],
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * Hardcoded mapping "moneda → pares afectados" para el Bento F3.
+     * Confidence se basa en impacto histórico real de eventos macro sobre esos pares.
+     */
+    private function pairsForCurrency(string $currency): array
+    {
+        $map = [
+            'USD' => [
+                ['pair' => 'XAUUSD',  'confidence' => 95, 'rationale' => 'Dólar fuerte → oro débil'],
+                ['pair' => 'NAS100',  'confidence' => 90, 'rationale' => 'Tech volátil'],
+                ['pair' => 'EURUSD',  'confidence' => 88, 'rationale' => 'Mirror inverso'],
+                ['pair' => 'BTCUSDT', 'confidence' => 78, 'rationale' => 'Liquidez global'],
+            ],
+            'EUR' => [
+                ['pair' => 'EURUSD',  'confidence' => 95, 'rationale' => 'Activo directamente'],
+                ['pair' => 'GBPUSD',  'confidence' => 82, 'rationale' => 'Correlación alta'],
+                ['pair' => 'XAUUSD',  'confidence' => 70, 'rationale' => 'Safe haven'],
+            ],
+            'GBP' => [
+                ['pair' => 'GBPUSD',  'confidence' => 95, 'rationale' => 'Activo directamente'],
+                ['pair' => 'EURUSD',  'confidence' => 80, 'rationale' => 'Correlación alta'],
+                ['pair' => 'XAUUSD',  'confidence' => 70, 'rationale' => 'Safe haven'],
+            ],
+            'JPY' => [
+                ['pair' => 'USDJPY',  'confidence' => 95, 'rationale' => 'Activo directamente'],
+                ['pair' => 'EURJPY',  'confidence' => 85, 'rationale' => 'Carry trade'],
+                ['pair' => 'XAUUSD',  'confidence' => 65, 'rationale' => 'Liquidez global'],
+            ],
+            'CNY' => [
+                ['pair' => 'XAUUSD',  'confidence' => 70, 'rationale' => 'Demanda física'],
+                ['pair' => 'BTCUSDT', 'confidence' => 60, 'rationale' => 'Liquidez crypto'],
+                ['pair' => 'NAS100',  'confidence' => 55, 'rationale' => 'Exposición tech'],
+            ],
+            'CAD' => [
+                ['pair' => 'USDCAD',  'confidence' => 90, 'rationale' => 'Mirror inverso'],
+                ['pair' => 'XAUUSD',  'confidence' => 75, 'rationale' => 'Commodity-linked'],
+            ],
+            'AUD' => [
+                ['pair' => 'AUDUSD',  'confidence' => 90, 'rationale' => 'Activo directamente'],
+                ['pair' => 'XAUUSD',  'confidence' => 70, 'rationale' => 'Commodity-linked'],
+            ],
+            'CHF' => [
+                ['pair' => 'USDCHF',  'confidence' => 90, 'rationale' => 'Mirror inverso'],
+                ['pair' => 'EURCHF',  'confidence' => 80, 'rationale' => 'Correlación'],
+            ],
+        ];
+        $currency = strtoupper($currency);
+        if (isset($map[$currency])) return $map[$currency];
+        return [
+            ['pair' => 'XAUUSD',  'confidence' => 65, 'rationale' => 'Cobertura general'],
+            ['pair' => 'EURUSD',  'confidence' => 60, 'rationale' => 'Liquidez principal'],
+            ['pair' => 'NAS100',  'confidence' => 55, 'rationale' => 'Risk-on proxy'],
+        ];
+    }
+
     private function parseTimezone(?string $raw): string
     {
         $raw = trim((string)$raw);

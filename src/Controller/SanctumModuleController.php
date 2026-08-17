@@ -34,6 +34,12 @@ class SanctumModuleController extends AbstractController
         return $this->render('sanctum/journal.html.twig');
     }
 
+    #[Route('/journal/new', name: 'sanctum_journal_new', methods: ['GET'])]
+    public function journalNew(): Response
+    {
+        return $this->render('sanctum/journal_new.html.twig');
+    }
+
     #[Route('/calendar', name: 'sanctum_calendar', methods: ['GET'])]
     public function calendar(): Response
     {

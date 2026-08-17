@@ -1,0 +1,903 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Asentar Operación · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Asentar Operación{% endblock %}
+{% block topbar_subtitle %}"Lo que no se registra, no se domina."{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ══════ F2 — Form Registrador de Operaciones ══════ */
+    .trade-form-wrap {
+        max-width: 760px;
+        margin: 0 auto;
+    }
+    .trade-form-header {
+        text-align: center;
+        padding: 1.5rem 1rem 0.5rem;
+        position: relative;
+    }
+    .trade-form-header h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 1.7rem;
+        margin: 0.5rem 0 0.25rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        background: linear-gradient(135deg, #f2ca50 0%, #ffe088 50%, #f2ca50 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 30px rgba(242, 202, 80, 0.15);
+    }
+    .trade-form-header p {
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+        margin: 0;
+    }
+    .form-section {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold-elev);
+        margin: 0 0 1rem 0;
+    }
+    .form-section-title .material-symbols-elev {
+        font-size: 1.1rem;
+    }
+    .form-label {
+        display: block;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+        margin: 0 0 0.35rem 0;
+    }
+    .form-label.pos { color: #4ade80; }
+    .form-label.neg { color: #f87171; }
+    .form-input,
+    .form-textarea,
+    .form-select {
+        width: 100%;
+        padding: 0.65rem 0.85rem;
+        background: rgba(8, 5, 14, 0.5);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.4rem;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: var(--gold-elev);
+        box-shadow: 0 0 0 3px rgba(242, 202, 80, 0.15);
+    }
+    .form-input::placeholder { color: rgba(255,255,255,0.25); }
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+    .chip {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.45rem 0.85rem;
+        border-radius: 9999px;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .chip:hover { color: var(--on-surface-elev); border-color: var(--gold-elev); }
+    .chip.active {
+        background: rgba(242, 202, 80, 0.15);
+        color: var(--gold-elev);
+        border-color: var(--gold-elev);
+    }
+    .dir-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1.1rem 1rem;
+        border-radius: 0.5rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        letter-spacing: 0.05em;
+        background: var(--glass-bg-elev);
+        border: 2px solid var(--glass-border-elev);
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .dir-btn[data-dir="BUY"]:hover,
+    .dir-btn[data-dir="BUY"].active {
+        background: rgba(74, 222, 128, 0.12);
+        border-color: #4ade80;
+        color: #4ade80;
+    }
+    .dir-btn[data-dir="SELL"]:hover,
+    .dir-btn[data-dir="SELL"].active {
+        background: rgba(248, 113, 113, 0.12);
+        border-color: #f87171;
+        color: #f87171;
+    }
+    .result-btn {
+        padding: 0.65rem 0.5rem;
+        border-radius: 0.4rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.78rem;
+        letter-spacing: 0.08em;
+        background: var(--glass-bg-elev);
+        border: 1.5px solid var(--glass-border-elev);
+        color: var(--outline-elev);
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .result-btn[data-result="WIN"].active {
+        background: rgba(74, 222, 128, 0.18);
+        border-color: #4ade80;
+        color: #4ade80;
+    }
+    .result-btn[data-result="LOSS"].active {
+        background: rgba(248, 113, 113, 0.18);
+        border-color: #f87171;
+        color: #f87171;
+    }
+    .result-btn[data-result="BE"].active {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: #fbbf24;
+        color: #fbbf24;
+    }
+    .result-btn[data-result="OPEN"].active {
+        background: rgba(138, 60, 255, 0.15);
+        border-color: #8a3cff;
+        color: #c4a0ff;
+    }
+    .rr-display {
+        font-family: 'Cinzel', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gold-elev);
+        letter-spacing: 0.04em;
+        line-height: 1;
+    }
+    .rr-display small {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+        display: block;
+        margin-top: 0.4rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .tip-chip {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.7rem;
+        border-radius: 9999px;
+        background: rgba(138, 60, 255, 0.1);
+        border: 1px solid rgba(138, 60, 255, 0.4);
+        color: #c4a0ff;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: 'Space Grotesk', sans-serif;
+    }
+    .tip-chip:hover {
+        background: rgba(138, 60, 255, 0.25);
+        border-color: #8a3cff;
+    }
+    .form-footer {
+        position: sticky;
+        bottom: 1rem;
+        margin-top: 1.5rem;
+        background: rgba(8, 5, 14, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 0.85rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    .form-error {
+        background: rgba(248, 113, 113, 0.12);
+        border: 1px solid #f87171;
+        color: #fecaca;
+        padding: 0.7rem 1rem;
+        border-radius: 0.4rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        display: none;
+    }
+    .form-error.visible { display: block; }
+    .form-success {
+        background: rgba(74, 222, 128, 0.12);
+        border: 1px solid #4ade80;
+        color: #bbf7d0;
+        padding: 0.7rem 1rem;
+        border-radius: 0.4rem;
+        margin-bottom: 1rem;
+        font-size: 0.85rem;
+        display: none;
+    }
+    .form-success.visible { display: block; }
+    .form-submit-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        background: linear-gradient(135deg, var(--gold-elev) 0%, var(--gold-bright-elev, #ffe088) 100%);
+        color: var(--void-black, #050308);
+        font-family: 'Cinzel', serif;
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: 0.06em;
+        border: none;
+        border-radius: 0.4rem;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+        box-shadow: 0 4px 16px rgba(242, 202, 80, 0.25);
+    }
+    .form-submit-primary:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px rgba(242, 202, 80, 0.4);
+    }
+    .form-submit-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .form-cancel-btn {
+        padding: 0.7rem 1.2rem;
+        background: transparent;
+        color: var(--outline-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.4rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+    .form-cancel-btn:hover {
+        color: var(--on-surface-elev);
+        border-color: var(--on-surface-elev);
+    }
+
+    @media (max-width: 640px) {
+        .trade-form-header h1 { font-size: 1.3rem; }
+        .form-section { padding: 1rem; }
+    }
+
+    /* ══════ F2 v2 — Photo drag-drop zone ══════ */
+    .photo-dropzone {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 1.5rem 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 2px dashed var(--glass-border-elev);
+        border-radius: 0.6rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+    .photo-dropzone:hover,
+    .photo-dropzone:focus,
+    .photo-dropzone.dragging {
+        border-color: var(--gold-elev);
+        background: rgba(242, 202, 80, 0.06);
+    }
+    .photo-dropzone-icon {
+        font-size: 2.4rem;
+        color: var(--gold-elev);
+        opacity: 0.85;
+    }
+    .photo-dropzone-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--on-surface-elev);
+        margin: 0;
+    }
+    .photo-dropzone-sub {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+        margin: 0;
+    }
+    .photo-preview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.6rem;
+        margin-top: 0.75rem;
+    }
+    .photo-thumb {
+        position: relative;
+        aspect-ratio: 4 / 3;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.45rem;
+        overflow: hidden;
+    }
+    .photo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .photo-remove {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+        transition: background 0.15s;
+        padding: 0;
+    }
+    .photo-remove:hover { background: rgba(248, 113, 113, 0.8); }
+    .photo-thumb-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 0.25rem 0.4rem;
+        background: rgba(0, 0, 0, 0.65);
+        color: #fff;
+        font-size: 0.65rem;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="trade-form-wrap">
+
+    <div class="trade-form-header">
+        <span class="material-symbols-elev" style="color: var(--gold-elev); font-size: 1.8rem;">edit_note</span>
+        <h1 class="text-cinzel-display" style="font-size: 1.7rem; margin: 0.5rem 0 0.25rem;">ASENTAR OPERACIÓN CERRADA</h1>
+        <p>Registrá cada trade · Mantené tu bitácora de ejecutor</p>
+    </div>
+
+    <div id="form-error" class="form-error"></div>
+    <div id="form-success" class="form-success"></div>
+
+    <form id="trade-form" autocomplete="off" novalidate>
+
+        {# ─── 1. Fecha y hora ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">event</span>Fecha y hora</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="form-label" for="trade-date">Fecha</label>
+                    <input type="date" id="trade-date" name="date" class="form-input" required />
+                </div>
+                <div>
+                    <label class="form-label" for="trade-time">Hora</label>
+                    <input type="time" id="trade-time" name="time" class="form-input" required value="12:00" />
+                </div>
+            </div>
+        </div>
+
+        {# ─── 2. Activo ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">currency_exchange</span>Activo</h3>
+            <div class="flex flex-wrap gap-2 mb-3" id="asset-chips">
+                <button type="button" class="chip" data-asset="XAUUSD">XAUUSD</button>
+                <button type="button" class="chip" data-asset="NAS100">NAS100</button>
+                <button type="button" class="chip" data-asset="EURUSD">EURUSD</button>
+                <button type="button" class="chip" data-asset="GBPUSD">GBPUSD</button>
+                <button type="button" class="chip" data-asset="USDJPY">USDJPY</button>
+                <button type="button" class="chip" data-asset="US30">US30</button>
+                <button type="button" class="chip" data-asset="BTCUSDT">BTCUSDT</button>
+                <button type="button" class="chip" data-asset="ETHUSDT">ETHUSDT</button>
+                <button type="button" class="chip" data-asset="XAGUSD">XAGUSD</button>
+            </div>
+            <input type="text" id="trade-asset" name="asset" class="form-input"
+                   required maxlength="16" placeholder="Otro activo (ej: AUDUSD, SPX, NATGAS)"
+                   style="text-transform: uppercase;" />
+        </div>
+
+        {# ─── 3. Dirección ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">swap_horiz</span>Dirección</h3>
+            <div class="grid grid-cols-2 gap-3" id="dir-toggle">
+                <button type="button" class="dir-btn" data-dir="BUY">
+                    <span class="material-symbols-elev">trending_up</span>
+                    BUY · Long
+                </button>
+                <button type="button" class="dir-btn" data-dir="SELL">
+                    <span class="material-symbols-elev">trending_down</span>
+                    SELL · Short
+                </button>
+            </div>
+        </div>
+
+        {# ─── 4. Precios ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">price_check</span>Precios (opcional)</h3>
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="form-label" for="trade-entry">Entry</label>
+                    <input type="number" step="any" id="trade-entry" name="entry" class="form-input" placeholder="2650.50" />
+                </div>
+                <div>
+                    <label class="form-label pos" for="trade-tp">Take Profit</label>
+                    <input type="number" step="any" id="trade-tp" name="tp" class="form-input" placeholder="2660.00" />
+                </div>
+                <div>
+                    <label class="form-label neg" for="trade-sl">Stop Loss</label>
+                    <input type="number" step="any" id="trade-sl" name="sl" class="form-input" placeholder="2645.00" />
+                </div>
+            </div>
+        </div>
+
+        {# ─── 5. Resultado + P&L ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">emoji_events</span>Resultado</h3>
+            <div class="grid grid-cols-4 gap-2 mb-4" id="result-toggle">
+                <button type="button" class="result-btn" data-result="WIN">WIN</button>
+                <button type="button" class="result-btn" data-result="LOSS">LOSS</button>
+                <button type="button" class="result-btn" data-result="BE">BE</button>
+                <button type="button" class="result-btn" data-result="OPEN">OPEN</button>
+            </div>
+            <div>
+                <label class="form-label" for="trade-pnl">P&L final (USD)</label>
+                <input type="number" step="any" id="trade-pnl" name="pnl" class="form-input"
+                       placeholder="ej: +95.50 o -50.00" required />
+                <p class="text-xs text-[var(--outline-elev)] mt-1">
+                    Positivo si fue ganancia, negativo si fue pérdida.
+                </p>
+            </div>
+        </div>
+
+        {# ─── 6. Risk:Reward computed ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">calculate</span>Ratio Riesgo:Beneficio</h3>
+            <div id="rr-display" class="rr-display">—</div>
+            <small>Calculado automáticamente desde Entry / TP / SL (TP arriba del Entry si BUY; SL abajo)</small>
+        </div>
+
+        {# ─── 7. Capturas (drag-drop) ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">image</span>Capturas (opcional, máx 3)</h3>
+
+            <div class="photo-dropzone" id="photo-dropzone" tabindex="0" role="button" aria-label="Soltá imágenes o hacé click para elegir">
+                <input type="file" id="photo-file-input" accept="image/png,image/jpeg,image/webp" multiple hidden />
+                <span class="material-symbols-elev photo-dropzone-icon">add_photo_alternate</span>
+                <p class="photo-dropzone-title">Arrastrá imágenes o hacé click</p>
+                <p class="photo-dropzone-sub">PNG · JPG · WebP · máx 4MB c/u</p>
+            </div>
+
+            <input type="url" id="trade-photo-url" class="form-input mt-2" placeholder="O pegá una URL: https://..." />
+
+            <div id="photo-preview" class="photo-preview-grid"></div>
+        </div>
+
+        {# ─── 8. Notas + Tips del Creador ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">description</span>Notas (opcional)</h3>
+            <textarea id="trade-notes" name="notes" class="form-textarea"
+                      placeholder="¿Qué patrón reconociste? ¿Qué hiciste bien? ¿Qué patrón volvió a aparecer?"></textarea>
+            <div class="flex flex-wrap gap-2 mt-3">
+                <button type="button" class="tip-chip" data-tip="¿Qué patrón reconociste?">Patrón</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué hiciste bien?">Aciertos</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué patrón volvió a aparecer?">Repetición</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué emoción dominó?">Emoción</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué ajustarías la próxima vez?">Ajuste</button>
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <a href="/journal" class="form-cancel-btn" id="cancel-btn">Cancelar</a>
+            <button type="submit" id="submit-btn" class="form-submit-primary">
+                <span class="material-symbols-elev">save</span>
+                Registrar trade
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ══════ F2 — Estado y referencias ══════
+    const state = {
+        direction: null,
+        result: null,
+        asset: null,
+    };
+
+    const $form = document.getElementById('trade-form');
+    const $error = document.getElementById('form-error');
+    const $success = document.getElementById('form-success');
+    const $submit = document.getElementById('submit-btn');
+
+    // ══════ F2 v2 — Capturas (drag-drop + URL) ══════
+    const _PHOTOS = []; // array de {dataUrl, kind:'file'|'url', name}
+    const PHOTOS_MAX = 3;
+    const PHOTOS_MAX_BYTES = 4 * 1024 * 1024; // 4MB
+
+    function renderPhotosPreview() {
+        const grid = document.getElementById('photo-preview');
+        if (!grid) return;
+        if (_PHOTOS.length === 0) {
+            grid.innerHTML = '';
+            return;
+        }
+        grid.innerHTML = _PHOTOS.map((p, i) => `
+            <div class="photo-thumb">
+                <img src="${p.dataUrl}" alt="captura ${i + 1}" loading="lazy" />
+                <button type="button" class="photo-remove" data-idx="${i}" aria-label="Eliminar captura ${i + 1}">
+                    <span class="material-symbols-elev" style="font-size:1.1rem;">close</span>
+                </button>
+                <span class="photo-thumb-label">${p.kind === 'file' ? (p.name.length > 16 ? p.name.slice(0, 14) + '…' : p.name) : 'URL'}</span>
+            </div>
+        `).join('');
+        grid.querySelectorAll('.photo-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx, 10);
+                _PHOTOS.splice(idx, 1);
+                renderPhotosPreview();
+            });
+        });
+    }
+
+    function addPhotoDataUrl(dataUrl, kind, name) {
+        if (_PHOTOS.length >= PHOTOS_MAX) {
+            showError(`Máximo ${PHOTOS_MAX} capturas.`);
+            return;
+        }
+        _PHOTOS.push({ dataUrl, kind, name });
+        renderPhotosPreview();
+    }
+
+    function handleFiles(fileList) {
+        const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (files.length === 0) return;
+        let remaining = PHOTOS_MAX - _PHOTOS.length;
+        if (remaining <= 0) {
+            showError(`Máximo ${PHOTOS_MAX} capturas.`);
+            return;
+        }
+        const toProcess = files.slice(0, remaining);
+        if (files.length > remaining) {
+            showError(`Solo se agregan ${remaining} imagen(es) (máx ${PHOTOS_MAX}).`);
+        }
+        toProcess.forEach(f => {
+            if (f.size > PHOTOS_MAX_BYTES) {
+                showError(`${f.name} supera 4MB — omitida.`);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => addPhotoDataUrl(e.target.result, 'file', f.name);
+            reader.readAsDataURL(f);
+        });
+    }
+
+    function showError(msg) {
+        $error.textContent = msg;
+        $error.classList.add('visible');
+        $success.classList.remove('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function showSuccess(msg) {
+        $success.textContent = msg;
+        $success.classList.add('visible');
+        $error.classList.remove('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function hideMessages() {
+        $error.classList.remove('visible');
+        $success.classList.remove('visible');
+    }
+
+    // ─── Default fecha = hoy, hora = ahora ───
+    const now = new Date();
+    document.getElementById('trade-date').value = now.toISOString().slice(0, 10);
+    document.getElementById('trade-time').value =
+        `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // ─── Asset chips ───
+    document.querySelectorAll('#asset-chips .chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const asset = btn.dataset.asset;
+            state.asset = asset;
+            document.getElementById('trade-asset').value = asset;
+            document.querySelectorAll('#asset-chips .chip').forEach(b => b.classList.toggle('active', b === btn));
+            updateRR();
+        });
+    });
+    document.getElementById('trade-asset').addEventListener('input', e => {
+        const v = e.target.value.trim().toUpperCase();
+        state.asset = v;
+        document.querySelectorAll('#asset-chips .chip').forEach(b => {
+            b.classList.toggle('active', b.dataset.asset === v);
+        });
+        updateRR();
+    });
+
+    // ─── Direction toggle ───
+    document.querySelectorAll('#dir-toggle .dir-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.direction = btn.dataset.dir;
+            document.querySelectorAll('#dir-toggle .dir-btn').forEach(b => b.classList.toggle('active', b === btn));
+            updateRR();
+        });
+    });
+
+    // ─── Result toggle ───
+    document.querySelectorAll('#result-toggle .result-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.result = btn.dataset.result;
+            document.querySelectorAll('#result-toggle .result-btn').forEach(b => b.classList.toggle('active', b === btn));
+        });
+    });
+
+    // ─── R:R auto-compute ───
+    const $entry = document.getElementById('trade-entry');
+    const $tp = document.getElementById('trade-tp');
+    const $sl = document.getElementById('trade-sl');
+    const $rr = document.getElementById('rr-display');
+
+    function num(el) { return el.value ? parseFloat(el.value) : null; }
+
+    function updateRR() {
+        const entry = num($entry);
+        const tp = num($tp);
+        const sl = num($sl);
+        const dir = state.direction;
+
+        if (entry === null || tp === null || sl === null || !dir) {
+            $rr.textContent = '—';
+            return;
+        }
+
+        let risk, reward;
+        if (dir === 'BUY') {
+            risk = Math.abs(entry - sl);
+            reward = Math.abs(tp - entry);
+        } else {
+            risk = Math.abs(sl - entry);
+            reward = Math.abs(entry - tp);
+        }
+        if (risk <= 0) {
+            $rr.textContent = '—';
+            return;
+        }
+        const ratio = reward / risk;
+        $rr.innerHTML = `<span style="color: var(--gold-elev);">1 : ${ratio.toFixed(2)}</span> <small>Riesgo ${risk.toFixed(2)} / Benef ${reward.toFixed(2)}</small>`;
+    }
+
+    [$entry, $tp, $sl].forEach(el => el.addEventListener('input', updateRR));
+
+    // ─── Tip chips ───
+    document.querySelectorAll('.tip-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const notesEl = document.getElementById('trade-notes');
+            const phrase = btn.dataset.tip;
+            const current = notesEl.value.trim();
+            notesEl.value = current ? `${current}\n${phrase} — ` : `${phrase} — `;
+            notesEl.focus();
+        });
+    });
+
+    // ─── Submit ───
+    $form.addEventListener('submit', async e => {
+        e.preventDefault();
+        hideMessages();
+
+        // F2 guard — user must be authenticated
+        if (!window.TNSVT_USER || !window.TNSVT_USER.code) {
+            showError('Necesitás estar autenticado. Volvé a /login.');
+            return;
+        }
+
+        if (!state.direction) {
+            showError('Elegí una dirección (BUY o SELL).');
+            return;
+        }
+        if (!state.result) {
+            showError('Elegí un resultado (WIN / LOSS / BE / OPEN).');
+            return;
+        }
+        const asset = state.asset || document.getElementById('trade-asset').value.trim().toUpperCase();
+        if (!asset) {
+            showError('Indicá el activo operado (ej: XAUUSD).');
+            return;
+        }
+
+        const dateStr = document.getElementById('trade-date').value;
+        const timeStr = document.getElementById('trade-time').value;
+        if (!dateStr || !timeStr) {
+            showError('Indicá fecha y hora.');
+            return;
+        }
+
+        const pnlRaw = document.getElementById('trade-pnl').value.trim();
+        const pnl = pnlRaw === '' ? null : parseFloat(pnlRaw);
+        if (pnl === null || isNaN(pnl)) {
+            showError('Indicá el P&L (puede ser 0 para BE/OPEN).');
+            return;
+        }
+
+        // ─── F2 v2 — Capturas vía drag-drop o URL ───
+        // photos[] es un array de strings (DataURL o URL) — el backend acepta cualquier string
+        const photos = _PHOTOS.slice(0, 3);
+
+        const notes = document.getElementById('trade-notes').value.trim();
+
+        const payload = {
+            user_code: window.TNSVT_USER.code,
+            asset: asset,
+            dir: state.direction,
+            date: `${dateStr}T${timeStr}:00`,
+            result: state.result,
+            pnl: pnl,
+        };
+
+        const entry = num($entry); if (entry !== null) payload.entry = String(entry);
+        const tp = num($tp);       if (tp !== null)    payload.tp = String(tp);
+        const sl = num($sl);       if (sl !== null)    payload.sl = String(sl);
+
+        // Compute R:R ratio for `ratio` field
+        if (entry !== null && tp !== null && sl !== null) {
+            let risk, reward;
+            if (state.direction === 'BUY') {
+                risk = Math.abs(entry - sl);
+                reward = Math.abs(tp - entry);
+            } else {
+                risk = Math.abs(sl - entry);
+                reward = Math.abs(entry - tp);
+            }
+            if (risk > 0 && reward > 0) {
+                payload.ratio = `1:${(reward / risk).toFixed(2)}`;
+            }
+        }
+        if (photos.length > 0) payload.photos = photos;
+        if (notes) payload.notes = notes;
+
+        $submit.disabled = true;
+        $submit.innerHTML = '<span class="material-symbols-elev">progress_activity</span> Guardando...';
+
+        try {
+            const r = await apiFetch('/api/journal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (r.ok && r.data && r.data.success) {
+                showSuccess(`Operación registrada · id #${r.data.id}. Redirigiendo al journal...`);
+                setTimeout(() => { window.location.href = '/journal'; }, 1200);
+            } else {
+                const msg = (r.data && (r.data.error || r.data.message)) ||
+                    (r.timeout ? 'Timeout: el server no respondió' :
+                     r.networkError ? 'Sin conexión con el servidor' :
+                     `HTTP ${r.status || '?'}: error desconocido`);
+                showError(msg);
+                $submit.disabled = false;
+                $submit.innerHTML = '<span class="material-symbols-elev">save</span> Registrar trade';
+            }
+        } catch (err) {
+            showError('Error de red: ' + (err.message || 'sin detalle'));
+            $submit.disabled = false;
+            $submit.innerHTML = '<span class="material-symbols-elev">save</span> Registrar trade';
+        }
+    });
+
+    // ─── F2 v2 — Drag-drop capturas ───
+    (function wirePhotoDropzone() {
+        const dz = document.getElementById('photo-dropzone');
+        const fileInput = document.getElementById('photo-file-input');
+        const urlInput = document.getElementById('trade-photo-url');
+        if (!dz || !fileInput || !urlInput) return;
+
+        dz.addEventListener('click', () => fileInput.click());
+        dz.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', e => {
+            if (e.target.files && e.target.files.length) {
+                handleFiles(e.target.files);
+                fileInput.value = '';
+            }
+        });
+
+        ['dragenter', 'dragover'].forEach(ev => {
+            dz.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dz.classList.add('dragging');
+            });
+        });
+        ['dragleave', 'drop'].forEach(ev => {
+            dz.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dz.classList.remove('dragging');
+            });
+        });
+        dz.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length) {
+                handleFiles(dt.files);
+            }
+        });
+
+        // URL fallback
+        urlInput.addEventListener('change', () => {
+            const v = urlInput.value.trim();
+            if (!v) return;
+            if (_PHOTOS.length >= PHOTOS_MAX) {
+                showError(`Máximo ${PHOTOS_MAX} capturas.`);
+                urlInput.value = '';
+                return;
+            }
+            // Validate looks like URL
+            try {
+                const u = new URL(v);
+                if (!/^https?:$/.test(u.protocol)) throw new Error('Solo http(s)://');
+            } catch (e) {
+                showError('URL inválida (debe ser http(s)://…)');
+                return;
+            }
+            addPhotoDataUrl(v, 'url', 'URL externa');
+            urlInput.value = '';
+        });
+    })();
+
+// ─── Cancel ───
+    document.getElementById('cancel-btn').addEventListener('click', e => {
+        if ($form.dataset.dirty === '1') {
+            if (!confirm('Tenés cambios sin guardar. ¿Salir igual?')) {
+                e.preventDefault();
+                return;
+            }
+        }
+    });
+    $form.addEventListener('input', () => { $form.dataset.dirty = '1'; });
+})();
+</script>
+{% endblock %}

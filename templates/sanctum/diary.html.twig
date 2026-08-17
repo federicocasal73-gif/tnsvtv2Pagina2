@@ -1,282 +1,979 @@
 {% extends 'shell.html.twig' %}
 
-{% block title %}Diario Personal · T.N.S.V.T{% endblock %}
+{% block title %}El Cuaderno · T.N.S.V.T{% endblock %}
 
-{% block topbar_title %}Diario Personal{% endblock %}
-{% block topbar_subtitle %}Tu bitácora privada con reflexiones y pensamientos cifrados.{% endblock %}
+{% block topbar_title %}El Cuaderno{% endblock %}
+{% block topbar_subtitle %}"Lo que escribes, queda cifrado — solo vos lo leés."{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* ══════ F4 — Diario Personal (4 estados) ══════ */
+    .diary-wrap { max-width: 920px; margin: 0 auto; padding-bottom: 4rem; }
+
+    .diary-header {
+        text-align: center;
+        padding: 1.5rem 1rem 2rem;
+    }
+    .diary-header h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 1.7rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        background: linear-gradient(135deg, #f2ca50 0%, #ffe088 50%, #f2ca50 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+    }
+    .diary-header p {
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--outline-elev);
+        margin: 0.4rem 0 0;
+    }
+
+    /* Top action bar dentro de list/empty/editing */
+    .diary-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .diary-lock-btn,
+    .diary-btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.9rem;
+        border-radius: 0.4rem;
+        background: transparent;
+        border: 1px solid var(--glass-border-elev);
+        color: var(--outline-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: color 0.15s, border-color 0.15s;
+    }
+    .diary-lock-btn:hover,
+    .diary-btn-back:hover {
+        color: var(--gold-elev);
+        border-color: var(--gold-elev);
+    }
+    .diary-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 1.4rem;
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
+        color: var(--void-black, #050308);
+        font-family: 'Cinzel', serif;
+        font-weight: 600;
+        font-size: 0.92rem;
+        letter-spacing: 0.05em;
+        border: none;
+        border-radius: 0.4rem;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 4px 16px rgba(242, 202, 80, 0.2);
+    }
+    .diary-btn-primary:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px rgba(242, 202, 80, 0.35);
+    }
+    .diary-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .diary-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.9rem;
+        background: transparent;
+        color: var(--on-surface-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.4rem;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .diary-btn-secondary:hover { border-color: var(--gold-elev); color: var(--gold-elev); }
+
+    /* ─── State: LOCKED ─── */
+    .diary-state-locked {
+        min-height: 60vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    .diary-lock-icon {
+        font-size: 5rem;
+        color: var(--gold-elev);
+        opacity: 0.85;
+        transform: rotate(-15deg);
+        margin-bottom: 1.5rem;
+    }
+    .diary-lock-icon small { font-size: 1rem; opacity: 0.5; }
+    .diary-lock-title {
+        font-family: 'Cinzel', serif;
+        font-size: 1.4rem;
+        color: var(--gold-elev);
+        margin: 0 0 0.5rem;
+        letter-spacing: 0.04em;
+    }
+    .diary-lock-sub {
+        color: var(--outline-elev);
+        font-style: italic;
+        margin: 0 0 2rem;
+        max-width: 420px;
+    }
+    .diary-key-input {
+        max-width: 380px;
+        width: 100%;
+        padding: 0.85rem 1rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.5rem;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1rem;
+        text-align: center;
+        letter-spacing: 0.05em;
+    }
+    .diary-key-input:focus { outline: none; border-color: var(--gold-elev); box-shadow: 0 0 0 3px rgba(242, 202, 80, 0.15); }
+    .diary-unlock-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+    }
+    .diary-lock-tip {
+        font-size: 0.72rem;
+        color: var(--outline-elev);
+        margin-top: 1.5rem;
+        max-width: 380px;
+        line-height: 1.5;
+    }
+
+    /* ─── State: EMPTY ─── */
+    .diary-state-empty {
+        text-align: center;
+        padding: 5rem 1rem;
+    }
+    .diary-empty-icon {
+        font-size: 5rem;
+        color: var(--gold-elev);
+        opacity: 0.35;
+        transform: rotate(-15deg);
+        margin-bottom: 1rem;
+    }
+
+    /* ─── State: LIST (grid 2×2 de cards) ─── */
+    .diary-entries-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    .diary-entry-card {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.4rem;
+        transition: all 0.15s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        min-height: 180px;
+        position: relative;
+    }
+    .diary-entry-card:hover {
+        border-color: rgba(242, 202, 80, 0.35);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    }
+    .diary-entry-card-date {
+        font-family: 'Cinzel', serif;
+        font-size: 1.4rem;
+        color: var(--gold-elev);
+        font-weight: 600;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+    .diary-entry-card-weekday {
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 0.6rem;
+    }
+    .diary-entry-card-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--on-surface-elev);
+        margin: 0.5rem 0 0.4rem;
+        line-height: 1.3;
+    }
+    .diary-entry-card-preview {
+        font-size: 0.8rem;
+        color: var(--outline-elev);
+        line-height: 1.4;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        flex-grow: 1;
+    }
+    .diary-entry-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--glass-border-elev);
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+    }
+    .diary-entry-card-chevron { color: var(--gold-elev); }
+
+    /* ─── State: EDITING (split view) ─── */
+    .diary-editor-wrap {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    .diary-editor-side {
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 0.75rem;
+        padding: 1.25rem 1.4rem;
+        min-height: 460px;
+        display: flex;
+        flex-direction: column;
+    }
+    .diary-editor-input {
+        background: transparent;
+        border: 1px solid var(--glass-border-elev);
+        color: var(--on-surface-elev);
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        padding: 0.65rem 0.85rem;
+        border-radius: 0.4rem;
+        margin-bottom: 0.6rem;
+    }
+    .diary-editor-input:focus { outline: none; border-color: var(--gold-elev); }
+    .diary-editor-textarea {
+        flex-grow: 1;
+        width: 100%;
+        background: transparent;
+        border: none;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        resize: none;
+        padding: 0.5rem 0;
+    }
+    .diary-editor-textarea:focus { outline: none; }
+    .diary-editor-preview {
+        flex-grow: 1;
+        overflow-y: auto;
+        color: var(--on-surface-elev);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        padding-top: 0.5rem;
+    }
+    .diary-editor-preview p { margin: 0 0 0.75rem; }
+    .diary-editor-preview h3 {
+        font-family: 'Cinzel', serif;
+        font-size: 1.1rem;
+        color: var(--gold-elev);
+        margin: 0 0 0.75rem;
+    }
+    .diary-editor-preview-empty {
+        color: var(--outline-elev);
+        font-style: italic;
+        text-align: center;
+        margin: auto;
+    }
+    .diary-prompts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.75rem;
+        padding-top: 0.6rem;
+        border-top: 1px dashed var(--glass-border-elev);
+    }
+    .diary-prompt-chip {
+        font-size: 0.7rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 9999px;
+        background: rgba(138, 60, 255, 0.12);
+        border: 1px solid rgba(138, 60, 255, 0.4);
+        color: #c4a0ff;
+        cursor: pointer;
+        font-family: 'Space Grotesk', sans-serif;
+        transition: background 0.15s;
+    }
+    .diary-prompt-chip:hover { background: rgba(138, 60, 255, 0.25); }
+    .diary-editor-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.6rem;
+        padding-top: 0.6rem;
+        border-top: 1px dashed var(--glass-border-elev);
+        font-size: 0.7rem;
+        color: var(--outline-elev);
+    }
+    .diary-autosave-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+        background: rgba(74, 222, 128, 0.15);
+        color: #4ade80;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .diary-autosave-badge.saving {
+        background: rgba(251, 191, 36, 0.15);
+        color: #fbbf24;
+    }
+    .diary-editor-side-header {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--outline-elev);
+        margin-bottom: 0.5rem;
+    }
+
+    .diary-error,
+    .diary-success {
+        padding: 0.6rem 0.9rem;
+        border-radius: 0.4rem;
+        font-size: 0.82rem;
+        margin-bottom: 1rem;
+        border: 1px solid;
+    }
+    .diary-error {
+        background: rgba(248, 113, 113, 0.1);
+        border-color: rgba(248, 113, 113, 0.4);
+        color: #fecaca;
+    }
+    .diary-success {
+        background: rgba(74, 222, 128, 0.1);
+        border-color: rgba(74, 222, 128, 0.4);
+        color: #bbf7d0;
+    }
+
+    @media (max-width: 768px) {
+        .diary-editor-wrap { grid-template-columns: 1fr; }
+        .diary-entries-grid { grid-template-columns: 1fr; }
+        .diary-lock-icon { font-size: 3.5rem; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    {# ─── Setup notice if no encryption key ─── #}
-    <div id="diary-setup-banner" class="hidden glass-card-elev p-4 mb-4" style="border-color: rgba(251, 191, 36, 0.4);">
-        <div class="flex items-start gap-3">
-            <span class="material-symbols-elev text-amber-400">lock</span>
-            <div class="flex-1">
-                <h3 class="font-semibold text-sm">Configurar cifrado del diario</h3>
-                <p class="text-xs text-[var(--outline-elev)] mt-1">
-                    Tu diario se almacena cifrado de extremo a extremo. Necesitás configurar una clave maestra.
-                </p>
-                <div class="mt-3 flex gap-2">
-                    <input id="diary-master-key" type="password" placeholder="Clave maestra (mínimo 8 caracteres)"
-                           class="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] text-sm" />
-                    <button id="diary-setup-btn" class="btn-primary">Configurar</button>
+<div class="diary-wrap">
+
+    <div class="diary-header">
+        <h1>EL CUADERNO</h1>
+        <p>"Lo que escribes, queda cifrado — solo vos lo leés"</p>
+    </div>
+
+    <div id="diary-message" hidden></div>
+
+    {# ══════ State 1: LOCKED ══════ #}
+    <section id="diary-state-locked" class="diary-state" hidden>
+        <div class="diary-state-locked">
+            <div class="diary-lock-icon">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">lock</span>
+            </div>
+            <h2 class="diary-lock-title">El Cuaderno está cerrado</h2>
+            <p class="diary-lock-sub" id="diary-lock-subtitle">
+                Ingresá tu clave maestra para descifrar tus reflexiones.
+            </p>
+            <input id="diary-pass-input" type="password" class="diary-key-input"
+                   placeholder="Clave maestra..." autocomplete="off" />
+            <div class="diary-unlock-actions">
+                <button type="button" class="diary-btn-primary" id="diary-unlock-btn">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">lock_open</span>
+                    Desbloquear
+                </button>
+                <button type="button" class="diary-btn-secondary" id="diary-fingerprint-btn"
+                        title="Huella biométrica (próxima iteración)">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">fingerprint</span>
+                </button>
+            </div>
+            <p class="diary-lock-tip">
+                <span class="material-symbols-outlined align-middle" style="font-size:0.95rem;">info</span>
+                Si nunca configuraste una clave, ingresá una nueva (mínimo 8 caracteres).
+                Esta clave cifra y descifra tus entradas — no se envía al servidor.
+            </p>
+        </div>
+    </section>
+
+    {# ══════ State 2: LIST ══════ #}
+    <section id="diary-state-list" class="diary-state" hidden>
+        <div class="diary-topbar">
+            <div>
+                <h2 class="text-cinzel-display" style="font-size:1.1rem;margin:0;">TUS REFLEXIONES</h2>
+                <p class="text-xs text-[var(--outline-elev)] uppercase tracking-wider" id="diary-list-summary">— entradas cifradas</p>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" class="diary-btn-primary" id="diary-new-btn" style="font-size:0.8rem;padding:0.55rem 1rem;">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">edit</span>
+                    Escribir nueva
+                </button>
+                <button type="button" class="diary-lock-btn" id="diary-lock-now-btn" title="Bloquear cuaderno">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">lock</span>
+                    Bloquear
+                </button>
+            </div>
+        </div>
+        <div id="diary-entries-grid" class="diary-entries-grid"></div>
+    </section>
+
+    {# ══════ State 3: EMPTY ══════ #}
+    <section id="diary-state-empty" class="diary-state" hidden>
+        <div class="diary-state-empty">
+            <div class="diary-empty-icon">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 0;">draw</span>
+            </div>
+            <h2 class="diary-lock-title">El Cuaderno está vacío</h2>
+            <p class="diary-lock-sub">
+                Tus reflexiones vivirán cifradas — solo vos las podés leer.
+            </p>
+            <button type="button" class="diary-btn-primary" id="diary-write-first-btn" style="margin-top:1.25rem;">
+                <span class="material-symbols-outlined" style="font-size:1rem;">edit_note</span>
+                Escribir la primera
+            </button>
+            <div style="margin-top:2rem;">
+                <button type="button" class="diary-lock-btn" id="diary-lock-empty-btn" title="Bloquear cuaderno">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">lock</span>
+                    Bloquear
+                </button>
+            </div>
+        </div>
+    </section>
+
+    {# ══════ State 4: EDITING ══════ #}
+    <section id="diary-state-editing" class="diary-state" hidden>
+        <div class="diary-topbar">
+            <div class="flex items-center gap-3">
+                <button type="button" class="diary-btn-back" id="diary-back-btn">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">arrow_back</span>
+                    Volver
+                </button>
+                <h2 class="text-cinzel-display" style="font-size:1.05rem;margin:0;" id="diary-editor-title">Nueva entrada</h2>
+            </div>
+            <div class="flex gap-2 items-center">
+                <span class="diary-autosave-badge" id="diary-autosave-badge">
+                    <span class="material-symbols-outlined" style="font-size:0.85rem;">check_circle</span>
+                    Guardado
+                </span>
+                <button type="button" class="diary-btn-secondary" id="diary-manual-save-btn">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">save</span>
+                    Guardar ahora
+                </button>
+                <button type="button" class="diary-lock-btn" id="diary-lock-edit-btn" title="Bloquear">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">lock</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="diary-editor-wrap">
+            <div class="diary-editor-side">
+                <input id="diary-editor-title-input" type="text" class="diary-editor-input"
+                       placeholder="Título (opcional)" maxlength="120" />
+                <textarea id="diary-editor-textarea" class="diary-editor-textarea"
+                          placeholder="Empezá a escribir lo que sentís, aprendiste, o querés recordar..."></textarea>
+
+                <div class="diary-prompts">
+                    <span class="diary-editor-side-header" style="margin:0;padding-top:0.2rem;">Prompts rotativos:</span>
+                    <button type="button" class="diary-prompt-chip" data-prompt="¿Qué emoción dominó hoy?">Emoción</button>
+                    <button type="button" class="diary-prompt-chip" data-prompt="¿Qué hice bien?">Aciertos</button>
+                    <button type="button" class="diary-prompt-chip" data-prompt="¿Qué patrón volvió a aparecer?">Repetición</button>
+                    <button type="button" class="diary-prompt-chip" data-prompt="¿Qué voy a ajustar mañana?">Ajuste</button>
+                    <button type="button" class="diary-prompt-chip" data-prompt="¿Por qué estoy agradecido hoy?">Gratitud</button>
+                </div>
+
+                <div class="diary-editor-meta">
+                    <span id="diary-word-count">0 palabras · 0 caracteres</span>
+                    <span style="color:var(--gold-elev);">
+                        <span class="material-symbols-outlined align-middle" style="font-size:0.85rem;">lock</span>
+                        Cifrado de extremo a extremo (AES-GCM 256)
+                    </span>
+                </div>
+            </div>
+            <div class="diary-editor-side">
+                <div class="diary-editor-side-header">Vista de lectura</div>
+                <div id="diary-editor-preview" class="diary-editor-preview">
+                    <p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    {# ─── Composer ─── #}
-    <div class="glass-card-elev p-4 mb-4">
-        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2">
-            <span class="material-symbols-elev text-[var(--gold-elev)]">edit_note</span>
-            Nueva entrada
-        </h3>
-        <input id="entry-title" type="text" placeholder="Título (opcional)" maxlength="120"
-               class="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] mb-2" />
-        <textarea id="entry-body" rows="6" placeholder="Escribí lo que sentís, aprendiste, o querés recordar. Esto se cifra antes de salir de tu navegador."
-                  class="w-full px-3 py-2 rounded-lg bg-[var(--glass-bg-elev)] border border-[var(--glass-border-elev)] text-[var(--on-surface-elev)] resize-none"
-                  style="font-family: inherit;"></textarea>
-        <div class="flex items-center justify-end gap-2 mt-3">
-            <button id="entry-save" class="btn-primary" disabled>
-                <span class="material-symbols-elev align-middle text-sm">lock</span>
-                Cifrar y guardar
-            </button>
-        </div>
-    </div>
-
-    {# ─── Entries ─── #}
-    <div id="diary-entries" class="space-y-3">
-        <p class="text-center text-[var(--outline-elev)] py-8">Cargando entradas...</p>
-    </div>
 </div>
-
-<style>
-.diary-entry { padding:1rem; cursor:pointer; transition:background 0.15s; }
-.diary-entry:hover { background:var(--glass-bg-elev); }
-.diary-title { font-weight:600; font-size:0.9375rem; margin-bottom:0.25rem; }
-.diary-preview { font-size:0.8125rem; color:var(--outline-elev); line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
-.diary-time { font-size:0.7rem; color:var(--outline-elev); margin-top:0.5rem; }
-.diary-locked { color:var(--outline-elev); font-style:italic; font-size:0.8125rem; }
-.diary-actions { display:flex; gap:0.5rem; margin-top:0.5rem; }
-.diary-action { padding:0.25rem 0.5rem; font-size:0.7rem; background:transparent; border:1px solid var(--glass-border-elev); color:var(--on-surface-variant-elev); border-radius:0.25rem; cursor:pointer; }
-.diary-action:hover { color:var(--gold-elev); border-color:var(--gold-elev); }
-</style>
 
 <script>
 (function() {
     'use strict';
-    const listEl = document.getElementById('diary-entries');
-    const titleEl = document.getElementById('entry-title');
-    const bodyEl = document.getElementById('entry-body');
-    const saveBtn = document.getElementById('entry-save');
-    const setupBanner = document.getElementById('diary-setup-banner');
-    const masterKeyEl = document.getElementById('diary-master-key');
-    const setupBtn = document.getElementById('diary-setup-btn');
-    const me = () => (window.TNSVT_USER && window.TNSVT_USER.code) || '';
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    // ══════ F4 — State machine ══════
+    const STATES = ['locked', 'list', 'empty', 'editing'];
+    function showState(s) {
+        STATES.forEach(name => {
+            const el = document.getElementById('diary-state-' + name);
+            if (el) el.hidden = (name !== s);
+        });
     }
 
-    // ─── Encryption helpers (AES-GCM via WebCrypto) ───
+    // ─── Crypto ───
     let masterKey = null;
+    const ENTRIES = [];
+    let currentEditId = null;
+    let autosaveTimer = null;
+    let dirty = false;
 
-    async function deriveKey(passphrase) {
+    function escapeHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async function deriveKey(pass) {
         const enc = new TextEncoder();
         const keyMaterial = await crypto.subtle.importKey(
-            'raw', enc.encode(passphrase), { name: 'PBKDF2' }, false, ['deriveKey']
+            'raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveKey']
         );
         return crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: enc.encode('tnsvt-diary-v2'), iterations: 100000, hash: 'SHA-256' },
+            { name: 'PBKDF2', salt: enc.encode('tnsvt-diary-v2'),
+              iterations: 100000, hash: 'SHA-256' },
             keyMaterial,
             { name: 'AES-GCM', length: 256 },
-            true,
-            ['encrypt', 'decrypt']
+            true, ['encrypt', 'decrypt']
         );
     }
 
     async function encryptText(plaintext, key) {
         const iv = crypto.getRandomValues(new Uint8Array(12));
-        const enc = new TextEncoder();
-        const ciphertext = await crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv: iv },
-            key,
-            enc.encode(plaintext)
+        const ct = await crypto.subtle.encrypt(
+            { name: 'AES-GCM', iv }, key, new TextEncoder().encode(plaintext)
         );
         return {
-            encrypted: btoa(String.fromCharCode(...new Uint8Array(ciphertext))),
-            iv: btoa(String.fromCharCode(...iv))
+            encrypted: btoa(String.fromCharCode(...new Uint8Array(ct))),
+            iv:        btoa(String.fromCharCode(...iv))
         };
     }
 
-    async function decryptText(encryptedB64, ivB64, key) {
+    async function decryptText(encB64, ivB64, key) {
         try {
-            const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-            const ciphertext = Uint8Array.from(atob(encryptedB64), c => c.charCodeAt(0));
-            const plaintext = await crypto.subtle.decrypt(
-                { name: 'AES-GCM', iv: iv },
-                key,
-                ciphertext
-            );
-            return new TextDecoder().decode(plaintext);
-        } catch (e) {
-            return null;
+            const iv  = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
+            const ct  = Uint8Array.from(atob(encB64), c => c.charCodeAt(0));
+            const pt  = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
+            return new TextDecoder().decode(pt);
+        } catch (e) { return null; }
+    }
+
+    function tokenFromKey(key) {
+        return crypto.subtle.exportKey('raw', key)
+            .then(raw => crypto.subtle.digest('SHA-256', raw))
+            .then(h => btoa(String.fromCharCode(...new Uint8Array(h))));
+    }
+
+    // ─── State helpers ───
+    function showMessage(text, type) {
+        const div = document.getElementById('diary-message');
+        div.className = type === 'success' ? 'diary-success' : 'diary-error';
+        div.textContent = text;
+        div.hidden = false;
+        if (type === 'success') {
+            setTimeout(() => { div.hidden = true; }, 4000);
         }
     }
 
-    // ─── Setup ───
-    async function checkSetup() {
-        const r = await apiFetch('/api/diary/setup?code=' + me());
-        if (r.ok && r.data) {
-            const token = Array.isArray(r.data) ? r.data.setup_token : (r.data.setup_token || null);
-            const iv = Array.isArray(r.data) ? r.data.setup_iv : (r.data.setup_iv || null);
-            if (!token) {
-                setupBanner.classList.remove('hidden');
-                saveBtn.disabled = true;
+    function parseEntry(plaintext) {
+        const lines = (plaintext || '').split('\n');
+        if (lines[0] && lines[0].startsWith('#')) {
+            return {
+                title: lines.shift().slice(1).trim() || '(sin título)',
+                body: lines.join('\n').trim()
+            };
+        }
+        return { title: '(sin título)', body: (plaintext || '').trim() };
+    }
+
+    function serializeEntry(title, body) {
+        const safeTitle = (title || '').trim() || '(sin título)';
+        return '# ' + safeTitle + '\n\n' + (body || '').trim();
+    }
+
+    function fmtDate(iso) {
+        try {
+            const d = new Date(iso);
+            const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+            return { day: d.getDate(), weekday: dias[d.getDay()],
+                     month: d.toLocaleString('es-AR', { month: 'short' }) };
+        } catch (e) { return { day: '?', weekday: '—', month: '—' }; }
+    }
+    function wordCount(s) {
+        return (s.trim().match(/\S+/g) || []).length;
+    }
+
+    // ─── LOCKED state actions ───
+    async function checkSetupAndLoad() {
+        try {
+            const r = await apiFetch('/api/diary/setup', { silent: true });
+            const data = (r.ok && r.data) ? r.data : null;
+            const hasSetup = !!(data && data.setup_token);
+            const subEl = document.getElementById('diary-lock-subtitle');
+            if (subEl) {
+                subEl.textContent = hasSetup
+                    ? 'Ingresá tu clave maestra para descifrar tus reflexiones.'
+                    : 'Bienvenido. Configurá tu clave maestra (mínimo 8 caracteres).';
+            }
+            showState('locked');
+        } catch (e) {
+            showState('locked');
+        }
+    }
+
+    async function unlockOrSetup() {
+        const pass = document.getElementById('diary-pass-input').value;
+        if (!pass || pass.length < 8) {
+            showMessage('La clave debe tener al menos 8 caracteres', 'error');
+            return;
+        }
+        try {
+            masterKey = await deriveKey(pass);
+            const r = await apiFetch('/api/diary/setup', { silent: true });
+            const data = (r.ok && r.data) ? r.data : null;
+            const storedToken = (data && data.setup_token) || null;
+
+            const computedToken = await tokenFromKey(masterKey);
+
+            if (storedToken) {
+                if (computedToken !== storedToken) {
+                    masterKey = null;
+                    showMessage('Clave incorrecta — no descifra las entradas', 'error');
+                    return;
+                }
+                showMessage('Cuaderno desbloqueado', 'success');
             } else {
-                setupBanner.classList.add('hidden');
-                saveBtn.disabled = false;
+                const ivB64 = btoa(String.fromCharCode(
+                    ...crypto.getRandomValues(new Uint8Array(12))
+                ));
+                const sr = await apiFetch('/api/diary/setup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ setup_token: computedToken, setup_iv: ivB64 })
+                });
+                if (!sr.ok || !sr.data || !sr.data.success) {
+                    masterKey = null;
+                    showMessage('Error guardando setup', 'error');
+                    return;
+                }
+                showMessage('Clave maestra configurada', 'success');
+            }
+            await loadEntries();
+        } catch (e) {
+            console.error(e);
+            masterKey = null;
+            showMessage('Error: ' + (e.message || 'desconocido'), 'error');
+        }
+    }
+
+    // ─── Load + render LIST ───
+    async function loadEntries() {
+        try {
+            const r = await apiFetch('/api/diary', { silent: true });
+            if (!r.ok || !r.data) {
+                showState('empty');
+                return;
+            }
+            const data = Array.isArray(r.data) ? { entries: r.data } : r.data;
+            const encrypted = data.entries || [];
+
+            const decrypted = [];
+            for (const e of encrypted) {
+                const pt = await decryptText(e.encrypted_data, e.iv, masterKey);
+                if (pt === null) {
+                    showMessage('La clave no descifra estas entradas — usando clave incorrecta', 'error');
+                    masterKey = null;
+                    showState('locked');
+                    return;
+                }
+                const parsed = parseEntry(pt);
+                decrypted.push({
+                    id: e.id,
+                    created_at: e.created_at,
+                    updated_at: e.updated_at,
+                    ...parsed
+                });
+            }
+            ENTRIES.length = 0;
+            decrypted
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .forEach(e => ENTRIES.push(e));
+
+            if (ENTRIES.length === 0) {
+                showState('empty');
+                return;
+            }
+            renderList();
+            showState('list');
+        } catch (e) {
+            console.error(e);
+            showState('empty');
+        }
+    }
+
+    function renderList() {
+        const grid = document.getElementById('diary-entries-grid');
+        const summary = document.getElementById('diary-list-summary');
+        if (summary) {
+            summary.textContent =
+                `${ENTRIES.length} ${ENTRIES.length === 1 ? 'entrada cifrada' : 'entradas cifradas'}`;
+        }
+        grid.innerHTML = ENTRIES.map(e => {
+            const d = fmtDate(e.created_at);
+            const wc = wordCount(e.body);
+            return `
+                <article class="diary-entry-card" data-id="${e.id}" tabindex="0">
+                    <div class="diary-entry-card-date">${d.day}</div>
+                    <div class="diary-entry-card-weekday">${d.weekday} · ${d.month}</div>
+                    <h3 class="diary-entry-card-title">${escapeHtml(e.title)}</h3>
+                    <p class="diary-entry-card-preview">${escapeHtml(e.body.slice(0, 200))}</p>
+                    <div class="diary-entry-card-footer">
+                        <span style="display:inline-flex;align-items:center;gap:0.3rem;">
+                            <span class="material-symbols-outlined" style="font-size:0.85rem;">lock</span>
+                            Cifrada · ${wc} palabras
+                        </span>
+                        <span class="material-symbols-outlined diary-entry-card-chevron">chevron_right</span>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        grid.querySelectorAll('.diary-entry-card').forEach(el => {
+            el.addEventListener('click', () => openEntry(parseInt(el.dataset.id, 10)));
+            el.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openEntry(parseInt(el.dataset.id, 10));
+                }
+            });
+        });
+    }
+
+    // ─── EDITING state ───
+    function openEntry(id) {
+        const e = ENTRIES.find(en => en.id === id);
+        if (!e) return;
+        currentEditId = id;
+        const titleEl = document.getElementById('diary-editor-title');
+        if (titleEl) {
+            try {
+                titleEl.textContent = new Date(e.created_at)
+                    .toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+            } catch (_) {
+                titleEl.textContent = 'Editar entrada';
             }
         }
+        document.getElementById('diary-editor-title-input').value = e.title;
+        document.getElementById('diary-editor-textarea').value = e.body;
+        updatePreview();
+        updateWordCount();
+        dirty = false;
+        setAutosaveBadge('saved');
+        showState('editing');
+        setTimeout(() => {
+            const ta = document.getElementById('diary-editor-textarea');
+            if (ta) ta.focus();
+        }, 50);
     }
 
-    setupBtn.addEventListener('click', async () => {
-        const pass = masterKeyEl.value;
-        if (pass.length < 8) {
-            if (window.apiToast) apiToast('La clave debe tener al menos 8 caracteres', 'error');
+    function newEntry() {
+        currentEditId = null;
+        const titleEl = document.getElementById('diary-editor-title');
+        if (titleEl) titleEl.textContent = 'Nueva entrada';
+        document.getElementById('diary-editor-title-input').value = '';
+        document.getElementById('diary-editor-textarea').value = '';
+        updatePreview();
+        updateWordCount();
+        dirty = false;
+        setAutosaveBadge('saved');
+        showState('editing');
+        setTimeout(() => {
+            const ta = document.getElementById('diary-editor-textarea');
+            if (ta) ta.focus();
+        }, 50);
+    }
+
+    function updatePreview() {
+        const v = document.getElementById('diary-editor-textarea').value;
+        const preview = document.getElementById('diary-editor-preview');
+        if (!v.trim()) {
+            preview.innerHTML = '<p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>';
             return;
         }
-        masterKey = await deriveKey(pass);
-        // Derive a stable token from the key to store on server
-        const rawKey = await crypto.subtle.exportKey('raw', masterKey);
-        const hash = await crypto.subtle.digest('SHA-256', rawKey);
-        const tokenB64 = btoa(String.fromCharCode(...new Uint8Array(hash)));
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const ivB64 = btoa(String.fromCharCode(...iv));
+        // Very light markdown: # heading, **bold**, *italic*, paragraphs
+        const html = escapeHtml(v)
+            .replace(/^# (.+)$/gm, '<h3>$1</h3>')
+            .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+            .replace(/\n\n/g, '</p><p>')
+            .replace(/\n/g, '<br>');
+        preview.innerHTML = '<p>' + html + '</p>';
+    }
 
-        const r = await apiFetch('/api/diary/setup?code=' + me(), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: me(), setup_token: tokenB64, setup_iv: ivB64 })
-        });
-        if (r.ok && r.data && (r.data.success || Array.isArray(r.data))) {
-            if (window.apiToast) apiToast('Clave maestra configurada', 'success');
-            setupBanner.classList.add('hidden');
-            saveBtn.disabled = false;
-            await loadEntries();
+    function updateWordCount() {
+        const v = document.getElementById('diary-editor-textarea').value;
+        const wc = wordCount(v);
+        document.getElementById('diary-word-count').textContent =
+            `${wc} palabras · ${v.length} caracteres`;
+    }
+
+    function setAutosaveBadge(state) {
+        const b = document.getElementById('diary-autosave-badge');
+        if (!b) return;
+        if (state === 'saving') {
+            b.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.85rem;">progress_activity</span> Guardando…';
+            b.classList.remove('saved');
+            b.classList.add('saving');
         } else {
-            if (window.apiToast) apiToast('Error al configurar', 'error');
+            b.innerHTML = '<span class="material-symbols-outlined" style="font-size:0.85rem;">check_circle</span> Guardado';
+            b.classList.remove('saving');
+            b.classList.add('saved');
         }
-    });
-
-    // ─── Load entries ───
-    async function loadEntries() {
-        listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Cargando entradas...</p>';
-        const r = await apiFetch('/api/diary?code=' + me());
-        if (!r.ok || !r.data) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin datos disponibles</p>';
-            return;
-        }
-        const data = Array.isArray(r.data) ? { entries: r.data } : r.data;
-        const entries = data.entries || [];
-        if (entries.length === 0) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas. ¡Empezá tu diario cifrado arriba!</p>';
-            return;
-        }
-        listEl.innerHTML = entries.map(e => `
-            <article class="glass-card-elev diary-entry" data-id="${e.id}">
-                <div class="diary-locked">🔒 Entrada cifrada — click para descifrar</div>
-                <div class="diary-time">${escapeHtml(new Date(e.created_at).toLocaleString())}</div>
-            </article>
-        `).join('');
-
-        listEl.querySelectorAll('.diary-entry').forEach(el => {
-            el.addEventListener('click', () => unlockEntry(parseInt(el.dataset.id)));
-        });
     }
 
-    async function unlockEntry(id) {
-        if (!masterKey) {
-            const pass = prompt('Ingresá tu clave maestra para descifrar:');
-            if (!pass) return;
-            masterKey = await deriveKey(pass);
-        }
-        const r = await apiFetch('/api/diary?code=' + me());
-        if (!r.ok || !r.data) return;
-        const data = Array.isArray(r.data) ? { entries: r.data } : r.data;
-        const entry = (data.entries || []).find(e => e.id === id);
-        if (!entry) return;
-        const plaintext = await decryptText(entry.encrypted_data, entry.iv, masterKey);
-        if (plaintext === null) {
-            if (window.apiToast) apiToast('Clave incorrecta', 'error');
-            return;
-        }
-        const lines = plaintext.split('\n');
-        const title = lines[0].startsWith('#') ? lines.shift().slice(1).trim() : '(sin título)';
-        const body = lines.join('\n').trim().slice(0, 200);
-        const el = listEl.querySelector(`[data-id="${id}"]`);
-        el.innerHTML = `
-            <div class="diary-title">${escapeHtml(title)}</div>
-            <div class="diary-preview">${escapeHtml(body) || '<em>(vacío)</em>'}</div>
-            <div class="diary-time">${escapeHtml(new Date(entry.created_at).toLocaleString())}</div>
-            <div class="diary-actions">
-                <button class="diary-action" data-action="delete" data-id="${id}">Eliminar</button>
-            </div>
-        `;
-        el.querySelector('[data-action="delete"]').addEventListener('click', (ev) => {
-            ev.stopPropagation();
-            deleteEntry(id);
-        });
-    }
-
-    async function saveEntry() {
-        const title = titleEl.value.trim();
-        const body = bodyEl.value.trim();
-        if (!title && !body) {
-            if (window.apiToast) apiToast('Entrada vacía', 'error');
-            return;
-        }
-        const plaintext = (title ? '# ' + title + '\n\n' : '') + body;
-        const { encrypted, iv } = await encryptText(plaintext, masterKey);
-        const r = await apiFetch('/api/diary?code=' + me(), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: me(), encrypted_data: encrypted, iv: iv })
-        });
-        if (r.ok && r.data && (r.data.success || r.data.id || Array.isArray(r.data))) {
-            titleEl.value = '';
-            bodyEl.value = '';
-            if (window.apiToast) apiToast('Entrada cifrada y guardada', 'success');
-            await loadEntries();
+    async function saveCurrent(opts) {
+        opts = opts || {};
+        const silent = !!opts.silent;
+        const title = document.getElementById('diary-editor-title-input').value.trim();
+        const body = document.getElementById('diary-editor-textarea').value;
+        if (!body.trim()) return false;
+        const payload = serializeEntry(title, body);
+        const { encrypted, iv } = await encryptText(payload, masterKey);
+        setAutosaveBadge('saving');
+        let r;
+        if (currentEditId) {
+            r = await apiFetch('/api/diary/' + currentEditId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ encrypted_data: encrypted, iv })
+            });
         } else {
-            if (window.apiToast) apiToast('Error al guardar', 'error');
+            r = await apiFetch('/api/diary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ encrypted_data: encrypted, iv })
+            });
+            if (r.ok && r.data && r.data.id) currentEditId = r.data.id;
+        }
+        if (r.ok && r.data && (r.data.success || r.data.id)) {
+            dirty = false;
+            setAutosaveBadge('saved');
+            if (!silent) showMessage('Entrada guardada', 'success');
+            return true;
+        } else {
+            setAutosaveBadge('saved');
+            showMessage('Error guardando — reintentá', 'error');
+            return false;
         }
     }
 
-    async function deleteEntry(id) {
-        if (!confirm('¿Eliminar esta entrada del diario? (Se perderá el cifrado y no se puede recuperar)')) return;
-        const r = await apiFetch('/api/diary/' + id + '?code=' + me(), { method: 'DELETE' });
-        if (r.ok && r.data && (r.data.success || Array.isArray(r.data))) {
-            if (window.apiToast) apiToast('Entrada eliminada', 'success');
-            await loadEntries();
-        } else {
-            if (window.apiToast) apiToast('Error al eliminar', 'error');
+    function scheduleAutosave() {
+        dirty = true;
+        if (autosaveTimer) clearTimeout(autosaveTimer);
+        setAutosaveBadge('saved');
+        autosaveTimer = setTimeout(() => {
+            if (dirty) saveCurrent({ silent: true });
+        }, 30000);
+    }
+
+    function lockNow() {
+        if (dirty) {
+            if (!confirm('Tenés cambios sin guardar. ¿Bloquear igual?')) return;
         }
+        masterKey = null;
+        currentEditId = null;
+        ENTRIES.length = 0;
+        document.getElementById('diary-pass-input').value = '';
+        if (autosaveTimer) { clearTimeout(autosaveTimer); autosaveTimer = null; }
+        showMessage('Cuaderno bloqueado', 'success');
+        showState('locked');
+    }
+
+    // ─── Wire-up ───
+    function wire() {
+        document.getElementById('diary-unlock-btn').addEventListener('click', unlockOrSetup);
+        document.getElementById('diary-pass-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') unlockOrSetup();
+        });
+        document.getElementById('diary-fingerprint-btn').addEventListener('click', () => {
+            showMessage('Huella biométrica requiere WebAuthn — próxima iteración', 'error');
+        });
+
+        document.getElementById('diary-new-btn').addEventListener('click', newEntry);
+        document.getElementById('diary-lock-now-btn').addEventListener('click', lockNow);
+        document.getElementById('diary-write-first-btn').addEventListener('click', newEntry);
+        document.getElementById('diary-lock-empty-btn').addEventListener('click', lockNow);
+
+        const $title = document.getElementById('diary-editor-title-input');
+        const $body = document.getElementById('diary-editor-textarea');
+        $body.addEventListener('input', () => {
+            updatePreview();
+            updateWordCount();
+            scheduleAutosave();
+        });
+        $title.addEventListener('input', scheduleAutosave);
+
+        document.querySelectorAll('.diary-prompt-chip').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cur = $body.value;
+                const phrase = btn.dataset.prompt;
+                $body.value = cur ? cur + '\n\n' + phrase + '\n\n' : phrase + '\n\n';
+                $body.focus();
+                $body.dispatchEvent(new Event('input'));
+            });
+        });
+
+        document.getElementById('diary-back-btn').addEventListener('click', async () => {
+            if (dirty) {
+                if (!confirm('Tenés cambios sin guardar. ¿Volver sin guardar?')) return;
+                dirty = false;
+            }
+            if (currentEditId) await saveCurrent({ silent: true });
+            ENTRIES.length = 0;
+            await loadEntries();
+        });
+        document.getElementById('diary-manual-save-btn').addEventListener('click', () => saveCurrent());
+        document.getElementById('diary-lock-edit-btn').addEventListener('click', lockNow);
+
+        window.addEventListener('beforeunload', e => {
+            if (dirty) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        saveBtn.addEventListener('click', saveEntry);
-
-        function boot() {
-            if (me()) {
-                checkSetup();
-                loadEntries();
-            } else {
-                setTimeout(boot, 1000);
-            }
-        }
-        if (window.TNSVT_USER) boot();
-        else window.addEventListener('tnsvt:user-loaded', boot, { once: true });
+        wire();
+        checkSetupAndLoad();
     });
 })();
 </script>
