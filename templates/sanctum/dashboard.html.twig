@@ -18,49 +18,6 @@
 {% block stylesheets %}
 <style>
     .dashboard-grid { display: grid; gap: 1.5rem; }
-    .kpi-card-elev {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-        border-radius: 0.75rem;
-        padding: 1.25rem 1.5rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .kpi-card-elev::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent 0%, rgba(242, 202, 80, 0.3) 50%, transparent 100%);
-    }
-    .kpi-card-elev:hover {
-        border-color: rgba(242, 202, 80, 0.2);
-        box-shadow: 0 0 20px rgba(242, 202, 80, 0.1);
-        transform: translateY(-2px);
-    }
-    .kpi-label-elev {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--outline, #99907c);
-    }
-    .kpi-value-elev {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--gold-elev, #f2ca50);
-        margin: 0.5rem 0 0.25rem;
-    }
-    .kpi-meta-elev {
-        font-size: 0.75rem;
-        color: var(--outline, #99907c);
-    }
     .live-dot {
         display: inline-block;
         width: 6px;
@@ -315,11 +272,11 @@
     }
 
     /* ══════ F1.2 — Stats Row ══════ */
-    .stats-row .kpi-card-elev { padding: 1rem 1.1rem; }
-    .stats-row .kpi-value-elev { font-size: 1.55rem; }
-    .stats-row .kpi-value-elev.pos { color: #4ade80; }
-    .stats-row .kpi-value-elev.neg { color: #f87171; }
-    .stats-row .kpi-value-elev.muted { color: var(--outline-elev); }
+    .stats-row .kpi-card { padding: 1rem 1.1rem; }
+    .stats-row .kpi-value { font-size: 1.55rem; }
+    .stats-row .kpi-value.pos { color: #4ade80; }
+    .stats-row .kpi-value.neg { color: #f87171; }
+    .stats-row .kpi-value.muted { color: var(--outline-elev); }
 
     /* ══════ F1.3 — Calendario Mensual ══════ */
     .cal-nav-btn {
@@ -686,30 +643,30 @@
             </span>
         </div>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="stats-grid">
-            <div class="kpi-card-elev" data-stat="pf">
-                <span class="kpi-label-elev">Profit Factor</span>
-                <p class="kpi-value-elev" id="stats-pf">—</p>
-                <p class="kpi-meta-elev" id="stats-pf-meta">—</p>
+            <div class="kpi-card" data-stat="pf">
+                <span class="kpi-label">Profit Factor</span>
+                <p class="kpi-value" id="stats-pf">—</p>
+                <p class="kpi-meta" id="stats-pf-meta">—</p>
             </div>
-            <div class="kpi-card-elev" data-stat="expect">
-                <span class="kpi-label-elev">Expectativa</span>
-                <p class="kpi-value-elev" id="stats-expect">—</p>
-                <p class="kpi-meta-elev" id="stats-expect-meta">—</p>
+            <div class="kpi-card" data-stat="expect">
+                <span class="kpi-label">Expectativa</span>
+                <p class="kpi-value" id="stats-expect">—</p>
+                <p class="kpi-meta" id="stats-expect-meta">—</p>
             </div>
-            <div class="kpi-card-elev" data-stat="wr">
-                <span class="kpi-label-elev">Win Rate</span>
-                <p class="kpi-value-elev" id="stats-wr">—</p>
-                <p class="kpi-meta-elev" id="stats-wr-meta">—</p>
+            <div class="kpi-card" data-stat="wr">
+                <span class="kpi-label">Win Rate</span>
+                <p class="kpi-value" id="stats-wr">—</p>
+                <p class="kpi-meta" id="stats-wr-meta">—</p>
             </div>
-            <div class="kpi-card-elev" data-stat="avg-w">
-                <span class="kpi-label-elev">Avg Win</span>
-                <p class="kpi-value-elev text-green-400" id="stats-avg-w">—</p>
-                <p class="kpi-meta-elev" id="stats-avg-w-meta">—</p>
+            <div class="kpi-card" data-stat="avg-w">
+                <span class="kpi-label">Avg Win</span>
+                <p class="kpi-value text-green-400" id="stats-avg-w">—</p>
+                <p class="kpi-meta" id="stats-avg-w-meta">—</p>
             </div>
-            <div class="kpi-card-elev" data-stat="avg-l">
-                <span class="kpi-label-elev">Avg Loss</span>
-                <p class="kpi-value-elev text-red-400" id="stats-avg-l">—</p>
-                <p class="kpi-meta-elev" id="stats-avg-l-meta">—</p>
+            <div class="kpi-card" data-stat="avg-l">
+                <span class="kpi-label">Avg Loss</span>
+                <p class="kpi-value text-red-400" id="stats-avg-l">—</p>
+                <p class="kpi-meta" id="stats-avg-l-meta">—</p>
             </div>
         </div>
         <div class="mt-4 pt-4 border-t border-[var(--outline-variant-elev)] grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
@@ -917,245 +874,33 @@
     </div>
 
     <style>
-        .kpi-card {
-            position: relative;
-            background: linear-gradient(135deg, var(--glass-bg-elev) 0%, rgba(242, 202, 80, 0.03) 100%);
-            backdrop-filter: blur(20px);
+        /* Dashboard-specific: classes not yet in external CSS */
+        .btn-secondary {
+            padding: 0.5rem 1.25rem;
+            background: transparent;
+            color: var(--on-surface-elev);
             border: 1px solid var(--glass-border-elev);
-            border-radius: 0.75rem;
-            padding: 1.25rem 1.5rem;
-            transition: all 0.3s ease;
-            overflow: hidden;
+            border-radius: 0.375rem;
             cursor: pointer;
         }
-        .kpi-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, rgba(242, 202, 80, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--on-surface-elev);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.2s ease;
         }
-        .kpi-card:hover {
-            border-color: rgba(242, 202, 80, 0.4);
-            background: linear-gradient(135deg, var(--glass-bg-strong-elev) 0%, rgba(242, 202, 80, 0.08) 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(138, 60, 255, 0.12);
+        .modal-close:hover {
+            background: var(--glass-bg-elev);
+            color: var(--gold-elev);
         }
-    .kpi-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-    .kpi-label {
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--outline-elev);
-        margin: 0;
-    }
-    .kpi-icon {
-        font-size: 1.25rem;
-        color: var(--gold-elev);
-    }
-    .kpi-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--gold-elev);
-        margin: 0.25rem 0;
-        line-height: 1.1;
-        text-shadow: 0 0 20px rgba(242, 202, 80, 0.3);
-    }
-    .kpi-meta {
-        font-size: 0.75rem;
-        color: var(--outline-elev);
-        margin: 0;
-    }
-    .kpi-sparkline {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 30px;
-        width: 100%;
-        opacity: 0.6;
-    }
-    .kpi-pulse {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-    .pulse-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #4ade80;
-        animation: pulse 2s infinite;
-        box-shadow: 0 0 8px #4ade80;
-    }
-    .pulse-text {
-        font-size: 0.7rem;
-        color: var(--outline-elev);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.3); }
-    }
-    .kpi-meta-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        margin-right: 0.5rem;
-        vertical-align: middle;
-    }
-    .kpi-ring {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        width: 80px;
-        height: 80px;
-        border: 2px solid var(--gold-elev);
-        border-radius: 50%;
-        opacity: 0.2;
-    }
-    .kpi-icon-large {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        font-size: 4rem;
-        opacity: 0.05;
-    }
-    .quick-action {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 1rem 0.5rem;
-        border-radius: 0.5rem;
-        background: linear-gradient(135deg, var(--glass-bg-elev) 0%, rgba(242, 202, 80, 0.02) 100%);
-        border: 1px solid var(--glass-border-elev);
-        color: var(--on-surface-elev);
-        text-decoration: none;
-        cursor: pointer;
-        font: inherit;
-        transition: all 0.2s ease;
-    }
-    .quick-action:hover {
-        background: linear-gradient(135deg, var(--glass-bg-strong-elev) 0%, rgba(242, 202, 80, 0.08) 100%);
-        border-color: var(--gold-elev);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(242, 202, 80, 0.2);
-    }
-    /* Modal */
-    .modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(8px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        padding: 1rem;
-    }
-    .modal-content {
-        background: linear-gradient(135deg, var(--surface-elev) 0%, rgba(16, 11, 28, 0.95) 100%);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 1rem;
-        width: 100%;
-        max-width: 500px;
-        max-height: 90vh;
-        overflow: auto;
-        box-shadow: 0 0 40px rgba(138, 60, 255, 0.15);
-    }
-    .modal-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid var(--glass-border-elev);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: linear-gradient(135deg, rgba(242, 202, 80, 0.05) 0%, transparent 100%);
-    }
-    .modal-close {
-        background: transparent;
-        border: none;
-        color: var(--on-surface-elev);
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: 0.25rem;
-        transition: all 0.2s ease;
-    }
-    .modal-close:hover {
-        background: var(--glass-bg-elev);
-        color: var(--gold-elev);
-    }
-    .modal-body {
-        padding: 1.5rem;
-    }
-    .modal-footer {
-        padding: 1rem 1.5rem;
-        border-top: 1px solid var(--glass-border-elev);
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.5rem;
-        background: rgba(0, 0, 0, 0.1);
-    }
-    .form-group { margin-bottom: 1rem; }
-    .form-row { display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem; }
-    .form-label {
-        display: block;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: var(--outline-elev);
-        margin-bottom: 0.25rem;
-    }
-    .form-input {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.375rem;
-        color: var(--on-surface-elev);
-        font-size: 0.875rem;
-    }
-    .form-input:focus {
-        outline: none;
-        border-color: var(--gold-elev);
-    }
-    .btn-primary {
-        padding: 0.5rem 1.25rem;
-        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
-        color: var(--on-primary-elev);
-        font-weight: 600;
-        border: none;
-        border-radius: 0.375rem;
-        cursor: pointer;
-    }
-    .btn-secondary {
-        padding: 0.5rem 1.25rem;
-        background: transparent;
-        color: var(--on-surface-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.375rem;
-        cursor: pointer;
-    }
-    .impact-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-    .impact-high { background:#f87171; }
-    .impact-medium { background:#fbbf24; }
-    .impact-low { background:#4ade80; }
+        .modal-body { padding: 1.5rem; }
+        .impact-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+        .impact-high { background:#f87171; }
+        .impact-medium { background:#fbbf24; }
+        .impact-low { background:#4ade80; }
     </style>
 
     <script>

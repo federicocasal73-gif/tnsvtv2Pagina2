@@ -661,23 +661,6 @@ header {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FORM INPUTS — from v2-components.css
-   ═══════════════════════════════════════════════════════════════ */
-
-.form-input {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--glass-border-elev);
-    border-radius: 0.375rem;
-    color: var(--on-surface-elev);
-    transition: all 0.3s ease;
-}
-.form-input:focus {
-    outline: none;
-    border-color: var(--gold-elev);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
-}
-
-/* ═══════════════════════════════════════════════════════════════
    LOADING STATES — from v2-components.css (no suffix, conflicts
    with shell.css's .loading-pulse — shell.css wins via cascade)
    ═══════════════════════════════════════════════════════════════ */
