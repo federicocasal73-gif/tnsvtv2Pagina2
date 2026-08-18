@@ -20,22 +20,6 @@
         overflow: hidden;
         position: relative;
     }
-    .journal-equity .reveal-path {
-        stroke-dasharray: 1000;
-        stroke-dashoffset: 1000;
-        animation: reveal-path 2.5s ease-out forwards;
-    }
-    .scan-sweep::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 50%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(242, 202, 80, 0.1), transparent);
-        transform: skewX(-20deg);
-        animation: scan-sweep 4s infinite ease-in-out;
-    }
     .journal-nav-btn {
         flex: 1;
         padding: 0.5rem 1rem;
@@ -177,12 +161,11 @@
                 <div>
                     <label class="kpi-label block mb-1">Asset *</label>
                     <input id="trade-asset" type="text" required maxlength="20" placeholder="XAUUSD"
-                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                           class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">Dirección</label>
-                    <select id="trade-dir" class="form-input"
-                            style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+                    <select id="trade-dir" class="form-input">
                         <option value="BUY">BUY (Long)</option>
                         <option value="SELL">SELL (Short)</option>
                     </select>
@@ -193,12 +176,11 @@
                 <div>
                     <label class="kpi-label block mb-1">Fecha</label>
                     <input id="trade-date" type="datetime-local"
-                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                           class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">Resultado</label>
-                    <select id="trade-result" class="form-input"
-                            style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+                    <select id="trade-result" class="form-input">
                         <option value="">—</option>
                         <option value="WIN">WIN</option>
                         <option value="LOSS">LOSS</option>
@@ -212,29 +194,29 @@
                 <div>
                     <label class="kpi-label block mb-1">Entry</label>
                     <input id="trade-entry" type="text" step="any" placeholder="2650.50"
-                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                           class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">SL</label>
                     <input id="trade-sl" type="text" step="any" placeholder="2645"
-                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                           class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">TP</label>
                     <input id="trade-tp" type="text" step="any" placeholder="2660"
-                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                           class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">PnL ($)</label>
                     <input id="trade-pnl" type="number" step="any" placeholder="125.50"
-                           class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+                           class="form-input" />
                 </div>
             </div>
 
             <div>
                 <label class="kpi-label block mb-1">Notas</label>
                 <textarea id="trade-notes" rows="3" placeholder="Análisis, emociones, plan ejecutado..."
-                          class="form-input" style="width:100%; padding:0.5rem 0.75rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;"></textarea>
+                          class="form-input"></textarea>
             </div>
 
             <p id="trade-form-error" class="text-red-400 text-sm hidden"></p>
@@ -247,22 +229,6 @@
         </form>
     </div>
 </div>
-
-<style>
-.trade-row { display:flex; align-items:center; gap:0.75rem; padding:0.75rem 1rem; transition:background 0.2s ease; cursor:pointer; }
-.trade-row:hover { background: var(--glass-bg-elev); }
-.trade-asset { font-weight:600; min-width:80px; }
-.trade-dir-BUY { color: #34c759; }
-.trade-dir-SELL { color: #f87171; }
-.trade-pnl-pos { color: #34c759; font-weight:600; }
-.trade-pnl-neg { color: #f87171; font-weight:600; }
-.trade-actions { display:flex; gap:0.5rem; opacity:0.6; transition:opacity 0.2s ease; }
-.trade-row:hover .trade-actions { opacity:1; }
-.trade-actions button { background:transparent; border:1px solid var(--glass-border-elev); color:var(--on-surface-variant-elev); padding:0.25rem 0.5rem; border-radius:0.25rem; cursor:pointer; font-size:0.7rem; }
-.trade-actions button:hover { background: var(--glass-bg-elev); color: var(--gold-elev); border-color: var(--gold-elev); }
-.btn-primary { padding:0.5rem 1.25rem; background:linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev)); color:var(--on-primary-elev); font-weight:600; border:none; border-radius:0.375rem; cursor:pointer; }
-.btn-secondary { padding:0.5rem 1.25rem; background:transparent; color:var(--on-surface-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; cursor:pointer; }
-</style>
 
 <script>
 (function() {
