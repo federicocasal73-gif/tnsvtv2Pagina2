@@ -41,6 +41,38 @@
     .journal-nav-btn:hover:not(.active) {
         color: var(--on-surface-elev, #e9def6);
     }
+    .trade-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--outline-variant-elev);
+        transition: background 0.2s;
+    }
+    .trade-row:hover {
+        background: var(--glass-bg-elev);
+    }
+    .trade-asset {
+        font-weight: 600;
+        min-width: 80px;
+    }
+    .trade-dir-buy {
+        color: var(--success-elev, #4ade80);
+    }
+    .trade-dir-sell {
+        color: var(--error-elev, #f87171);
+    }
+    .trade-pnl-pos {
+        color: var(--success-elev, #4ade80);
+    }
+    .trade-pnl-neg {
+        color: var(--error-elev, #f87171);
+    }
+    .trade-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
 </style>
 {% endblock %}
 
