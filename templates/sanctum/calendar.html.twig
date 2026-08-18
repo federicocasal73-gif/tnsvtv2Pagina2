@@ -5,19 +5,26 @@
 {% block topbar_title %}Calendario Económico{% endblock %}
 {% block topbar_subtitle %}Eventos macro en tiempo real con filtros por país e impacto.{% endblock %}
 
+{% block stylesheets %}
+<style>
+.cal-impact-3 { color: #f87171; font-weight: 600; }
+.cal-impact-2 { color: #fbbf24; font-weight: 600; }
+.cal-impact-1 { color: #94a3b8; font-weight: 500; }
+.cal-critical { background: rgba(248, 113, 113, 0.08); }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto">
     {# ─── Filters ─── #}
     <div class="glass-card-elev p-4 mb-4 flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-2">
             <label class="kpi-label">Fecha</label>
-            <input id="cal-date" type="date"
-                   class="form-input" style="padding:0.4rem 0.6rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;" />
+            <input id="cal-date" type="date" class="form-input" />
         </div>
         <div class="flex items-center gap-2">
             <label class="kpi-label">País</label>
-            <select id="cal-country" multiple size="1"
-                    class="form-input" style="padding:0.4rem 0.6rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+            <select id="cal-country" multiple size="1" class="form-input">
                 <option value="US" selected>🇺🇸 USD</option>
                 <option value="EU" selected>🇪🇺 EUR</option>
                 <option value="GB" selected>🇬🇧 GBP</option>
@@ -30,8 +37,7 @@
         </div>
         <div class="flex items-center gap-2">
             <label class="kpi-label">Impacto</label>
-            <select id="cal-impact"
-                    class="form-input" style="padding:0.4rem 0.6rem; background:var(--glass-bg-elev); border:1px solid var(--glass-border-elev); border-radius:0.375rem; color:var(--on-surface-elev); font-size:0.875rem;">
+            <select id="cal-impact" class="form-input">
                 <option value="">Todos</option>
                 <option value="3" selected>Alto (3)</option>
                 <option value="2">Medio (2)</option>
@@ -70,13 +76,6 @@
         </turbo-frame>
     </div>
 </div>
-
-<style>
-.cal-impact-3 { color: #f87171; font-weight: 600; }
-.cal-impact-2 { color: #fbbf24; font-weight: 600; }
-.cal-impact-1 { color: #94a3b8; font-weight: 500; }
-.cal-critical { background: rgba(248, 113, 113, 0.08); }
-</style>
 
 <script>
 (function() {
