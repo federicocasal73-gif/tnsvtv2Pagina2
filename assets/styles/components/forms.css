@@ -1,0 +1,74 @@
+/* assets/styles/components/forms.css
+ *
+ * Canonical form input styles.
+ * Replaces inline styles on <input> and <select> elements.
+ */
+
+/* ─── Form Input ─── */
+.form-input {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.375rem;
+    color: var(--on-surface-elev);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+.form-input:focus {
+    outline: none;
+    border-color: var(--gold-elev);
+    box-shadow: 0 0 0 3px rgba(242, 202, 80, 0.1);
+}
+.form-input::placeholder {
+    color: var(--outline-elev);
+    opacity: 0.6;
+}
+
+/* ─── Form Select ─── */
+.form-select {
+    width: 100%;
+    padding: 0.625rem 2.5rem 0.625rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.375rem;
+    color: var(--on-surface-elev);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.875rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2399907c' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    transition: all 0.2s ease;
+}
+.form-select:focus {
+    outline: none;
+    border-color: var(--gold-elev);
+    box-shadow: 0 0 0 3px rgba(242, 202, 80, 0.1);
+}
+
+/* ─── Form Label ─── */
+.form-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--outline-elev);
+    margin-bottom: 0.375rem;
+}
+
+/* ─── Form Group ─── */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+/* ─── Form Row (horizontal) ─── */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}

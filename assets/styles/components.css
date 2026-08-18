@@ -18,6 +18,8 @@
  * Last consolidated: Phase 10 — see docs/CSS-MERGE-PLAN.md
  */
 
+@import './components/forms.css';
+
 /* ═══════════════════════════════════════════════════════════════
    KEYFRAMES
    ═══════════════════════════════════════════════════════════════ */
