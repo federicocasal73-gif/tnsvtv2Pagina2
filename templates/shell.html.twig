@@ -42,6 +42,14 @@
 {# ═══ FASE 0 — Emblema 3D del gateway (solo home) ═══ #}
 {% block gateway_emblem %}{% endblock %}
 
+{# ═══ SIDEBAR TOGGLE (Mobile) ═══ #}
+<button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menú">
+    <span class="material-symbols-elev">menu</span>
+</button>
+
+{# ═══ SIDEBAR OVERLAY (Mobile) ═══ #}
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
 <div class="flex min-h-screen">
     <aside id="sanctum-sidebar" class="w-64 bg-[var(--surface-elev)] border-r border-[var(--outline-variant-elev)] flex flex-col">
         <div class="p-6 border-b border-[var(--outline-variant-elev)]">
@@ -306,6 +314,48 @@
     }
     refreshNotifBadge();
     setInterval(refreshNotifBadge, 60000);
+})();
+</script>
+
+<script>
+// Sidebar toggle (mobile)
+(function() {
+    const toggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sanctum-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    
+    if (!toggle || !sidebar || !overlay) return;
+    
+    function openSidebar() {
+        sidebar.classList.add('sidebar-open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeSidebar() {
+        sidebar.classList.remove('sidebar-open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    toggle.addEventListener('click', openSidebar);
+    overlay.addEventListener('click', closeSidebar);
+    
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) {
+            closeSidebar();
+        }
+    });
+    
+    // Close on link click (mobile)
+    sidebar.querySelectorAll('.sanctum-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 1024) {
+                closeSidebar();
+            }
+        });
+    });
 })();
 </script>
 
