@@ -48,6 +48,7 @@
         padding: 0.75rem 1rem;
         border-bottom: 1px solid var(--outline-variant-elev);
         transition: background 0.2s;
+        cursor: pointer;
     }
     .trade-row:hover {
         background: var(--glass-bg-elev);
@@ -56,22 +57,40 @@
         font-weight: 600;
         min-width: 80px;
     }
-    .trade-dir-buy {
+    .trade-dir-BUY {
         color: var(--success-elev, #4ade80);
     }
-    .trade-dir-sell {
+    .trade-dir-SELL {
         color: var(--error-elev, #f87171);
     }
     .trade-pnl-pos {
         color: var(--success-elev, #4ade80);
+        font-weight: 600;
     }
     .trade-pnl-neg {
         color: var(--error-elev, #f87171);
+        font-weight: 600;
     }
     .trade-actions {
         display: flex;
         gap: 0.5rem;
         margin-left: auto;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+    }
+    .trade-row:hover .trade-actions {
+        opacity: 1;
+    }
+    .trade-actions button {
+        border: 1px solid var(--outline-variant-elev);
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .trade-actions button:hover {
+        background: var(--glass-bg-elev);
     }
 </style>
 {% endblock %}
