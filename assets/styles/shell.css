@@ -178,3 +178,85 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR RESPONSIVE
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Mobile toggle button - hidden on desktop */
+.sidebar-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 60;
+    width: 44px;
+    height: 44px;
+    border-radius: 0.5rem;
+    background: var(--surface-elev);
+    border: 1px solid var(--outline-variant-elev);
+    color: var(--gold-elev);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.sidebar-toggle:hover {
+    background: var(--surface-high-elev);
+    border-color: var(--gold-elev);
+}
+
+/* Overlay for mobile sidebar */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1024px) {
+    .sidebar-toggle {
+        display: flex;
+    }
+    
+    #sanctum-sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        bottom: 0;
+        z-index: 50;
+        width: 280px;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    #sanctum-sidebar.sidebar-open {
+        left: 0;
+    }
+    
+    main {
+        margin-left: 0 !important;
+    }
+    
+    header {
+        padding-left: 4rem !important;
+    }
+}
+
+@media (min-width: 1025px) {
+    .sidebar-toggle {
+        display: none !important;
+    }
+    
+    .sidebar-overlay {
+        display: none !important;
+    }
+}
