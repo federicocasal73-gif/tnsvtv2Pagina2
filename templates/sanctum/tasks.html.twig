@@ -6,18 +6,18 @@
 {% block topbar_subtitle %}Gestión de tareas globales del Sanctum{% endblock %}
 
 {% block content %}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" data-controller="tasks">
         {# Left: list of tasks with inline actions #}
         <div class="lg:col-span-2">
             <div class="glass-card-elev p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-[var(--on-surface-elev)]">Lista de tareas</h3>
                     <div class="flex gap-2 text-xs">
-                        <span id="active-count" class="status-pill status-active">0 active</span>
-                        <span id="inactive-count" class="status-pill status-inactive">0 inactive</span>
+                        <span id="active-count" class="status-pill status-active" data-tasks-target="activeCount">0 active</span>
+                        <span id="inactive-count" class="status-pill status-inactive" data-tasks-target="inactiveCount">0 inactive</span>
                     </div>
                 </div>
-                <div id="tasks-list" class="space-y-2">
+                <div id="tasks-list" class="space-y-2" data-tasks-target="list">
                     <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando...</p>
                 </div>
             </div>
@@ -27,7 +27,7 @@
         <div>
             <div class="glass-card-elev p-6">
                 <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)]">Crear nueva tarea</h3>
-                <form id="create-task-form" class="space-y-3">
+                <form id="create-task-form" class="space-y-3" data-action="submit->tasks#createTask">
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-[var(--outline-elev)] mb-1">Título *</label>
                         <input id="create-title" type="text" required maxlength="255" placeholder="Ej: Auditar journal del usuario FRAN" class="w-full px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
@@ -63,145 +63,5 @@
         </div>
     </div>
 
-    <script>
-    let allTasks = [];
-
-    async function loadTasks() {
-        const list = document.getElementById('tasks-list');
-        list.classList.add('loading-pulse');
-        try {
-            const r = await fetch('/sanctum/api/tasks');
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            const data = await r.json();
-            if (!data.success) throw new Error(data.error || 'unknown');
-            allTasks = data.tasks;
-            document.getElementById('active-count').textContent = data.activeCount + ' active';
-            document.getElementById('inactive-count').textContent = data.inactiveCount + ' inactive';
-            renderTasks();
-        } catch (e) {
-            list.innerHTML = '<p class="text-red-400 text-center py-8">Error: ' + e.message + '</p>';
-        }
-        list.classList.remove('loading-pulse');
-    }
-
-    function renderTasks() {
-        const list = document.getElementById('tasks-list');
-        if (allTasks.length === 0) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin tareas. Crea la primera usando el formulario.</p>';
-            return;
-        }
-        list.innerHTML = allTasks.map(t => `
-            <div class="flex items-center gap-3 p-3 rounded-lg glass-card-elev" data-task-id="${t.id}">
-                <div class="flex flex-col gap-1">
-                    <button onclick="reorderTask(${t.id}, -1)" class="text-[var(--outline-elev)] hover:text-[var(--gold-elev)] text-xs" ${t.orden === 0 ? 'disabled' : ''}>▲</button>
-                    <button onclick="reorderTask(${t.id}, 1)" class="text-[var(--outline-elev)] hover:text-[var(--gold-elev)] text-xs" ${t.orden === allTasks[allTasks.length-1].orden ? 'disabled' : ''}>▼</button>
-                </div>
-                <input type="checkbox" ${t.active ? 'checked' : ''} onchange="toggleActive(${t.id}, this.checked)" class="w-4 h-4" />
-                <div class="flex-1 min-w-0">
-                    <input type="text" value="${escapeHtml(t.title || '')}" onblur="updateTask(${t.id}, 'title', this.value)" class="w-full bg-transparent text-[var(--on-surface-elev)] font-medium focus:outline-none focus:bg-[var(--glass-bg-elev)] px-2 py-1 rounded" />
-                    ${t.description ? `<p class="text-xs text-[var(--outline-elev)] mt-1 px-2">${escapeHtml(t.description.substring(0, 100))}${t.description.length > 100 ? '...' : ''}</p>` : ''}
-                </div>
-                <span class="text-xs text-[var(--outline-elev)] font-mono">#${t.orden}</span>
-                <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'}">${t.active ? 'Active' : 'Inactive'}</span>
-                <button onclick="deleteTask(${t.id})" class="text-red-400 hover:text-red-300 text-xs px-2">✕</button>
-            </div>
-        `).join('');
-    }
-
-    function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    async function createTask(e) {
-        e.preventDefault();
-        const errEl = document.getElementById('create-error');
-        errEl.classList.add('hidden');
-        const title = document.getElementById('create-title').value.trim();
-        const description = document.getElementById('create-description').value.trim();
-        const orden = parseInt(document.getElementById('create-orden').value) || 0;
-        const active = document.getElementById('create-active').checked;
-
-        if (!title) {
-            errEl.textContent = 'El título es obligatorio';
-            errEl.classList.remove('hidden');
-            return;
-        }
-
-        try {
-            const r = await fetch('/sanctum/api/tasks', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, description, orden, active }),
-            });
-            const data = await r.json();
-            if (data.success) {
-                document.getElementById('create-title').value = '';
-                document.getElementById('create-description').value = '';
-                await loadTasks();
-            } else {
-                errEl.textContent = data.error || 'Error desconocido';
-                errEl.classList.remove('hidden');
-            }
-        } catch (e) {
-            errEl.textContent = 'Error de red: ' + e.message;
-            errEl.classList.remove('hidden');
-        }
-    }
-
-    async function toggleActive(id, active) {
-        try {
-            await fetch('/sanctum/api/tasks/' + id + '/toggle', { method: 'PATCH' });
-            await loadTasks();
-        } catch (e) { console.error(e); }
-    }
-
-    async function updateTask(id, field, value) {
-        try {
-            await fetch('/sanctum/api/tasks/' + id, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ [field]: value }),
-            });
-            await loadTasks();
-        } catch (e) { console.error(e); }
-    }
-
-    async function deleteTask(id) {
-        if (!await apiConfirm('¿Eliminar esta tarea? Esta acción no se puede deshacer.', { title: 'Eliminar tarea', variant: 'danger' })) return;
-        try {
-            const r = await fetch('/sanctum/api/tasks/' + id, { method: 'DELETE' });
-            const data = await r.json();
-            if (data.success) {
-                await loadTasks();
-            } else {
-                apiToast('Error: ' + (data.error || 'desconocido'), 'error');
-            }
-        } catch (e) { apiToast('Error: ' + e.message, 'error'); }
-    }
-
-    async function reorderTask(id, direction) {
-        const task = allTasks.find(t => t.id === id);
-        if (!task) return;
-        const currentIndex = allTasks.findIndex(t => t.id === id);
-        const newIndex = currentIndex + direction;
-        if (newIndex < 0 || newIndex >= allTasks.length) return;
-        // Swap IDs in the order array
-        const newOrder = allTasks.map(t => t.id);
-        [newOrder[currentIndex], newOrder[newIndex]] = [newOrder[newIndex], newOrder[currentIndex]];
-        try {
-            const r = await fetch('/sanctum/api/tasks/reorder', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ order: newOrder }),
-            });
-            const data = await r.json();
-            if (data.success) {
-                await loadTasks();
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    document.getElementById('create-task-form').addEventListener('submit', createTask);
-    loadTasks();
-    </script>
+{# Tasks loading handled by tasks_controller.js #}
 {% endblock %}
