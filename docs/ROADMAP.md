@@ -1,8 +1,72 @@
 # TNSVT V2 Roadmap
 
 Updated after initial audit (`/audit`) and module mapping (`/map`).
+**Last cleanup pass: 2026-08-19 — Phase 1-5 complete (see "Cleanup Pass" below).**
 
 Legend: `[x]` done · `[~]` in progress · `[ ]` not started · `[!]` blocked
+
+---
+
+## Cleanup Pass — 2026-08-19
+
+### Phase 1: Quick wins
+- [x] Cleaned phantom trades in DB (`DEMO` $100M, `280416`, `FRAN.1428.JUSTI`, `ADMIN01`)
+- [x] Fixed `journal.html.twig` — added missing `stat-wins` / `stat-losses` IDs to KPI grid
+- [x] Fixed `calendar.html.twig` — moved `data-controller="calendar-events"` to wrap filters + table, added `data-action` to inputs
+- [x] Added `for` attributes on calendar labels
+- [x] Added `scope="col"` to calendar table headers
+- [x] Added CSS classes to `calendar.css` (cal-impact-1/2/3, cal-critical)
+- [x] Removed duplicate `webgl-background.js` from `dashboard.html.twig`
+- [x] Translated "Invoke Protocol" → "Invocar Protocolo" (shell.html.twig)
+- [x] Translated "Active"/"Inactive" → "Activa"/"Inactiva" (dashboard.html.twig)
+- [x] Added `aria-label` to icon-only buttons in shell.html.twig
+
+### Phase 2: Token cleanup
+- [x] Replaced hardcoded `#4ade80`/`#f87171`/`#fbbf24` in dashboard.html.twig JS with `var(--success-elev)`/`var(--error-elev)`/`var(--warning-elev)`
+- [x] Replaced hardcoded colors in home.html.twig with CSS classes (`.pnl-pos`/`.pnl-neg`)
+- [x] Replaced hardcoded colors in journal.html.twig Guardian severity palette
+- [x] Migrated `dashboard.css` hardcoded colors to tokens
+- [x] Added `ec-legend-pos/neg/mix` CSS classes (replacing inline `style="background: #..."`)
+
+### Phase 3: Stimulus restoration
+- [x] Updated `importmap.php` with `@hotwired/stimulus`, `@hotwired/turbo`, `@symfony/stimulus-bundle`
+- [x] Downloaded and vendored stimulus/turbo modules to `assets/third_party/`
+- [x] Replaced shim in `stimulus_bootstrap.js` with real `startStimulusApp()`
+- [x] Removed unused `@hotwired/turbo` import from `calendar_events_controller.js`
+- [x] **Stimulus controllers now active**: pwa, calendar-events, notifications, chat, wallet, settings, leaderboard, feed, profile-public
+
+### Phase 4: Asset/CSS cleanup
+- [x] Cleaned 0-byte recursive-hash broken compile artifacts on server
+- [x] Verified `redirect.css` is used (legacy redirect template)
+- [x] Did NOT touch `app.css` (164KB) — V1 legacy classes are unused but conservatively kept per "100% confirmado" rule
+
+### Phase 5: A11y + Docs
+- [x] Added `aria-current="page"` to active sidebar links (shell.html.twig JS)
+- [x] Added `aria-live` + `role="alert"`/`role="status"` to login error/success
+- [x] Added `aria-hidden="true"` to decorative cross in login
+- [x] Updated ROADMAP.md (this file)
+
+### Phase 6: UX/SEO/Security polish (2026-08-19/20)
+- [x] **6.1 Top 5**: reduced-motion (`transform: none !important`), sidebar contrast (`gold-elev opacity-70`), touch targets 44×44 (`@media (pointer:coarse)`), URL state persistence (calendar/journal/dashboard/feed/chat/social), custom 404/500 pages (`templates/bundles/TwigBundle/Exception/`)
+- [x] **6.2 Modal a11y**: `apiSetupModal()` (focus trap + Escape + restore focus) applied to trade/create-task/cal-day/academic/chat-new-dm modals; `role=dialog`/`aria-modal`/`aria-labelledby`
+- [x] **6.3 Empty states**: `_partials/empty_state.html.twig` + skeleton CSS
+- [x] **6.4 Toast queue**: max 5, dedupe, hover-pause, click-to-dismiss, ARIA live, TTL per kind
+- [x] **6.5 Open Graph**: `_partials/og_meta.html.twig` (OG + Twitter + PWA meta) in both shells
+- [x] **6.5b Dynamic OG image**: `OgImageController` + `og_image.svg.twig` at `/og/image` (variants default/gold/violet/trade), `og:image` now points to dynamic endpoint
+- [x] **6.6 CSRF/CSP hardening**: `framework.yaml` cookie_samesite=lax/secure=auto/httponly; nelmio_security CSP (`object-src 'none'`, `form-action 'self'`, `upgrade-insecure-requests`), permissions_policy
+- [x] **6.7 SW cleanup**: `sw.js` rewrite (CACHE_VERSION, precache, NEVER_CACHE_PATHS)
+- [x] **6.7b SW dynamic version**: `ServiceWorkerController` serves `/sw.js` with `CACHE_VERSION=tnsvt-{APP_VERSION}`; static `public/sw.js` removed (deployed), `sw.js.twig` template
+- [x] **6.8 Confirm/alert**: `apiConfirm()` styled Promise modal; `confirm()` migrated in shell/bookings_admin/feed/journal/journal_new/social/tasks/diary/macro-dashboard; alert→`apiToast()` in 8 templates
+- [x] **6.9 CLS fixes**: width/height/decoding=lazy on chat/feed/journal_new/profile images
+- [x] **6.10 Empty-state helper**: `apiEmpty()` applied in chat/feed/journal/social/bookings_admin/dashboard/game
+- [x] **6.11 CORS hardening**: prod `.env.local` narrowed to
+      `localhost|127.0.0.1|tnsvt.com|www.tnsvt.com` (private ranges
+      `192.168.*`, `100.*`, `10.0.2.2`, hostinger temp domain removed —
+      served on server directly, not via deploy). Verified: private origins
+      rejected, tnsvt.com/www/localhost accepted.
+- [x] **6.12 `/trading` decision**: `/trading` now 302 → `/journal/new`
+      (record-only per recommended roadmap option; execution stays on
+      tnsvt.com). `LegacyModuleController::trading()` returns RedirectResponse.
 
 ---
 
@@ -38,9 +102,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · `[!]` blocked
       Phase 4 — see `INTEGRATION-NOTES.md` §9; folder restructure pending)
 - [ ] Form/table/card standards (extract from inline CSS)
 - [ ] Responsive standards (mobile tab bar to 6 tabs target)
-- [ ] **Extract inline `<style>` blocks** from `shell.html.twig` (deferred —
-      minor, ~30 lines) into `assets/styles/components/`. `home.html.twig`
-      extracted to `assets/styles/home.css` ✅ (Phase 5).
+- [x] **Extract inline `<style>` blocks** from `shell.html.twig` — verified
+      done 2026-08-19: no `<style>` blocks remain in any template (grep
+      confirmed 0 matches); CSS lives in `assets/styles/shell.css`.
+      `home.html.twig` extracted to `assets/styles/home.css` ✅ (Phase 5).
 - [ ] **CSS consolidation** — actual merge deferred (documented in
       `DESIGN-SYSTEM.md`, requires running app for visual verification)
 
@@ -116,11 +181,11 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started · `[!]` blocked
 
 These were surfaced during audit and need decisions before implementation:
 
-1. **Where does `/trading` go?** Currently a legacy placeholder. Options:
-   - Migrate to v2 fully (long, scope creep).
-   - Keep legacy bridge, document as "external system".
-   - Replace `/trading` with `/journal/trade` (record-only) and keep tnsvt.com
-     for execution. (Recommended for now.)
+1. **Where does `/trading` go?** **RESOLVED 2026-08-19** — `/trading`
+   redirects to `/journal/new` (302, register operation) per the recommended
+   option "record-only, keep tnsvt.com for execution". Execution stays on
+   tnsvt.com; execution platform not yet migrated to v2.
+   (Deployed and verified 2026-08-19.)
 
 2. **Academia vs Campus** — same product? Verify with business owner.
 

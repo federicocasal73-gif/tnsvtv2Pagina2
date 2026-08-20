@@ -18,6 +18,9 @@ nelmio_security:
         hsts_preload: false
 
     # Content Security Policy
+    # NOTE: 'unsafe-inline' in script-src is required because we have ~30 inline
+    # <script> blocks across sanctum pages. Future work: migrate to nonce-based
+    # CSP via Symfony's "csp_nonce" helper (requires removing all inline scripts).
     csp:
         enabled: true
         enforce:
@@ -43,8 +46,11 @@ nelmio_security:
                 - "'self'"
                 - 'https://*.hostingersite.com'
                 - 'https://tnsvt.com'
+            object-src: ["'none'"]
             frame-ancestors: ["'none'"]
             base-uri: ["'self'"]
+            form-action: ["'self'"]
+            upgrade-insecure-requests: true
 
     # Referrer policy
     referrer_policy:
@@ -57,12 +63,16 @@ nelmio_security:
         enabled: true
         policies:
             accelerometer: []
+            autoplay: []
             camera: []
+            display-capture: []
+            fullscreen: ['self']
             geolocation: []
             gyroscope: []
             magnetometer: []
             microphone: []
             payment: []
+            picture-in-picture: []
             usb: []
 
 when@prod:

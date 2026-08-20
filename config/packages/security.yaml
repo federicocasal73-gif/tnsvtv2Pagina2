@@ -24,6 +24,8 @@ security:
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/logout, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/check, roles: PUBLIC_ACCESS }
+        - { path: ^/api/public, roles: PUBLIC_ACCESS }
+        - { path: ^/og, roles: PUBLIC_ACCESS }
         - { path: ^/api/music/stream, roles: PUBLIC_ACCESS }
         - { path: ^/api/music/playlist, roles: PUBLIC_ACCESS }
         - { path: ^/api/music, roles: PUBLIC_ACCESS }

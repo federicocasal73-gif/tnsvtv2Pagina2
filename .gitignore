@@ -48,6 +48,7 @@ public/uploads/
 *.swo
 .DS_Store
 Thumbs.db
+bin/__pycache__/
 ###< tnsvt v2 IDE / OS ###
 
 ###> tnsvt v2 build outputs ###
