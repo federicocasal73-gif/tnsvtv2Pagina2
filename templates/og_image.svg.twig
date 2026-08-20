@@ -1,0 +1,47 @@
+{#
+   og_image.svg.twig — Dynamic OG image (1200×630)
+   Used by OgImageController at /og/image.
+   Context: title, subtitle, bg, accent, accent_dark
+#}
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+    <defs>
+        <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="{{ bg }}"/>
+            <stop offset="55%" stop-color="{{ bg }}"/>
+            <stop offset="100%" stop-color="{{ accent_dark }}" stop-opacity="0.35"/>
+        </linearGradient>
+        <radialGradient id="glow" cx="0.85" cy="0.15" r="0.7">
+            <stop offset="0%" stop-color="{{ accent }}" stop-opacity="0.28"/>
+            <stop offset="100%" stop-color="{{ accent }}" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="{{ accent }}"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="1200" height="630" fill="url(#bgGrad)"/>
+    <rect width="1200" height="630" fill="url(#glow)"/>
+
+    <!-- Top accent line -->
+    <rect x="0" y="0" width="1200" height="6" fill="{{ accent }}"/>
+
+    <!-- Decorative orbit -->
+    <circle cx="1050" cy="140" r="220" fill="none" stroke="{{ accent }}" stroke-opacity="0.25" stroke-width="2"/>
+    <circle cx="1050" cy="140" r="160" fill="none" stroke="{{ accent }}" stroke-opacity="0.15" stroke-width="1.5"/>
+    <circle cx="1050" cy="140" r="14" fill="{{ accent }}" fill-opacity="0.6"/>
+
+    <!-- Brand -->
+    <text x="70" y="120" font-family="Cinzel, serif" font-size="34" font-weight="700" letter-spacing="8" fill="{{ accent }}">T.N.S.V.T</text>
+    <line x1="72" y1="138" x2="300" y2="138" stroke="{{ accent }}" stroke-opacity="0.5" stroke-width="2"/>
+
+    <!-- Title -->
+    <text x="70" y="300" font-family="Space Grotesk, sans-serif" font-size="72" font-weight="700" fill="url(#titleGrad)">{{ title }}</text>
+
+    <!-- Subtitle -->
+    <text x="70" y="390" font-family="Inter, sans-serif" font-size="30" fill="#d0c5af">{{ subtitle }}</text>
+
+    <!-- Bottom mark -->
+    <line x1="70" y1="560" x2="1130" y2="560" stroke="{{ accent }}" stroke-opacity="0.35" stroke-width="1.5"/>
+    <text x="70" y="595" font-family="Inter, sans-serif" font-size="20" letter-spacing="4" fill="{{ accent }}" fill-opacity="0.7">REINO DEL CRISTO ÍNTEGRO</text>
+</svg>

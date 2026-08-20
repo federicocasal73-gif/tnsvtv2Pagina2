@@ -1,0 +1,45 @@
+{#
+   og_meta.html.twig — Open Graph + Twitter Card meta tags
+   ───────────────────────────────────────────────────────────────
+   Usage:
+     {% include '_partials/og_meta.html.twig' with {
+       title: 'Mi Página · T.N.S.V.T',
+       description: 'Descripción para SEO y social sharing',
+       image: 'https://tnsvt.com/og/dashboard.png',    ← optional
+       type: 'website',                                  ← optional: 'website' | 'article' | 'profile'
+       url: 'https://tnsvt.com/calendar'                 ← optional, defaults to current
+       twitter_card: 'summary_large_image'               ← optional
+     } %}
+#}
+{% set _title = title|default('T.N.S.V.T — Reino del Cristo Íntegro') %}
+{% set _desc  = description|default('Plataforma neuro-espiritual de trading. Análisis macro, bitácora y guardian.') %}
+{% set _type  = type|default('website') %}
+{% set _img   = image|default('https://tnsvt.com/og/image?title=T.N.S.V.T%20%E2%80%94%20Reino%20del%20Cristo%20%C3%8Dntegro&variant=gold') %}
+{% set _url   = url|default('') %}
+{% set _twc   = twitter_card|default('summary_large_image') %}
+{% set _site  = 'T.N.S.V.T' %}
+
+<!-- Open Graph -->
+<meta property="og:type" content="{{ _type }}" />
+<meta property="og:site_name" content="{{ _site }}" />
+<meta property="og:title" content="{{ _title }}" />
+<meta property="og:description" content="{{ _desc }}" />
+<meta property="og:image" content="{{ _img }}" />
+<meta property="og:locale" content="es_AR" />
+{% if _url %}<meta property="og:url" content="{{ _url }}" />{% endif %}
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="{{ _twc }}" />
+<meta name="twitter:title" content="{{ _title }}" />
+<meta name="twitter:description" content="{{ _desc }}" />
+<meta name="twitter:image" content="{{ _img }}" />
+
+<!-- General meta -->
+<meta name="description" content="{{ _desc }}" />
+<meta name="theme-color" content="#050308" />
+<meta name="color-scheme" content="dark" />
+<meta name="format-detection" content="telephone=no" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="T.N.S.V.T" />
