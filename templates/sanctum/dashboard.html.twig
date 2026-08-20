@@ -442,7 +442,13 @@
         if (r.ok && r.data && r.data.success) {
             if (window.apiToast) apiToast('Tarea creada', 'success');
             closeCreateTask();
-            loadDashboard();
+            // Reload tasks via controller
+            const ctrl = window.Stimulus && document.querySelector('[data-controller="dashboard-tasks"]');
+            if (ctrl && ctrl.dataset) {
+                const app = window.Stimulus.application;
+                const instance = app.getControllerForElementAndIdentifier(ctrl, 'dashboard-tasks');
+                if (instance) instance.loadTasks();
+            }
         } else {
             const msg = (r.data && (r.data.error || r.data.message)) || (r.timeout ? 'Timeout' : r.networkError ? 'Sin conexión' : 'Error');
             errEl.textContent = msg;
