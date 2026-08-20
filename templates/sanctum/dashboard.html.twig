@@ -253,7 +253,7 @@
         </section>
 
         {# Recent Signals + Task Sovereignty #}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" data-controller="dashboard-tasks">
             <div class="glass-card-elev p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
@@ -268,7 +268,7 @@
                         <a href="/sanctum/tasks" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
                     </div>
                 </div>
-                <div id="task-list" class="space-y-2">
+                <div id="task-list" class="space-y-2" data-dashboard-tasks-target="taskList">
                     <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando...</p>
                 </div>
             </div>
@@ -281,7 +281,7 @@
                     </h3>
                     <a href="/sanctum/audit" class="text-xs text-[var(--gold-elev)] hover:underline">Ver audit log →</a>
                 </div>
-                <div id="signal-list" class="space-y-2 max-h-72 overflow-y-auto pr-2">
+                <div id="signal-list" class="space-y-2 max-h-72 overflow-y-auto pr-2" data-dashboard-tasks-target="signalList">
                     <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando actividad reciente...</p>
                 </div>
             </div>
@@ -407,59 +407,7 @@
     {# Styles moved to assets/styles/components/dashboard.css #}
 
     <script>
-    async function loadDashboard() {
-        // F1.5: only run when the dashboard tab is rendered
-        if (!document.getElementById('task-list')) return;
-        // Tasks (server returns {success, tasks, activeCount})
-        const tasksRes = await apiFetch('/sanctum/api/tasks');
-        if (tasksRes.ok && tasksRes.data && tasksRes.data.success) {
-            renderTasks(tasksRes.data.tasks);
-            const kpiPnlMeta = document.getElementById('kpi-pnl-meta');
-            if (kpiPnlMeta) kpiPnlMeta.textContent = `${tasksRes.data.activeCount} activas`;
-            // Render recent signals
-            if (tasksRes.data.tasks && tasksRes.data.tasks.length > 0) {
-                document.getElementById('signal-list').innerHTML = tasksRes.data.tasks.slice(0, 5).map(t => `
-                    <div class="flex items-center justify-between p-2 rounded glass-card-elev text-sm">
-                        <span class="truncate">${escapeHtml(t.title)}</span>
-                        <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Activa' : 'Inactiva'}</span>
-                    </div>
-                `).join('');
-            } else {
-                apiEmpty(document.getElementById('signal-list'), { icon: 'notifications_off', message: 'Sin actividad reciente', size: 'sm' });
-            }
-        } else {
-            apiEmpty(document.getElementById('task-list'), { icon: 'task_alt', message: 'Sin tareas activas', size: 'sm' });
-            apiEmpty(document.getElementById('signal-list'), { icon: 'notifications_off', message: 'Sin señales', size: 'sm' });
-        }
-
-        // System status (removed - not in Stitch mockup)
-        // Activity Feed (removed - not in Stitch mockup)
-        // Market Pulse (removed - not in Stitch mockup)
-        // Quick Stats (removed - not in Stitch mockup)
-        // Notifications count via /api/notifications/count (moved to topbar badge)
-    }
-
-    function renderTasks(tasks) {
-        const list = document.getElementById('task-list');
-        if (!tasks || tasks.length === 0) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin tareas activas</p>';
-            return;
-        }
-        list.innerHTML = tasks.slice(0, 5).map(t => `
-            <div class="task-row-elev">
-                <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Activa' : 'Inactiva'}</span>
-                <span class="text-sm flex-1 truncate">${escapeHtml(t.title || '')}</span>
-                <span class="text-xs text-[var(--outline-elev)] font-mono">#${t.orden}</span>
-            </div>
-        `).join('');
-    }
-
-    // renderSystemStatus removed - section not in Stitch mockup
-
-    function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
+    // Task loading now handled by dashboard_tasks_controller.js
     // Modal handlers
     const createTaskModal = apiSetupModal(document.getElementById('create-task-modal'), {
         close() {
