@@ -72,8 +72,18 @@ check "Sanctum dashboard"      "/sanctum"        "302" "yes"
 # ─── Static assets (verify the public shell loads) ─────────────────
 echo
 echo "── Static assets ──"
-check "Home CSS present"       "/styles/home.css"   "200"
-check "Tokens CSS present"     "/styles/tokens.css" "200"
+# Sources now live in src/assets; the served /assets/ dir only contains
+# compiled, hashed files. Grab a compiled stylesheet referenced by the
+# landing HTML and assert it resolves.
+_tmp_html=$(mktemp)
+curl -sS -L --max-time 15 "${URL}/" -o "$_tmp_html" 2>/dev/null
+_CSS=$(grep -oE "assets/styles/tokens-[A-Za-z0-9]{7}\.css" "$_tmp_html" | head -1)
+if [ -n "$_CSS" ]; then
+    check "Compiled tokens CSS present" "/${_CSS}" "200"
+else
+    fail "Compiled stylesheet NOT referenced in landing HTML"
+fi
+rm -f "$_tmp_html"
 
 # ─── Admin (anonymous — should 302 /login via firewall) ─────────────
 echo

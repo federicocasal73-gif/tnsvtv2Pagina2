@@ -13,7 +13,17 @@
  */
 return [
     'app' => [
-        'path' => './assets/app.js',
+        'path' => './src/assets/app.js',
+        'entrypoint' => true,
+    ],
+    '@hotwired/stimulus' => [
+        'path' => './src/assets/third_party/stimulus.module.js',
+    ],
+    '@hotwired/turbo' => [
+        'path' => './src/assets/third_party/turbo.module.js',
+    ],
+    '@symfony/stimulus-bundle' => [
+        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
         'entrypoint' => true,
     ],
 ];

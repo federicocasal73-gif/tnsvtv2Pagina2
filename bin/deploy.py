@@ -154,13 +154,15 @@ UPLOAD_PLAN = [
     ("config", "config"),
     # NOTE: "public" is intentionally NOT in UPLOAD_PLAN.
     # The Hostinger doc root IS /public_html/ (index.php + .htaccess at that level).
-    # The "public" subdir is now a symlink to the project root so asset-map:compile
+    # The "public" subdir is a symlink to the project root so asset-map:compile
     # writes to /public_html/assets/ (the correct serving path).
     # Uploading local/public/ to remote/public_html/public/ would overwrite the symlink
     # and re-introduce the bug where compile output went to public_html/public/assets/.
+    # NOTE: "assets/" is NOT uploaded as a source anymore. Asset sources now live in
+    # "src/assets/" (uploaded above via "src") so the served /assets/ directory holds
+    # ONLY compiled output. Compile runs on the server and regenerates it from src/assets.
     ("src", "src"),
     ("templates", "templates"),
-    ("assets", "assets"),
 ]
 
 # Single-file uploads (root files)
@@ -168,6 +170,7 @@ ROOT_FILES = [
     "composer.json",
     "composer.lock",
     "symfony.lock",
+    "importmap.php",
     ".env",
     ".env.dev",
     ".env.test",
@@ -383,7 +386,10 @@ def main():
         print(f"\n[6/7] Limpiando cache prod + rebuildeando assets...")
         run_ssh(client, f"cd {REMOTE_DIR} && php bin/console cache:clear --env=prod 2>&1 | tail -5", check=False)
         run_ssh(client, f"cd {REMOTE_DIR} && php bin/console cache:warmup --env=prod 2>&1 | tail -5", check=False)
-        run_ssh(client, f"cd {REMOTE_DIR} && php bin/console asset-map:compile --env=prod 2>&1 | tail -5", check=False)
+        # 'assets/' on the server is ONLY the compile output (sources live in src/assets).
+        # Wipe it before compiling: it may still hold stale source copies + old hashed
+        # files from before the source/output separation, and compile regenerates it.
+        run_ssh(client, f"cd {REMOTE_DIR} && rm -rf assets && php bin/console asset-map:compile --env=prod 2>&1 | tail -5", check=False)
     else:
         print(f"\n[6/7] (skip — --no-cache-clear)")
 

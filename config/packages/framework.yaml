@@ -3,7 +3,15 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        # SameSite=Lax provides CSRF protection by ensuring session cookies are
+        # only sent on same-site requests or top-level navigations (GET).
+        # JSON POSTs from cross-origin forms are blocked by the browser.
+        cookie_samesite: lax
+        cookie_secure: auto
+        cookie_httponly: true
+        # Use 'strict' for higher security once all API clients are same-origin.
+        # Until then, 'lax' is the right balance.
 
     # Trust the Hostinger reverse proxy so IP-based rate limiters see the real
     # client IP via X-Forwarded-For. Without this, every request appears to
@@ -11,6 +19,17 @@ framework:
     # TRUSTED_PROXIES is a comma-separated list of CIDR ranges or IPs.
     trusted_proxies: '%env(TRUSTED_PROXIES)%'
     trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
+
+    # On Hostinger the doc root IS the project root (/public_html), so the
+    # "public -> ." symlink makes Symfony's public/assets/ land exactly on the
+    # web-served /assets/ path. To avoid asset-map:compile mirroring its output
+    # back into its own source tree, sources live OUT of the served directory:
+    # they are stored in src/assets/ (logical paths unchanged, so templates and
+    # importmap.php keep working). The output dir (public/assets == /assets/)
+    # therefore only ever contains generated files.
+    asset_mapper:
+        paths:
+            - 'src/assets'
 
     #esi: true
     #fragments: true
@@ -20,4 +39,5 @@ when@test:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+            cookie_samesite: lax
         trusted_proxies: '127.0.0.1,REMOTE_ADDR'
