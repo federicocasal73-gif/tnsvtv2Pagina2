@@ -1,0 +1,31 @@
+{#
+   empty_state.html.twig — Reusable empty state component
+   ───────────────────────────────────────────────────────────────
+   Usage:
+     {% include '_partials/empty_state.html.twig' with {
+       icon: 'inbox',
+       message: 'Sin mensajes',
+       description: 'Cuando recibas mensajes aparecerán aquí',
+       cta_url: '/chat/new',
+       cta_label: 'Iniciar conversación',
+       size: 'lg'    ← optional: 'sm' | 'md' (default) | 'lg'
+     } %}
+#}
+{% set _icon = icon|default('inbox') %}
+{% set _message = message|default('Sin datos') %}
+{% set _description = description|default('') %}
+{% set _size = size|default('md') %}
+
+<div class="empty-state empty-state-{{ _size }}" role="status">
+    <span class="material-symbols-elev empty-state-icon" aria-hidden="true">{{ _icon }}</span>
+    <p class="empty-state-message">{{ _message }}</p>
+    {% if _description %}
+        <p class="empty-state-description">{{ _description }}</p>
+    {% endif %}
+    {% if cta_url is defined and cta_url and cta_label is defined and cta_label %}
+        <a href="{{ cta_url }}" class="empty-state-cta">
+            {{ cta_label }}
+            <span class="material-symbols-elev" aria-hidden="true">arrow_forward</span>
+        </a>
+    {% endif %}
+</div>

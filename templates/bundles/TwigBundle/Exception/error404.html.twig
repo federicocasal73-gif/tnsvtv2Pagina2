@@ -1,0 +1,30 @@
+{% extends 'public/shell.html.twig' %}
+
+{% block title %}404 — Camino perdido · T.N.S.V.T{% endblock %}
+
+{% block body_class %}gateway-body gateway-emblem{% endblock %}
+
+{% block content %}
+<main class="home-container" role="main">
+    <div class="hero">
+        <div class="cross" aria-hidden="true">✝</div>
+        <h1 class="logo">404</h1>
+        <p class="tagline">Camino perdido en el Sanctum</p>
+    </div>
+
+    <div class="login-card" style="max-width: 520px;">
+        <h2>La ruta solicitada no existe</h2>
+        <p style="color: var(--on-surface-variant-elev); margin: 1rem 0 1.5rem;">
+            El sendero que buscás se ha perdido en el vacío. Puede que haya sido removido, renombrado, o que nunca haya existido.
+        </p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="/" class="login-submit" style="text-decoration: none; text-align: center; display: inline-block;">
+                ← Volver al Inicio
+            </a>
+            <a href="/login" class="login-submit" style="text-decoration: none; text-align: center; display: inline-block; background: var(--surface-elev); color: var(--gold-elev); border: 1px solid var(--gold-elev);">
+                Ir al Login
+            </a>
+        </div>
+    </div>
+</main>
+{% endblock %}

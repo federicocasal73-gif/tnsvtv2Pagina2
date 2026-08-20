@@ -1,0 +1,30 @@
+{% extends 'public/shell.html.twig' %}
+
+{% block title %}500 — Servidor en sombras · T.N.S.V.T{% endblock %}
+
+{% block body_class %}gateway-body gateway-emblem{% endblock %}
+
+{% block content %}
+<main class="home-container" role="main">
+    <div class="hero">
+        <div class="cross" aria-hidden="true">⚠</div>
+        <h1 class="logo">500</h1>
+        <p class="tagline">El servidor está en sombras</p>
+    </div>
+
+    <div class="login-card" style="max-width: 520px;">
+        <h2>Error interno del servidor</h2>
+        <p style="color: var(--on-surface-variant-elev); margin: 1rem 0 1.5rem;">
+            Nuestros ejecutores están trabajando para restaurar el orden. Por favor intentá de nuevo en unos momentos.
+        </p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="/" class="login-submit" style="text-decoration: none; text-align: center; display: inline-block;">
+                ← Volver al Inicio
+            </a>
+            <button type="button" onclick="location.reload()" class="login-submit" style="background: var(--surface-elev); color: var(--gold-elev); border: 1px solid var(--gold-elev); cursor: pointer;">
+                ↻ Reintentar
+            </button>
+        </div>
+    </div>
+</main>
+{% endblock %}
