@@ -1,11 +1,4 @@
 {
-    "controllers": {
-        "protocol": {
-            "fullQualifiedName": "App\\\\Controller\\\\ProtocolController"
-        },
-        "notification-bell": {
-            "fullQualifiedName": "App\\\\Controller\\\\NotificationBellController"
-        }
-    },
+    "controllers": [],
     "entrypoints": []
 }
