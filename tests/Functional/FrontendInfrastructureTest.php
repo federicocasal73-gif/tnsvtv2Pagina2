@@ -21,16 +21,27 @@ class FrontendInfrastructureTest extends ApiTestCase
         $this->assertNotEmpty($manifest['shortcuts']);
     }
 
-    public function testServiceWorkerFileExists(): void
+    public function testServiceWorkerTemplateExists(): void
     {
         $projectRoot = dirname(__DIR__, 2);
-        $path = $projectRoot . '/public/sw.js';
+        $path = $projectRoot . '/templates/sw.js.twig';
         $this->assertFileExists($path);
 
         $body = file_get_contents($path);
         $this->assertStringContainsString('addEventListener', $body);
         $this->assertStringContainsString('cache', $body);
         $this->assertStringContainsString('offline', $body);
+        $this->assertStringContainsString('{{ cache_version }}', $body);
+    }
+
+    public function testServiceWorkerRouteServesJavascript(): void
+    {
+        $this->client->request('GET', '/sw.js');
+
+        $response = $this->client->getResponse();
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('application/javascript', explode(';', $response->headers->get('Content-Type'))[0]);
+        $this->assertStringContainsString('CACHE_VERSION', $response->getContent());
     }
 
     public function testOfflineFallbackPageRenders(): void

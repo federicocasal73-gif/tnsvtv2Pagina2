@@ -6,12 +6,17 @@
  *   - Static assets (CSS/JS/images): cache-first (instant loads)
  *   - API endpoints (/api/*): network-only (never cache user data)
  *   - Mercure SSE: pass-through (don't intercept)
+ *   - Skip auth endpoints (login, refresh, check)
  *
  * To enable: register this file from JS as `navigator.serviceWorker.register('/sw.js')`
  * The app shell (shell.html.twig) handles the registration.
+ *
+ * Cache versioning:
+ *   CACHE_VERSION is injected by ServiceWorkerController from APP_VERSION,
+ *   so every production deploy automatically invalidates all caches.
  */
 
-const CACHE_VERSION = 'tnsvt-v1';
+const CACHE_VERSION = 'tnsvt-{{ cache_version }}';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 const OFFLINE_URL = '/offline';
@@ -19,20 +24,44 @@ const OFFLINE_URL = '/offline';
 // Assets that should always be cached aggressively
 const PRECACHE_URLS = [
     OFFLINE_URL,
+    '/manifest.json',
+    '/favicon.svg',
+    '/favicon.ico',
+    // Core CSS (public shell + sanctum shell)
     '/assets/styles/tokens.css',
     '/assets/styles/components.css',
+    '/assets/styles/home.css',
+    '/assets/styles/shell.css',
     '/assets/styles/animations.css',
     '/assets/styles/accessibility.css',
-    '/assets/styles/shell.css',
+    // Component CSS (lazy-loaded per-page)
+    '/assets/styles/components/forms.css',
+    '/assets/styles/components/calendar.css',
+    '/assets/styles/components/dashboard.css',
+    '/assets/styles/components/journal.css',
+    '/assets/styles/components/feed.css',
+    '/assets/styles/components/chat.css',
+    '/assets/styles/components/wallet.css',
+    '/assets/styles/components/profile.css',
+    '/assets/styles/components/notifications.css',
+    '/assets/styles/components/settings.css',
+    '/assets/styles/components/api-helper.css',
     '/assets/styles/glow.css',
-    '/manifest.json',
+];
+
+// Auth-related paths that must never be cached
+const NEVER_CACHE_PATHS = [
+    '/api/auth/',
+    '/api/sanctum/',
+    '/sanctum/api/',
 ];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(STATIC_CACHE).then((cache) => {
-            return cache.addAll(PRECACHE_URLS).catch(() => {
+            return cache.addAll(PRECACHE_URLS).catch((err) => {
                 // If any asset fails, just continue — install completes anyway
+                console.warn('[SW] Precache partial failure:', err);
             });
         }).then(() => self.skipWaiting())
     );
@@ -57,8 +86,10 @@ self.addEventListener('fetch', (event) => {
     if (request.method !== 'GET') return;
     if (url.pathname.startsWith('/.well-known/mercure')) return;
     if (url.pathname.startsWith('/api/')) return; // API always live
+    // Never cache auth-related responses
+    if (NEVER_CACHE_PATHS.some(p => url.pathname.startsWith(p))) return;
 
-    // Static assets — cache-first
+    // Static assets — cache-first with background refresh
     if (url.pathname.startsWith('/assets/')) {
         event.respondWith(cacheFirst(request));
         return;
@@ -80,7 +111,7 @@ async function cacheFirst(request) {
     const cache = await caches.open(STATIC_CACHE);
     const cached = await cache.match(request);
     if (cached) {
-        // Refresh in background
+        // Refresh in background (stale-while-revalidate)
         fetch(request).then((response) => {
             if (response.ok) cache.put(request, response.clone());
         }).catch(() => {});
