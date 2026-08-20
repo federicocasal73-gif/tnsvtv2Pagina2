@@ -22,27 +22,9 @@
 {% block content %}
 <div class="max-w-7xl mx-auto dashboard-grid">
 
-    {# ══════ F1.5 — Hero ══════ #}
-    <section class="dashboard-hero" aria-labelledby="hero-title">
-        <h1 id="hero-title" class="hero-title text-cinzel-display">EL CRISTO ÍNTEGRO</h1>
-        <p class="hero-sub">Edición Completa — Trading Neuro-Spiritual Value Theory (2026)</p>
-        <div class="hero-divider" aria-hidden="true"></div>
-    </section>
+    {% include '_partials/dashboard/hero.html.twig' %}
 
-    {# ══════ F1.5 — Sticky Tabs ══════ #}
-    <div class="dashboard-tabs-wrap">
-        <nav class="dashboard-tabs" id="dashboard-tabs-nav" aria-label="Dashboard tabs">
-            {% for key, t in tabs %}
-                <a href="?tab={{ key }}"
-                   class="dashboard-tab {{ tab == key ? 'active' : '' }}"
-                   data-tab="{{ key }}"
-                   {{ tab == key ? 'aria-current="page"' : '' }}>
-                    <span class="material-symbols-elev" aria-hidden="true">{{ t.icon }}</span>
-                    <span class="tab-text">{{ t.label }}</span>
-                </a>
-            {% endfor %}
-        </nav>
-    </div>
+    {% include '_partials/dashboard/tabs.html.twig' with { tabs: tabs, tab: tab } %}
 
     {# ══════ F1.5 — Tab Routing (default: dashboard) ══════ #}
     {% if tab == 'dashboard' %}

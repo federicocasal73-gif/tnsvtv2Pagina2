@@ -1,0 +1,19 @@
+{#
+   dashboard/tabs.html.twig — Dashboard sticky tabs navigation
+   ========================================================
+   Usage:
+     {% include '_partials/dashboard/tabs.html.twig' with { tabs: tabs, tab: tab } %}
+#}
+<div class="dashboard-tabs-wrap">
+    <nav class="dashboard-tabs" id="dashboard-tabs-nav" aria-label="Dashboard tabs">
+        {% for key, t in tabs %}
+            <a href="?tab={{ key }}"
+               class="dashboard-tab {{ tab == key ? 'active' : '' }}"
+               data-tab="{{ key }}"
+               {{ tab == key ? 'aria-current="page"' : '' }}>
+                <span class="material-symbols-elev" aria-hidden="true">{{ t.icon }}</span>
+                <span class="tab-text">{{ t.label }}</span>
+            </a>
+        {% endfor %}
+    </nav>
+</div>
