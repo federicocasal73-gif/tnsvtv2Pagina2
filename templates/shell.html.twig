@@ -232,15 +232,84 @@
             <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Command Center{% endblock %}</h2>
             <p class="text-xs text-[var(--outline-elev)] italic">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
         </div>
-        <div class="flex items-center gap-3">
-            <button class="btn-elev-primary group" title="Invocar Protocolo" aria-label="Invocar Protocolo">
+        <div class="flex items-center gap-3" data-controller="protocol notification-bell">
+            <button type="button" class="btn-elev-primary group" title="Invocar Protocolo" aria-label="Invocar Protocolo" aria-haspopup="dialog" data-action="protocol#onButtonClick">
                 <span class="material-symbols-elev text-base" aria-hidden="true">bolt</span>
                 <span>Invocar Protocolo</span>
             </button>
-            <button class="btn-elev-ghost relative" title="Notificaciones" aria-label="Notificaciones">
-                <span class="material-symbols-elev" aria-hidden="true">notifications</span>
-                <span id="header-notif-badge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[var(--gold-elev)] text-black text-[10px] font-bold px-1">0</span>
-            </button>
+
+            <div class="notif-wrap" data-notification-bell-target="wrap">
+                <button type="button" class="btn-elev-ghost relative" title="Notificaciones" aria-label="Notificaciones" aria-haspopup="menu" aria-expanded="false" data-notification-bell-target="button" data-action="notification-bell#toggle">
+                    <span class="material-symbols-elev relative" aria-hidden="true">notifications</span>
+                    <span id="header-notif-badge" class="hidden" data-notification-bell-target="count">0</span>
+                </button>
+                <div class="notif-popover hidden" data-notification-bell-target="popover" role="menu" aria-label="Notificaciones recientes">
+                    <div class="notif-popover-header">
+                        <span>Notificaciones</span>
+                        <button type="button" class="notif-popover-markall" data-action="notification-bell#markAll">Marcar todas</button>
+                    </div>
+                    <div class="notif-popover-list" data-notification-bell-target="list"></div>
+                    <a href="{{ path('sanctum_notifications') }}" class="notif-popover-footer">Ver todas →</a>
+                </div>
+            </div>
+
+            <div class="protocol-overlay" data-protocol-target="overlay" role="dialog" aria-modal="true" aria-labelledby="protocol-title" tabindex="-1" hidden>
+                <div class="protocol-modal">
+                    <div class="protocol-modal-header">
+                        <h2 id="protocol-title" class="protocol-modal-title">
+                            <span class="material-symbols-elev protocol-modal-icon" aria-hidden="true">shield_person</span>
+                            Protocolo Guardian
+                        </h2>
+                        <button type="button" class="protocol-close" aria-label="Cerrar" data-action="protocol#onClose">
+                            <span class="material-symbols-elev" aria-hidden="true">close</span>
+                        </button>
+                    </div>
+
+                    <div class="protocol-modal-body hidden" data-protocol-target="content">
+                        <div class="protocol-score">
+                            <div class="protocol-score-cell">
+                                <p class="protocol-score-label">Discipline Score</p>
+                                <div class="protocol-score-value" data-protocol-target="scoreValue">--</div>
+                                <div class="protocol-score-sub">/ 100</div>
+                                <div class="tier-badge-elev tier-initiate" data-protocol-target="scoreTier">--</div>
+                            </div>
+                            <div class="protocol-score-breakdown">
+                                <p class="protocol-score-label">Breakdown</p>
+                                <ul data-protocol-target="scoreBreakdown">
+                                    <li class="protocol-breakdown-clear">Sin factores negativos.</li>
+                                </ul>
+                                <p class="protocol-score-computed">Calculado: <span data-protocol-target="scoreComputedAt">--</span></p>
+                            </div>
+                        </div>
+
+                        <div class="protocol-signals">
+                            <div class="protocol-signals-head">
+                                <p class="protocol-score-label">Señales activas</p>
+                                <span class="protocol-count" data-protocol-target="signalCount">0</span>
+                            </div>
+                            <ul data-protocol-target="signalsList">
+                                <li data-protocol-target="signalsEmpty" class="protocol-signal-empty">
+                                    <span class="material-symbols-elev" aria-hidden="true">check_circle</span>
+                                    <p>Todo en orden</p>
+                                    <p class="protocol-signal-empty-sub">Sin señales activas. Tu disciplina está bajo control.</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="protocol-loading hidden" data-protocol-target="loading">
+                        <p class="loading-pulse">Consultando al Guardian...</p>
+                    </div>
+                    <div class="protocol-error hidden" data-protocol-target="error" role="alert">
+                        <span class="material-symbols-elev" aria-hidden="true">error</span>
+                        <p>Error al consultar el Guardian. Probá refrescar.</p>
+                    </div>
+
+                    <div class="protocol-modal-footer">
+                        <a href="{{ path('sanctum_guardian') }}" class="protocol-footer-link">Ver página Guardian →</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -303,20 +372,23 @@
         }
     });
 
-    // Notification badge in sidebar (poll every 60s)
+    // Notification badge in sidebar + topbar (poll every 60s)
     function refreshNotifBadge() {
         if (!window.TNSVT_USER) return;
         fetch('/sanctum/notifications/unread-count')
             .then(function(r) { return r.ok ? r.json() : { count: 0 }; })
             .then(function(data) {
-                var badge = document.getElementById('bell-badge');
-                if (!badge) return;
                 var n = (data && data.count) || 0;
-                if (n > 0) {
-                    badge.textContent = n > 99 ? '99+' : n;
-                    badge.classList.remove('hidden');
-                } else {
-                    badge.classList.add('hidden');
+                var label = n > 99 ? '99+' : n;
+                var badge = document.getElementById('bell-badge');
+                if (badge) {
+                    badge.textContent = label;
+                    badge.classList.toggle('hidden', n === 0);
+                }
+                var headerBadge = document.getElementById('header-notif-badge');
+                if (headerBadge) {
+                    headerBadge.textContent = label;
+                    headerBadge.classList.toggle('hidden', n === 0);
                 }
             }).catch(function() {});
     }
