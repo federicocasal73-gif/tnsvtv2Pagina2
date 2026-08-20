@@ -43,14 +43,8 @@ class LegacyModuleController extends AbstractController
 
 
     #[Route('/trading', name: 'legacy_trading', methods: ['GET'])]
-    public function trading(): Response
+    public function trading(): RedirectResponse
     {
-        return $this->render('legacy/redirect.html.twig', [
-            'title' => 'Trading',
-            'icon' => 'candlestick_chart',
-            'description' => 'Plataforma de trading con cuentas, órdenes y posiciones',
-            'legacy_path' => '/trading',
-            'features' => ['Cuentas', 'Órdenes', 'Posiciones', 'P&L tracking'],
-        ]);
+        return $this->redirectToRoute('sanctum_journal_new');
     }
 }

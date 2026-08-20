@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════════════════════════════
+   Profile / Identidad Celestial — extracted from profile.html.twig
+   ═══════════════════════════════════════════════════════════════ */
+
+.profile-sigil {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1rem;
+}
+.profile-sigil .sigil-rotate {
+    position: absolute;
+    inset: 0;
+    animation: spin-sacred 30s linear infinite;
+}
+.profile-sigil .sigil-pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(242, 202, 80, 0.3);
+    animation: pulse-aura 3s ease-in-out infinite;
+}
+.profile-sigil .sigil-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-elev, #f2ca50), var(--primary-fixed, #ffe088));
+    box-shadow: 0 0 20px rgba(242, 202, 80, 0.5);
+    animation: pulse-gold 2s ease-in-out infinite;
+}
+
+.stat-mini {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+.stat-mini:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(242, 202, 80, 0.2);
+}
+.stat-mini-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gold-elev, #f2ca50);
+}
+.stat-mini-label {
+    font-size: 0.65rem;
+    color: var(--outline-elev, #99907c);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.25rem;
+}
+
+.progress-constellation {
+    position: relative;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 1rem 0 0.5rem;
+}
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-elev, #f2ca50), var(--primary-fixed, #ffe088));
+    border-radius: 2px;
+    position: relative;
+}
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: var(--gold-elev, #f2ca50);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--gold-elev, #f2ca50);
+}
+.progress-fill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s linear infinite;
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+}
+.toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: var(--glass-border-elev, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+}
+.toggle-switch.active {
+    background: var(--gold-elev, #f2ca50);
+}
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: var(--on-surface-elev, #e9def6);
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+.toggle-switch.active::after {
+    transform: translateX(20px);
+}
+
+.danger-zone {
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}

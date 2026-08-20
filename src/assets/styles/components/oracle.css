@@ -1,0 +1,54 @@
+/* ═══════════════════════════════════════════════════════════════
+   Oracle Dashboard — Métricas & Charts
+   extracted from oracle/dashboard.html.twig
+   ═══════════════════════════════════════════════════════════════ */
+
+.oracle-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.oracle-card:hover {
+    border-color: rgba(242, 202, 80, 0.2);
+    box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
+}
+.oracle-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold-elev, #f2ca50), transparent);
+    opacity: 0.5;
+}
+.oracle-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--outline, #99907c);
+}
+.oracle-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--gold-elev, #f2ca50);
+}
+.heatmap-cell {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.heatmap-cell:hover {
+    transform: scale(1.1);
+    filter: brightness(1.3);
+}
+.gauge-container {
+    filter: drop-shadow(0 0 10px rgba(242, 202, 80, 0.3));
+}

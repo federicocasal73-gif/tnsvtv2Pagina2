@@ -10,11 +10,11 @@
 {% set is_auth = app.user is not null %}
 
 {# FASE 0 — Bring the shader stars to full opacity for the gateway. #}
-{% block background %}
-    <style>
-        :root { --bg-stars-opacity: 1; --bg-stars-density: 45; }
-    </style>
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/components/gateway.css') }}" />
 {% endblock %}
+
+{% block background %}{% endblock %}
 
 {# FASE 0 — Emblema 3D del gateway (3D icosaedro dorado, hero section). #}
 {% block gateway_emblem %}{% endblock %}
@@ -207,29 +207,30 @@
 
     <script>
     (function() {
-        apiFetch('/api/journal/stats', { redirectOn401: false, silent: true }).then(r => {
-            if (!r || !r.data) return;
-            if (r.data.total !== undefined) {
-                const el = document.getElementById('stat-trades');
-                if (el) el.textContent = r.data.total || 0;
-            }
-            if (r.data.total_pnl !== undefined) {
-                const el = document.getElementById('stat-pnl');
-                if (el) {
-                    const pnl = parseFloat(r.data.total_pnl);
-                    el.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
-                    el.style.background = pnl >= 0
-                        ? 'linear-gradient(135deg, #4ade80, #22c55e)'
-                        : 'linear-gradient(135deg, #f87171, #ef4444)';
-                    el.style.webkitBackgroundClip = 'text';
-                }
-            }
-        }).catch(() => {});
+        apiFetch('/api/public/stats', { redirectOn401: false, silent: true }).then(r => {
+            if (!r || !r.data || !r.data.stats) return;
+            const stats = r.data.stats;
 
-        apiFetch('/api/users/all', { redirectOn401: false, silent: true }).then(r => {
-            if (!r || !r.data || !r.data.users) return;
-            const el = document.getElementById('stat-traders');
-            if (el) el.textContent = r.data.users.length || 0;
+            // Traders Activos
+            const elTraders = document.getElementById('stat-traders');
+            if (elTraders && stats.active_traders !== undefined) {
+                elTraders.textContent = stats.active_traders;
+            }
+
+            // Trades Hoy
+            const elTrades = document.getElementById('stat-trades');
+            if (elTrades && stats.trades_today !== undefined) {
+                elTrades.textContent = stats.trades_today;
+            }
+
+            // PnL Global
+            const elPnl = document.getElementById('stat-pnl');
+            if (elPnl && stats.global_pnl !== undefined) {
+                const pnl = parseFloat(stats.global_pnl);
+                elPnl.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
+                elPnl.className = elPnl.className.replace(/\b(pnl-pos|pnl-neg)\b/g, '').trim();
+                elPnl.classList.add(pnl >= 0 ? 'pnl-pos' : 'pnl-neg');
+            }
         }).catch(() => {});
 
         // ─── Topbar scroll opacity ───

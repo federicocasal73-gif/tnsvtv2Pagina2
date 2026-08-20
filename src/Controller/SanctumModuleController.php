@@ -23,8 +23,7 @@ use Symfony\Component\Routing\Attribute\Route;
  * Each module here is fully functional in v2 (uses v2 entities/repositories).
  * The templates extend shell.html.twig and use the apiFetch helper.
  *
- * Remaining legacy modules (still in LegacyModuleController):
- *   - /trading
+ * /trading redirects to /journal/new (record-only) per ROADMAP decision.
  */
 class SanctumModuleController extends AbstractController
 {

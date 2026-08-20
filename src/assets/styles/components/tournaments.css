@@ -1,0 +1,6 @@
+/* Tournaments — extracted from sanctum/tournaments.html.twig */
+.tournament-card { padding:1rem; }
+.tournament-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; }
+.tournament-title { font-weight:600; font-size:0.9375rem; }
+.tournament-prize { font-size:0.875rem; color:var(--gold-elev); font-weight:600; }
+.tournament-meta { display:flex; gap:1rem; font-size:0.75rem; color:var(--outline-elev); }

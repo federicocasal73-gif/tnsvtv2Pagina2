@@ -167,16 +167,16 @@
     }
 
     async function deleteTask(id) {
-        if (!confirm('¿Eliminar esta tarea? Esta acción no se puede deshacer.')) return;
+        if (!await apiConfirm('¿Eliminar esta tarea? Esta acción no se puede deshacer.', { title: 'Eliminar tarea', variant: 'danger' })) return;
         try {
             const r = await fetch('/sanctum/api/tasks/' + id, { method: 'DELETE' });
             const data = await r.json();
             if (data.success) {
                 await loadTasks();
             } else {
-                alert('Error: ' + (data.error || 'desconocido'));
+                apiToast('Error: ' + (data.error || 'desconocido'), 'error');
             }
-        } catch (e) { alert('Error: ' + e.message); }
+        } catch (e) { apiToast('Error: ' + e.message, 'error'); }
     }
 
     async function reorderTask(id, direction) {

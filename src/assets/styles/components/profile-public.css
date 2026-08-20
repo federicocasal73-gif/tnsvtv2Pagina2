@@ -1,0 +1,11 @@
+/* Profile Public — extracted from sanctum/profile_public.html.twig */
+.profile-header { text-align: center; padding: 2rem; }
+.profile-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 1rem; background: linear-gradient(135deg,var(--gold-elev),var(--gold-bright-elev)); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; overflow: hidden; }
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-name { font-size: 1.5rem; font-weight: 700; }
+.profile-code { color: var(--outline-elev); font-size: 0.875rem; }
+.profile-tier { display: inline-block; margin-top: 0.5rem; }
+.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem; }
+.profile-stat { text-align: center; padding: 1rem; background: var(--glass-bg-elev); border-radius: 0.75rem; border: 1px solid var(--glass-border-elev); }
+.profile-stat-value { font-size: 1.25rem; font-weight: 700; color: var(--gold-elev); }
+.profile-stat-label { font-size: 0.7rem; color: var(--outline-elev); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }

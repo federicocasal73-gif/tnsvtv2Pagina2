@@ -8,7 +8,7 @@
 
     <div class="home-container">
         <div class="hero">
-            <div class="cross">✝</div>
+            <div class="cross" aria-hidden="true">✝</div>
             <h1 class="logo">T.N.S.V.T</h1>
             <p class="tagline">Entrar al Sanctum</p>
         </div>
@@ -35,8 +35,8 @@
                 <button type="submit" class="login-submit" id="login-submit-btn">
                     <span id="login-btn-text">Entrar</span>
                 </button>
-                <div class="login-error" id="login-error"></div>
-                <div class="login-success" id="login-success"></div>
+                <div class="login-error" id="login-error" role="alert" aria-live="assertive"></div>
+                <div class="login-success" id="login-success" role="status" aria-live="polite"></div>
             </form>
             <div class="login-hint">
                 <strong>Cómo funciona:</strong> ADMIN01 = admin (necesita contraseña).<br>

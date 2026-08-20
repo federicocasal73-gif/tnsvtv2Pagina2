@@ -1,0 +1,6 @@
+/* Game — extracted from sanctum/game.html.twig */
+.game-lb-row { display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0.75rem; }
+.game-lb-row:hover { background:var(--glass-bg-elev); border-radius:0.5rem; }
+.game-lb-pos { width:28px; text-align:center; font-weight:700; color:var(--gold-elev); }
+.game-lb-name { flex:1; font-size:0.875rem; }
+.game-lb-score { font-weight:600; font-size:0.875rem; color:var(--gold-elev); }

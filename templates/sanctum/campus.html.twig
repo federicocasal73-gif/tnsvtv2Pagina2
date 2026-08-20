@@ -36,21 +36,6 @@
     </div>
 </div>
 
-<style>
-.campus-card { padding:1rem; transition:transform 0.2s, box-shadow 0.2s; }
-.campus-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
-.campus-emoji { font-size:2rem; margin-bottom:0.5rem; }
-.campus-title { font-weight:600; font-size:0.9375rem; margin-bottom:0.25rem; }
-.campus-desc { font-size:0.8rem; color:var(--outline-elev); line-height:1.4; }
-.campus-progress { height:4px; border-radius:2px; background:var(--glass-bg-strong-elev); overflow:hidden; margin-top:0.75rem; }
-.campus-progress-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--gold-elev),var(--gold-bright-elev)); }
-.assignment-item { padding:0.75rem 1rem; display:flex; align-items:center; gap:0.75rem; }
-.assignment-status { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-.assignment-status.pending { background:#fbbf24; }
-.assignment-status.submitted { background:#34d399; }
-.assignment-status.graded { background:var(--gold-elev); }
-</style>
-
 <script>
 (function() {
     'use strict';
@@ -65,9 +50,12 @@
         const pct = r.progress || 0;
         progressBar.style.width = pct + '%';
         progressPct.textContent = pct + '% completado';
-        document.getElementById('stat-courses').textContent = r.courses || 0;
-        document.getElementById('stat-lessons').textContent = r.lessons_completed + '/' + r.lessons_total;
-        document.getElementById('stat-assignments').textContent = r.assignments_pending || 0;
+        const _elStatCourses = document.getElementById('stat-courses');
+        if (_elStatCourses) _elStatCourses.textContent = r.courses || 0;
+        const _elStatLessons = document.getElementById('stat-lessons');
+        if (_elStatLessons) _elStatLessons.textContent = r.lessons_completed + '/' + r.lessons_total;
+        const _elStatAssignments = document.getElementById('stat-assignments');
+        if (_elStatAssignments) _elStatAssignments.textContent = r.assignments_pending || 0;
     }).catch(() => {});
 
     // Load courses

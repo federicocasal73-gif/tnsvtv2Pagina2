@@ -22,6 +22,32 @@
 @import './components/dashboard.css';
 @import './components/journal.css';
 @import './components/calendar.css';
+@import './components/social.css';
+@import './components/users-admin.css';
+@import './components/notifications.css';
+@import './components/profile.css';
+@import './components/bookings-admin.css';
+@import './components/hub.css';
+@import './components/api-helper.css';
+@import './components/tabbar.css';
+@import './components/oracle.css';
+@import './components/audit.css';
+@import './components/settings.css';
+@import './components/leaderboard.css';
+@import './components/campus.css';
+@import './components/wallet.css';
+@import './components/profile-public.css';
+@import './components/shop.css';
+@import './components/honor.css';
+@import './components/duels.css';
+@import './components/tournaments.css';
+@import './components/game.css';
+@import './components/clan.css';
+@import './components/chat.css';
+@import './components/journal-new.css';
+@import './components/calendar-academic.css';
+@import './components/feed.css';
+@import './components/macro-dashboard.css';
 
 /* ═══════════════════════════════════════════════════════════════
    KEYFRAMES
@@ -590,6 +616,14 @@
     background: radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, transparent 70%);
 }
 
+/* KPI Header — flex layout for label + badge row (moved from glow.css) */
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm-elev);
+}
+
 .kpi-label {
     font-size: 0.7rem;
     font-weight: 600;
@@ -701,3 +735,31 @@ header {
 .kpi-card:nth-child(2) { animation-delay: 0.05s; }
 .kpi-card:nth-child(3) { animation-delay: 0.1s; }
 .kpi-card:nth-child(4) { animation-delay: 0.15s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   QUICK ACTION BUTTON — base layout (from glow.css universal)
+   Hover gradient lives in v2-sparklines.css
+   ═══════════════════════════════════════════════════════════════ */
+
+.quick-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs-elev);
+    padding: var(--space-md-elev);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md-elev);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--on-surface-elev);
+}
+.quick-action .material-symbols-elev {
+    color: var(--primary-elev);
+    font-size: 1.5rem;
+}
+.quick-action span:last-child {
+    font-size: 0.75rem;
+    font-weight: 500;
+}

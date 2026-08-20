@@ -34,7 +34,8 @@
             const json = await r.json();
             if (!json.success) throw new Error('API error');
             render(json.data);
-            document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString();
+            const _elLastRefresh = document.getElementById('last-refresh');
+            if (_elLastRefresh) _elLastRefresh.textContent = new Date().toLocaleTimeString();
         } catch (e) {
             grid.innerHTML = '<p class="col-span-full text-red-400 text-center py-8">Error: ' + e.message + '</p>';
         }
@@ -49,7 +50,8 @@
             ${renderSecurity(d.security, d.recent_audit)}
             ${renderErrors(d.recent_errors)}
         `;
-        document.getElementById('status-grid').innerHTML = html;
+        const _elStatusGrid = document.getElementById('status-grid');
+        if (_elStatusGrid) _elStatusGrid.innerHTML = html;
     }
 
     function renderServer(s) {

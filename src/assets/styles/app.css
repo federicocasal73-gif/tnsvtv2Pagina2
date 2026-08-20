@@ -16,8 +16,6 @@
 /* Pillar B — APK auxiliary styles (gated by body.is-apk / body:not(.is-apk))
    Copied from public/styles/ for single-bundle compilation */
 @import './apk-layout-fix.css';
-@import './web-glowup.css';
-@import './apk-glowup.css';
 /* Pillar B — Modular components (extracted from inline styles in base.html.twig) */
 @import './components/mf-module.css';
 @import './components/offline-banner.css';

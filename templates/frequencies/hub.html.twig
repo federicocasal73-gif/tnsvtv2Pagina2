@@ -6,147 +6,6 @@
 {% block topbar_subtitle %}Dimensión Sonora · 432Hz Solfeggio{% endblock %}
 
 {% block stylesheets %}
-<style>
-    .sanctuary-card {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .sanctuary-card:hover {
-        border-color: rgba(242, 202, 80, 0.2);
-        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
-    }
-    .frequency-visualizer {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 1;
-        max-width: 400px;
-        margin: 0 auto 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .freq-ring {
-        position: absolute;
-        border-radius: 50%;
-        border: 1px solid rgba(242, 202, 80, 0.2);
-        animation: pulse-aura 4s ease-in-out infinite;
-    }
-    .freq-ring-1 { width: 80%; height: 80%; animation-delay: 0s; }
-    .freq-ring-2 { width: 60%; height: 60%; animation-delay: 0.5s; border-color: rgba(242, 202, 80, 0.3); }
-    .freq-ring-3 { width: 40%; height: 40%; animation-delay: 1s; border-color: rgba(242, 202, 80, 0.4); }
-    .freq-ring-4 { width: 20%; height: 20%; animation-delay: 1.5s; border-color: rgba(242, 202, 80, 0.5); }
-    .freq-center { text-align: center; z-index: 10; }
-    .freq-value {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 3.5rem;
-        font-weight: 700;
-        color: var(--gold-elev, #f2ca50);
-        text-shadow: 0 0 20px rgba(242, 202, 80, 0.5);
-    }
-    .freq-label {
-        font-size: 0.7rem;
-        color: var(--outline-elev, #99907c);
-        text-transform: uppercase;
-        letter-spacing: 0.15em;
-        margin-top: 0.5rem;
-    }
-    .freq-btn {
-        width: 100%;
-        padding: 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.02);
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-align: center;
-    }
-    .freq-btn:hover {
-        border-color: rgba(242, 202, 80, 0.3);
-        background: rgba(242, 202, 80, 0.05);
-        transform: translateY(-2px);
-    }
-    .freq-btn.active {
-        border-color: var(--gold-elev, #f2ca50);
-        background: rgba(242, 202, 80, 0.1);
-        box-shadow: 0 0 15px rgba(242, 202, 80, 0.2);
-    }
-    .freq-btn-value {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--on-surface-elev);
-    }
-    .freq-btn-value.active { color: var(--gold-elev, #f2ca50); }
-    .freq-btn-label {
-        font-size: 0.65rem;
-        color: var(--outline-elev, #99907c);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-top: 0.25rem;
-    }
-    .player-progress {
-        width: 100%;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-        overflow: hidden;
-        margin-top: 0.5rem;
-    }
-    .player-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--gold-elev, #f2ca50), var(--primary-fixed, #ffe088));
-        border-radius: 2px;
-        transition: width 0.3s ease;
-    }
-    .mini-player {
-        position: fixed;
-        bottom: 5rem;
-        right: 1rem;
-        z-index: 40;
-        background: rgba(34, 29, 46, 0.9);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(242, 202, 80, 0.2);
-        border-radius: 1rem;
-        padding: 0.75rem 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    }
-    .mini-player-icon {
-        width: 2rem;
-        height: 2rem;
-        border-radius: 50%;
-        background: var(--gold-elev, #f2ca50);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: pulse-gold 2s infinite;
-    }
-    .timer-btn {
-        flex: 1;
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.03);
-        color: var(--on-surface-elev);
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    .timer-btn:hover { background: rgba(255, 255, 255, 0.08); }
-    .timer-btn.active {
-        border-color: var(--gold-elev, #f2ca50);
-        background: rgba(242, 202, 80, 0.1);
-        color: var(--gold-elev, #f2ca50);
-    }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -325,8 +184,10 @@
                         grid.querySelectorAll('.preset-card').forEach(c => c.classList.remove('ring-2', 'ring-[var(--gold-elev)]'));
                         card.classList.add('ring-2', 'ring-[var(--gold-elev)]');
                         selectedFrequency = { id: parseInt(card.dataset.id), frequency: parseInt(card.dataset.freq), name: card.dataset.name, type: 'preset' };
-                        document.getElementById('current-freq').textContent = card.dataset.freq + ' Hz';
-                        document.getElementById('current-freq-name').textContent = card.dataset.name;
+                        const freqEl = document.getElementById('current-freq');
+                        const freqNameEl = document.getElementById('current-freq-name');
+                        if (freqEl) freqEl.textContent = card.dataset.freq + ' Hz';
+                        if (freqNameEl) freqNameEl.textContent = card.dataset.name;
                     });
                 });
             }
@@ -350,8 +211,10 @@
                 list.querySelectorAll('button').forEach(btn => {
                     btn.addEventListener('click', () => {
                         selectedFrequency = { id: parseInt(btn.dataset.id), frequency: parseInt(btn.dataset.freq), name: btn.dataset.name, type: 'user' };
-                        document.getElementById('current-freq').textContent = btn.dataset.freq + ' Hz';
-                        document.getElementById('current-freq-name').textContent = btn.dataset.name;
+                        const freqEl = document.getElementById('current-freq');
+                        const freqNameEl = document.getElementById('current-freq-name');
+                        if (freqEl) freqEl.textContent = btn.dataset.freq + ' Hz';
+                        if (freqNameEl) freqNameEl.textContent = btn.dataset.name;
                     });
                 });
             }
@@ -363,9 +226,12 @@
             const r = await fetch('/api/frequencies/stats');
             const data = await r.json();
             if (data.success) {
-                document.getElementById('stat-minutes').textContent = data.totalMinutes;
-                document.getElementById('stat-hours').textContent = data.totalHours;
-                document.getElementById('stat-active').textContent = data.activeSessions;
+                const minEl = document.getElementById('stat-minutes');
+                const hrsEl = document.getElementById('stat-hours');
+                const actEl = document.getElementById('stat-active');
+                if (minEl) minEl.textContent = data.totalMinutes;
+                if (hrsEl) hrsEl.textContent = data.totalHours;
+                if (actEl) actEl.textContent = data.activeSessions;
             }
         } catch (e) { console.error(e); }
     }
@@ -373,18 +239,18 @@
     async function addMyFreq() {
         const name = document.getElementById('my-freq-name').value.trim();
         const hz = parseInt(document.getElementById('my-freq-hz').value);
-        if (!name || !hz || hz < 50 || hz > 2000) { alert('Nombre y Hz (50-2000) requeridos'); return; }
+        if (!name || !hz || hz < 50 || hz > 2000) { apiToast('Nombre y Hz (50-2000) requeridos', 'warning'); return; }
         const r = await fetch('/api/frequencies/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, frequency: hz}) });
         const data = await r.json();
         if (data.success) {
             document.getElementById('my-freq-name').value = '';
             document.getElementById('my-freq-hz').value = '';
             await loadMyFreqs();
-        } else alert('Error: ' + data.error);
+        } else apiToast('Error: ' + data.error, 'error');
     }
 
     async function startSession() {
-        if (!selectedFrequency) { alert('Selecciona una frecuencia primero'); return; }
+        if (!selectedFrequency) { apiToast('Selecciona una frecuencia primero', 'warning'); return; }
         try {
             // Create session
             const r = await fetch('/api/frequencies/session/start', {
@@ -396,7 +262,7 @@
                 })
             });
             const data = await r.json();
-            if (!data.success) { alert('Error: ' + data.error); return; }
+            if (!data.success) { apiToast('Error: ' + data.error, 'error'); return; }
             currentSessionId = data.id;
 
             // Start Web Audio
@@ -423,16 +289,18 @@
                 const h = Math.floor(secondsElapsed / 3600);
                 const m = Math.floor((secondsElapsed % 3600) / 60);
                 const s = secondsElapsed % 60;
-                document.getElementById('timer-display').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+                const timerEl = document.getElementById('timer-display');
+                if (timerEl) timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
             }, 1000);
-        } catch (e) { alert('Error: ' + e.message); }
+        } catch (e) { apiToast('Error: ' + e.message, 'error'); }
     }
 
     async function stopSession() {
         clearInterval(timerInterval);
         document.getElementById('play-btn').disabled = false;
         document.getElementById('stop-btn').disabled = true;
-        document.getElementById('timer-display').textContent = '';
+        const timerEl = document.getElementById('timer-display');
+        if (timerEl) timerEl.textContent = '';
         if (oscillator) {
             try { gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5); } catch (e) {}
             setTimeout(() => { try { oscillator.stop(); } catch (e) {} }, 600);

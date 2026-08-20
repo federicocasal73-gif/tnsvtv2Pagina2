@@ -23,11 +23,21 @@
             <p class="kpi-value gold" id="stat-total">0</p>
         </div>
         <div class="glass-card-elev text-center">
+            <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">check_circle</span>
+            <p class="kpi-label mt-2">Wins</p>
+            <p class="kpi-value gold" id="stat-wins">0</p>
+        </div>
+        <div class="glass-card-elev text-center">
+            <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">cancel</span>
+            <p class="kpi-label mt-2">Losses</p>
+            <p class="kpi-value gold" id="stat-losses">0</p>
+        </div>
+        <div class="glass-card-elev text-center">
             <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">trending_up</span>
             <p class="kpi-label mt-2">Win Rate</p>
             <p class="kpi-value gold" id="stat-winrate">0%</p>
         </div>
-        <div class="glass-card-elev text-center col-span-2">
+        <div class="glass-card-elev text-center col-span-2 md:col-span-4">
             <span class="material-symbols-outlined text-[var(--gold-elev)] text-2xl opacity-50">payments</span>
             <p class="kpi-label mt-2">PnL Neto Total</p>
             <p class="text-4xl font-bold text-[var(--gold-elev)] mt-1" id="stat-pnl">$0</p>
@@ -45,15 +55,36 @@
                 <button class="filter-pill" data-range="7">7d</button>
                 <button class="filter-pill active" data-range="30">30d</button>
                 <button class="filter-pill" data-range="90">90d</button>
+                <script>
+                // URL state for range filter
+                (function() {
+                    const params = new URLSearchParams(location.search);
+                    const r = params.get('range');
+                    if (r && ['7','30','90'].includes(r)) {
+                        document.querySelectorAll('.filter-pill[data-range]').forEach(b => {
+                            b.classList.toggle('active', b.dataset.range === r);
+                        });
+                    }
+                    document.addEventListener('click', e => {
+                        const btn = e.target.closest('.filter-pill[data-range]');
+                        if (!btn) return;
+                        document.querySelectorAll('.filter-pill[data-range]').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const url = new URL(location.href);
+                        url.searchParams.set('range', btn.dataset.range);
+                        history.replaceState(null, '', url);
+                    });
+                })();
+                </script>
             </div>
         </div>
         <div class="journal-equity">
-            <svg class="w-full h-full" preserveaspectratio="none" viewBox="0 0 400 100">
+            <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 100">
                 <defs>
-                    <lineargradient id="equityGradient" x1="0" x2="0" y1="0" y2="1">
+                    <linearGradient id="equityGradient" x1="0" x2="0" y1="0" y2="1">
                         <stop offset="0%" stop-color="#f2ca50" stop-opacity="0.3"/>
                         <stop offset="100%" stop-color="#f2ca50" stop-opacity="0"/>
-                    </lineargradient>
+                    </linearGradient>
                 </defs>
                 <path class="reveal-path drop-shadow-[0_0_8px_rgba(242,202,80,0.5)]"
                       d="M0,80 Q50,75 100,85 T200,60 T300,40 T400,20"
@@ -106,15 +137,15 @@
 </div>
 
 {# ─── New/Edit Trade Modal ─── #}
-<div id="trade-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:100; align-items:center; justify-content:center; padding:1rem;">
-    <div class="glass-card-elev" style="width:100%; max-width:540px; max-height:90vh; overflow-y:auto;">
+<div id="trade-modal" class="trade-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="trade-modal-title" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(8px); z-index:100; align-items:center; justify-content:center; padding:1rem;">
+    <div class="trade-modal-content glass-card-elev" style="width:100%; max-width:540px; max-height:90vh; overflow-y:auto;">
         <div class="flex items-center justify-between p-5 border-b border-[var(--glass-border-elev)]">
             <h2 class="text-lg font-semibold flex items-center gap-2">
                 <span class="material-symbols-elev text-[var(--gold-elev)]">edit_note</span>
                 <span id="trade-modal-title">Nuevo Trade</span>
             </h2>
-            <button type="button" data-action="close-trade-modal" class="text-[var(--outline-elev)] hover:text-white">
-                <span class="material-symbols-elev">close</span>
+            <button type="button" data-action="close-trade-modal" class="text-[var(--outline-elev)] hover:text-white" aria-label="Cerrar">
+                <span class="material-symbols-elev" aria-hidden="true">close</span>
             </button>
         </div>
         <form id="trade-form" class="p-5 space-y-3">
@@ -201,6 +232,7 @@
     const form = document.getElementById('trade-form');
     const modalTitle = document.getElementById('trade-modal-title');
     const errEl = document.getElementById('trade-form-error');
+    const tradeModal = apiSetupModal(modal);
 
     function currentUserCode() {
         return (window.TNSVT_USER && window.TNSVT_USER.code) || '';
@@ -230,18 +262,17 @@
             modalTitle.textContent = 'Nuevo Trade';
             document.getElementById('trade-date').value = new Date().toISOString().slice(0, 16);
         }
-        modal.style.display = 'flex';
-        setTimeout(() => document.getElementById('trade-asset').focus(), 100);
+        tradeModal.open();
     }
 
     function closeModal() {
-        modal.style.display = 'none';
+        tradeModal.close();
     }
 
     async function loadTrades() {
         const r = await apiFetch('/api/journal?user_code=' + currentUserCode());
         if (!r.ok || !r.data || !r.data.success) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12">Sin datos disponibles</p>';
+            apiEmpty(listEl, { icon: 'cloud_off', message: 'Sin datos disponibles' });
             return;
         }
         const trades = r.data.trades || [];
@@ -254,7 +285,12 @@
         document.getElementById('journal-count').textContent = trades.length + ' trades';
 
         if (trades.length === 0) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12">Sin trades. Click "Nuevo Trade" para empezar.</p>';
+            apiEmpty(listEl, {
+                icon: 'edit_note',
+                message: 'Sin trades registrados',
+                description: 'Hacé click en "Nuevo Trade" para empezar tu bitácora.',
+                size: 'md'
+            });
             return;
         }
 
@@ -314,7 +350,7 @@
     }
 
     async function deleteTrade(id) {
-        if (!confirm('¿Eliminar este trade?')) return;
+        if (!await apiConfirm('¿Eliminar este trade?', { title: 'Eliminar trade', variant: 'danger' })) return;
         const r = await apiFetch('/api/journal/' + id, { method: 'DELETE' });
         if (r.ok && r.data && r.data.success) {
             if (window.apiToast) apiToast('Trade eliminado', 'success');
@@ -326,9 +362,9 @@
     }
 
     const JOURNAL_SEVERITY_VISUAL = {
-        danger:  { icon: 'error',   color: '#f87171' },
-        warning: { icon: 'warning', color: 'var(--gold-elev)' },
-        info:    { icon: 'info',    color: 'var(--violet)' },
+        danger:  { icon: 'error',   color: 'var(--error-elev)' },
+        warning: { icon: 'warning', color: 'var(--warning-elev)' },
+        info:    { icon: 'info',    color: 'var(--violet-elev)' },
     };
 
     async function loadGuardianBanner() {
@@ -372,7 +408,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-new-trade').addEventListener('click', () => openModal(null));
         document.querySelectorAll('[data-action="close-trade-modal"]').forEach(b => b.addEventListener('click', closeModal));
-        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+        // Click-outside + Escape handled by apiSetupModal
         form.addEventListener('submit', saveTrade);
 
         listEl.addEventListener('click', (e) => {
@@ -399,9 +435,7 @@
             }
         });
 
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
-        });
+        // Escape handled by apiSetupModal
 
         // Wait for TNSVT_USER (set by shell.html.twig after /api/auth/check resolves)
         function boot() {

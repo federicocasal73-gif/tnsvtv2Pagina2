@@ -109,18 +109,24 @@
             ]);
 
             if (!signalsRes.ok || !scoreRes.ok) {
-                document.getElementById('loading-state').classList.add('hidden');
-                document.getElementById('error-state').classList.remove('hidden');
+                const _elLoadingState = document.getElementById('loading-state');
+                if (_elLoadingState) _elLoadingState.classList.add('hidden');
+                const _elErrorState = document.getElementById('error-state');
+                if (_elErrorState) _elErrorState.classList.remove('hidden');
                 return;
             }
 
             renderScore(scoreRes.data);
             renderSignals(signalsRes.data.signals || []);
 
-            document.getElementById('loading-state').classList.add('hidden');
-            document.getElementById('error-state').classList.add('hidden');
-            document.getElementById('guardian-content').classList.remove('hidden');
-            document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString();
+            const _elLoadingState = document.getElementById('loading-state');
+            if (_elLoadingState) _elLoadingState.classList.add('hidden');
+            const _elErrorState = document.getElementById('error-state');
+            if (_elErrorState) _elErrorState.classList.add('hidden');
+            const _elGuardianContent = document.getElementById('guardian-content');
+            if (_elGuardianContent) _elGuardianContent.classList.remove('hidden');
+            const _elLastRefresh = document.getElementById('last-refresh');
+            if (_elLastRefresh) _elLastRefresh.textContent = new Date().toLocaleTimeString();
         }
 
         function renderScore(data) {

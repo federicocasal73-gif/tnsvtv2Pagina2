@@ -5,406 +5,7 @@
 {% block topbar_title %}Hilos del Mundo{% endblock %}
 {% block topbar_subtitle %}El Pulso del Mercado · Macro Calendario{% endblock %}
 
-{% block stylesheets %}
-<style>
-    .macro-card {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(24px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-    }
-    .macro-card:hover {
-        border-color: rgba(242, 202, 80, 0.2);
-        box-shadow: 0 0 25px rgba(242, 202, 80, 0.1);
-    }
-    .nont-trade-banner {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(24px);
-        border: 1px solid rgba(242, 202, 80, 0.2);
-        border-radius: 1rem;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        position: relative;
-        overflow: hidden;
-    }
-    .nont-trade-banner.locked {
-        border-color: rgba(248, 113, 113, 0.3);
-        background: rgba(248, 113, 113, 0.05);
-    }
-    .nont-trade-banner.locked::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, var(--error, #f87171), transparent);
-    }
-    .countdown-display {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--gold-elev, #f2ca50);
-        text-shadow: 0 0 20px rgba(242, 202, 80, 0.4);
-        animation: countdown-pulse 2s ease-in-out infinite;
-    }
-    .countdown-display.locked {
-        color: var(--error, #f87171);
-        text-shadow: 0 0 20px rgba(248, 113, 113, 0.4);
-    }
-    .countdown-block {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(242, 202, 80, 0.2);
-        border-radius: 0.75rem;
-        padding: 0.75rem 1.25rem;
-        text-align: center;
-        min-width: 80px;
-    }
-    .countdown-block.locked {
-        border-color: rgba(248, 113, 113, 0.3);
-    }
-    .countdown-block-value {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--gold-elev, #f2ca50);
-    }
-    .countdown-block.locked .countdown-block-value {
-        color: var(--error, #f87171);
-    }
-    .countdown-block-label {
-        font-size: 0.6rem;
-        color: var(--outline-elev, #99907c);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        margin-top: 0.25rem;
-    }
-    .macro-event-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 0.75rem;
-        padding: 1rem;
-        transition: all 0.2s ease;
-        border-left-width: 3px;
-    }
-    .macro-event-card:hover {
-        background: rgba(255, 255, 255, 0.05);
-    }
-    .macro-event-card.high-impact {
-        border-left-color: var(--gold-elev, #f2ca50);
-    }
-    .macro-event-card.medium-impact {
-        border-left-color: rgba(242, 202, 80, 0.5);
-    }
-    .macro-event-card.low-impact {
-        border-left-color: rgba(255, 255, 255, 0.2);
-    }
-    .impact-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    .impact-dot.high { background: var(--error, #f87171); }
-    .impact-dot.medium { background: var(--warning, #fbbf24); }
-    .impact-dot.low { background: var(--success, #4ade80); }
-    .lock-overlay {
-        position: absolute;
-        inset: 0;
-        backdrop-filter: blur(8px);
-        background: rgba(5, 3, 8, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 1rem;
-        z-index: 10;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-    }
-    .lock-overlay.active {
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    /* ══════ F3 — Bento Grid Macro ══════ */
-    .bento-grid-f3 .bento-card {
-        background: var(--glass-bg-elev);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 1rem;
-        padding: 1.25rem 1.4rem;
-        position: relative;
-        overflow: hidden;
-    }
-
-    /* F7 — Timezone selector + freshness indicator */
-    .bento-tz {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.7rem;
-        padding: 0.25rem 0.5rem;
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.4rem;
-        color: var(--on-surface-elev);
-        cursor: pointer;
-        transition: border-color 0.15s;
-    }
-    .bento-tz:hover, .bento-tz:focus { border-color: var(--gold-elev); outline: none; }
-    #bento-last-update {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.7rem;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-    }
-    #bento-last-update.stale { color: #fbbf24; opacity: 1; }
-        transition: border-color 0.2s ease, transform 0.2s ease;
-    }
-    .bento-grid-f3 .bento-card::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, rgba(242, 202, 80, 0.5), transparent);
-    }
-    .bento-grid-f3 .bento-card:hover { border-color: rgba(242, 202, 80, 0.25); }
-    .bento-card-critical::before { background: linear-gradient(90deg, transparent, #f87171, transparent); }
-    .bento-card-window::before   { background: linear-gradient(90deg, transparent, var(--gold-elev), transparent); }
-    .bento-card-pairs::before    { background: linear-gradient(90deg, transparent, #8a3cff, transparent); }
-    .bento-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    .bento-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.65rem;
-        font-weight: 600;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--outline-elev);
-    }
-    .bento-eyebrow .material-symbols-outlined { font-size: 1rem; }
-    .bento-card-title {
-        font-family: 'Cinzel', serif;
-        font-size: 1.05rem;
-        font-weight: 600;
-        color: var(--gold-elev);
-        margin: 0.3rem 0 0.25rem;
-        line-height: 1.2;
-    }
-    .bento-card-meta {
-        font-size: 0.75rem;
-        color: var(--outline-elev);
-        margin: 0 0 0.75rem 0;
-    }
-    .bento-impact-pill {
-        font-size: 0.65rem;
-        font-weight: 700;
-        padding: 0.2rem 0.5rem;
-        border-radius: 9999px;
-        background: rgba(248, 113, 113, 0.18);
-        color: #f87171;
-        border: 1px solid rgba(248, 113, 113, 0.4);
-        letter-spacing: 0.05em;
-    }
-    .bento-impact-pill.muted { background: rgba(255,255,255,0.05); color: var(--outline-elev); border-color: var(--glass-border-elev); }
-    .bento-status-pill {
-        font-size: 0.65rem;
-        font-weight: 700;
-        padding: 0.2rem 0.55rem;
-        border-radius: 9999px;
-        background: rgba(242, 202, 80, 0.15);
-        color: var(--gold-elev);
-        border: 1px solid rgba(242, 202, 80, 0.4);
-        letter-spacing: 0.08em;
-    }
-    .bento-status-pill.active {
-        background: rgba(248, 113, 113, 0.18);
-        color: #f87171;
-        border-color: rgba(248, 113, 113, 0.5);
-        animation: bento-pulse 2s ease-in-out infinite;
-    }
-    .bento-status-pill.clear { background: rgba(74, 222, 128, 0.15); color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
-    @keyframes bento-pulse {
-        0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.05); opacity: 0.85; }
-    }
-    .bento-countdown {
-        font-family: 'Cinzel', serif;
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--on-surface-elev);
-        margin: 0.5rem 0 1rem;
-        font-variant-numeric: tabular-nums;
-        line-height: 1;
-    }
-    .bento-countdown.active { color: #f87171; text-shadow: 0 0 12px rgba(248, 113, 113, 0.35); }
-    .bento-countdown.cleared { color: #4ade80; }
-    .bento-kv {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
-        padding-top: 0.6rem;
-        border-top: 1px dashed var(--glass-border-elev);
-    }
-    .bento-kv > div { min-width: 0; }
-    .bento-kv dt {
-        font-size: 0.6rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--outline-elev);
-        margin-bottom: 0.15rem;
-    }
-    .bento-kv dd {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--on-surface-elev);
-        margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .bento-window-rule {
-        font-size: 0.7rem;
-        color: var(--outline-elev);
-        margin: 0.75rem 0;
-        line-height: 1.4;
-    }
-    .bento-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .bento-btn-primary {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.5rem 0.85rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.72rem;
-        font-weight: 600;
-        letter-spacing: 0.05em;
-        background: rgba(242, 202, 80, 0.18);
-        color: var(--gold-elev);
-        border: 1px solid rgba(242, 202, 80, 0.5);
-        border-radius: 0.4rem;
-        cursor: pointer;
-        transition: background 0.15s, transform 0.1s;
-    }
-    .bento-btn-primary:hover { background: rgba(242, 202, 80, 0.28); transform: translateY(-1px); }
-    .bento-btn-primary.active {
-        background: rgba(74, 222, 128, 0.18);
-        color: #4ade80;
-        border-color: rgba(74, 222, 128, 0.5);
-    }
-    .bento-btn-ghost {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        background: transparent;
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.4rem;
-        color: var(--outline-elev);
-        cursor: pointer;
-        transition: color 0.15s;
-    }
-    .bento-btn-ghost:hover { color: var(--on-surface-elev); }
-    .bento-reminder-config {
-        margin-top: 0.6rem;
-        padding: 0.5rem 0.7rem;
-        background: rgba(74, 222, 128, 0.08);
-        border: 1px solid rgba(74, 222, 128, 0.3);
-        border-radius: 0.4rem;
-        font-size: 0.7rem;
-        color: #bbf7d0;
-    }
-    .bento-reminder-config[hidden] { display: none; }
-    .bento-pairs-list {
-        list-style: none;
-        padding: 0;
-        margin: 0.5rem 0 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.45rem;
-    }
-    .bento-pair-row {
-        display: grid;
-        grid-template-columns: 64px 1fr 38px;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.4rem 0.5rem;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.04);
-        border-radius: 0.4rem;
-    }
-    .bento-pair-name {
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: var(--on-surface-elev);
-    }
-    .bento-pair-bar {
-        height: 8px;
-        background: rgba(138, 60, 255, 0.15);
-        border-radius: 9999px;
-        overflow: hidden;
-        position: relative;
-    }
-    .bento-pair-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #8a3cff 0%, var(--gold-elev) 100%);
-        border-radius: 9999px;
-        transition: width 0.4s ease;
-    }
-    .bento-pair-conf {
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: var(--gold-elev);
-        text-align: right;
-        font-variant-numeric: tabular-nums;
-    }
-    .bento-pair-rationale {
-        font-size: 0.6rem;
-        color: var(--outline-elev);
-        grid-column: 1 / -1;
-        margin-top: 0.2rem;
-        line-height: 1.3;
-    }
-    .bento-pair-empty {
-        text-align: center;
-        color: var(--outline-elev);
-        font-size: 0.8rem;
-        padding: 1.5rem 0;
-        list-style: none;
-        line-height: 1.5;
-    }
-    .bento-pair-empty .material-symbols-outlined {
-        font-size: 1.8rem;
-        opacity: 0.4;
-        color: var(--gold-elev);
-        display: block;
-        margin: 0 auto 0.4rem;
-    }
-    @media (max-width: 640px) {
-        .bento-countdown { font-size: 1.5rem; }
-        .bento-kv { grid-template-columns: 1fr; }
-    }
-</style>
-{% endblock %}
+{% block stylesheets %}{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
@@ -936,12 +537,12 @@
 
         remindBtn.addEventListener('click', async () => {
             if (!_bentoState || !_bentoState.next_critical || !_bentoState.window) {
-                alert('No hay un próximo evento crítico para recordarte.');
+                apiToast('No hay un próximo evento crítico para recordarte.', 'info');
                 return;
             }
             const existing = localStorage.getItem('tnsvt_bento_reminder');
             if (existing) {
-                if (confirm('¿Cancelar el recordatorio actual?')) {
+                if (await apiConfirm('¿Cancelar el recordatorio actual?', { title: 'Cancelar recordatorio' })) {
                     clearReminder();
                     restoreReminderUI();
                 }
@@ -951,7 +552,7 @@
             // Set timer regardless (in-page banner works without permission)
             const set = setReminder(_bentoState.window.starts_at, 15 * 60);
             if (!set) {
-                alert('El evento empieza en menos de 15 minutos. Recordatorio no aplica.');
+                apiToast('El evento empieza en menos de 15 minutos. Recordatorio no aplica.', 'warning');
                 return;
             }
             restoreReminderUI();
@@ -1007,36 +608,36 @@
         const countdownEl = document.getElementById('ntw-countdown');
         const labelEl = document.getElementById('ntw-countdown-label');
         const bannerEl = document.getElementById('ntw-banner');
+        if (!titleEl || !bannerEl) return;
 
         if (countdownInterval) clearInterval(countdownInterval);
 
         if (active) {
-            // ACTIVE WINDOW
             titleEl.textContent = '🔴 No-Trade Window ACTIVA';
-            msgEl.innerHTML = `<strong>${active.title}</strong> (${active.country} ${active.currency}) · impact ${active.importance}`;
-            iconEl.style.background = '#ff6b6b';
-            countdownEl.textContent = formatTime(active.seconds_until_end);
-            labelEl.textContent = 'Hasta el final del window';
+            if (msgEl) msgEl.innerHTML = `<strong>${active.title}</strong> (${active.country} ${active.currency}) · impact ${active.importance}`;
+            if (iconEl) iconEl.style.background = '#ff6b6b';
+            if (countdownEl) countdownEl.textContent = formatTime(active.seconds_until_end);
+            if (labelEl) labelEl.textContent = 'Hasta el final del window';
             bannerEl.style.borderLeftColor = '#ff6b6b';
         } else if (upcoming.length > 0) {
             const next = upcoming[0];
             titleEl.textContent = 'Próximo: ' + next.title;
-            msgEl.innerHTML = `${next.country} ${next.currency} · impact ${next.importance} · ${new Date(next.start).toLocaleString()}`;
-            iconEl.style.background = 'var(--gold-elev)';
-            labelEl.textContent = 'Inicia en';
+            if (msgEl) msgEl.innerHTML = `${next.country} ${next.currency} · impact ${next.importance} · ${new Date(next.start).toLocaleString()}`;
+            if (iconEl) iconEl.style.background = 'var(--gold-elev)';
+            if (labelEl) labelEl.textContent = 'Inicia en';
             bannerEl.style.borderLeftColor = 'var(--gold-elev)';
 
             countdownInterval = setInterval(() => {
                 const remaining = new Date(next.start).getTime() - Date.now();
-                countdownEl.textContent = formatTime(Math.max(0, Math.floor(remaining / 1000)));
+                if (countdownEl) countdownEl.textContent = formatTime(Math.max(0, Math.floor(remaining / 1000)));
                 if (remaining <= 0) loadAll();
             }, 1000);
         } else {
             titleEl.textContent = '✓ Sin eventos próximos';
-            msgEl.textContent = 'No hay no-trade windows en el horizonte cercano';
-            iconEl.style.background = 'var(--glass-bg-elev)';
-            countdownEl.textContent = 'LIBRE';
-            labelEl.textContent = 'No events';
+            if (msgEl) msgEl.textContent = 'No hay no-trade windows en el horizonte cercano';
+            if (iconEl) iconEl.style.background = 'var(--glass-bg-elev)';
+            if (countdownEl) countdownEl.textContent = 'LIBRE';
+            if (labelEl) labelEl.textContent = 'No events';
             bannerEl.style.borderLeftColor = 'var(--gold-elev)';
         }
     }

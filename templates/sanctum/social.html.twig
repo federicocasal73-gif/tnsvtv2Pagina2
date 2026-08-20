@@ -6,263 +6,6 @@
 {% block topbar_subtitle %}"Solo rodeado de quienes te hacen mejor trader."{% endblock %}
 
 {% block stylesheets %}
-<style>
-    /* ══════ F6 — Social (V1) ══════ */
-    .social-wrap {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding-bottom: 4rem;
-    }
-    .social-header {
-        text-align: center;
-        margin-bottom: 1.25rem;
-        padding-top: 1.5rem;
-    }
-    .social-header h1 {
-        font-family: 'Cinzel', serif;
-        font-size: 1.7rem;
-        margin: 0;
-    }
-    .social-header p {
-        font-size: 0.72rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--outline-elev);
-        margin: 0.4rem 0 0;
-    }
-
-    .social-tabs {
-        display: flex;
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 9999px;
-        padding: 0.3rem;
-        margin-bottom: 1rem;
-        max-width: 540px;
-    }
-    .social-tab {
-        flex: 1;
-        padding: 0.55rem 0.85rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.72rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        background: transparent;
-        border: none;
-        border-radius: 9999px;
-        color: var(--outline-elev);
-        cursor: pointer;
-        white-space: nowrap;
-        transition: color 0.15s, background 0.15s;
-    }
-    .social-tab:hover { color: var(--on-surface-elev); }
-    .social-tab.active {
-        background: rgba(242, 202, 80, 0.18);
-        color: var(--gold-elev);
-    }
-    .social-tab .badge {
-        display: inline-block;
-        margin-left: 0.35rem;
-        padding: 0.1rem 0.45rem;
-        border-radius: 9999px;
-        background: var(--gold-elev);
-        color: var(--void-black, #050308);
-        font-size: 0.65rem;
-        font-weight: 700;
-    }
-    .social-tab .badge.muted { background: rgba(255,255,255,0.1); color: var(--outline-elev); }
-
-    .social-search {
-        width: 100%;
-        padding: 0.7rem 1rem;
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.5rem;
-        color: var(--on-surface-elev);
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.95rem;
-        margin-bottom: 1rem;
-    }
-    .social-search:focus { outline: none; border-color: var(--gold-elev); }
-
-    .social-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 0.85rem;
-    }
-    .social-card {
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.75rem;
-        padding: 1rem 1.15rem;
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        transition: border-color 0.15s;
-    }
-    .social-card:hover { border-color: rgba(242, 202, 80, 0.25); }
-    .social-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 1.05rem;
-        color: var(--void-black, #050308);
-        flex-shrink: 0;
-    }
-    .social-body { flex-grow: 1; min-width: 0; }
-    .social-name {
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: var(--on-surface-elev);
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-    .social-code {
-        font-size: 0.72rem;
-        color: var(--outline-elev);
-        font-family: monospace;
-    }
-    .social-role {
-        display: inline-block;
-        font-size: 0.62rem;
-        padding: 0.1rem 0.5rem;
-        border-radius: 9999px;
-        background: rgba(138, 60, 255, 0.18);
-        color: #c4a0ff;
-        font-weight: 700;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
-    .social-role.admin { background: rgba(248, 113, 113, 0.18); color: #f87171; }
-    .social-role.mentor { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
-    .social-role.analyst { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
-    .social-role.trader { background: rgba(242, 202, 80, 0.18); color: var(--gold-elev); }
-
-    .social-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
-    .social-btn {
-        display: inline-flex; align-items: center; gap: 0.3rem;
-        padding: 0.45rem 0.85rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.78rem;
-        font-weight: 600;
-        border-radius: 0.4rem;
-        cursor: pointer;
-        border: none;
-        transition: all 0.15s;
-    }
-    .social-btn.primary {
-        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
-        color: var(--void-black, #050308);
-    }
-    .social-btn.pending { background: rgba(251, 191, 36, 0.18); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
-    .social-btn.connected { background: rgba(74, 222, 128, 0.18); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); cursor: default; }
-    .social-btn.danger { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); }
-    .social-btn.danger:hover { background: rgba(248, 113, 113, 0.15); }
-    .social-btn.accept { background: rgba(74, 222, 128, 0.18); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); }
-    .social-btn.deny { background: transparent; color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); }
-    .social-btn.ghost {
-        background: transparent;
-        color: var(--outline-elev);
-        border: 1px solid var(--glass-border-elev);
-    }
-    .social-btn.ghost:hover { color: var(--on-surface-elev); border-color: var(--on-surface-elev); }
-
-    .social-card-row {
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.6rem;
-        padding: 0.85rem 1.1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        margin-bottom: 0.6rem;
-    }
-    .social-card-row.pending { border-left: 3px solid #fbbf24; }
-    .social-card-row.connected { border-left: 3px solid #4ade80; }
-    .social-card-row.declined { border-left: 3px solid #f87171; opacity: 0.6; }
-    .social-card-meta {
-        font-size: 0.75rem;
-        color: var(--outline-elev);
-    }
-    .social-card-topic {
-        font-weight: 600;
-        font-size: 0.92rem;
-        color: var(--on-surface-elev);
-    }
-
-    .social-privacy-card {
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.75rem;
-        padding: 1.25rem 1.5rem;
-        margin-bottom: 1rem;
-    }
-    .social-privacy-title {
-        font-family: 'Cinzel', serif;
-        font-size: 1.05rem;
-        color: var(--gold-elev);
-        margin: 0 0 0.5rem;
-    }
-    .social-privacy-options {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        margin-top: 0.85rem;
-    }
-    .social-privacy-opt {
-        padding: 0.6rem 1rem;
-        border-radius: 0.5rem;
-        background: transparent;
-        border: 1px solid var(--glass-border-elev);
-        color: var(--on-surface-elev);
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.15s;
-    }
-    .social-privacy-opt:hover { border-color: var(--gold-elev); }
-    .social-privacy-opt.active {
-        background: rgba(242, 202, 80, 0.18);
-        color: var(--gold-elev);
-        border-color: var(--gold-elev);
-    }
-    .social-privacy-desc {
-        font-size: 0.78rem;
-        color: var(--outline-elev);
-        margin: 0.35rem 0 0;
-        line-height: 1.4;
-    }
-
-    .social-loading, .social-empty {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: var(--outline-elev);
-        font-style: italic;
-    }
-
-    .social-toast {
-        position: fixed; top: 1rem; right: 1rem; z-index: 50;
-        background: var(--void-black, #050308);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.5rem;
-        padding: 0.6rem 0.85rem;
-        color: var(--on-surface-elev);
-        font-size: 0.85rem;
-        display: none;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-    .social-toast.visible { display: block; }
-    .social-toast.success { border-color: #4ade80; color: #bbf7d0; }
-    .social-toast.error { border-color: #f87171; color: #fecaca; }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -364,6 +107,11 @@
         _tab = name;
         document.querySelectorAll('.social-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
         document.querySelectorAll('.social-tab-panel').forEach(p => p.hidden = (p.id !== 'tab-' + name));
+        // Update URL state
+        const url = new URL(location.href);
+        if (name && name !== 'users') url.searchParams.set('tab', name);
+        else url.searchParams.delete('tab');
+        history.replaceState(null, '', url);
         if (name === 'users')        renderUsers();
         if (name === 'requests')     renderReceived();
         if (name === 'connections')  renderConnections();
@@ -455,7 +203,7 @@
         try {
             const r = await apiFetch('/api/access-request?user_code=' + encodeURIComponent(me), { silent: true });
             if (!r.ok || !r.data) {
-                list.innerHTML = '<p class="social-empty">Sin datos.</p>';
+                apiEmpty(list, { icon: 'group_off', message: 'Sin solicitudes' });
                 return;
             }
             const items = Array.isArray(r.data) ? r.data : (r.data.requests || []);
@@ -602,7 +350,7 @@
     }
 
     async function removeConnection(id) {
-        if (!confirm('¿Eliminar esta conexión?')) return;
+        if (!await apiConfirm('¿Eliminar esta conexión?', { title: 'Eliminar conexión', variant: 'danger' })) return;
         try {
             const r = await apiFetch('/api/connections/' + id + '?code=' + encodeURIComponent(me), {
                 method: 'DELETE',
@@ -658,7 +406,13 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         wire();
-        switchTab('users');
+        // Restore tab from URL
+        const urlTab = new URLSearchParams(location.search).get('tab');
+        if (urlTab && ['users', 'requests', 'connections', 'privacy'].includes(urlTab)) {
+            switchTab(urlTab);
+        } else {
+            switchTab('users');
+        }
     });
 })();
 </script>

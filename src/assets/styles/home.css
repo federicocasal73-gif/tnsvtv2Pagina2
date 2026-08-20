@@ -17,6 +17,20 @@
     --bg-deep: #100b1c;
 }
 
+/* PnL color states (used by JS in home.html.twig) */
+.stat-value.pnl-pos {
+    background: linear-gradient(135deg, var(--success-elev), #22c55e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.stat-value.pnl-neg {
+    background: linear-gradient(135deg, var(--error-elev), #ef4444);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 body {
     background: #050308;
     color: #e9def6;

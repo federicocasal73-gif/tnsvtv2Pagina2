@@ -4,13 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#050308" />
-<link rel="manifest" href="{{ asset('manifest.json') }}" />
+<link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}" />
     <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Sanctum" />
     <link rel="apple-touch-icon" href="{{ asset('favicon.svg') }}" />
     <title>{% block title %}T.N.S.V.T — Sanctum{% endblock %}</title>
+
+    {% include '_partials/og_meta.html.twig' with {
+        title: block('title')|default('T.N.S.V.T — Sanctum'),
+        description: 'Plataforma neuro-espiritual de trading. Análisis macro, bitácora y guardian para ejecutores del reino.',
+        type: 'website',
+    } %}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -42,181 +48,173 @@
 {# ═══ FASE 0 — Emblema 3D del gateway (solo home) ═══ #}
 {% block gateway_emblem %}{% endblock %}
 
-{# ═══ SIDEBAR TOGGLE (Mobile) ═══ #}
-<button class="sidebar-toggle" id="sidebar-toggle" aria-label="Abrir menú">
-    <span class="material-symbols-elev">menu</span>
-</button>
-
-{# ═══ SIDEBAR OVERLAY (Mobile) ═══ #}
-<div class="sidebar-overlay" id="sidebar-overlay"></div>
-
-<div class="flex min-h-screen">
-    <aside id="sanctum-sidebar" class="w-64 bg-[var(--surface-elev)] border-r border-[var(--outline-variant-elev)] flex flex-col">
-        <div class="p-6 border-b border-[var(--outline-variant-elev)]">
+<div class="sanctum-layout">
+    <aside id="sanctum-sidebar" class="sanctum-sidebar">
+        <div class="sidebar-brand">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg gold-glow-elev flex items-center justify-center bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)]">
                     <span class="material-symbols-elev text-[var(--on-primary-elev)]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
                 </div>
-                <div>
+                <div class="sidebar-brand-text">
                     <h1 class="text-lg font-bold tracking-wider text-[var(--on-surface-elev)]">T.N.S.V.T</h1>
                     <p class="text-xs text-[var(--outline-elev)] tracking-widest">SANCTUM</p>
                 </div>
             </div>
         </div>
 
-        <nav class="flex-1 overflow-y-auto py-4">
+        <nav class="sanctum-nav">
             {# ═══ ⌂ INICIO ═══ #}
             <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
                 <span class="material-symbols-elev">dashboard</span>
-                <span>Inicio</span>
+                <span class="sanctum-link-label">Inicio</span>
             </a>
 
             {# ═══ 👤 MI CUENTA ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Mi cuenta</div>
+            <div class="sanctum-section-title">Mi cuenta</div>
             <a href="/profile" class="sanctum-link" data-page="profile">
                 <span class="material-symbols-elev">person</span>
-                <span>Perfil</span>
+                <span class="sanctum-link-label">Perfil</span>
             </a>
             <a href="{{ path('account_settings') }}" class="sanctum-link" data-page="account-settings">
                 <span class="material-symbols-elev">settings</span>
-                <span>Configuración</span>
+                <span class="sanctum-link-label">Configuración</span>
             </a>
             <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
                 <span class="material-symbols-elev">notifications_active</span>
-                <span>Notificaciones</span>
-                <span id="bell-badge" class="hidden ml-auto px-1.5 rounded-full bg-[var(--gold-elev)] text-black text-[0.65rem] font-bold leading-tight py-0.5">0</span>
+                <span class="sanctum-link-label">Notificaciones</span>
+                <span id="bell-badge" class="sanctum-bell-badge hidden">0</span>
             </a>
 
             {# ═══ ⚔ TRADING ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Trading</div>
+            <div class="sanctum-section-title">Trading</div>
             <a href="/journal" class="sanctum-link" data-page="journal">
                 <span class="material-symbols-elev">edit_note</span>
-                <span>Journal</span>
+                <span class="sanctum-link-label">Journal</span>
             </a>
             <a href="/calendar" class="sanctum-link" data-page="calendar">
                 <span class="material-symbols-elev">calendar_month</span>
-                <span>Calendario</span>
+                <span class="sanctum-link-label">Calendario</span>
             </a>
             <a href="/leaderboard" class="sanctum-link" data-page="leaderboard">
                 <span class="material-symbols-elev">leaderboard</span>
-                <span>Leaderboard</span>
+                <span class="sanctum-link-label">Leaderboard</span>
             </a>
 
             {# ═══ 🎓 FORMACIÓN ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Formación</div>
+            <div class="sanctum-section-title">Formación</div>
             <a href="/campus" class="sanctum-link" data-page="campus">
                 <span class="material-symbols-elev">school</span>
-                <span>Campus</span>
+                <span class="sanctum-link-label">Campus</span>
             </a>
 
             {# ═══ � MENTE & MACRO ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Mente & Macro</div>
+            <div class="sanctum-section-title">Mente & Macro</div>
             <a href="/macro" class="sanctum-link" data-page="macro">
                 <span class="material-symbols-elev">event_upcoming</span>
-                <span>Macroeconomía</span>
+                <span class="sanctum-link-label">Macroeconomía</span>
             </a>
             <a href="/oracle" class="sanctum-link" data-page="oracle">
                 <span class="material-symbols-elev">auto_awesome</span>
-                <span>Oráculo</span>
+                <span class="sanctum-link-label">Oráculo</span>
             </a>
             <a href="/sanctum/guardian" class="sanctum-link" data-page="guardian">
                 <span class="material-symbols-elev">shield_person</span>
-                <span>Guardian</span>
+                <span class="sanctum-link-label">Guardian</span>
             </a>
             <a href="/diario" class="sanctum-link" data-page="diario">
                 <span class="material-symbols-elev">menu_book</span>
-                <span>Diario</span>
+                <span class="sanctum-link-label">Diario</span>
             </a>
             <a href="/frequencies" class="sanctum-link">
                 <span class="material-symbols-elev">graphic_eq</span>
-                <span>Frecuencias</span>
+                <span class="sanctum-link-label">Frecuencias</span>
             </a>
 
             {# ═══ 👥 COMUNIDAD ═══ #}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Comunidad</div>
+            <div class="sanctum-section-title">Comunidad</div>
 
             {# Social #}
-            <div class="px-6 my-1 text-[9px] uppercase tracking-wider text-[var(--outline-elev)] opacity-30 pl-10">Social</div>
+            <div class="sanctum-section-title sanctum-section-title-sub">Social</div>
             <a href="/feed" class="sanctum-link" data-page="feed">
                 <span class="material-symbols-elev">forum</span>
-                <span>Feed</span>
+                <span class="sanctum-link-label">Feed</span>
             </a>
             <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
                 <span class="material-symbols-elev">share</span>
-                <span>Conexiones</span>
+                <span class="sanctum-link-label">Conexiones</span>
             </a>
             <a href="/chat" class="sanctum-link" data-page="chat">
                 <span class="material-symbols-elev">chat</span>
-                <span>Chat</span>
+                <span class="sanctum-link-label">Chat</span>
             </a>
             <a href="/clan" class="sanctum-link" data-page="clan">
                 <span class="material-symbols-elev">groups</span>
-                <span>Clanes</span>
+                <span class="sanctum-link-label">Clanes</span>
             </a>
 
             {# Compete #}
-            <div class="px-6 my-1 text-[9px] uppercase tracking-wider text-[var(--outline-elev)] opacity-30 pl-10">Compete</div>
+            <div class="sanctum-section-title sanctum-section-title-sub">Compete</div>
             <a href="/tournaments" class="sanctum-link" data-page="tournaments">
                 <span class="material-symbols-emoji">🏆</span>
-                <span>Torneos</span>
+                <span class="sanctum-link-label">Torneos</span>
             </a>
             <a href="/duels" class="sanctum-link" data-page="duels">
                 <span class="material-symbols-elev">swords</span>
-                <span>Duelos 1v1</span>
+                <span class="sanctum-link-label">Duelos 1v1</span>
             </a>
             <a href="/game" class="sanctum-link" data-page="game">
                 <span class="material-symbols-elev">sports_esports</span>
-                <span>Game</span>
+                <span class="sanctum-link-label">Game</span>
             </a>
             <a href="/honor" class="sanctum-link" data-page="honor">
                 <span class="material-symbols-elev">military_tech</span>
-                <span>Honor</span>
+                <span class="sanctum-link-label">Honor</span>
             </a>
 
             {# Wallet #}
-            <div class="px-6 my-1 text-[9px] uppercase tracking-wider text-[var(--outline-elev)] opacity-30 pl-10">Wallet</div>
+            <div class="sanctum-section-title sanctum-section-title-sub">Wallet</div>
             <a href="/wallet" class="sanctum-link" data-page="wallet">
                 <span class="material-symbols-elev">account_balance_wallet</span>
-                <span>Wallet</span>
+                <span class="sanctum-link-label">Wallet</span>
             </a>
             <a href="/shop" class="sanctum-link" data-page="shop">
                 <span class="material-symbols-elev">store</span>
-                <span>Tienda</span>
+                <span class="sanctum-link-label">Tienda</span>
             </a>
 
             {# ═══ ⚙ ADMIN (solo visible para ROLE_ADMIN) ═══ #}
             {% if is_granted('ROLE_ADMIN') %}
-            <div class="px-6 my-2 text-[10px] uppercase tracking-wider text-[var(--outline-elev)] opacity-40">Admin</div>
+            <div class="sanctum-section-title">Admin</div>
             <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
                 <span class="material-symbols-elev">group</span>
-                <span>Usuarios</span>
+                <span class="sanctum-link-label">Usuarios</span>
             </a>
             <a href="/sanctum/tasks" class="sanctum-link" data-page="tasks">
                 <span class="material-symbols-elev">task_alt</span>
-                <span>Tareas</span>
+                <span class="sanctum-link-label">Tareas</span>
             </a>
             <a href="{{ path('sanctum_audit') }}" class="sanctum-link" data-page="audit">
                 <span class="material-symbols-elev">shield</span>
-                <span>Audit</span>
+                <span class="sanctum-link-label">Audit</span>
             </a>
             <a href="/sanctum/settings" class="sanctum-link" data-page="settings">
                 <span class="material-symbols-elev">settings</span>
-                <span>Settings</span>
+                <span class="sanctum-link-label">Settings</span>
             </a>
             <a href="/sanctum/monitoring" class="sanctum-link" data-page="monitoring">
                 <span class="material-symbols-elev">monitoring</span>
-                <span>Monitoring</span>
+                <span class="sanctum-link-label">Monitoring</span>
             </a>
             {% endif %}
         </nav>
 
-        <div class="p-4 border-t border-[var(--outline-variant-elev)]">
+        <div class="sidebar-user-card">
             <div class="glass-card-elev p-3">
                 <div class="flex items-center gap-3">
                     <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-[var(--on-primary-elev)] font-bold">
                         ?
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div class="sidebar-user-meta">
                         <p id="user-name" class="text-sm font-medium text-[var(--on-surface-elev)] truncate">Cargando...</p>
                         <span id="user-tier" class="tier-badge-elev tier-initiate">—</span>
                     </div>
@@ -228,25 +226,25 @@
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col">
-    <header class="h-16 bg-[var(--surface-elev)] border-b border-[var(--outline-variant-elev)] flex items-center justify-between px-6">
+    <main class="sanctum-main">
+        <header class="sanctum-topbar">
         <div>
             <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Command Center{% endblock %}</h2>
             <p class="text-xs text-[var(--outline-elev)] italic">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
         </div>
         <div class="flex items-center gap-3">
-            <button class="btn-elev-primary group" title="Invocar Protocolo">
-                <span class="material-symbols-elev text-base">bolt</span>
-                <span>Invoke Protocol</span>
+            <button class="btn-elev-primary group" title="Invocar Protocolo" aria-label="Invocar Protocolo">
+                <span class="material-symbols-elev text-base" aria-hidden="true">bolt</span>
+                <span>Invocar Protocolo</span>
             </button>
-            <button class="btn-elev-ghost relative" title="Notificaciones">
-                <span class="material-symbols-elev">notifications</span>
+            <button class="btn-elev-ghost relative" title="Notificaciones" aria-label="Notificaciones">
+                <span class="material-symbols-elev" aria-hidden="true">notifications</span>
                 <span id="header-notif-badge" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-[var(--gold-elev)] text-black text-[10px] font-bold px-1">0</span>
             </button>
         </div>
     </header>
 
-        <div class="flex-1 overflow-auto p-6">
+        <div class="sanctum-content">
             {% block content %}{% endblock %}
         </div>
     </main>
@@ -263,7 +261,10 @@
     // Active nav highlight
     const path = window.location.pathname;
     document.querySelectorAll('.sanctum-link[data-page]').forEach(a => {
-        if (a.getAttribute('href') === path) a.classList.add('active');
+        if (a.getAttribute('href') === path) {
+            a.classList.add('active');
+            a.setAttribute('aria-current', 'page');
+        }
     });
 
     // Load user info from session via /api/auth/check (using robust helper)
@@ -274,23 +275,30 @@
                 window.TNSVT_USER = u;
                 window.dispatchEvent(new CustomEvent('tnsvt:user-loaded', { detail: u }));
                 const code = (u.code || '??').slice(0, 2);
-                document.getElementById('user-avatar').textContent = code;
-                document.getElementById('user-name').textContent = u.name || u.code;
+                const avatarEl = document.getElementById('user-avatar');
+                const nameEl = document.getElementById('user-name');
+                if (avatarEl) avatarEl.textContent = code;
+                if (nameEl) nameEl.textContent = u.name || u.code;
                 const tierEl = document.getElementById('user-tier');
-                tierEl.textContent = (u.tier || 'INITIATE');
-                tierEl.className = 'tier-badge-elev tier-' + (u.tier || 'INITIATE').toLowerCase().replace(/_/g, '-');
+                if (tierEl) {
+                    tierEl.textContent = (u.tier || 'INITIATE');
+                    tierEl.className = 'tier-badge-elev tier-' + (u.tier || 'INITIATE').toLowerCase().replace(/_/g, '-');
+                }
             } else if (r.status === 401) {
-                document.getElementById('user-name').textContent = 'Sin sesión';
+                const nameEl = document.getElementById('user-name');
+                if (nameEl) nameEl.textContent = 'Sin sesión';
                 window.TNSVT_USER = null;
             } else if (!r.ok) {
-                document.getElementById('user-name').textContent = '—';
+                const nameEl = document.getElementById('user-name');
+                if (nameEl) nameEl.textContent = '—';
             }
         });
     }
 
     // Logout
-    document.getElementById('logout-btn').addEventListener('click', function() {
-        if (confirm('¿Cerrar sesión?')) {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) logoutBtn.addEventListener('click', async function() {
+        if (await apiConfirm('¿Cerrar sesión?', { title: 'Cerrar sesión', variant: 'danger' })) {
             apiFetch('/api/auth/logout', { method: 'POST', silent: true }).then(() => location.href = '/');
         }
     });
@@ -318,44 +326,32 @@
 </script>
 
 <script>
-// Sidebar toggle (mobile)
+// Rail tooltip (sidebar collapsed ≤1024px)
 (function() {
-    const toggle = document.getElementById('sidebar-toggle');
-    const sidebar = document.getElementById('sanctum-sidebar');
-    const overlay = document.getElementById('sidebar-overlay');
-    
-    if (!toggle || !sidebar || !overlay) return;
-    
-    function openSidebar() {
-        sidebar.classList.add('sidebar-open');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
+    const RAIL_BP = 1024;
+    var tip = document.createElement('div');
+    tip.id = 'sanctum-rail-tooltip';
+    document.body.appendChild(tip);
+
+    function show(link) {
+        if (window.innerWidth > RAIL_BP) return;
+        var label = link.querySelector('.sanctum-link-label');
+        if (!label) return;
+        tip.textContent = label.textContent;
+        tip.classList.add('visible');
+        var r = link.getBoundingClientRect();
+        tip.style.left = (r.right + 12) + 'px';
+        tip.style.top = Math.round(r.top + r.height / 2) + 'px';
     }
-    
-    function closeSidebar() {
-        sidebar.classList.remove('sidebar-open');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-    
-    toggle.addEventListener('click', openSidebar);
-    overlay.addEventListener('click', closeSidebar);
-    
-    // Close on escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) {
-            closeSidebar();
-        }
+    function hide() { tip.classList.remove('visible'); }
+
+    document.querySelectorAll('#sanctum-sidebar .sanctum-link').forEach(function(link) {
+        link.addEventListener('mouseenter', function() { show(link); });
+        link.addEventListener('mouseleave', hide);
+        link.addEventListener('focus', function() { show(link); });
+        link.addEventListener('blur', hide);
     });
-    
-    // Close on link click (mobile)
-    sidebar.querySelectorAll('.sanctum-link').forEach(link => {
-        link.addEventListener('click', () => {
-            if (window.innerWidth <= 1024) {
-                closeSidebar();
-            }
-        });
-    });
+    window.addEventListener('resize', hide);
 })();
 </script>
 

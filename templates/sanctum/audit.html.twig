@@ -58,56 +58,6 @@
         <div id="pagination" class="flex items-center justify-center gap-2 mt-4 text-sm"></div>
     </div>
 
-    <style>
-    .audit-entry {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        transition: all 0.2s ease;
-    }
-    .audit-entry:hover {
-        background: var(--glass-bg-strong-elev);
-        border-color: var(--gold-elev);
-    }
-    .audit-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--glass-bg-strong-elev);
-        border: 1px solid var(--outline-variant-elev);
-    }
-    .audit-icon.success { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
-    .audit-icon.fail { color: #ff6b6b; border-color: rgba(255, 107, 107, 0.4); }
-    .status-pill {
-        display: inline-block;
-        padding: 0.15rem 0.5rem;
-        border-radius: 1rem;
-        font-size: 0.65rem;
-        font-weight: 600;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
-    .status-pill.success { background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.3); }
-    .status-pill.fail { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.3); }
-    .status-pill.admin { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-    .action-tag {
-        display: inline-block;
-        padding: 0.15rem 0.4rem;
-        border-radius: 0.25rem;
-        background: var(--glass-bg-strong-elev);
-        font-size: 0.7rem;
-        font-family: monospace;
-        color: var(--gold-elev);
-    }
-    </style>
-
     <script>
     let currentPage = 1;
     const perPage = 25;
@@ -140,9 +90,12 @@
             const total = data.entries.length;
             const success = data.entries.filter(e => e.result === 'success').length;
             const failed = data.entries.filter(e => e.result === 'fail').length;
-            document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-success').textContent = success;
-            document.getElementById('stat-failed').textContent = failed;
+            const elStatTotal = document.getElementById('stat-total');
+            const elStatSuccess = document.getElementById('stat-success');
+            const elStatFailed = document.getElementById('stat-failed');
+            if (elStatTotal) elStatTotal.textContent = total;
+            if (elStatSuccess) elStatSuccess.textContent = success;
+            if (elStatFailed) elStatFailed.textContent = failed;
         } catch (e) {}
     }
 
@@ -150,7 +103,8 @@
         const list = document.getElementById('entries-list');
         if (!entries || entries.length === 0) {
             list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas de audit log</p>';
-            document.getElementById('pagination').innerHTML = '';
+            const elPag = document.getElementById('pagination');
+            if (elPag) elPag.innerHTML = '';
             return;
         }
 
@@ -187,15 +141,16 @@
     }
 
     function renderPagination(p) {
+        const elPag = document.getElementById('pagination');
         if (!p || p.pages <= 1) {
-            document.getElementById('pagination').innerHTML = '';
+            if (elPag) elPag.innerHTML = '';
             return;
         }
         const html = [];
         if (p.page > 1) html.push(`<button class="btn-elev-ghost text-xs" data-page="${p.page - 1}">← Anterior</button>`);
         html.push(`<span class="px-3 text-[var(--on-surface-elev)]">Página ${p.page} de ${p.pages} · ${p.total} total</span>`);
         if (p.page < p.pages) html.push(`<button class="btn-elev-ghost text-xs" data-page="${p.page + 1}">Siguiente →</button>`);
-        document.getElementById('pagination').innerHTML = html.join('');
+        if (elPag) elPag.innerHTML = html.join('');
         document.querySelectorAll('#pagination button[data-page]').forEach(b => {
             b.addEventListener('click', () => { currentPage = parseInt(b.dataset.page); loadAudit(); });
         });

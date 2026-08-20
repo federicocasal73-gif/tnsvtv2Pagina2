@@ -20,9 +20,6 @@
 {% endblock %}
 
 {% block content %}
-{# WebGL Background #}
-<script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
-
 <div class="max-w-7xl mx-auto dashboard-grid">
 
     {# ══════ F1.5 — Hero ══════ #}
@@ -101,8 +98,8 @@
         </div>
 
         <div class="ec-legend mt-3">
-            <span><span class="ec-legend-dot" style="background: #4ade80"></span>Win</span>
-            <span><span class="ec-legend-dot" style="background: #f87171"></span>Loss</span>
+            <span><span class="ec-legend-dot ec-legend-pos"></span>Win</span>
+            <span><span class="ec-legend-dot ec-legend-neg"></span>Loss</span>
             <span><span class="ec-legend-dot" style="background: rgba(255,255,255,0.4)"></span>BE</span>
             <span class="ml-auto" id="ec-source">—</span>
         </div>
@@ -140,9 +137,9 @@
         </div>
 
         <div class="cal-legend mt-3">
-            <span><span class="ec-legend-dot" style="background: #4ade80"></span>Día ganador</span>
-            <span><span class="ec-legend-dot" style="background: #f87171"></span>Día perdedor</span>
-            <span><span class="ec-legend-dot" style="background: #fbbf24"></span>Mixto</span>
+            <span><span class="ec-legend-dot ec-legend-pos"></span>Día ganador</span>
+            <span><span class="ec-legend-dot ec-legend-neg"></span>Día perdedor</span>
+            <span><span class="ec-legend-dot ec-legend-mix"></span>Mixto</span>
             <span><span class="ec-legend-dot" style="background: #8a3cff"></span>Abierta</span>
         </div>
     </section>
@@ -160,8 +157,8 @@
             <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse text-xs">Cargando P&L mensual...</p>
         </div>
         <div class="cal-legend mt-3">
-            <span><span class="ec-legend-dot" style="background: #4ade80"></span>Positivo</span>
-            <span><span class="ec-legend-dot" style="background: #f87171"></span>Negativo</span>
+            <span><span class="ec-legend-dot ec-legend-pos"></span>Positivo</span>
+            <span><span class="ec-legend-dot ec-legend-neg"></span>Negativo</span>
             <span class="ml-auto" id="monthly-pnl-source">—</span>
         </div>
     </section>
@@ -386,10 +383,10 @@
     </div>
 
     {# Create Task Modal #}
-    <div id="create-task-modal" class="modal-overlay" style="display: none;">
+    <div id="create-task-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="create-task-title" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="text-xl font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+                <h2 id="create-task-title" class="text-xl font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
                     <span class="material-symbols-elev text-[var(--gold-elev)]">task_alt</span>
                     Nueva Tarea
                 </h2>
@@ -435,21 +432,22 @@
         const tasksRes = await apiFetch('/sanctum/api/tasks');
         if (tasksRes.ok && tasksRes.data && tasksRes.data.success) {
             renderTasks(tasksRes.data.tasks);
-            document.getElementById('kpi-pnl-meta').textContent = `${tasksRes.data.activeCount} activas`;
+            const kpiPnlMeta = document.getElementById('kpi-pnl-meta');
+            if (kpiPnlMeta) kpiPnlMeta.textContent = `${tasksRes.data.activeCount} activas`;
             // Render recent signals
             if (tasksRes.data.tasks && tasksRes.data.tasks.length > 0) {
                 document.getElementById('signal-list').innerHTML = tasksRes.data.tasks.slice(0, 5).map(t => `
                     <div class="flex items-center justify-between p-2 rounded glass-card-elev text-sm">
                         <span class="truncate">${escapeHtml(t.title)}</span>
-                        <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Active' : 'Inactive'}</span>
+                        <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Activa' : 'Inactiva'}</span>
                     </div>
                 `).join('');
             } else {
-                document.getElementById('signal-list').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin actividad reciente</p>';
+                apiEmpty(document.getElementById('signal-list'), { icon: 'notifications_off', message: 'Sin actividad reciente', size: 'sm' });
             }
         } else {
-            document.getElementById('task-list').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-sm">Sin datos disponibles</p>';
-            document.getElementById('signal-list').innerHTML = '<p class="text-center text-[var(--outline-elev)] py-4 text-sm">Sin datos disponibles</p>';
+            apiEmpty(document.getElementById('task-list'), { icon: 'task_alt', message: 'Sin tareas activas', size: 'sm' });
+            apiEmpty(document.getElementById('signal-list'), { icon: 'notifications_off', message: 'Sin señales', size: 'sm' });
         }
 
         // System status (removed - not in Stitch mockup)
@@ -467,7 +465,7 @@
         }
         list.innerHTML = tasks.slice(0, 5).map(t => `
             <div class="task-row-elev">
-                <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Active' : 'Inactive'}</span>
+                <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Activa' : 'Inactiva'}</span>
                 <span class="text-sm flex-1 truncate">${escapeHtml(t.title || '')}</span>
                 <span class="text-xs text-[var(--outline-elev)] font-mono">#${t.orden}</span>
             </div>
@@ -481,14 +479,17 @@
     }
 
     // Modal handlers
+    const createTaskModal = apiSetupModal(document.getElementById('create-task-modal'), {
+        close() {
+            document.getElementById('create-task-form').reset();
+            document.getElementById('create-task-error').classList.add('hidden');
+        }
+    });
     function openCreateTask() {
-        document.getElementById('create-task-modal').style.display = 'flex';
-        setTimeout(() => document.getElementById('task-title').focus(), 100);
+        createTaskModal.open();
     }
     function closeCreateTask() {
-        document.getElementById('create-task-modal').style.display = 'none';
-        document.getElementById('create-task-form').reset();
-        document.getElementById('create-task-error').classList.add('hidden');
+        createTaskModal.close();
     }
     async function submitCreateTask(e) {
         e.preventDefault();
@@ -519,15 +520,15 @@
         }
     }
 
-    const GW_TIER_COLOR = {
-        elite: '#ffe088', strong: 'var(--gold-elev)', steady: 'var(--violet)',
-        caution: 'var(--gold-elev)', risk: '#f87171',
-    };
-    const GW_SEVERITY_VISUAL = {
-        danger:  { icon: 'error',   color: '#f87171' },
-        warning: { icon: 'warning', color: 'var(--gold-elev)' },
-        info:    { icon: 'info',    color: 'var(--violet)' },
-    };
+        const GW_TIER_COLOR = {
+            elite: 'var(--gold-bright-elev)', strong: 'var(--gold-elev)', steady: 'var(--violet-elev)',
+            caution: 'var(--warning-elev)', risk: 'var(--error-elev)',
+        };
+        const GW_SEVERITY_VISUAL = {
+            danger:  { icon: 'error',   color: 'var(--error-elev)' },
+            warning: { icon: 'warning', color: 'var(--warning-elev)' },
+            info:    { icon: 'info',    color: 'var(--violet-elev)' },
+        };
 
     async function loadGuardianWidget() {
         // F1.5: only run when the dashboard tab is rendered
@@ -542,7 +543,7 @@
             const tierEl  = document.getElementById('gw-tier');
             scoreEl.textContent = d.score ?? 0;
             const c = GW_TIER_COLOR[d.tier] || 'var(--outline-elev)';
-            scoreEl.style.color = (d.score ?? 0) >= 75 ? c : (d.score >= 40 ? 'var(--gold-elev)' : '#f87171');
+            scoreEl.style.color = (d.score ?? 0) >= 75 ? c : (d.score >= 40 ? 'var(--gold-elev)' : 'var(--error-elev)');
             tierEl.textContent = (d.tier || '—').toUpperCase();
             tierEl.style.color = c;
             tierEl.style.borderColor = c;
@@ -597,14 +598,7 @@
         document.querySelectorAll('[data-action="open-create-task"]').forEach(b => b.addEventListener('click', openCreateTask));
         document.querySelectorAll('[data-action="close-create-task"]').forEach(b => b.addEventListener('click', closeCreateTask));
         document.getElementById('create-task-form').addEventListener('submit', submitCreateTask);
-        document.getElementById('create-task-modal').addEventListener('click', e => {
-            if (e.target === e.currentTarget) closeCreateTask();
-        });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && document.getElementById('create-task-modal').style.display === 'flex') {
-                closeCreateTask();
-            }
-        });
+        // Click-outside close is handled by apiSetupModal; Escape is too.
         setInterval(loadDashboard, 60000);
         setInterval(loadGuardianWidget, 90000);
     });
@@ -725,7 +719,7 @@
             <path d="${fillPath}" fill="url(#ec-fill)" />
             <path d="${linePath}" stroke="#f2ca50" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
             ${points.map((p, i) => {
-                const color = p.pnl > 0 ? '#4ade80' : p.pnl < 0 ? '#f87171' : 'rgba(255,255,255,0.45)';
+                const color = p.pnl > 0 ? 'var(--success-elev)' : p.pnl < 0 ? 'var(--error-elev)' : 'rgba(255,255,255,0.45)';
                 return `<circle class="ec-point" cx="${xs[i].toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3" fill="${color}" stroke="#0e0a18" stroke-width="1" data-idx="${i}" style="cursor:pointer" />`;
             }).join('')}
         `;
@@ -739,7 +733,7 @@
             circle.addEventListener('mouseenter', () => {
                 const dateStr = p.date ? new Date(p.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' }) : '—';
                 const pnlSign = p.pnl >= 0 ? '+' : '';
-                const pnlColor = p.pnl >= 0 ? '#4ade80' : '#f87171';
+                const pnlColor = p.pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
                 tooltip.innerHTML = `
                     <div class="text-xs">
                         <div class="flex items-center gap-2 mb-1">
@@ -779,8 +773,22 @@
         wrap.addEventListener('click', e => {
             const btn = e.target.closest('.ec-tab');
             if (!btn) return;
+            // Update URL state
+            const url = new URL(location.href);
+            url.searchParams.set('range', btn.dataset.range);
+            history.replaceState(null, '', url);
             loadEquityCurve(btn.dataset.range);
         });
+        // Restore from URL on load
+        const urlRange = new URLSearchParams(location.search).get('range');
+        if (urlRange && ['all','30d','7d'].includes(urlRange)) {
+            wrap.querySelectorAll('.ec-tab').forEach(b => {
+                const active = b.dataset.range === urlRange;
+                b.classList.toggle('active', active);
+                b.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+            loadEquityCurve(urlRange);
+        }
     }
 
     // ══════ F1.2 — Stats ══════
@@ -853,7 +861,7 @@
             : '—';
         const totalEl = document.getElementById('stats-total-pnl');
         totalEl.textContent = (s.total_pnl >= 0 ? '+' : '-$') + Math.abs(s.total_pnl).toFixed(2);
-        totalEl.style.color = s.total_pnl >= 0 ? '#4ade80' : '#f87171';
+        totalEl.style.color = s.total_pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
 
         document.getElementById('stats-trade-count').textContent = s.total;
     }
@@ -879,7 +887,7 @@
             `${r.data.month_name} ${r.data.year}`;
         document.getElementById('cal-month-pnl').textContent = fmtUSD(r.data.summary.total_pnl);
         document.getElementById('cal-month-pnl').style.color =
-            r.data.summary.total_pnl >= 0 ? '#4ade80' : '#f87171';
+            r.data.summary.total_pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
         document.getElementById('cal-month-trades').textContent = r.data.summary.trade_count;
         document.getElementById('cal-month-wr').textContent = r.data.summary.win_rate;
 
@@ -1064,25 +1072,21 @@
             `;
         }
         const modal = document.getElementById('cal-day-modal');
-        modal.style.display = 'flex';
+        calDayModal.open();
     }
+
+    const calDayModal = apiSetupModal(document.getElementById('cal-day-modal'));
 
     function wireCalDayModal() {
         const modal = document.getElementById('cal-day-modal');
         if (!modal) return;
-        modal.addEventListener('click', e => {
-            if (e.target === e.currentTarget) closeCalDayModal();
-        });
         document.querySelectorAll('[data-action="close-cal-day"]').forEach(b => {
             b.addEventListener('click', closeCalDayModal);
         });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' && modal.style.display === 'flex') closeCalDayModal();
-        });
+        // Click-outside close + Escape are handled by apiSetupModal.
     }
     function closeCalDayModal() {
-        const modal = document.getElementById('cal-day-modal');
-        if (modal) modal.style.display = 'none';
+        if (typeof calDayModal !== 'undefined' && calDayModal) calDayModal.close();
     }
 
     function formatLongDate(isoDate) {
@@ -1124,7 +1128,7 @@
             const x = xFor(i);
             const y = yFor(r.pnl);
             const h = Math.abs(zeroY - y);
-            const color = r.pnl >= 0 ? '#4ade80' : '#f87171';
+            const color = r.pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
             return `
                 <rect class="monthly-bar" x="${x.toFixed(1)}" y="${Math.min(y, zeroY).toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" stroke="#0e0a18" stroke-width="1" rx="3" data-month="${r.month}" />
                 <text class="monthly-pnl-axis-text" x="${(x + barW/2).toFixed(1)}" y="${(padT + chartH + 16).toFixed(1)}" text-anchor="middle">${monthLabels[parseInt(r.month.slice(5), 10) - 1]}</text>

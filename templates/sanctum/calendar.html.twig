@@ -8,16 +8,20 @@
 {% block stylesheets %}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto"
+     data-controller="calendar-events"
+     data-calendar-events-url-value="{{ path('app_calendar_widget') }}">
     {# ─── Filters ─── #}
     <div class="glass-card-elev p-4 mb-4 flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-2">
-            <label class="kpi-label">Fecha</label>
-            <input id="cal-date" type="date" class="form-input" />
+            <label class="kpi-label" for="cal-date">Fecha</label>
+            <input id="cal-date" type="date" class="form-input"
+                   data-action="change->calendar-events#refresh" />
         </div>
         <div class="flex items-center gap-2">
-            <label class="kpi-label">País</label>
-            <select id="cal-country" multiple size="1" class="form-input">
+            <label class="kpi-label" for="cal-country">País</label>
+            <select id="cal-country" multiple size="1" class="form-input"
+                    data-action="change->calendar-events#refresh">
                 <option value="US" selected>🇺🇸 USD</option>
                 <option value="EU" selected>🇪🇺 EUR</option>
                 <option value="GB" selected>🇬🇧 GBP</option>
@@ -29,8 +33,9 @@
             </select>
         </div>
         <div class="flex items-center gap-2">
-            <label class="kpi-label">Impacto</label>
-            <select id="cal-impact" class="form-input">
+            <label class="kpi-label" for="cal-impact">Impacto</label>
+            <select id="cal-impact" class="form-input"
+                    data-action="change->calendar-events#refresh">
                 <option value="">Todos</option>
                 <option value="3" selected>Alto (3)</option>
                 <option value="2">Medio (2)</option>
@@ -43,30 +48,26 @@
         </div>
     </div>
 
-    {# ─── Events Table (Turbo Frame — instant filter updates) ─── #}
-    <div class="glass-card-elev p-0 overflow-hidden"
-         data-controller="calendar-events"
-         data-calendar-events-url-value="{{ path('app_calendar_widget') }}">
-        <turbo-frame id="cal-events-frame">
-            <div class="overflow-x-auto">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Hora</th>
-                            <th>País</th>
-                            <th>Evento</th>
-                            <th>Impacto</th>
-                            <th>Actual</th>
-                            <th>Previsión</th>
-                            <th>Anterior</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cal-list">
-                        <tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </turbo-frame>
+    {# ─── Events Table ─── #}
+    <div class="glass-card-elev p-0 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Hora</th>
+                        <th scope="col">País</th>
+                        <th scope="col">Evento</th>
+                        <th scope="col">Impacto</th>
+                        <th scope="col">Actual</th>
+                        <th scope="col">Previsión</th>
+                        <th scope="col">Anterior</th>
+                    </tr>
+                </thead>
+                <tbody id="cal-list">
+                    <tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -85,6 +86,28 @@
 
     function selectedCountries() {
         return Array.from(countrySel.selectedOptions).map(o => o.value);
+    }
+
+    function pushState() {
+        const params = new URLSearchParams();
+        if (dateInput.value) params.set('date', dateInput.value);
+        const countries = selectedCountries();
+        if (countries.length) params.set('countries', countries.join(','));
+        if (impactSel.value) params.set('impact', impactSel.value);
+        const qs = params.toString();
+        history.replaceState(null, '', qs ? '?' + qs : location.pathname);
+    }
+
+    function restoreState() {
+        const params = new URLSearchParams(location.search);
+        if (params.has('date') && dateInput) dateInput.value = params.get('date');
+        if (params.has('countries') && countrySel) {
+            const wanted = params.get('countries').split(',');
+            Array.from(countrySel.options).forEach(o => {
+                o.selected = wanted.includes(o.value);
+            });
+        }
+        if (params.has('impact') && impactSel) impactSel.value = params.get('impact');
     }
 
     async function loadEvents() {
@@ -127,14 +150,22 @@
         }).join('');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        // Default date = today
-        const now = new Date();
-        dateInput.value = now.toISOString().slice(0, 10);
+    function onFilterChange() {
+        pushState();
+        loadEvents();
+    }
 
-        dateInput.addEventListener('change', loadEvents);
-        countrySel.addEventListener('change', loadEvents);
-        impactSel.addEventListener('change', loadEvents);
+    document.addEventListener('DOMContentLoaded', () => {
+        restoreState();
+        // Default date = today if not restored
+        if (!dateInput.value) {
+            const now = new Date();
+            dateInput.value = now.toISOString().slice(0, 10);
+        }
+
+        dateInput.addEventListener('change', onFilterChange);
+        countrySel.addEventListener('change', onFilterChange);
+        impactSel.addEventListener('change', onFilterChange);
 
         loadEvents();
     });

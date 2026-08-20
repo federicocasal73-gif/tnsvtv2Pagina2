@@ -1,5 +1,4 @@
 import { Controller } from '@hotwired/stimulus';
-import { Turbo } from '@hotwired/turbo';
 
 /**
  * Calendar events — listens to filter changes, fetches updated fragment, swaps via Turbo Frame.

@@ -1,0 +1,55 @@
+/* ═══════════════════════════════════════════════════════════════
+   Tabbar — Bottom Navigation Bar
+   extracted from _partials/tabbar.html.twig
+   ═══════════════════════════════════════════════════════════════ */
+
+.tabbar-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(34, 29, 46, 0.6);
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem 1rem 1.5rem;
+    border-radius: 1rem 1rem 0 0;
+}
+.tabbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--on-surface-variant, #d0c5af);
+    text-decoration: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+.tabbar-item:hover {
+    color: var(--on-surface, #e9def6);
+}
+.tabbar-item.active {
+    color: var(--primary, #f2ca50);
+    background: rgba(255, 255, 255, 0.05);
+}
+.tabbar-item .material-symbols-elev {
+    font-size: 1.5rem;
+    margin-bottom: 0.125rem;
+}
+.tabbar-item.active .material-symbols-elev {
+    font-variation-settings: 'FILL' 1;
+}
+.tabbar-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+}

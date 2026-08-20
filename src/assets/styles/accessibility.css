@@ -17,6 +17,7 @@
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
+        transform: none !important;
     }
 
     /* Explicitly stop these specific animations that distract even with reduced motion */
@@ -103,5 +104,34 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOUCH TARGETS — WCAG 2.5.5 (44×44 minimum for touch)
+   Only applies on coarse pointers (mobile/tablet), so desktop
+   button density is not affected.
+   ═══════════════════════════════════════════════════════════════ */
+@media (pointer: coarse) {
+    button,
+    a,
+    [role="button"],
+    .sanctum-link,
+    .filter-pill,
+    .modal-close,
+    .academic-modal-close,
+    .chat-tab,
+    .feed-tab,
+    .academic-view-tab,
+    .academic-filter {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Inherit display: inline-flex so min-width doesn't break inline icons */
+    button:not([class*="flex"]):not([class*="grid"]) {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 }

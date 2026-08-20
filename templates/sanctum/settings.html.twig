@@ -55,40 +55,4 @@
     </div>
 </div>
 
-<style>
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-    cursor: pointer;
-}
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-.toggle-slider {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: var(--glass-border-elev);
-    border-radius: 12px;
-    transition: 0.3s;
-}
-.toggle-slider::before {
-    content: "";
-    position: absolute;
-    height: 18px; width: 18px;
-    left: 3px; bottom: 3px;
-    background: var(--on-surface-elev);
-    border-radius: 50%;
-    transition: 0.3s;
-}
-.toggle-switch input:checked + .toggle-slider {
-    background: var(--gold-elev);
-}
-.toggle-switch input:checked + .toggle-slider::before {
-    transform: translateX(20px);
-}
-</style>
 {% endblock %}

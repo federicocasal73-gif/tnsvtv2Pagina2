@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════════
+   API Helper — global error banner + toast styles
+   extracted from _partials/api_helper.html.twig
+   ═══════════════════════════════════════════════════════════════ */
+
+#api-error-banner {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    background: rgba(127, 29, 29, 0.95);
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    backdrop-filter: blur(12px);
+    color: #fecaca;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 36rem;
+    animation: api-banner-in 0.2s ease-out;
+}
+#api-error-banner.hidden { display: none !important; }
+#api-error-banner .api-banner-icon { color: #f87171; flex-shrink: 0; }
+#api-error-banner #api-error-banner-msg { flex: 1; }
+#api-error-banner button {
+    background: transparent;
+    border: none;
+    color: #fca5a5;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+}
+#api-error-banner button:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+#api-toast-stack {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+.api-toast {
+    pointer-events: auto;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: opacity 0.3s ease;
+    max-width: 24rem;
+    animation: api-toast-in 0.2s ease-out;
+}
+.api-toast-success { background: rgba(6, 78, 59, 0.95); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.5); }
+.api-toast-error   { background: rgba(127, 29, 29, 0.95); color: #fecaca; border-color: rgba(248, 113, 113, 0.5); }
+.api-toast-info    { background: rgba(24, 24, 27, 0.95);  color: #d4d4d8; border-color: rgba(161, 161, 170, 0.5); }
+
+@keyframes api-banner-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes api-toast-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+}

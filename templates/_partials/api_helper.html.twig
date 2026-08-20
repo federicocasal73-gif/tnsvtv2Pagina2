@@ -1,92 +1,21 @@
 {# _partials/api_helper.html.twig — Global API helper + error UI.
 
    Provides:
-     • window.apiFetch(url, opts)    → fetch wrapper w/ 30s timeout, 401→redirect, 500→banner, AbortError→timeout
-     • window.apiToast(msg, kind)    → top-right toast (success|error|info)
-     • <div id="api-error-banner">   → inline error banner mounted by apiFetch on 5xx
+     • window.apiFetch(url, opts)        → fetch wrapper w/ 30s timeout, 401→redirect, 500→banner, AbortError→timeout
+     • window.apiToast(msg, kind)        → top-right toast (success|error|info|warning)
+     • window.apiSetupModal(el)          → focus-trap helper for modals
+     • window.apiConfirm(msg, opts)      → async styled confirm dialog (Promise<boolean>)
+     • <div id="api-error-banner">       → inline error banner mounted by apiFetch on 5xx
 
    Mount once via:  {% include '_partials/api_helper.html.twig' %}
 
    Each page may call: apiFetch('/sanctum/api/tasks').then(d => …) — the helper handles errors gracefully.
 #}
 
-<style>
-#api-error-banner {
-    position: fixed;
-    top: 1rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 200;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    background: rgba(127, 29, 29, 0.95);
-    border: 1px solid rgba(248, 113, 113, 0.5);
-    backdrop-filter: blur(12px);
-    color: #fecaca;
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    max-width: 36rem;
-    animation: api-banner-in 0.2s ease-out;
-}
-#api-error-banner.hidden { display: none !important; }
-#api-error-banner .api-banner-icon { color: #f87171; flex-shrink: 0; }
-#api-error-banner #api-error-banner-msg { flex: 1; }
-#api-error-banner button {
-    background: transparent;
-    border: none;
-    color: #fca5a5;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
-}
-#api-error-banner button:hover { color: #fff; background: rgba(255,255,255,0.1); }
-
-#api-toast-stack {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 201;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    pointer-events: none;
-}
-.api-toast {
-    pointer-events: auto;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    backdrop-filter: blur(8px);
-    font-size: 0.875rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: opacity 0.3s ease;
-    max-width: 24rem;
-    animation: api-toast-in 0.2s ease-out;
-}
-.api-toast-success { background: rgba(6, 78, 59, 0.95); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.5); }
-.api-toast-error   { background: rgba(127, 29, 29, 0.95); color: #fecaca; border-color: rgba(248, 113, 113, 0.5); }
-.api-toast-info    { background: rgba(24, 24, 27, 0.95);  color: #d4d4d8; border-color: rgba(161, 161, 170, 0.5); }
-
-@keyframes api-banner-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-@keyframes api-toast-in {
-    from { opacity: 0; transform: translateX(20px); }
-    to   { opacity: 1; transform: translateX(0); }
-}
-</style>
-
 <div id="api-error-banner" class="hidden" role="alert" aria-live="assertive">
     <span class="material-symbols-elev api-banner-icon">error</span>
     <span id="api-error-banner-msg">Server error</span>
-    <button type="button" onclick="document.getElementById('api-error-banner').classList.add('hidden')" aria-label="Dismiss">
+    <button type="button" onclick="const _el = document.getElementById('api-error-banner'); if (_el) _el.classList.add('hidden')" aria-label="Dismiss">
         <span class="material-symbols-elev" style="font-size: 1.125rem;">close</span>
     </button>
 </div>
@@ -105,7 +34,8 @@
     function showBanner(message) {
         const el = banner();
         if (!el) return;
-        bannerMsg().textContent = message;
+        const _elBannerMsg = bannerMsg();
+        if (_elBannerMsg) _elBannerMsg.textContent = message;
         el.classList.remove('hidden');
     }
 
@@ -114,19 +44,67 @@
         if (el) el.classList.add('hidden');
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+       TOAST QUEUE
+       • Max 5 visible (older get rotated out)
+       • Hover-pauses auto-dismiss
+       • Auto-dismiss after 4s (error: 6s)
+       • Same message = dedupe (don't spam identical toasts)
+       ═══════════════════════════════════════════════════════════════ */
+    const TOAST_MAX = 5;
+    const TOAST_TTL = { info: 4000, success: 4000, warning: 5500, error: 6000 };
+    const _activeToasts = new Map();
+
+    function _toastExpire(node) {
+        if (!_activeToasts.has(node)) return;
+        clearTimeout(_activeToasts.get(node));
+        node.style.opacity = '0';
+        setTimeout(() => { if (node.parentNode) node.remove(); }, 200);
+        _activeToasts.delete(node);
+    }
+
+    function _toastPause(node) {
+        if (!_activeToasts.has(node)) return;
+        clearTimeout(_activeToasts.get(node));
+        node.dataset.paused = '1';
+    }
+
+    function _toastResume(node) {
+        if (!_activeToasts.has(node)) return;
+        if (node.dataset.paused !== '1') return;
+        const kind = (node.className.match(/api-toast-(\w+)/) || [])[1] || 'info';
+        const t = setTimeout(() => _toastExpire(node), TOAST_TTL[kind] || 4000);
+        _activeToasts.set(node, t);
+        node.dataset.paused = '0';
+    }
+
     function apiToast(message, kind) {
         kind = kind || 'info';
         const stack = toastStack();
         if (!stack) return;
+        const dedupKey = kind + '|' + message;
+        for (const n of _activeToasts.keys()) {
+            if (n.dataset.dedup === dedupKey) return;
+        }
+        while (stack.children.length >= TOAST_MAX) {
+            _toastExpire(stack.firstElementChild);
+        }
         const node = document.createElement('div');
         node.className = 'api-toast api-toast-' + kind;
-        const icons = { success: 'check_circle', error: 'error', info: 'info' };
-        node.innerHTML = '<span class="material-symbols-elev"></span><span></span>';
+        node.dataset.dedup = dedupKey;
+        node.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+        node.setAttribute('aria-live', kind === 'error' ? 'assertive' : 'polite');
+        const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
+        node.innerHTML = '<span class="material-symbols-elev" aria-hidden="true"></span><span class="api-toast-msg"></span>';
         node.firstElementChild.textContent = icons[kind] || 'info';
         node.lastElementChild.textContent = message;
+        node.addEventListener('mouseenter', () => _toastPause(node));
+        node.addEventListener('mouseleave', () => _toastResume(node));
+        node.addEventListener('click', () => _toastExpire(node));
+        node.style.cursor = 'pointer';
         stack.appendChild(node);
-        setTimeout(() => { node.style.opacity = '0'; }, 3500);
-        setTimeout(() => { node.remove(); }, 4000);
+        const t = setTimeout(() => _toastExpire(node), TOAST_TTL[kind] || 4000);
+        _activeToasts.set(node, t);
     }
 
     /**
@@ -134,7 +112,7 @@
      * @param {string} url
      * @param {object} [opts]
      * @param {number} [opts.timeoutMs=30000]
-     * @param {boolean} [opts.silent=false]   when true, do NOT show global banner on 5xx (caller handles)
+     * @param {boolean} [opts.silent=false]
      * @param {boolean} [opts.redirectOn401=true]
      * @returns {Promise<{ok:boolean, status:number, data:any}>}
      */
@@ -187,5 +165,227 @@
     window.apiFetch = apiFetch;
     window.apiToast = apiToast;
     window.apiHideBanner = hideBanner;
+
+    /* ═══════════════════════════════════════════════════════════════
+       FOCUS TRAP + MODAL A11Y
+       Use: apiSetupModal(modalEl, { open: () => {}, close: () => {} })
+       ─────────────────────────────────────────────────────────────── */
+    function apiSetupModal(modalEl, opts) {
+        opts = opts || {};
+        if (!modalEl) return null;
+        if (!modalEl.hasAttribute('role')) modalEl.setAttribute('role', 'dialog');
+        if (!modalEl.hasAttribute('aria-modal')) modalEl.setAttribute('aria-modal', 'true');
+
+        const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        let prevFocus = null;
+        let escHandler = null;
+        let trapHandler = null;
+
+        function focusables() {
+            return Array.from(modalEl.querySelectorAll(FOCUSABLE)).filter(el => el.offsetParent !== null);
+        }
+
+        function onKeydown(e) {
+            if (e.key === 'Escape') {
+                e.stopPropagation();
+                (opts.close || apiCloseModal)(modalEl);
+                return;
+            }
+            if (e.key !== 'Tab') return;
+            const items = focusables();
+            if (items.length === 0) {
+                e.preventDefault();
+                return;
+            }
+            const first = items[0];
+            const last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
+
+        return {
+            open() {
+                prevFocus = document.activeElement;
+                document.body.style.overflow = 'hidden';
+                modalEl.removeAttribute('hidden');
+                modalEl.style.display = modalEl.dataset.modalDisplay || 'flex';
+                (opts.open || function () {})();
+                const items = focusables();
+                if (items.length > 0) items[0].focus();
+                else modalEl.focus();
+                escHandler = onKeydown;
+                trapHandler = onKeydown;
+                modalEl.addEventListener('keydown', trapHandler);
+            },
+            close() {
+                modalEl.style.display = 'none';
+                modalEl.setAttribute('hidden', '');
+                document.body.style.overflow = '';
+                if (trapHandler) modalEl.removeEventListener('keydown', trapHandler);
+                escHandler = null;
+                trapHandler = null;
+                (opts.close || function () {})();
+                if (prevFocus && typeof prevFocus.focus === 'function') {
+                    prevFocus.focus();
+                }
+            },
+            isOpen() {
+                return modalEl.style.display !== 'none' && !modalEl.hasAttribute('hidden');
+            },
+        };
+    }
+
+    function apiOpenModal(modalEl, opts) {
+        const m = apiSetupModal(modalEl, opts);
+        if (m) m.open();
+        return m;
+    }
+
+    function apiCloseModal(modalEl) {
+        if (!modalEl) return;
+        modalEl.style.display = 'none';
+        modalEl.setAttribute('hidden', '');
+        document.body.style.overflow = '';
+    }
+
+    window.apiSetupModal = apiSetupModal;
+    window.apiOpenModal = apiOpenModal;
+    window.apiCloseModal = apiCloseModal;
+
+    /* ═══════════════════════════════════════════════════════════════
+       apiConfirm — styled async confirm dialog (Phase 6.8b)
+       Returns Promise<boolean>. Replaces native confirm() which
+       blocks the main thread and is not styleable.
+       ─────────────────────────────────────────────────────────────── */
+    let _confirmDialog = null;
+    function _ensureConfirmDialog() {
+        if (_confirmDialog) return _confirmDialog;
+        const dlg = document.createElement('div');
+        dlg.id = 'api-confirm-dialog';
+        dlg.setAttribute('role', 'dialog');
+        dlg.setAttribute('aria-modal', 'true');
+        dlg.className = 'api-confirm-overlay';
+        dlg.hidden = true;
+        dlg.innerHTML = '' +
+            '<div class="api-confirm-card">' +
+                '<h2 class="api-confirm-title" id="api-confirm-title"></h2>' +
+                '<p class="api-confirm-message" id="api-confirm-message"></p>' +
+                '<div class="api-confirm-actions">' +
+                    '<button type="button" class="api-confirm-btn api-confirm-cancel" data-confirm="cancel">' +
+                        '<span class="material-symbols-elev" aria-hidden="true">close</span>' +
+                        '<span class="api-confirm-cancel-label">Cancelar</span>' +
+                    '</button>' +
+                    '<button type="button" class="api-confirm-btn api-confirm-ok" data-confirm="ok">' +
+                        '<span class="material-symbols-elev" aria-hidden="true">check</span>' +
+                        '<span class="api-confirm-ok-label">Confirmar</span>' +
+                    '</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(dlg);
+        _confirmDialog = dlg;
+        return dlg;
+    }
+
+    function apiConfirm(message, opts) {
+        opts = opts || {};
+        const title = opts.title || 'Confirmar acción';
+        const confirmLabel = opts.confirmLabel || 'Confirmar';
+        const cancelLabel = opts.cancelLabel || 'Cancelar';
+        const variant = opts.variant || 'default';
+
+        return new Promise((resolve) => {
+            const dlg = _ensureConfirmDialog();
+            const card = dlg.querySelector('.api-confirm-card');
+            const titleEl = dlg.querySelector('.api-confirm-title');
+            const msgEl = dlg.querySelector('.api-confirm-message');
+            const okBtn = dlg.querySelector('[data-confirm="ok"]');
+            const cancelBtn = dlg.querySelector('[data-confirm="cancel"]');
+            const okLabel = dlg.querySelector('.api-confirm-ok-label');
+            const cancelLabelEl = dlg.querySelector('.api-confirm-cancel-label');
+
+            titleEl.textContent = title;
+            msgEl.textContent = message;
+            okLabel.textContent = confirmLabel;
+            cancelLabelEl.textContent = cancelLabel;
+            dlg.classList.toggle('api-confirm-danger', variant === 'danger');
+
+            dlg.hidden = false;
+            document.body.style.overflow = 'hidden';
+            const prevFocus = document.activeElement;
+            setTimeout(() => cancelBtn.focus(), 30);
+
+            const onKey = (e) => {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cleanup(false);
+                } else if (e.key === 'Enter' && document.activeElement !== cancelBtn) {
+                    e.preventDefault();
+                    cleanup(true);
+                }
+            };
+            document.addEventListener('keydown', onKey);
+
+            const onTabKey = (e) => {
+                if (e.key !== 'Tab') return;
+                e.preventDefault();
+                (e.shiftKey ? cancelBtn : okBtn).focus();
+            };
+            card.addEventListener('keydown', onTabKey);
+
+            function cleanup(result) {
+                document.removeEventListener('keydown', onKey);
+                card.removeEventListener('keydown', onTabKey);
+                dlg.hidden = true;
+                document.body.style.overflow = '';
+                if (prevFocus && typeof prevFocus.focus === 'function') {
+                    prevFocus.focus();
+                }
+                resolve(result);
+            }
+
+            okBtn.onclick = () => cleanup(true);
+            cancelBtn.onclick = () => cleanup(false);
+            dlg.onclick = (e) => { if (e.target === dlg) cleanup(false); };
+        });
+    }
+
+    window.apiConfirm = apiConfirm;
+
+    /* ═══════════════════════════════════════════════════════════════
+       apiEmpty — render empty state into a container
+       Usage: apiEmpty('#feed-list', { icon: 'forum', message: 'Sin publicaciones', size: 'lg' })
+       Same structure as _partials/empty_state.html.twig.
+       ═══════════════════════════════════════════════════════════════ */
+    function apiEmpty(target, opts) {
+        opts = opts || {};
+        const el = typeof target === 'string' ? document.querySelector(target) : target;
+        if (!el) return;
+        const icon = opts.icon || 'inbox';
+        const message = opts.message || 'Sin datos';
+        const description = opts.description || '';
+        const ctaUrl = opts.cta_url || '';
+        const ctaLabel = opts.cta_label || '';
+        const size = opts.size || 'md';
+
+        const descHtml = description ? '<p class="empty-state-description">' + description + '</p>' : '';
+        const ctaHtml = (ctaUrl && ctaLabel)
+            ? '<a href="' + ctaUrl + '" class="empty-state-cta">' + ctaLabel + ' <span class="material-symbols-elev" aria-hidden="true">arrow_forward</span></a>'
+            : '';
+
+        el.innerHTML = '' +
+            '<div class="empty-state empty-state-' + size + '" role="status">' +
+                '<span class="material-symbols-elev empty-state-icon" aria-hidden="true">' + icon + '</span>' +
+                '<p class="empty-state-message">' + message + '</p>' +
+                descHtml +
+                ctaHtml +
+            '</div>';
+    }
+
+    window.apiEmpty = apiEmpty;
 })();
 </script>

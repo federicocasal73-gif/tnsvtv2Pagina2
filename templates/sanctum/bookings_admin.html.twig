@@ -6,164 +6,6 @@
 {% block topbar_subtitle %}Reservas que te han solicitado · Aceptar / rechazar / proponer horarios.{% endblock %}
 
 {% block stylesheets %}
-<style>
-    .bookings-wrap {
-        max-width: 980px;
-        margin: 0 auto;
-        padding-bottom: 4rem;
-    }
-
-    .bookings-tabs {
-        display: flex;
-        gap: 0;
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 9999px;
-        padding: 0.3rem;
-        margin-bottom: 1rem;
-        max-width: 480px;
-    }
-    .bookings-tab {
-        flex: 1;
-        padding: 0.5rem 1rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.72rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        background: transparent;
-        border: none;
-        border-radius: 9999px;
-        color: var(--outline-elev);
-        cursor: pointer;
-    }
-    .bookings-tab.active {
-        background: rgba(242, 202, 80, 0.18);
-        color: var(--gold-elev);
-    }
-
-    .bookings-header {
-        text-align: center;
-        margin-bottom: 1.25rem;
-    }
-    .bookings-header h1 {
-        font-family: 'Cinzel', serif;
-        font-size: 1.55rem;
-        margin: 0;
-    }
-    .bookings-header p {
-        font-size: 0.72rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--outline-elev);
-        margin: 0.4rem 0 0;
-    }
-
-    .bookings-list { display: flex; flex-direction: column; gap: 0.75rem; }
-
-    .booking-card {
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-left: 3px solid var(--gold-elev);
-        border-radius: 0.75rem;
-        padding: 1rem 1.25rem;
-    }
-    .booking-card.status-pending  { border-left-color: #fbbf24; }
-    .booking-card.status-accepted { border-left-color: #4ade80; }
-    .booking-card.status-declined { border-left-color: #f87171; }
-    .booking-card.status-proposed { border-left-color: #c4a0ff; }
-    .booking-card.status-canceled { border-left-color: var(--outline-elev); opacity: 0.55; }
-    .booking-card-head {
-        display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.4rem;
-        flex-wrap: wrap;
-    }
-    .booking-card-topic {
-        font-family: 'Cinzel', serif;
-        font-size: 1.05rem;
-        color: var(--gold-elev);
-    }
-    .booking-card-status {
-        font-size: 0.65rem;
-        padding: 0.15rem 0.55rem;
-        border-radius: 9999px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 700;
-    }
-    .booking-card-status.pending  { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-    .booking-card-status.accepted { background: rgba(74, 222, 128, 0.18); color: #4ade80; }
-    .booking-card-status.declined { background: rgba(248, 113, 113, 0.18); color: #f87171; }
-    .booking-card-status.proposed { background: rgba(138, 60, 255, 0.18); color: #c4a0ff; }
-    .booking-card-status.canceled { background: rgba(255, 255, 255, 0.06); color: var(--outline-elev); }
-
-    .booking-card-meta {
-        font-size: 0.78rem;
-        color: var(--outline-elev);
-        margin-bottom: 0.5rem;
-        line-height: 1.5;
-    }
-    .booking-card-notes {
-        font-size: 0.85rem;
-        color: var(--on-surface-elev);
-        background: rgba(255, 255, 255, 0.02);
-        padding: 0.6rem 0.75rem;
-        border-radius: 0.4rem;
-        margin-bottom: 0.6rem;
-        line-height: 1.4;
-        white-space: pre-wrap;
-    }
-    .booking-card-actions {
-        display: flex; gap: 0.5rem; flex-wrap: wrap;
-    }
-    .booking-btn {
-        display: inline-flex; align-items: center; gap: 0.3rem;
-        padding: 0.45rem 0.85rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.78rem;
-        font-weight: 600;
-        border-radius: 0.4rem;
-        cursor: pointer;
-        border: none;
-    }
-    .booking-btn.accept  { background: rgba(74, 222, 128, 0.18); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); }
-    .booking-btn.decline { background: rgba(248, 113, 113, 0.18); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.4); }
-    .booking-btn.propose { background: rgba(138, 60, 255, 0.18); color: #c4a0ff; border: 1px solid rgba(138, 60, 255, 0.4); }
-    .booking-btn.cancel  { background: transparent; color: var(--outline-elev); border: 1px solid var(--glass-border-elev); }
-
-    .bookings-empty {
-        text-align: center;
-        padding: 5rem 1rem;
-        color: var(--outline-elev);
-    }
-    .bookings-empty-icon {
-        font-size: 3.5rem;
-        opacity: 0.4;
-        color: var(--gold-elev);
-        margin-bottom: 1rem;
-    }
-    .bookings-loading { text-align: center; padding: 3rem 1rem; color: var(--outline-elev); font-style: italic; }
-
-    .proposed-form {
-        margin-top: 0.6rem;
-        padding: 0.75rem;
-        background: rgba(138, 60, 255, 0.06);
-        border: 1px solid rgba(138, 60, 255, 0.3);
-        border-radius: 0.4rem;
-    }
-    .proposed-form textarea {
-        width: 100%;
-        min-height: 70px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.4rem;
-        color: var(--on-surface-elev);
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.85rem;
-        padding: 0.5rem 0.7rem;
-        resize: vertical;
-    }
-    .proposed-form-actions { display: flex; gap: 0.4rem; justify-content: flex-end; margin-top: 0.5rem; }
-</style>
 {% endblock %}
 
 {% block content %}
@@ -211,7 +53,7 @@
         try {
             const r = await apiFetch(`/api/academic/bookings?status=${encodeURIComponent(_status)}`, { silent: true });
             if (!r.ok || !r.data) {
-                list.innerHTML = '<p class="bookings-empty"><span class="material-symbols-elev bookings-empty-icon">error</span>Sin datos.</p>';
+                apiEmpty(list, { icon: 'event_busy', message: 'Sin reservas registradas' });
                 return;
             }
             const items = Array.isArray(r.data) ? r.data : (r.data.bookings || []);
@@ -287,7 +129,7 @@
         const id   = btn.dataset.id;
         const act  = btn.dataset.action;
         if (act === 'cancel') {
-            if (!confirm('¿Cancelar esta reserva?')) return;
+            if (!await apiConfirm('¿Cancelar esta reserva?', { title: 'Cancelar reserva', variant: 'danger' })) return;
             await patchBooking(`/api/academic/bookings/${id}/cancel`, {});
             loadBookings();
             return;
@@ -299,7 +141,7 @@
             return;
         }
         if (act === 'decline') {
-            if (!confirm('¿Rechazar esta reserva?')) return;
+            if (!await apiConfirm('¿Rechazar esta reserva?', { title: 'Rechazar reserva', variant: 'danger' })) return;
             btn.disabled = true;
             await patchBooking(`/api/academic/bookings/${id}/decline`, {});
             loadBookings();
@@ -315,7 +157,7 @@
             const ta = form.querySelector('textarea');
             const lines = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
             if (lines.length === 0) {
-                alert('Ingresá al menos un horario propuesto.');
+                apiToast('Ingresá al menos un horario propuesto.', 'warning');
                 return;
             }
             btn.disabled = true;
@@ -334,7 +176,7 @@
                 body: JSON.stringify(body)
             });
             if (!r.ok) {
-                alert(r.data && r.data.error ? r.data.error : 'Error');
+                apiToast(r.data && r.data.error ? r.data.error : 'Error', 'error');
             }
         } catch (e) { console.error(e); }
     }

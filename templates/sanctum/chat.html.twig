@@ -5,287 +5,7 @@
 {% block topbar_title %}Mensajes{% endblock %}
 {% block topbar_subtitle %}Conversaciones 1:1 y grupos del Sanctum.{% endblock %}
 
-{% block stylesheets %}
-<style>
-    .chat-layout {
-        display: grid;
-        grid-template-columns: 320px 1fr;
-        gap: 1rem;
-        max-width: 1280px;
-        margin: 0 auto;
-        height: calc(100vh - 8rem);
-        min-height: 540px;
-    }
-    .chat-pane {
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.75rem;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        min-width: 0;
-    }
-    .chat-pane-header {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--glass-border-elev);
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-    .chat-tabs {
-        display: inline-flex;
-        background: var(--glass-bg-elev);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 9999px;
-        padding: 0.2rem;
-    }
-    .chat-tab {
-        padding: 0.3rem 0.7rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        background: transparent;
-        border: none;
-        border-radius: 9999px;
-        color: var(--outline-elev);
-        cursor: pointer;
-    }
-    .chat-tab.active {
-        background: rgba(242, 202, 80, 0.18);
-        color: var(--gold-elev);
-    }
-    .chat-search {
-        flex-grow: 1;
-        min-width: 100px;
-        padding: 0.35rem 0.65rem;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.4rem;
-        color: var(--on-surface-elev);
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.85rem;
-    }
-    .chat-search:focus { outline: none; border-color: var(--gold-elev); }
-    .chat-new-dm-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.35rem 0.65rem;
-        background: rgba(242, 202, 80, 0.18);
-        border: 1px solid rgba(242, 202, 80, 0.5);
-        color: var(--gold-elev);
-        border-radius: 0.4rem;
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.78rem;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    .chat-list { flex-grow: 1; overflow-y: auto; }
-    .chat-conv {
-        display: flex;
-        gap: 0.7rem;
-        padding: 0.75rem;
-        cursor: pointer;
-        border-bottom: 1px solid var(--outline-variant-elev);
-        transition: background 0.15s;
-    }
-    .chat-conv:hover { background: rgba(242, 202, 80, 0.06); }
-    .chat-conv.active { background: rgba(242, 202, 80, 0.12); border-left: 3px solid var(--gold-elev); }
-    .chat-conv-avatar {
-        width: 38px; height: 38px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 0.85rem;
-        color: var(--void-black);
-        flex-shrink: 0;
-    }
-    .chat-conv-body { flex-grow: 1; min-width: 0; }
-    .chat-conv-name {
-        font-weight: 600; font-size: 0.92rem; color: var(--on-surface-elev);
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .chat-conv-preview {
-        font-size: 0.74rem; color: var(--outline-elev);
-        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .chat-conv-meta {
-        text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;
-    }
-    .chat-conv-time { font-size: 0.65rem; color: var(--outline-elev); }
-    .chat-conv-unread {
-        background: var(--gold-elev);
-        color: var(--void-black);
-        font-size: 0.65rem; font-weight: 700;
-        padding: 0.1rem 0.45rem;
-        border-radius: 9999px;
-        min-width: 18px; text-align: center;
-    }
-    .chat-list-empty {
-        text-align: center;
-        padding: 2.5rem 1rem;
-        color: var(--outline-elev);
-        font-style: italic;
-    }
-
-    .chat-conv-header {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid var(--glass-border-elev);
-        display: flex;
-        align-items: center;
-        gap: 0.7rem;
-    }
-    .chat-conv-header-name {
-        font-family: 'Cinzel', serif;
-        font-size: 1rem;
-        color: var(--gold-elev);
-    }
-    .chat-conv-header-status {
-        font-size: 0.7rem;
-        color: var(--outline-elev);
-    }
-    .chat-messages {
-        flex-grow: 1; overflow-y: auto;
-        padding: 1rem 1.25rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    .chat-empty {
-        flex-grow: 1;
-        display: flex; align-items: center; justify-content: center;
-        flex-direction: column; gap: 0.5rem;
-        color: var(--outline-elev);
-    }
-    .chat-empty-icon {
-        font-size: 3rem;
-        opacity: 0.3; color: var(--gold-elev);
-    }
-    .chat-msg {
-        display: flex; gap: 0.5rem; max-width: 80%;
-    }
-    .chat-msg.own { margin-left: auto; flex-direction: row-reverse; }
-    .chat-msg-avatar {
-        width: 28px; height: 28px;
-        border-radius: 50%;
-        background: var(--glass-bg-elev);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 0.7rem; font-weight: 700;
-        color: var(--outline-elev);
-        flex-shrink: 0;
-    }
-    .chat-msg.own .chat-msg-avatar {
-        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
-        color: var(--void-black);
-    }
-    .chat-msg-bubble {
-        padding: 0.55rem 0.85rem;
-        background: var(--glass-bg-elev);
-        border-radius: 0.75rem 0.75rem 0.75rem 0.25rem;
-        max-width: 100%;
-    }
-    .chat-msg.own .chat-msg-bubble {
-        background: rgba(242, 202, 80, 0.18);
-        border: 1px solid rgba(242, 202, 80, 0.4);
-        border-radius: 0.75rem 0.75rem 0.25rem 0.75rem;
-    }
-    .chat-msg-content {
-        font-size: 0.88rem;
-        line-height: 1.4;
-        word-break: break-word;
-        white-space: pre-wrap;
-    }
-    .chat-msg-meta {
-        font-size: 0.65rem;
-        color: var(--outline-elev);
-        margin-top: 0.25rem;
-    }
-
-    .chat-composer {
-        padding: 0.75rem 1rem;
-        border-top: 1px solid var(--glass-border-elev);
-        display: flex;
-        gap: 0.5rem;
-        align-items: flex-end;
-    }
-    .chat-composer-textarea {
-        flex-grow: 1;
-        min-height: 40px;
-        max-height: 120px;
-        padding: 0.55rem 0.85rem;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.5rem;
-        color: var(--on-surface-elev);
-        font-family: 'Space Grotesk', sans-serif;
-        font-size: 0.9rem;
-        resize: none;
-    }
-    .chat-composer-textarea:focus { outline: none; border-color: var(--gold-elev); }
-    .chat-send-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.55rem 1rem;
-        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
-        color: var(--void-black);
-        font-family: 'Cinzel', serif;
-        font-size: 0.85rem;
-        font-weight: 600;
-        border: none;
-        border-radius: 0.4rem;
-        cursor: pointer;
-    }
-    .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* New DM modal */
-    .chat-modal-overlay {
-        position: fixed; inset: 0;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(8px);
-        display: none; align-items: center; justify-content: center;
-        z-index: 100;
-    }
-    .chat-modal-overlay.open { display: flex; }
-    .chat-modal {
-        background: var(--void-black);
-        border: 1px solid var(--glass-border-elev);
-        border-radius: 0.75rem;
-        width: 100%; max-width: 460px;
-        max-height: 90vh; overflow-y: auto;
-    }
-    .chat-modal-header {
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid var(--glass-border-elev);
-        display: flex; align-items: center; justify-content: space-between;
-    }
-    .chat-modal-title { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold-elev); margin: 0; }
-    .chat-modal-close {
-        background: transparent; border: none;
-        color: var(--outline-elev);
-        cursor: pointer;
-        padding: 0.25rem 0.5rem;
-    }
-    .chat-modal-body { padding: 1rem 1.25rem; }
-    .chat-user-result {
-        display: flex; gap: 0.6rem; align-items: center;
-        padding: 0.6rem;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 0.4rem;
-        margin-bottom: 0.4rem;
-        cursor: pointer;
-    }
-    .chat-user-result:hover { background: rgba(242, 202, 80, 0.06); }
-
-    @media (max-width: 880px) {
-        .chat-layout { grid-template-columns: 1fr; }
-        .chat-list-pane { max-height: 35vh; }
-    }
-</style>
-{% endblock %}
+{% block stylesheets %}{% endblock %}
 
 {% block content %}
 <div class="chat-layout">
@@ -397,7 +117,8 @@
         try {
             const r = await apiFetch('/api/chat/conversations', { silent: true });
             if (!r.ok || !r.data) {
-                $list.innerHTML = '<p class="chat-list-empty">Sin datos</p>';
+                $list.innerHTML = '';
+                apiEmpty($list, { icon: 'forum', message: 'Sin conversaciones' });
                 return;
             }
             const items = Array.isArray(r.data) ? r.data : (r.data.conversations || []);
@@ -422,7 +143,8 @@
         }
 
         if (items.length === 0) {
-            $list.innerHTML = `<p class="chat-list-empty">No hay conversaciones${state.search ? ' que coincidan con la búsqueda' : ''}.</p>`;
+            $list.innerHTML = '';
+            apiEmpty($list, { icon: 'search_off', message: `No hay conversaciones${state.search ? ' que coincidan con la búsqueda' : ''}.` });
             return;
         }
 
@@ -498,7 +220,7 @@
                     <div>
                         <div class="chat-msg-bubble">
                             <div class="chat-msg-content">${esc(m.text || m.content || m.message || '')}</div>
-                            ${m.photo ? `<img class="chat-msg-photo" style="display:block;max-width:240px;border-radius:0.5rem;margin-top:0.4rem;" src="${esc(m.photo)}" />` : ''}
+                            ${m.photo ? `<img class="chat-msg-photo" style="display:block;width:auto;height:auto;max-width:240px;max-height:320px;border-radius:0.5rem;margin-top:0.4rem;" src="${esc(m.photo)}" alt="${esc(m.user || '')}" loading="lazy" decoding="async" />` : ''}
                         </div>
                         <div class="chat-msg-meta">${esc(authorName)}${m.date || m.created_at ? ' · ' + esc(fmtTime(m.date || m.created_at)) : ''}</div>
                     </div>
@@ -534,7 +256,7 @@
                 $input.value = '';
                 await openConversation(state.activeConvId);
             } else {
-                alert(r.data && r.data.error ? r.data.error : 'Error al enviar');
+                apiToast(r.data && r.data.error ? r.data.error : 'Error al enviar', 'error');
             }
         } finally {
             updateSend();
@@ -546,28 +268,55 @@
         t.addEventListener('click', () => {
             document.querySelectorAll('#chat-tabs .chat-tab').forEach(x => x.classList.toggle('active', x === t));
             state.tab = t.dataset.tab;
+            const url = new URL(location.href);
+            if (state.tab && state.tab !== 'all') url.searchParams.set('tab', state.tab);
+            else url.searchParams.delete('tab');
+            history.replaceState(null, '', url);
             renderConversations();
         });
     });
 
     // ─── Search ───
     let searchTimer = null;
-    document.getElementById('chat-search').addEventListener('input', e => {
+    const $chatSearch = document.getElementById('chat-search');
+    $chatSearch.addEventListener('input', e => {
         state.search = e.target.value;
+        const url = new URL(location.href);
+        if (state.search) url.searchParams.set('q', state.search);
+        else url.searchParams.delete('q');
+        history.replaceState(null, '', url);
         clearTimeout(searchTimer);
         searchTimer = setTimeout(renderConversations, 150);
     });
 
+    // Restore tab + search from URL
+    const _chatParams = new URLSearchParams(location.search);
+    const _chatTab = _chatParams.get('tab');
+    if (_chatTab && ['all', 'unread', 'groups'].includes(_chatTab)) {
+        document.querySelectorAll('#chat-tabs .chat-tab').forEach(x => {
+            const active = x.dataset.tab === _chatTab;
+            x.classList.toggle('active', active);
+            if (active) state.tab = _chatTab;
+        });
+    }
+    const _chatQ = _chatParams.get('q');
+    if (_chatQ) {
+        $chatSearch.value = _chatQ;
+        state.search = _chatQ;
+    }
+
     // ─── New DM modal ───
     const $modal = document.getElementById('chat-new-dm-modal');
-    document.getElementById('chat-new-dm-btn').addEventListener('click', () => {
-        $modal.classList.add('open');
-        document.getElementById('chat-dm-search').value = '';
-        document.getElementById('chat-dm-search').focus();
-        document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
+    const chatDmModal = apiSetupModal($modal, {
+        open() {
+            document.getElementById('chat-dm-search').value = '';
+            document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
+        }
     });
-    document.getElementById('chat-modal-close').addEventListener('click', () => $modal.classList.remove('open'));
-    $modal.addEventListener('click', e => { if (e.target === $modal) $modal.classList.remove('open'); });
+    document.getElementById('chat-new-dm-btn').addEventListener('click', () => {
+        chatDmModal.open();
+    });
+    document.getElementById('chat-modal-close').addEventListener('click', () => chatDmModal.close());
 
     let dmTimer = null;
     document.getElementById('chat-dm-search').addEventListener('input', e => {
@@ -605,7 +354,7 @@
                                 body: JSON.stringify({ code, name: el.dataset.name })
                             });
                             if (cr.ok && cr.data) {
-                                $modal.classList.remove('open');
+                                chatDmModal.close();
                                 await loadConversations();
                                 const newId = cr.data.id || cr.data.conversation_id || code;
                                 openConversation(newId);
