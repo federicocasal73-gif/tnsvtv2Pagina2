@@ -1,0 +1,18 @@
+{#
+   loading_state.html.twig — Reusable loading state component
+   ───────────────────────────────────────────────────────────────
+   Usage:
+     {% include '_partials/loading_state.html.twig' with {
+       icon: 'progress_activity',
+       message: 'Cargando datos...',
+       size: 'md'    ← optional: 'sm' | 'md' (default) | 'lg'
+     } %}
+#}
+{% set _icon = icon|default('progress_activity') %}
+{% set _message = message|default('Cargando...') %}
+{% set _size = size|default('md') %}
+
+<div class="loading-state loading-state-{{ _size }}" role="status">
+    <span class="material-symbols-elev loading-state-icon" aria-hidden="true">{{ _icon }}</span>
+    <p class="loading-state-message">{{ _message }}</p>
+</div>
