@@ -1,0 +1,169 @@
+{# ────────────────────────────────────────────────────────────
+ # TNSVT Sprint B.2 — Widget de chat flotante
+ # Inspirado en Intercom/Drift pero conectado al sistema real
+ # Muestra conversaciones + mensajes sin necesidad de ir a /chat
+ # ──────────────────────────────────────────────────────────── #}
+
+<div class="chat-widget"
+     data-controller="chat-widget"
+     data-chat-widget-open-value="false">
+
+    {# ─── Botón flotante (esquina inferior derecha) ─── #}
+    <button type="button"
+            class="chat-widget-toggle"
+            data-chat-widget-target="toggle"
+            data-action="chat-widget#toggle"
+            aria-label="Abrir chat"
+            aria-expanded="false">
+        <span class="material-symbols-elev chat-widget-toggle-icon" data-chat-widget-target="toggleIcon">chat_bubble</span>
+        <span class="chat-widget-toggle-badge hidden" data-chat-widget-target="badge">0</span>
+        <span class="chat-widget-toggle-pulse"></span>
+    </button>
+
+    {# ─── Panel del chat ─── #}
+    <div class="chat-widget-panel hidden"
+         data-chat-widget-target="panel"
+         role="dialog"
+         aria-label="Chat">
+        <header class="chat-widget-header">
+            <div class="chat-widget-header-info">
+                <h3 class="chat-widget-header-title">Mensajes del Sanctum</h3>
+                <span class="chat-widget-header-sub">Conversaciones 1:1 y grupos</span>
+            </div>
+            <div class="chat-widget-header-actions">
+                <button type="button"
+                        class="chat-widget-header-btn"
+                        data-action="chat-widget#toggleSound"
+                        aria-label="Activar/desactivar sonido"
+                        title="Sonido de notificación">
+                    <span class="material-symbols-elev" data-chat-widget-target="soundIcon">volume_up</span>
+                </button>
+                <button type="button"
+                        class="chat-widget-header-btn"
+                        data-action="chat-widget#newDm"
+                        aria-label="Nuevo DM (Ctrl+M)">
+                    <span class="material-symbols-elev">add_comment</span>
+                </button>
+                <button type="button"
+                        class="chat-widget-header-btn"
+                        data-action="chat-widget#refresh"
+                        aria-label="Refrescar">
+                    <span class="material-symbols-elev">refresh</span>
+                </button>
+                <a href="{{ path('sanctum_chat') }}" class="chat-widget-header-btn" aria-label="Abrir chat completo">
+                    <span class="material-symbols-elev">open_in_new</span>
+                </a>
+                <button type="button"
+                        class="chat-widget-header-btn"
+                        data-action="chat-widget#close"
+                        aria-label="Cerrar (Esc)">
+                    <span class="material-symbols-elev">close</span>
+                </button>
+            </div>
+        </header>
+
+        {# ─── Búsqueda ─── #}
+        <div class="chat-widget-search">
+            <span class="material-symbols-elev">search</span>
+            <input type="text"
+                   placeholder="Buscar conversación..."
+                   data-chat-widget-target="search"
+                   data-action="input->chat-widget#search">
+        </div>
+
+        {# ─── Tabs ─── #}
+        <div class="chat-widget-tabs">
+            <button type="button"
+                    class="chat-widget-tab active"
+                    data-tab="all"
+                    data-action="chat-widget#switchTab">Todos</button>
+            <button type="button"
+                    class="chat-widget-tab"
+                    data-tab="unread"
+                    data-action="chat-widget#switchTab">No leídos</button>
+            <button type="button"
+                    class="chat-widget-tab"
+                    data-tab="groups"
+                    data-action="chat-widget#switchTab">Grupos</button>
+        </div>
+
+        {# ─── Lista de conversaciones ─── #}
+        <div class="chat-widget-list" data-chat-widget-target="list">
+            <div class="chat-widget-empty">
+                <span class="material-symbols-elev">forum</span>
+                <p>Cargando conversaciones...</p>
+            </div>
+        </div>
+
+        {# ─── Panel de conversación activa ─── #}
+        <div class="chat-widget-conv hidden" data-chat-widget-target="convPanel">
+            <header class="chat-widget-conv-header">
+                <button type="button"
+                        class="chat-widget-conv-back"
+                        data-action="chat-widget#backToList"
+                        aria-label="Volver">
+                    <span class="material-symbols-elev">arrow_back</span>
+                </button>
+                <div class="chat-widget-conv-info">
+                    <div class="chat-widget-conv-avatar" data-chat-widget-target="convAvatar">?</div>
+                    <div>
+                        <div class="chat-widget-conv-name" data-chat-widget-target="convName">—</div>
+                        <div class="chat-widget-conv-status" data-chat-widget-target="convStatus">en línea</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="chat-widget-messages" data-chat-widget-target="messages">
+                <div class="chat-widget-empty">
+                    <span class="material-symbols-elev">chat</span>
+                    <p>Cargando mensajes...</p>
+                </div>
+            </div>
+
+            <div class="chat-widget-composer">
+                <textarea
+                    data-chat-widget-target="input"
+                    data-action="keydown->chat-widget#keydown input->chat-widget#onInputChange"
+                    placeholder="Escribe un mensaje..."
+                    rows="1"
+                    maxlength="2000"></textarea>
+                <button type="button"
+                        class="chat-widget-send-btn"
+                        data-chat-widget-target="sendBtn"
+                        data-action="chat-widget#send"
+                        disabled>
+                    <span class="material-symbols-elev">send</span>
+                </button>
+            </div>
+            <div class="chat-widget-char-count" data-chat-widget-target="charCount" hidden>
+                <span data-chat-widget-target="charCountValue">0</span> / 2000
+            </div>
+        </div>
+
+        {# ─── Modal Nuevo DM ─── #}
+        <div class="chat-widget-modal-overlay hidden"
+             data-chat-widget-target="newDmModal"
+             role="dialog"
+             aria-modal="true"
+             aria-label="Nuevo DM">
+            <div class="chat-widget-modal">
+                <header class="chat-widget-modal-header">
+                    <h3>Nuevo mensaje directo</h3>
+                    <button type="button"
+                            class="chat-widget-header-btn"
+                            data-action="chat-widget#closeNewDm"
+                            aria-label="Cerrar">
+                        <span class="material-symbols-elev">close</span>
+                    </button>
+                </header>
+                <input type="text"
+                       class="chat-widget-modal-search"
+                       placeholder="Buscar usuario..."
+                       data-chat-widget-target="userSearch">
+                <div class="chat-widget-users" data-chat-widget-target="users">
+                    <p class="chat-widget-empty-mini">Busca un usuario para iniciar...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

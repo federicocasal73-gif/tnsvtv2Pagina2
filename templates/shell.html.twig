@@ -40,6 +40,7 @@
 {# ═══ FASE 0 — Fondo estrellado global (V2 identidad visual) ═══ #}
 {# https://tnsvt.com necesita esta identidad en TODAS las páginas. #}
 {% block background %}{% endblock %}
+<script src="{{ asset('js/modules/theme.js') }}" defer></script>
 <script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
 
 {# api_helper MUST be included BEFORE any {% block content %} to ensure window.apiFetch is defined #}
@@ -63,20 +64,20 @@
         </div>
 
         <nav class="sanctum-nav">
-            {# ═══ ⌂ INICIO ═══ #}
+            {# ═══ ⌂ INICIO (Command Center) ═══ #}
             <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
                 <span class="material-symbols-elev">dashboard</span>
-                <span class="sanctum-link-label">Inicio</span>
+                <span class="sanctum-link-label">Command Center</span>
             </a>
 
-            {# ═══ 👤 MI CUENTA ═══ #}
-            <div class="sanctum-section-title">Mi cuenta</div>
+            {# ═══ ✝ SANCTUM — Mi cuenta �══ #}
+            <div class="sanctum-section-title">Sanctum</div>
             <a href="/profile" class="sanctum-link" data-page="profile">
                 <span class="material-symbols-elev">person</span>
                 <span class="sanctum-link-label">Perfil</span>
             </a>
             <a href="{{ path('account_settings') }}" class="sanctum-link" data-page="account-settings">
-                <span class="material-symbols-elev">settings</span>
+                <span class="material-symbols-elev">tune</span>
                 <span class="sanctum-link-label">Configuración</span>
             </a>
             <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
@@ -84,12 +85,24 @@
                 <span class="sanctum-link-label">Notificaciones</span>
                 <span id="bell-badge" class="sanctum-bell-badge hidden">0</span>
             </a>
+            <a href="/sanctum/guardian" class="sanctum-link" data-page="guardian">
+                <span class="material-symbols-elev">shield_person</span>
+                <span class="sanctum-link-label">Guardian</span>
+            </a>
+            <a href="/diario" class="sanctum-link" data-page="diario">
+                <span class="material-symbols-elev">menu_book</span>
+                <span class="sanctum-link-label">Cuaderno del Alma</span>
+            </a>
+            <a href="/frequencies" class="sanctum-link">
+                <span class="material-symbols-elev">graphic_eq</span>
+                <span class="sanctum-link-label">Santuario de Frecuencias</span>
+            </a>
 
-            {# ═══ ⚔ TRADING ═══ #}
-            <div class="sanctum-section-title">Trading</div>
+            {# ═══ 💰 DIVINE WEALTH — Trading & Wallet ═══ #}
+            <div class="sanctum-section-title">Divine Wealth</div>
             <a href="/journal" class="sanctum-link" data-page="journal">
                 <span class="material-symbols-elev">edit_note</span>
-                <span class="sanctum-link-label">Journal</span>
+                <span class="sanctum-link-label">Trading Journal</span>
             </a>
             <a href="/calendar" class="sanctum-link" data-page="calendar">
                 <span class="material-symbols-elev">calendar_month</span>
@@ -99,61 +112,17 @@
                 <span class="material-symbols-elev">leaderboard</span>
                 <span class="sanctum-link-label">Leaderboard</span>
             </a>
-
-            {# ═══ 🎓 FORMACIÓN ═══ #}
-            <div class="sanctum-section-title">Formación</div>
-            <a href="/campus" class="sanctum-link" data-page="campus">
-                <span class="material-symbols-elev">school</span>
-                <span class="sanctum-link-label">Campus</span>
+            <a href="/wallet" class="sanctum-link" data-page="wallet">
+                <span class="material-symbols-elev">account_balance_wallet</span>
+                <span class="sanctum-link-label">Wallet</span>
+            </a>
+            <a href="/shop" class="sanctum-link" data-page="shop">
+                <span class="material-symbols-elev">store</span>
+                <span class="sanctum-link-label">Tienda</span>
             </a>
 
-            {# ═══ � MENTE & MACRO ═══ #}
-            <div class="sanctum-section-title">Mente & Macro</div>
-            <a href="/macro" class="sanctum-link" data-page="macro">
-                <span class="material-symbols-elev">event_upcoming</span>
-                <span class="sanctum-link-label">Macroeconomía</span>
-            </a>
-            <a href="/oracle" class="sanctum-link" data-page="oracle">
-                <span class="material-symbols-elev">auto_awesome</span>
-                <span class="sanctum-link-label">Oráculo</span>
-            </a>
-            <a href="/sanctum/guardian" class="sanctum-link" data-page="guardian">
-                <span class="material-symbols-elev">shield_person</span>
-                <span class="sanctum-link-label">Guardian</span>
-            </a>
-            <a href="/diario" class="sanctum-link" data-page="diario">
-                <span class="material-symbols-elev">menu_book</span>
-                <span class="sanctum-link-label">Diario</span>
-            </a>
-            <a href="/frequencies" class="sanctum-link">
-                <span class="material-symbols-elev">graphic_eq</span>
-                <span class="sanctum-link-label">Frecuencias</span>
-            </a>
-
-            {# ═══ 👥 COMUNIDAD ═══ #}
-            <div class="sanctum-section-title">Comunidad</div>
-
-            {# Social #}
-            <div class="sanctum-section-title sanctum-section-title-sub">Social</div>
-            <a href="/feed" class="sanctum-link" data-page="feed">
-                <span class="material-symbols-elev">forum</span>
-                <span class="sanctum-link-label">Feed</span>
-            </a>
-            <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
-                <span class="material-symbols-elev">share</span>
-                <span class="sanctum-link-label">Conexiones</span>
-            </a>
-            <a href="/chat" class="sanctum-link" data-page="chat">
-                <span class="material-symbols-elev">chat</span>
-                <span class="sanctum-link-label">Chat</span>
-            </a>
-            <a href="/clan" class="sanctum-link" data-page="clan">
-                <span class="material-symbols-elev">groups</span>
-                <span class="sanctum-link-label">Clanes</span>
-            </a>
-
-            {# Compete #}
-            <div class="sanctum-section-title sanctum-section-title-sub">Compete</div>
+            {# �══ ⚔ TASK SOVEREIGNTY — Compete ═══ #}
+            <div class="sanctum-section-title">Task Sovereignty</div>
             <a href="/tournaments" class="sanctum-link" data-page="tournaments">
                 <span class="material-symbols-emoji">🏆</span>
                 <span class="sanctum-link-label">Torneos</span>
@@ -171,15 +140,38 @@
                 <span class="sanctum-link-label">Honor</span>
             </a>
 
-            {# Wallet #}
-            <div class="sanctum-section-title sanctum-section-title-sub">Wallet</div>
-            <a href="/wallet" class="sanctum-link" data-page="wallet">
-                <span class="material-symbols-elev">account_balance_wallet</span>
-                <span class="sanctum-link-label">Wallet</span>
+            {# ═══ 🎓 EDUCATIONAL MASTERY �══ #}
+            <div class="sanctum-section-title">Educational Mastery</div>
+            <a href="/campus" class="sanctum-link" data-page="campus">
+                <span class="material-symbols-elev">school</span>
+                <span class="sanctum-link-label">Campus</span>
             </a>
-            <a href="/shop" class="sanctum-link" data-page="shop">
-                <span class="material-symbols-elev">store</span>
-                <span class="sanctum-link-label">Tienda</span>
+            <a href="/macro" class="sanctum-link" data-page="macro">
+                <span class="material-symbols-elev">event_upcoming</span>
+                <span class="sanctum-link-label">Macroeconomía</span>
+            </a>
+            <a href="/oracle" class="sanctum-link" data-page="oracle">
+                <span class="material-symbols-elev">auto_awesome</span>
+                <span class="sanctum-link-label">Oráculo</span>
+            </a>
+
+            {# ═══ 🔮 PROPHECIES — Comunidad �══ #}
+            <div class="sanctum-section-title">Prophecies</div>
+            <a href="/feed" class="sanctum-link" data-page="feed">
+                <span class="material-symbols-elev">forum</span>
+                <span class="sanctum-link-label">Salón del Cónclave</span>
+            </a>
+            <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
+                <span class="material-symbols-elev">share</span>
+                <span class="sanctum-link-label">Conexiones</span>
+            </a>
+            <a href="/chat" class="sanctum-link" data-page="chat">
+                <span class="material-symbols-elev">chat</span>
+                <span class="sanctum-link-label">Chat</span>
+            </a>
+            <a href="/clan" class="sanctum-link" data-page="clan">
+                <span class="material-symbols-elev">groups</span>
+                <span class="sanctum-link-label">Clanes</span>
             </a>
 
             {# ═══ ⚙ ADMIN (solo visible para ROLE_ADMIN) ═══ #}
@@ -318,6 +310,11 @@
         </div>
     </main>
 </div>
+
+{# ─── TNSVT Sprint B.4 — Chat widget flotante (visible en todas las páginas) ─── #}
+{% if app.user %}
+    {% include '_partials/chat_widget.html.twig' %}
+{% endif %}
 
 <div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50">
     {% block floats %}{% endblock %}
