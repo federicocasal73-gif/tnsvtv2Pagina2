@@ -63,12 +63,6 @@ class SanctumModuleController extends AbstractController
         return $this->render('sanctum/chat.html.twig');
     }
 
-    #[Route('/feed', name: 'sanctum_feed', methods: ['GET'])]
-    public function feed(): Response
-    {
-        return $this->render('sanctum/feed.html.twig');
-    }
-
     #[Route('/diario', name: 'sanctum_diary', methods: ['GET'])]
     public function diary(): Response
     {
@@ -187,36 +181,12 @@ class SanctumModuleController extends AbstractController
         return $this->render('sanctum/campus.html.twig');
     }
 
-    // ──── GAME ────
-
-    #[Route('/game', name: 'sanctum_game', methods: ['GET'])]
-    public function game(): Response
-    {
-        return $this->render('sanctum/game.html.twig');
-    }
-
     // ──── LEADERBOARD ────
 
     #[Route('/leaderboard', name: 'sanctum_leaderboard', methods: ['GET'])]
     public function leaderboard(): Response
     {
         return $this->render('sanctum/leaderboard.html.twig');
-    }
-
-    // ──── TOURNAMENTS ────
-
-    #[Route('/tournaments', name: 'sanctum_tournaments', methods: ['GET'])]
-    public function tournaments(): Response
-    {
-        return $this->render('sanctum/tournaments.html.twig');
-    }
-
-    // ──── DUELS ────
-
-    #[Route('/duels', name: 'sanctum_duels', methods: ['GET'])]
-    public function duels(): Response
-    {
-        return $this->render('sanctum/duels.html.twig');
     }
 
     // ──── CLAN ────
@@ -227,28 +197,12 @@ class SanctumModuleController extends AbstractController
         return $this->render('sanctum/clan.html.twig');
     }
 
-    // ──── SHOP ────
-
-    #[Route('/shop', name: 'sanctum_shop', methods: ['GET'])]
-    public function shop(): Response
-    {
-        return $this->render('sanctum/shop.html.twig');
-    }
-
     // ──── WALLET ────
 
     #[Route('/wallet', name: 'sanctum_wallet', methods: ['GET'])]
     public function wallet(): Response
     {
         return $this->render('sanctum/wallet.html.twig');
-    }
-
-    // ──── HONOR BOARD ────
-
-    #[Route('/honor', name: 'sanctum_honor', methods: ['GET'])]
-    public function honor(): Response
-    {
-        return $this->render('sanctum/honor.html.twig');
     }
 
     // ──── GUARDIAN ────
