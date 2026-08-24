@@ -35,7 +35,6 @@ final class MainSchedule implements ScheduleProviderInterface
     {
         $schedule = new Schedule()
             ->add(RecurringMessage::every('1 minute', new FireDueRemindersMessage()))
-            ->add(RecurringMessage::every('5 minutes', new RecomputeLeaderboardsMessage()))
             ->add(RecurringMessage::every('1 hour', new PurgeExpiredTokensMessage()))
             ->add(RecurringMessage::every('1 day', new DailyBackupReminderMessage()));
 
