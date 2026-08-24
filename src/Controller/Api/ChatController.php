@@ -136,7 +136,27 @@ class ChatController extends AbstractController
         $me = $this->resolveUser($request);
         if (!$me) return $this->json(['error' => 'user_code requerido'], 400);
 
+        $q = trim($request->query->get('q', ''));
         $rows = $this->conversationRepository->findByParticipant($me);
+
+        if ($q !== '') {
+            $qLower = mb_strtolower($q);
+            $rows = array_filter($rows, function ($r) use ($qLower) {
+                $conv = $r['conv'];
+                $title = mb_strtolower($conv->getTitle() ?? '');
+                if (str_contains($title, $qLower)) return true;
+                foreach ($conv->getParticipants() as $p) {
+                    $name = mb_strtolower($p->getUser() ? $p->getUser()->getName() : '');
+                    if (str_contains($name, $qLower)) return true;
+                }
+                $lastMsg = $r['lastMessage'];
+                if ($lastMsg && $lastMsg->getBody()) {
+                    if (str_contains(mb_strtolower($lastMsg->getBody()), $qLower)) return true;
+                }
+                return false;
+            });
+        }
+
         $data = array_map(
             fn($r) => $this->serializeConversation($r['conv'], $r['lastMessage'], $r['unreadCount'], $me),
             $rows
