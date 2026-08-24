@@ -1,53 +1,211 @@
 {% extends 'public/shell.html.twig' %}
 
-{% block title %}Entrar · T.N.S.V.T{% endblock %}
+{% block title %}Entrar al Sanctum · T.N.S.V.T{% endblock %}
+
+{% block body_class %}login-body gateway-emblem{% endblock %}
+
+{# Login page renders its own top app bar. #}
+{% block public_nav %}{% endblock %}
+
+{# FASE 0 — Bring the shader stars to full opacity for the login. #}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/components/gateway.css') }}" />
+{% endblock %}
+
+{% block background %}{% endblock %}
+
+{% block gateway_emblem %}{% endblock %}
 
 {% block content %}
-    {# ─── Animated background (matches landing for consistency) ─── #}
+    <a class="gw-skip-link" href="#login-card">Skip to content</a>
     {# ─── WebGL shader background handled in JS ─── #}
 
-    <div class="home-container">
-        <div class="hero">
-            <div class="cross" aria-hidden="true">✝</div>
-            <h1 class="logo">T.N.S.V.T</h1>
-            <p class="tagline">Entrar al Sanctum</p>
+    {# ─── Top App Bar ─── #}
+    <header class="gw-topbar">
+        <div class="gw-brand">
+            <a class="gw-menu material-symbols-elev" href="/" aria-label="Volver">arrow_back</a>
+            <span class="gw-brand-sigil material-symbols-elev" aria-hidden="true">token</span>
+            <span class="gw-brand-name">T.N.S.V.T</span>
+            <span class="gw-dot" aria-hidden="true"></span>
+        </div>
+        <div class="gw-topbar-actions">
+            <a class="gw-entrar" href="/">
+                <span class="material-symbols-elev" aria-hidden="true">home</span> Inicio
+            </a>
+        </div>
+    </header>
+
+    <main class="gw-main">
+        {# ─── Hero celestial ─── #}
+        <section class="gw-hero" id="gw-hero">
+            <div class="gw-emblem" id="gw-emblem-3d" aria-hidden="true">
+                <div class="gw-ring gw-ring-a"></div>
+                <div class="gw-ring gw-ring-b"></div>
+                <div class="gw-orbit"></div>
+                <div class="gw-core"></div>
+            </div>
+            <p class="gw-kicker">Reino del Cristo Íntegro</p>
+            <h1 class="gw-title">Neuro-Spiritual Value Theory</h1>
+            <p class="verse">"Por mí, los reyes reinan y los príncipes gobiernan con justicia." — Proverbios 8:15</p>
+        </section>
+
+        {# ─── Live platform stats (real data) ─── #}
+        <div class="stats-strip">
+            <div class="stat-item">
+                <div class="stat-value" id="stat-traders">—</div>
+                <div class="stat-label"><span class="stat-live"></span>Traders Activos</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-trades">—</div>
+                <div class="stat-label">Trades Hoy</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-pnl">—</div>
+                <div class="stat-label">PnL Global</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">99.9%</div>
+                <div class="stat-label"><span class="stat-live"></span>Uptime</div>
+            </div>
         </div>
 
         {# ─── Login card ─── #}
-        <div class="login-card">
-            <h2>Iniciar sesión</h2>
-            <form id="login-form" autocomplete="off">
-                <div class="form-field">
-                    <label for="login-code">Código de acceso</label>
-                    <input type="text" id="login-code" name="code" required autocomplete="username"
-                           placeholder="ADMIN01 / DEMO / tu código" />
+        <section id="login-card" class="login-section">
+            <div class="login-card">
+                <h2>Iniciar sesión</h2>
+                <form id="login-form" autocomplete="off">
+                    <div class="form-field">
+                        <label for="login-code">Código de acceso</label>
+                        <input type="text" id="login-code" name="code" required autocomplete="username"
+                               placeholder="ADMIN01 / DEMO / tu código" />
+                    </div>
+                    <div class="form-field">
+                        <label for="login-name" id="login-name-label">Nombre (solo usuarios)</label>
+                        <input type="text" id="login-name" name="name" autocomplete="name"
+                               placeholder="Nombre del usuario (Demo, Juan, etc.)" />
+                    </div>
+                    <div class="form-field" id="login-password-field">
+                        <label for="login-password">Contraseña (solo admins)</label>
+                        <input type="password" id="login-password" name="password" autocomplete="current-password"
+                               placeholder="Solo requerida si tu código empieza con ADMIN" />
+                    </div>
+                    <button type="submit" class="login-submit" id="login-submit-btn">
+                        <span id="login-btn-text">Entrar</span>
+                    </button>
+                    <div class="login-error" id="login-error" role="alert" aria-live="assertive"></div>
+                    <div class="login-success" id="login-success" role="status" aria-live="polite"></div>
+                </form>
+                <div class="login-hint">
+                    <strong>Cómo funciona:</strong> ADMIN01 = admin (necesita contraseña).<br>
+                    <code>DEMO</code> con nombre <code>Demo</code> = usuario normal (sin contraseña).<br>
+                    Tu sesión queda activa hasta cerrar el navegador.
                 </div>
-                <div class="form-field">
-                    <label for="login-name" id="login-name-label">Nombre (solo usuarios)</label>
-                    <input type="text" id="login-name" name="name" autocomplete="name"
-                           placeholder="Nombre del usuario (Demo, Juan, etc.)" />
-                </div>
-                <div class="form-field" id="login-password-field">
-                    <label for="login-password">Contraseña (solo admins)</label>
-                    <input type="password" id="login-password" name="password" autocomplete="current-password"
-                           placeholder="Solo requerida si tu código empieza con ADMIN" />
-                </div>
-                <button type="submit" class="login-submit" id="login-submit-btn">
-                    <span id="login-btn-text">Entrar</span>
-                </button>
-                <div class="login-error" id="login-error" role="alert" aria-live="assertive"></div>
-                <div class="login-success" id="login-success" role="status" aria-live="polite"></div>
-            </form>
-            <div class="login-hint">
-                <strong>Cómo funciona:</strong> ADMIN01 = admin (necesita contraseña).<br>
-                <code>DEMO</code> con nombre <code>Demo</code> = usuario normal (sin contraseña).<br>
-                Tu sesión queda activa hasta cerrar el navegador.
             </div>
-            <div class="toggle-mode">
-                <a href="/">← Volver al inicio</a>
+        </section>
+
+        {# ─── Módulos del Sanctum (preview antes de entrar) ─── #}
+        <section class="gw-modules">
+            <div class="gw-modules-head">
+                <h2 class="gw-modules-title">Módulos del Sanctum</h2>
+                <span class="gw-modules-phase">Acceso tras login</span>
             </div>
-        </div>
-    </div>
+
+            <a class="gw-bento gw-fade" style="animation-delay: .1s" href="#login-card">
+                <span class="gw-bento-icon"><span class="material-symbols-elev" aria-hidden="true">dashboard</span></span>
+                <span class="gw-bento-body">
+                    <span class="gw-bento-title">Sanctum</span>
+                    <span class="gw-bento-desc">Command center con KPIs, tareas y auditoría</span>
+                </span>
+                <span class="gw-bento-chevron material-symbols-elev" aria-hidden="true">chevron_right</span>
+            </a>
+
+            <a class="gw-bento gw-fade" style="animation-delay: .2s" href="#login-card">
+                <span class="gw-bento-icon"><span class="material-symbols-elev" aria-hidden="true">edit_note</span></span>
+                <span class="gw-bento-body">
+                    <span class="gw-bento-title">Trading Journal</span>
+                    <span class="gw-bento-desc">Bitácora de operaciones, métricas y análisis</span>
+                </span>
+                <span class="gw-bento-chevron material-symbols-elev" aria-hidden="true">chevron_right</span>
+            </a>
+
+            <div class="gw-grid-2">
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .3s" href="#login-card">
+                    <span class="material-symbols-elev" aria-hidden="true">calendar_month</span>
+                    <span>
+                        <span class="gw-tile-title">Calendario Macro</span>
+                        <span class="gw-tile-sub">Los hilos del mundo</span>
+                    </span>
+                </a>
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .4s" href="#login-card">
+                    <span class="material-symbols-elev" aria-hidden="true">menu_book</span>
+                    <span>
+                        <span class="gw-tile-title">Diario</span>
+                        <span class="gw-tile-sub">Bitácora privada cifrada</span>
+                    </span>
+                </a>
+            </div>
+
+            <a class="gw-bento gw-bento-accent gw-fade" style="animation-delay: .5s" href="#login-card">
+                <span class="gw-bento-icon"><span class="material-symbols-elev" aria-hidden="true">forum</span></span>
+                <span class="gw-bento-body">
+                    <span class="gw-bento-title">Salón del Cónclave</span>
+                    <span class="gw-bento-desc">Señales, resultados y decisiones ejecutadas</span>
+                </span>
+                <span class="material-symbols-elev gw-bento-play" aria-hidden="true">play_circle</span>
+            </a>
+
+            <div class="gw-grid-2">
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .6s" href="#login-card">
+                    <span class="material-symbols-elev" aria-hidden="true">chat</span>
+                    <span>
+                        <span class="gw-tile-title">Mensajes</span>
+                        <span class="gw-tile-sub">Conversaciones y grupos</span>
+                    </span>
+                </a>
+                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .7s" href="#login-card">
+                    <span class="material-symbols-elev" aria-hidden="true">music_note</span>
+                    <span>
+                        <span class="gw-tile-title">Frecuencias</span>
+                        <span class="gw-tile-sub">Sanctum sonoro 432hz</span>
+                    </span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    {# ─── Bottom Navigation Bar ─── #}
+    <nav class="gw-bottomnav" aria-label="Módulos">
+        <a class="gw-navitem" href="/">
+            <span class="gw-navpill"><span class="material-symbols-elev" aria-hidden="true">home_max</span></span>
+            <span>Gateway</span>
+        </a>
+        <a class="gw-navitem active" href="#login-card">
+            <span class="gw-navpill"><span class="material-symbols-elev" aria-hidden="true">login</span></span>
+            <span>Entrar</span>
+        </a>
+    </nav>
+
+    {# ─── Live stats loader ─── #}
+    <script>
+    (function () {
+        'use strict';
+        if (typeof apiFetch === 'function') {
+            apiFetch('/api/public/stats', { silent: true })
+                .then(function (r) {
+                    if (!r.ok || !r.data || !r.data.success) return;
+                    var s = r.data.stats || {};
+                    var set = function (id, val) {
+                        var el = document.getElementById(id);
+                        if (el) el.textContent = val;
+                    };
+                    if (s.active_traders !== undefined) set('stat-traders', s.active_traders);
+                    if (s.trades_today !== undefined) set('stat-trades', s.trades_today);
+                    if (s.global_pnl !== undefined) set('stat-pnl', s.global_pnl);
+                })
+                .catch(function () { /* silent fail */ });
+        }
+    })();
+    </script>
 
     <script>
     (function () {
