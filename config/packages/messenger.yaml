@@ -21,7 +21,6 @@ framework:
             # Chat messages go async (don't block HTTP request)
             'App\Message\ChatMessageSent': async
             'App\Message\NotificationDispatch': async
-            'App\Message\TournamentNotification': async
             'App\Message\DeviceRegistered': async
 
 when@test:
