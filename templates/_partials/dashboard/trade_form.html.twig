@@ -1,0 +1,523 @@
+{# ────────────────────────────────────────────────────────────
+ # TNSVT — Partial: Formulario de Registrar Trade (embebido)
+ # Sprint A.1: Mismo formulario que journal_new pero standalone
+ # ──────────────────────────────────────────────────────────── #}
+
+<div class="trade-form-wrap" id="dashboard-trade-form-wrap">
+
+    <div class="trade-form-header">
+        <span class="material-symbols-elev" style="color: var(--gold-elev); font-size: 1.8rem;">edit_note</span>
+        <h1 class="text-cinzel-display" style="font-size: 1.7rem; margin: 0.5rem 0 0.25rem;">ASENTAR OPERACIÓN CERRADA</h1>
+        <p>Registrá cada trade · Mantené tu bitácora de ejecutor</p>
+    </div>
+
+    <div id="form-error" class="form-error"></div>
+    <div id="form-success" class="form-success"></div>
+
+    <form id="trade-form" autocomplete="off" novalidate>
+
+        {# ─── 1. Fecha y hora ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">event</span>Fecha y hora</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="form-label" for="trade-date">Fecha</label>
+                    <input type="date" id="trade-date" name="date" class="form-input" required />
+                </div>
+                <div>
+                    <label class="form-label" for="trade-time">Hora</label>
+                    <input type="time" id="trade-time" name="time" class="form-input" required value="12:00" />
+                </div>
+            </div>
+        </div>
+
+        {# ─── 2. Activo ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">currency_exchange</span>Activo</h3>
+            <div class="flex flex-wrap gap-2 mb-3" id="asset-chips">
+                <button type="button" class="chip" data-asset="XAUUSD">XAUUSD</button>
+                <button type="button" class="chip" data-asset="NAS100">NAS100</button>
+                <button type="button" class="chip" data-asset="EURUSD">EURUSD</button>
+                <button type="button" class="chip" data-asset="GBPUSD">GBPUSD</button>
+                <button type="button" class="chip" data-asset="USDJPY">USDJPY</button>
+                <button type="button" class="chip" data-asset="US30">US30</button>
+                <button type="button" class="chip" data-asset="BTCUSDT">BTCUSDT</button>
+                <button type="button" class="chip" data-asset="ETHUSDT">ETHUSDT</button>
+                <button type="button" class="chip" data-asset="XAGUSD">XAGUSD</button>
+            </div>
+            <input type="text" id="trade-asset" name="asset" class="form-input"
+                   required maxlength="16" placeholder="Otro activo (ej: AUDUSD, SPX, NATGAS)"
+                   style="text-transform: uppercase;" />
+        </div>
+
+        {# ─── 3. Dirección ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">swap_horiz</span>Dirección</h3>
+            <div class="grid grid-cols-2 gap-3" id="dir-toggle">
+                <button type="button" class="dir-btn" data-dir="BUY">
+                    <span class="material-symbols-elev">trending_up</span>
+                    BUY · Long
+                </button>
+                <button type="button" class="dir-btn" data-dir="SELL">
+                    <span class="material-symbols-elev">trending_down</span>
+                    SELL · Short
+                </button>
+            </div>
+        </div>
+
+        {# ─── 4. Precios ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">price_check</span>Precios (opcional)</h3>
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="form-label" for="trade-entry">Entry</label>
+                    <input type="number" step="any" id="trade-entry" name="entry" class="form-input" placeholder="2650.50" />
+                </div>
+                <div>
+                    <label class="form-label pos" for="trade-tp">Take Profit</label>
+                    <input type="number" step="any" id="trade-tp" name="tp" class="form-input" placeholder="2660.00" />
+                </div>
+                <div>
+                    <label class="form-label neg" for="trade-sl">Stop Loss</label>
+                    <input type="number" step="any" id="trade-sl" name="sl" class="form-input" placeholder="2645.00" />
+                </div>
+            </div>
+        </div>
+
+        {# ─── 5. Resultado + P&L ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">emoji_events</span>Resultado</h3>
+            <div class="grid grid-cols-4 gap-2 mb-4" id="result-toggle">
+                <button type="button" class="result-btn" data-result="WIN">WIN</button>
+                <button type="button" class="result-btn" data-result="LOSS">LOSS</button>
+                <button type="button" class="result-btn" data-result="BE">BE</button>
+                <button type="button" class="result-btn" data-result="OPEN">OPEN</button>
+            </div>
+            <div>
+                <label class="form-label" for="trade-pnl">P&L final (USD)</label>
+                <input type="number" step="any" id="trade-pnl" name="pnl" class="form-input"
+                       placeholder="ej: +95.50 o -50.00" required />
+                <p class="text-xs text-[var(--outline-elev)] mt-1">
+                    Positivo si fue ganancia, negativo si fue pérdida.
+                </p>
+            </div>
+        </div>
+
+        {# ─── 6. Risk:Reward computed ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">calculate</span>Ratio Riesgo:Beneficio</h3>
+            <div id="rr-display" class="rr-display">—</div>
+            <small>Calculado automáticamente desde Entry / TP / SL (TP arriba del Entry si BUY; SL abajo)</small>
+        </div>
+
+        {# ─── 7. Capturas (drag-drop) ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">image</span>Capturas (opcional, máx 3)</h3>
+
+            <div class="photo-dropzone" id="photo-dropzone" tabindex="0" role="button" aria-label="Soltá imágenes o hacé click para elegir">
+                <input type="file" id="photo-file-input" accept="image/png,image/jpeg,image/webp" multiple hidden />
+                <span class="material-symbols-elev photo-dropzone-icon">add_photo_alternate</span>
+                <p class="photo-dropzone-title">Arrastrá imágenes o hacé click</p>
+                <p class="photo-dropzone-sub">PNG · JPG · WebP · máx 4MB c/u</p>
+            </div>
+
+            <input type="url" id="trade-photo-url" class="form-input mt-2" placeholder="O pegá una URL: https://..." />
+
+            <div id="photo-preview" class="photo-preview-grid"></div>
+        </div>
+
+        {# ─── 8. Notas + Tips del Creador ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">description</span>Notas (opcional)</h3>
+            <textarea id="trade-notes" name="notes" class="form-textarea"
+                      placeholder="¿Qué patrón reconociste? ¿Qué hiciste bien? ¿Qué patrón volvió a aparecer?"></textarea>
+            <div class="flex flex-wrap gap-2 mt-3">
+                <button type="button" class="tip-chip" data-tip="¿Qué patrón reconociste?">Patrón</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué hiciste bien?">Aciertos</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué patrón volvió a aparecer?">Repetición</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué emoción dominó?">Emoción</button>
+                <button type="button" class="tip-chip" data-tip="¿Qué ajustarías la próxima vez?">Ajuste</button>
+            </div>
+        </div>
+
+        <div class="form-footer">
+            <button type="button" class="form-cancel-btn" id="cancel-btn">Cancelar</button>
+            <button type="submit" id="submit-btn" class="form-submit-primary">
+                <span class="material-symbols-elev">save</span>
+                Registrar trade
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ══════ Estado y referencias ══════
+    const state = {
+        direction: null,
+        result: null,
+        asset: null,
+    };
+
+    const $form = document.getElementById('trade-form');
+    const $error = document.getElementById('form-error');
+    const $success = document.getElementById('form-success');
+    const $submit = document.getElementById('submit-btn');
+
+    // �═════ Capturas (drag-drop + URL) ══════
+    const _PHOTOS = [];
+    const PHOTOS_MAX = 3;
+    const PHOTOS_MAX_BYTES = 4 * 1024 * 1024;
+
+    function renderPhotosPreview() {
+        const grid = document.getElementById('photo-preview');
+        if (!grid) return;
+        if (_PHOTOS.length === 0) {
+            grid.innerHTML = '';
+            return;
+        }
+        grid.innerHTML = _PHOTOS.map((p, i) => `
+            <div class="photo-thumb">
+                <img src="${p.dataUrl}" alt="captura ${i + 1}" loading="lazy" decoding="async" style="max-width:100%;height:auto;border-radius:0.5rem;" />
+                <button type="button" class="photo-remove" data-idx="${i}" aria-label="Eliminar captura ${i + 1}">
+                    <span class="material-symbols-elev" style="font-size:1.1rem;">close</span>
+                </button>
+                <span class="photo-thumb-label">${p.kind === 'file' ? (p.name.length > 16 ? p.name.slice(0, 14) + '…' : p.name) : 'URL'}</span>
+            </div>
+        `).join('');
+        grid.querySelectorAll('.photo-remove').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = parseInt(btn.dataset.idx, 10);
+                _PHOTOS.splice(idx, 1);
+                renderPhotosPreview();
+            });
+        });
+    }
+
+    function addPhotoDataUrl(dataUrl, kind, name) {
+        if (_PHOTOS.length >= PHOTOS_MAX) {
+            showError(`Máximo ${PHOTOS_MAX} capturas.`);
+            return;
+        }
+        _PHOTOS.push({ dataUrl, kind, name });
+        renderPhotosPreview();
+    }
+
+    function handleFiles(fileList) {
+        const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+        if (files.length === 0) return;
+        let remaining = PHOTOS_MAX - _PHOTOS.length;
+        if (remaining <= 0) {
+            showError(`Máximo ${PHOTOS_MAX} capturas.`);
+            return;
+        }
+        const toProcess = files.slice(0, remaining);
+        if (files.length > remaining) {
+            showError(`Solo se agregan ${remaining} imagen(es) (máx ${PHOTOS_MAX}).`);
+        }
+        toProcess.forEach(f => {
+            if (f.size > PHOTOS_MAX_BYTES) {
+                showError(`${f.name} supera 4MB — omitida.`);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => addPhotoDataUrl(e.target.result, 'file', f.name);
+            reader.readAsDataURL(f);
+        });
+    }
+
+    function showError(msg) {
+        $error.textContent = msg;
+        $error.classList.add('visible');
+        $success.classList.remove('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function showSuccess(msg) {
+        $success.textContent = msg;
+        $success.classList.add('visible');
+        $error.classList.remove('visible');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function hideMessages() {
+        $error.classList.remove('visible');
+        $success.classList.remove('visible');
+    }
+
+    // ─── Default fecha = hoy, hora = ahora ───
+    const now = new Date();
+    const _elTradeDate = document.getElementById('trade-date');
+    if (_elTradeDate) _elTradeDate.value = now.toISOString().slice(0, 10);
+    const _elTradeTime = document.getElementById('trade-time');
+    if (_elTradeTime) _elTradeTime.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    // ─── Asset chips ───
+    document.querySelectorAll('#asset-chips .chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const asset = btn.dataset.asset;
+            state.asset = asset;
+            const _elTradeAsset = document.getElementById('trade-asset');
+            if (_elTradeAsset) _elTradeAsset.value = asset;
+            document.querySelectorAll('#asset-chips .chip').forEach(b => b.classList.toggle('active', b === btn));
+            updateRR();
+        });
+    });
+    document.getElementById('trade-asset').addEventListener('input', e => {
+        const v = e.target.value.trim().toUpperCase();
+        state.asset = v;
+        document.querySelectorAll('#asset-chips .chip').forEach(b => {
+            b.classList.toggle('active', b.dataset.asset === v);
+        });
+        updateRR();
+    });
+
+    // ─── Direction toggle ───
+    document.querySelectorAll('#dir-toggle .dir-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.direction = btn.dataset.dir;
+            document.querySelectorAll('#dir-toggle .dir-btn').forEach(b => b.classList.toggle('active', b === btn));
+            updateRR();
+        });
+    });
+
+    // ─── Result toggle ───
+    document.querySelectorAll('#result-toggle .result-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            state.result = btn.dataset.result;
+            document.querySelectorAll('#result-toggle .result-btn').forEach(b => b.classList.toggle('active', b === btn));
+        });
+    });
+
+    // ─── R:R auto-compute ───
+    const $entry = document.getElementById('trade-entry');
+    const $tp = document.getElementById('trade-tp');
+    const $sl = document.getElementById('trade-sl');
+    const $rr = document.getElementById('rr-display');
+
+    function num(el) { return el.value ? parseFloat(el.value) : null; }
+
+    function updateRR() {
+        const entry = num($entry);
+        const tp = num($tp);
+        const sl = num($sl);
+        const dir = state.direction;
+
+        if (entry === null || tp === null || sl === null || !dir) {
+            $rr.textContent = '—';
+            return;
+        }
+
+        let risk, reward;
+        if (dir === 'BUY') {
+            risk = Math.abs(entry - sl);
+            reward = Math.abs(tp - entry);
+        } else {
+            risk = Math.abs(sl - entry);
+            reward = Math.abs(entry - tp);
+        }
+        if (risk <= 0) {
+            $rr.textContent = '—';
+            return;
+        }
+        const ratio = reward / risk;
+        $rr.innerHTML = `<span style="color: var(--gold-elev);">1 : ${ratio.toFixed(2)}</span> <small>Riesgo ${risk.toFixed(2)} / Benef ${reward.toFixed(2)}</small>`;
+    }
+
+    [$entry, $tp, $sl].forEach(el => el.addEventListener('input', updateRR));
+
+    // ─── Tip chips ───
+    document.querySelectorAll('.tip-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const notesEl = document.getElementById('trade-notes');
+            const phrase = btn.dataset.tip;
+            const current = notesEl.value.trim();
+            notesEl.value = current ? `${current}\n${phrase} — ` : `${phrase} — `;
+            notesEl.focus();
+        });
+    });
+
+    // ─── Submit ───
+    $form.addEventListener('submit', async e => {
+        e.preventDefault();
+        hideMessages();
+
+        if (!window.TNSVT_USER || !window.TNSVT_USER.code) {
+            showError('Necesitás estar autenticado. Volvé a /login.');
+            return;
+        }
+
+        if (!state.direction) {
+            showError('Elegí una dirección (BUY o SELL).');
+            return;
+        }
+        if (!state.result) {
+            showError('Elegí un resultado (WIN / LOSS / BE / OPEN).');
+            return;
+        }
+        const _elTradeAssetSubmit = document.getElementById('trade-asset');
+        const asset = state.asset || (_elTradeAssetSubmit ? _elTradeAssetSubmit.value.trim().toUpperCase() : '');
+        if (!asset) {
+            showError('Indicá el activo operado (ej: XAUUSD).');
+            return;
+        }
+
+        const _elTradeDateSubmit = document.getElementById('trade-date');
+        const dateStr = _elTradeDateSubmit ? _elTradeDateSubmit.value : '';
+        const _elTradeTimeSubmit = document.getElementById('trade-time');
+        const timeStr = _elTradeTimeSubmit ? _elTradeTimeSubmit.value : '';
+        if (!dateStr || !timeStr) {
+            showError('Indicá fecha y hora.');
+            return;
+        }
+
+        const _elTradePnl = document.getElementById('trade-pnl');
+        const pnlRaw = _elTradePnl ? _elTradePnl.value.trim() : '';
+        const pnl = pnlRaw === '' ? null : parseFloat(pnlRaw);
+        if (pnl === null || isNaN(pnl)) {
+            showError('Indicá el P&L (puede ser 0 para BE/OPEN).');
+            return;
+        }
+
+        const photos = _PHOTOS.slice(0, 3);
+
+        const _elTradeNotes = document.getElementById('trade-notes');
+        const notes = _elTradeNotes ? _elTradeNotes.value.trim() : '';
+
+        const payload = {
+            user_code: window.TNSVT_USER.code,
+            asset: asset,
+            dir: state.direction,
+            date: `${dateStr}T${timeStr}:00`,
+            result: state.result,
+            pnl: pnl,
+        };
+
+        const entry = num($entry); if (entry !== null) payload.entry = String(entry);
+        const tp = num($tp);       if (tp !== null)    payload.tp = String(tp);
+        const sl = num($sl);       if (sl !== null)    payload.sl = String(sl);
+
+        if (entry !== null && tp !== null && sl !== null) {
+            let risk, reward;
+            if (state.direction === 'BUY') {
+                risk = Math.abs(entry - sl);
+                reward = Math.abs(tp - entry;
+            } else {
+                risk = Math.abs(sl - entry);
+                reward = Math.abs(entry - tp);
+            }
+            if (risk > 0 && reward > 0) {
+                payload.ratio = `1:${(reward / risk).toFixed(2)}`;
+            }
+        }
+        if (photos.length > 0) payload.photos = photos;
+        if (notes) payload.notes = notes;
+
+        $submit.disabled = true;
+        $submit.innerHTML = '<span class="material-symbols-elev">progress_activity</span> Guardando...';
+
+        try {
+            const r = await apiFetch('/api/journal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (r.ok && r.data && r.data.success) {
+                showSuccess(`Operación registrada · id #${r.data.id}. Recargando...`);
+                setTimeout(() => { window.location.reload(); }, 1200);
+            } else {
+                const msg = (r.data && (r.data.error || r.data.message)) ||
+                    (r.timeout ? 'Timeout: el server no respondió' :
+                     r.networkError ? 'Sin conexión con el servidor' :
+                     `HTTP ${r.status || '?'}: error desconocido`);
+                showError(msg);
+                $submit.disabled = false;
+                $submit.innerHTML = '<span class="material-symbols-elev">save</span> Registrar trade';
+            }
+        } catch (err) {
+            showError('Error de red: ' + (err.message || 'sin detalle'));
+            $submit.disabled = false;
+            $submit.innerHTML = '<span class="material-symbols-elev">save</span> Registrar trade';
+        }
+    });
+
+    // ─── Drag-drop capturas ───
+    (function wirePhotoDropzone() {
+        const dz = document.getElementById('photo-dropzone');
+        const fileInput = document.getElementById('photo-file-input');
+        const urlInput = document.getElementById('trade-photo-url');
+        if (!dz || !fileInput || !urlInput) return;
+
+        dz.addEventListener('click', () => fileInput.click());
+        dz.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                fileInput.click();
+            }
+        });
+
+        fileInput.addEventListener('change', e => {
+            if (e.target.files && e.target.files.length) {
+                handleFiles(e.target.files);
+                fileInput.value = '';
+            }
+        });
+
+        ['dragenter', 'dragover'].forEach(ev => {
+            dz.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dz.classList.add('dragging');
+            });
+        });
+        ['dragleave', 'drop'].forEach(ev => {
+            dz.addEventListener(ev, e => {
+                e.preventDefault();
+                e.stopPropagation();
+                dz.classList.remove('dragging');
+            });
+        });
+        dz.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length) {
+                handleFiles(dt.files);
+            }
+        });
+
+        urlInput.addEventListener('change', () => {
+            const v = urlInput.value.trim();
+            if (!v) return;
+            if (_PHOTOS.length >= PHOTOS_MAX) {
+                showError(`Máximo ${PHOTOS_MAX} capturas.`);
+                urlInput.value = '';
+                return;
+            }
+            try {
+                const u = new URL(v);
+                if (!/^https?:$/.test(u.protocol)) throw new Error('Solo http(s)://');
+            } catch (e) {
+                showError('URL inválida (debe ser http(s)://…)');
+                return;
+            }
+            addPhotoDataUrl(v, 'url', 'URL externa');
+            urlInput.value = '';
+        });
+    })();
+
+    document.getElementById('cancel-btn').addEventListener('click', async e => {
+        e.preventDefault();
+        if ($form.dataset.dirty === '1') {
+            if (!await apiConfirm('Tenés cambios sin guardar. ¿Salir igual?', { title: 'Cambios sin guardar' })) {
+                return;
+            }
+        }
+        // Limpiar form
+        $form.reset();
+        // Volver al tab dashboard
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', 'dashboard');
+        window.location.href = url.toString();
+    });
+    $form.addEventListener('input', () => { $form.dataset.dirty = '1'; });
+})();
+</script>

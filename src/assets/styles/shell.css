@@ -78,9 +78,29 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 1.5rem;
-    background: var(--surface-elev);
+    background: linear-gradient(180deg,
+        rgba(34, 29, 46, 0.85) 0%,
+        rgba(22, 17, 33, 0.85) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--outline-variant-elev);
+    box-shadow: 0 1px 0 rgba(242, 202, 80, 0.05), 0 8px 24px rgba(0, 0, 0, 0.15);
     gap: 1rem;
+    position: relative;
+    z-index: 10;
+}
+.sanctum-topbar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(242, 202, 80, 0.3) 50%,
+        transparent 100%);
+    pointer-events: none;
 }
 .sanctum-topbar .flex { display: flex; }
 .sanctum-topbar .items-center { align-items: center; }
@@ -134,16 +154,24 @@
 }
 
 .sanctum-section-title {
-    padding: 0.75rem 1.5rem 0.25rem;
-    font-size: 0.625rem;
+    padding: 1rem 1.5rem 0.4rem;
+    font-size: 0.6875rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.12em;
     color: var(--gold-elev);
-    opacity: 0.7;
+    font-weight: 600;
+    opacity: 0.85;
+    position: relative;
+    border-top: 1px solid var(--outline-variant-elev);
+    margin-top: 0.75rem;
+}
+.sanctum-section-title:first-child {
+    border-top: none;
+    margin-top: 0;
 }
 .sanctum-section-title-sub {
     color: var(--outline-elev);
-    opacity: 0.3;
+    opacity: 0.4;
     font-size: 0.5625rem;
     padding-left: 2.5rem;
     padding-top: 0.375rem;
@@ -514,6 +542,32 @@
     background: linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
     border-bottom: 1px solid var(--glass-border-gold-elev);
 }
+.protocol-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.protocol-dismiss-24h {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.4rem;
+    color: var(--outline-elev);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.protocol-dismiss-24h > span {
+    font-size: 0.95rem;
+}
+.protocol-dismiss-24h:hover {
+    background: rgba(242, 202, 80, 0.1);
+    border-color: var(--gold-elev);
+    color: var(--gold-elev);
+}
 
 .protocol-modal-title {
     margin: 0;
@@ -528,6 +582,28 @@
 
 .protocol-modal-icon {
     color: var(--gold-elev);
+}
+
+/* ──────── TNSVT Sprint B.5 — Badge de alerts en el botón Guardian ──────── */
+.protocol-alert-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-left: 0.4rem;
+    background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 9px;
+    box-shadow: 0 0 8px rgba(248, 113, 113, 0.5);
+    animation: protocol-alert-pulse 2s infinite;
+}
+@keyframes protocol-alert-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(248, 113, 113, 0.5); }
+    50%      { box-shadow: 0 0 16px rgba(248, 113, 113, 0.9); }
 }
 
 .protocol-close {

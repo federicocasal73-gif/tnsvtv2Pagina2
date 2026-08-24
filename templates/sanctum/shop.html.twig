@@ -6,7 +6,7 @@
 {% block topbar_subtitle %}Objetos y mejoras para tu cuenta.{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto" data-controller="shop">
     <div class="glass-card-elev p-4 mb-4">
         <div class="flex items-center justify-between">
             <span class="text-sm text-[var(--outline-elev)]">Tu balance:</span>
@@ -19,32 +19,4 @@
         <p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Cargando tienda...</p>
     </div>
 </div>
-
-<script>
-(function() {
-    'use strict';
-    const itemsEl = document.getElementById('shop-items');
-    const balanceEl = document.getElementById('shop-balance');
-
-    apiFetch('/api/wallet/balance').then(r => {
-        balanceEl.textContent = '$' + (r.balance||0);
-    }).catch(() => {});
-
-    apiFetch('/api/shop/items').then(r => {
-        if (!r.length) {
-            itemsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">No hay items disponibles.</p>';
-            return;
-        }
-        itemsEl.innerHTML = r.map(item => `
-            <div class="glass-card-elev shop-card">
-                <div class="shop-emoji">${item.emoji || '🎁'}</div>
-                <div class="shop-name">${item.name}</div>
-                <div class="shop-desc">${item.description||''}</div>
-                <div class="shop-price">$${item.price||0}</div>
-                ${item.owned ? '<div class="shop-owned">✓ Adquirido</div>' : `<button class="btn-primary w-full mt-2 text-xs" onclick="apiFetch('/api/shop/purchase',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item_id:${item.id}})}).then(()=>location.reload())">Comprar</button>`}
-            </div>
-        `).join('');
-    }).catch(() => { itemsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Error al cargar.</p>'; });
-})();
-</script>
 {% endblock %}

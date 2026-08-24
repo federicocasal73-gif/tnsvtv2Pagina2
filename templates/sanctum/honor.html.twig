@@ -6,32 +6,9 @@
 {% block topbar_subtitle %}Reconocimientos y logros del Reino.{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
-    <div id="honor-list" class="space-y-3">
+<div class="max-w-3xl mx-auto" data-controller="honor">
+    <div id="honor-list" class="space-y-3" data-honor-target="list">
         <p class="text-center text-[var(--outline-elev)] py-8">Cargando tablero de honor...</p>
     </div>
 </div>
-
-<script>
-(function() {
-    'use strict';
-    const listEl = document.getElementById('honor-list');
-    apiFetch('/api/honor/board').then(r => {
-        if (!r.length) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Aún no hay reconocimientos.</p>';
-            return;
-        }
-        listEl.innerHTML = r.map(h => `
-            <div class="glass-card-elev honor-card">
-                <div class="honor-badge">${h.emoji||'🏆'}</div>
-                <div class="honor-info">
-                    <div class="honor-title">${h.title}</div>
-                    <div class="honor-desc">${h.description||''}</div>
-                </div>
-                <div class="honor-date">${h.awarded_at||''}</div>
-            </div>
-        `).join('');
-    }).catch(() => { listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
-})();
-</script>
 {% endblock %}

@@ -1053,3 +1053,63 @@ body {
 }
 
 /* ─── Reduced motion — already handled above globally ─── */
+
+/* ═══ Login body — celestial hero + login card ═══ */
+.login-body {
+    /* Hereda todos los estilos .gw-* del gateway */
+}
+
+/* Login section wrapper */
+.login-section {
+    padding: 40px 0 20px;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+}
+
+.login-section .login-card {
+    margin: 0 auto;
+}
+
+/* Verse — Proverbios 8:15 */
+.login-body .verse {
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+    color: #d0c5af;
+    max-width: 600px;
+    margin: 12px auto 0;
+    line-height: 1.5;
+    font-size: 0.9rem;
+    text-align: center;
+    opacity: 0.85;
+}
+
+/* Login body — ajuste específico del stats strip */
+.login-body .stats-strip {
+    gap: 12px;
+    margin: 22px 0 0;
+}
+.login-body .stat-item {
+    flex: 1 1 0;
+    min-width: 120px;
+    padding: 10px 14px;
+    background: rgba(34, 29, 46, 0.4);
+    border: 1px solid rgba(242, 202, 80, 0.1);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.3s,
+                box-shadow 0.3s;
+}
+.login-body .stat-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(242, 202, 80, 0.25);
+    box-shadow: 0 8px 24px rgba(138, 60, 255, 0.1);
+}
+
+/* Mobile tweaks para login */
+@media (max-width: 768px) {
+    .login-section { padding: 28px 16px 16px; }
+    .login-body .stat-item { min-width: 100px; padding: 8px 10px; }
+}

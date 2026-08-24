@@ -252,8 +252,17 @@
             b.addEventListener('click', async () => {
                 const id = parseInt(b.dataset.id, 10);
                 if (!await apiConfirm('¿Eliminar esta publicación?', { title: 'Eliminar publicación', variant: 'danger' })) return;
-                apiFetch(`/api/feed/${id}`, { method: 'DELETE' })
-                    .then(r => { if (r.ok) loadFeed(); });
+                try {
+                    const r = await apiFetch(`/api/feed/${id}`, { method: 'DELETE' });
+                    if (r.ok) {
+                        loadFeed();
+                    } else {
+                        apiToast((r.data && r.data.error) || 'Error al eliminar', 'error');
+                    }
+                } catch (e) {
+                    console.error('[feed] delete error', e);
+                    apiToast('Error de red al eliminar', 'error');
+                }
             });
         });
     }

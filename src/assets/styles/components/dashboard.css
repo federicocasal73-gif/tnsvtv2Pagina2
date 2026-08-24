@@ -310,6 +310,15 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 0.35rem;
 }
+
+/* TNSVT Sprint I.2 — Animación al cambiar mes */
+.cal-month-grid-animate {
+    animation: cal-month-fade-in 0.4s ease-out;
+}
+@keyframes cal-month-fade-in {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 .cal-month-day-header {
     font-size: 0.65rem;
     font-weight: 600;
@@ -329,15 +338,21 @@
     border-radius: 0.4rem;
     padding: 0.35rem;
     cursor: pointer;
-    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+    transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s, background 0.15s;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 .cal-month-day:hover:not(.outside) {
-    transform: translateY(-1px);
-    border-color: rgba(242, 202, 80, 0.35);
-    box-shadow: 0 4px 12px rgba(242, 202, 80, 0.08);
+    /* TNSVT Sprint I.3 — Hover más prominente */
+    transform: translateY(-2px) scale(1.04);
+    border-color: var(--gold-elev);
+    box-shadow: 0 6px 20px rgba(242, 202, 80, 0.25);
+    z-index: 2;
+}
+.cal-month-day:hover:not(.outside) .cal-month-day-num {
+    color: var(--gold-elev);
+    font-weight: 700;
 }
 .cal-month-day.outside {
     opacity: 0.25;
@@ -346,11 +361,30 @@
 }
 .cal-month-day.today {
     box-shadow: 0 0 0 1.5px var(--gold-elev);
+    font-weight: 600;
 }
-.cal-month-day.wins { border-left-color: var(--success-elev); }
-.cal-month-day.losses { border-left-color: var(--error-elev); }
-.cal-month-day.mixed { border-left-color: var(--warning-elev); }
-.cal-month-day.has-open { border-left-color: #8a3cff; }
+
+/* ──────── TNSVT Sprint A.3 — Colores V1 del calendario ──────── */
+.cal-month-day.wins {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.18) 0%, rgba(74, 222, 128, 0.08) 100%);
+    border-color: rgba(74, 222, 128, 0.45);
+    border-left-color: var(--success-elev);
+}
+.cal-month-day.losses {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.18) 0%, rgba(248, 113, 113, 0.08) 100%);
+    border-color: rgba(248, 113, 113, 0.45);
+    border-left-color: var(--error-elev);
+}
+.cal-month-day.mixed {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.06) 100%);
+    border-color: rgba(251, 191, 36, 0.45);
+    border-left-color: var(--warning-elev);
+}
+.cal-month-day.has-open {
+    background: linear-gradient(135deg, rgba(138, 60, 255, 0.20) 0%, rgba(138, 60, 255, 0.08) 100%);
+    border-color: rgba(138, 60, 255, 0.45);
+    border-left-color: var(--violet-elev, #8a3cff);
+}
 .cal-month-day-num {
     font-size: 0.8rem;
     font-weight: 600;
@@ -382,6 +416,32 @@
     font-size: 0.7rem;
     color: var(--outline-elev);
     flex-wrap: wrap;
+}
+
+/* ──────── TNSVT Sprint A.3 — Legend colors ──────── */
+.cal-legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+}
+.cal-legend-dot.cal-dot-wins {
+    background: linear-gradient(135deg, rgba(74, 222, 128, 0.45), rgba(74, 222, 128, 0.20));
+    border: 1px solid rgba(74, 222, 128, 0.45);
+}
+.cal-legend-dot.cal-dot-losses {
+    background: linear-gradient(135deg, rgba(248, 113, 113, 0.45), rgba(248, 113, 113, 0.20));
+    border: 1px solid rgba(248, 113, 113, 0.45);
+}
+.cal-legend-dot.cal-dot-mixed {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.45), rgba(251, 191, 36, 0.20));
+    border: 1px solid rgba(251, 191, 36, 0.45);
+}
+.cal-legend-dot.cal-dot-open {
+    background: linear-gradient(135deg, rgba(138, 60, 255, 0.45), rgba(138, 60, 255, 0.20));
+    border: 1px solid rgba(138, 60, 255, 0.45);
 }
 
 /* ══════ F1.3 — Modal detalle día ══════ */

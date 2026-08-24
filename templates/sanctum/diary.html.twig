@@ -2,8 +2,8 @@
 
 {% block title %}El Cuaderno · T.N.S.V.T{% endblock %}
 
-{% block topbar_title %}El Cuaderno{% endblock %}
-{% block topbar_subtitle %}"Lo que escribes, queda cifrado — solo vos lo leés."{% endblock %}
+{% block topbar_title %}El Cuaderno del Alma{% endblock %}
+{% block topbar_subtitle %}"Un santuario privado para tus pensamientos más profundos." — Cifrado Punto a Punto{% endblock %}
 
 {% block stylesheets %}{% endblock %}
 
@@ -62,6 +62,10 @@
                 <button type="button" class="diary-lock-btn" id="diary-lock-now-btn" title="Bloquear cuaderno">
                     <span class="material-symbols-outlined" style="font-size:1rem;">lock</span>
                     Bloquear
+                </button>
+                <button type="button" class="diary-btn-danger" id="diary-reset-btn" title="Resetear clave (borra todo)" style="font-size:0.8rem;padding:0.55rem 1rem;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.4);">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">restart_alt</span>
+                    Resetear clave
                 </button>
             </div>
         </div>
@@ -555,6 +559,48 @@
         document.getElementById('diary-lock-now-btn').addEventListener('click', lockNow);
         document.getElementById('diary-write-first-btn').addEventListener('click', newEntry);
         document.getElementById('diary-lock-empty-btn').addEventListener('click', lockNow);
+
+        // TNSVT Sprint C.3 — Handler del botón Resetear clave
+        document.getElementById('diary-reset-btn')?.addEventListener('click', resetDiary);
+
+        async function resetDiary() {
+            const ok = await apiConfirm(
+                '⚠ Esto BORRARÁ todas tus entradas cifradas y la clave maestra. No se puede deshacer. ¿Continuar?',
+                {
+                    title: 'Resetear clave del Cuaderno',
+                    confirmLabel: 'Sí, resetear',
+                    cancelLabel: 'Cancelar',
+                    variant: 'danger',
+                }
+            );
+            if (!ok) return;
+
+            const r = await apiFetch('/api/diary/setup', {
+                method: 'DELETE',
+                body: JSON.stringify({ user_code: window.TNSVT_USER?.code }),
+            });
+            if (r.ok && r.data && r.data.success) {
+                if (window.apiToast) {
+                    window.apiToast(
+                        `Cuaderno reseteado. ${r.data.entries_deleted || 0} entradas eliminadas.`,
+                        'success'
+                    );
+                }
+                // Volver al estado locked para configurar nueva clave
+                ENTRIES.length = 0;
+                currentEditId = null;
+                dirty = false;
+                hasSetup = false;
+                showState('locked');
+                // Limpiar pass input
+                const passEl = document.getElementById('diary-pass-input');
+                if (passEl) passEl.value = '';
+            } else {
+                const msg = (r.data && r.data.error) || 'Error al resetear';
+                if (window.apiToast) window.apiToast(msg, 'error');
+                else showMessage(msg, 'error');
+            }
+        }
 
         const $title = document.getElementById('diary-editor-title-input');
         const $body = document.getElementById('diary-editor-textarea');

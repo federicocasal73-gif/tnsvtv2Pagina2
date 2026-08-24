@@ -6,7 +6,7 @@
 {% block topbar_subtitle %}Formación, lecciones y asignaciones del Reino.{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
+<div class="max-w-4xl mx-auto" data-controller="campus">
     {# ─── Dashboard ─── #}
     <div class="glass-card-elev p-4 mb-4">
         <div class="flex items-center justify-between mb-3">
@@ -35,62 +35,4 @@
         <p class="text-center text-[var(--outline-elev)] py-8">Cargando tareas...</p>
     </div>
 </div>
-
-<script>
-(function() {
-    'use strict';
-    const coursesEl = document.getElementById('campus-courses');
-    const assignmentsEl = document.getElementById('campus-assignments');
-    const progressBar = document.getElementById('campus-progress-bar');
-    const progressPct = document.getElementById('campus-progress-pct');
-
-    // Load dashboard
-    apiFetch('/api/campus/progress').then(r => {
-        if (!r.success) return;
-        const pct = r.progress || 0;
-        progressBar.style.width = pct + '%';
-        progressPct.textContent = pct + '% completado';
-        const _elStatCourses = document.getElementById('stat-courses');
-        if (_elStatCourses) _elStatCourses.textContent = r.courses || 0;
-        const _elStatLessons = document.getElementById('stat-lessons');
-        if (_elStatLessons) _elStatLessons.textContent = r.lessons_completed + '/' + r.lessons_total;
-        const _elStatAssignments = document.getElementById('stat-assignments');
-        if (_elStatAssignments) _elStatAssignments.textContent = r.assignments_pending || 0;
-    }).catch(() => {});
-
-    // Load courses
-    apiFetch('/api/campus/courses').then(r => {
-        if (!r.length) {
-            coursesEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-2">No hay cursos disponibles.</p>';
-            return;
-        }
-        coursesEl.innerHTML = r.map(c => `
-            <div class="glass-card-elev campus-card" onclick="location.href='/campus?course=${c.id}'">
-                <div class="campus-emoji">${c.emoji || '📚'}</div>
-                <div class="campus-title">${c.title}</div>
-                <div class="campus-desc">${c.descripcion || ''}</div>
-                <div class="campus-progress"><div class="campus-progress-fill" style="width:${c.progress || 0}%"></div></div>
-            </div>
-        `).join('');
-    }).catch(() => { coursesEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-2">Error al cargar.</p>'; });
-
-    // Load assignments
-    apiFetch('/api/campus/assignments/pending').then(r => {
-        if (!r.length) {
-            assignmentsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">No hay tareas pendientes.</p>';
-            return;
-        }
-        assignmentsEl.innerHTML = r.map(a => `
-            <div class="glass-card-elev assignment-item">
-                <div class="assignment-status ${a.status}"></div>
-                <div class="flex-1">
-                    <div class="text-sm font-medium">${a.title}</div>
-                    <div class="text-xs text-[var(--outline-elev)]">${a.course_title || ''} · Vence: ${a.due_date || '—'}</div>
-                </div>
-                <button class="btn-primary text-xs" onclick="location.href='/campus?assignment=${a.id}'">Ver</button>
-            </div>
-        `).join('');
-    }).catch(() => { assignmentsEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
-})();
-</script>
 {% endblock %}

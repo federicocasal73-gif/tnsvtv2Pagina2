@@ -258,6 +258,9 @@
             } else {
                 apiToast(r.data && r.data.error ? r.data.error : 'Error al enviar', 'error');
             }
+        } catch (e) {
+            console.error('[chat] send error', e);
+            apiToast('Error de red al enviar', 'error');
         } finally {
             updateSend();
         }

@@ -6,32 +6,9 @@
 {% block topbar_subtitle %}Desafía a otros traders.{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
-    <div id="duels-list" class="space-y-3">
+<div class="max-w-3xl mx-auto" data-controller="duels">
+    <div id="duels-list" class="space-y-3" data-duels-target="list">
         <p class="text-center text-[var(--outline-elev)] py-8">Cargando duelos...</p>
     </div>
 </div>
-
-<script>
-(function() {
-    'use strict';
-    const listEl = document.getElementById('duels-list');
-    apiFetch('/api/duels').then(r => {
-        if (!r.length) {
-            listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">No hay duelos. ¡Crea uno!</p>';
-            return;
-        }
-        listEl.innerHTML = r.map(d => `
-            <div class="glass-card-elev duel-card">
-                <span class="duel-vs">VS</span>
-                <div class="duel-info">
-                    <div class="duel-players">${d.player1||'—'} vs ${d.player2||'—'}</div>
-                    <div class="duel-meta">Ronda ${d.current_round||0}/${d.totalRounds||3} · ${d.status||'active'}</div>
-                </div>
-                <span class="text-sm ${d.status === 'finished' ? 'text-[var(--outline-elev)]' : 'text-[var(--gold-elev)]'}">${d.status||'active'}</span>
-            </div>
-        `).join('');
-    }).catch(() => { listEl.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>'; });
-})();
-</script>
 {% endblock %}

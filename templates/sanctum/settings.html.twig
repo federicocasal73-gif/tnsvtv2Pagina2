@@ -16,6 +16,17 @@
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+                <label class="form-label">Tema</label>
+                <select data-settings-target="theme"
+                        data-theme-target
+                        data-action="change->settings#savePreference"
+                        class="form-input">
+                    <option value="auto">🌗 Auto (sigue el sistema)</option>
+                    <option value="dark">🌙 Oscuro</option>
+                    <option value="light">☀️ Claro</option>
+                </select>
+            </div>
+            <div>
                 <label class="form-label">Sonido de Notificación</label>
                 <select data-settings-target="sound"
                         data-action="change->settings#savePreference"
@@ -24,7 +35,7 @@
                     <option value="mario_coin">🍄 Mario Coin</option>
                     <option value="zelda_secret">🗡️ Zelda Secret</option>
                     <option value="sonic_ring">💍 Sonic Ring</option>
-                    <option value="apple_tritone">🍎 Apple Tritone</option>
+                    <option value="apple_tritone">� Apple Tritone</option>
                     <option value="pixel_popcorn">🍿 Pixel Popcorn</option>
                     <option value="pokemon_levelup">⚡ Pokemon Levelup</option>
                     <option value="deus_ex_scan">🔍 Deus Ex Scan</option>
