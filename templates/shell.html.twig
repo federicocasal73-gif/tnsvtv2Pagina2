@@ -64,15 +64,59 @@
         </div>
 
         <nav class="sanctum-nav">
-            {# ═══ ⌂ INICIO (Command Center) ═══ #}
             <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
                 <span class="material-symbols-elev">dashboard</span>
-                <span class="sanctum-link-label">Command Center</span>
+                <span class="sanctum-link-label">Inicio</span>
             </a>
 
-            {# ═══ ✝ SANCTUM — Mi cuenta �══ #}
-            <div class="sanctum-section-title">Sanctum</div>
-            <a href="/profile" class="sanctum-link" data-page="profile">
+            <div class="sanctum-section-title">Trading</div>
+            <a href="{{ path('sanctum_journal') }}" class="sanctum-link" data-page="journal">
+                <span class="material-symbols-elev">edit_note</span>
+                <span class="sanctum-link-label">Journal</span>
+            </a>
+            <a href="{{ path('sanctum_calendar') }}" class="sanctum-link" data-page="calendar">
+                <span class="material-symbols-elev">calendar_month</span>
+                <span class="sanctum-link-label">Calendario</span>
+            </a>
+            <a href="{{ path('sanctum_leaderboard') }}" class="sanctum-link" data-page="leaderboard">
+                <span class="material-symbols-elev">leaderboard</span>
+                <span class="sanctum-link-label">Leaderboard</span>
+            </a>
+            <a href="{{ path('sanctum_wallet') }}" class="sanctum-link" data-page="wallet">
+                <span class="material-symbols-elev">account_balance_wallet</span>
+                <span class="sanctum-link-label">Wallet</span>
+            </a>
+
+            <div class="sanctum-section-title">Mente &amp; Macro</div>
+            <a href="{{ path('macro_dashboard') }}" class="sanctum-link" data-page="macro">
+                <span class="material-symbols-elev">event_upcoming</span>
+                <span class="sanctum-link-label">Macroeconomía</span>
+            </a>
+            <a href="{{ path('oracle_dashboard') }}" class="sanctum-link" data-page="oracle">
+                <span class="material-symbols-elev">auto_awesome</span>
+                <span class="sanctum-link-label">Oráculo</span>
+            </a>
+            <a href="{{ path('sanctum_guardian') }}" class="sanctum-link" data-page="guardian">
+                <span class="material-symbols-elev">shield_person</span>
+                <span class="sanctum-link-label">Guardian</span>
+            </a>
+            <a href="{{ path('sanctum_diary') }}" class="sanctum-link" data-page="diary">
+                <span class="material-symbols-elev">menu_book</span>
+                <span class="sanctum-link-label">Diario</span>
+            </a>
+            <a href="{{ path('frequencies_hub') }}" class="sanctum-link" data-page="frequencies">
+                <span class="material-symbols-elev">graphic_eq</span>
+                <span class="sanctum-link-label">Frecuencias</span>
+            </a>
+
+            <div class="sanctum-section-title">Formación</div>
+            <a href="{{ path('sanctum_campus') }}" class="sanctum-link" data-page="campus">
+                <span class="material-symbols-elev">school</span>
+                <span class="sanctum-link-label">Campus</span>
+            </a>
+
+            <div class="sanctum-section-title">Mi cuenta</div>
+            <a href="{{ path('sanctum_profile') }}" class="sanctum-link" data-page="profile">
                 <span class="material-symbols-elev">person</span>
                 <span class="sanctum-link-label">Perfil</span>
             </a>
@@ -85,103 +129,32 @@
                 <span class="sanctum-link-label">Notificaciones</span>
                 <span id="bell-badge" class="sanctum-bell-badge hidden">0</span>
             </a>
-            <a href="/sanctum/guardian" class="sanctum-link" data-page="guardian">
-                <span class="material-symbols-elev">shield_person</span>
-                <span class="sanctum-link-label">Guardian</span>
-            </a>
-            <a href="/diario" class="sanctum-link" data-page="diario">
-                <span class="material-symbols-elev">menu_book</span>
-                <span class="sanctum-link-label">Cuaderno del Alma</span>
-            </a>
-            <a href="/frequencies" class="sanctum-link">
-                <span class="material-symbols-elev">graphic_eq</span>
-                <span class="sanctum-link-label">Santuario de Frecuencias</span>
-            </a>
 
-            {# ═══ 💰 DIVINE WEALTH — Trading & Wallet ═══ #}
-            <div class="sanctum-section-title">Divine Wealth</div>
-            <a href="/journal" class="sanctum-link" data-page="journal">
-                <span class="material-symbols-elev">edit_note</span>
-                <span class="sanctum-link-label">Trading Journal</span>
-            </a>
-            <a href="/calendar" class="sanctum-link" data-page="calendar">
-                <span class="material-symbols-elev">calendar_month</span>
-                <span class="sanctum-link-label">Calendario</span>
-            </a>
-            <a href="/leaderboard" class="sanctum-link" data-page="leaderboard">
-                <span class="material-symbols-elev">leaderboard</span>
-                <span class="sanctum-link-label">Leaderboard</span>
-            </a>
-            <a href="/wallet" class="sanctum-link" data-page="wallet">
-                <span class="material-symbols-elev">account_balance_wallet</span>
-                <span class="sanctum-link-label">Wallet</span>
-            </a>
-            <a href="/shop" class="sanctum-link" data-page="shop">
-                <span class="material-symbols-elev">store</span>
-                <span class="sanctum-link-label">Tienda</span>
-            </a>
-
-            {# �══ ⚔ TASK SOVEREIGNTY — Compete ═══ #}
-            <div class="sanctum-section-title">Task Sovereignty</div>
-            <a href="/tournaments" class="sanctum-link" data-page="tournaments">
-                <span class="material-symbols-emoji">🏆</span>
-                <span class="sanctum-link-label">Torneos</span>
-            </a>
-            <a href="/duels" class="sanctum-link" data-page="duels">
-                <span class="material-symbols-elev">swords</span>
-                <span class="sanctum-link-label">Duelos 1v1</span>
-            </a>
-            <a href="/game" class="sanctum-link" data-page="game">
-                <span class="material-symbols-elev">sports_esports</span>
-                <span class="sanctum-link-label">Game</span>
-            </a>
-            <a href="/honor" class="sanctum-link" data-page="honor">
-                <span class="material-symbols-elev">military_tech</span>
-                <span class="sanctum-link-label">Honor</span>
-            </a>
-
-            {# ═══ 🎓 EDUCATIONAL MASTERY �══ #}
-            <div class="sanctum-section-title">Educational Mastery</div>
-            <a href="/campus" class="sanctum-link" data-page="campus">
-                <span class="material-symbols-elev">school</span>
-                <span class="sanctum-link-label">Campus</span>
-            </a>
-            <a href="/macro" class="sanctum-link" data-page="macro">
-                <span class="material-symbols-elev">event_upcoming</span>
-                <span class="sanctum-link-label">Macroeconomía</span>
-            </a>
-            <a href="/oracle" class="sanctum-link" data-page="oracle">
-                <span class="material-symbols-elev">auto_awesome</span>
-                <span class="sanctum-link-label">Oráculo</span>
-            </a>
-
-            {# ═══ 🔮 PROPHECIES — Comunidad �══ #}
-            <div class="sanctum-section-title">Prophecies</div>
-            <a href="/feed" class="sanctum-link" data-page="feed">
+            <div class="sanctum-section-title">Comunidad</div>
+            <a href="{{ path('sanctum_feed') }}" class="sanctum-link" data-page="feed">
                 <span class="material-symbols-elev">forum</span>
-                <span class="sanctum-link-label">Salón del Cónclave</span>
+                <span class="sanctum-link-label">Feed</span>
             </a>
             <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
                 <span class="material-symbols-elev">share</span>
-                <span class="sanctum-link-label">Conexiones</span>
+                <span class="sanctum-link-label">Social</span>
             </a>
-            <a href="/chat" class="sanctum-link" data-page="chat">
+            <a href="{{ path('sanctum_chat') }}" class="sanctum-link" data-page="chat">
                 <span class="material-symbols-elev">chat</span>
                 <span class="sanctum-link-label">Chat</span>
             </a>
-            <a href="/clan" class="sanctum-link" data-page="clan">
+            <a href="{{ path('sanctum_clan') }}" class="sanctum-link" data-page="clan">
                 <span class="material-symbols-elev">groups</span>
                 <span class="sanctum-link-label">Clanes</span>
             </a>
 
-            {# ═══ ⚙ ADMIN (solo visible para ROLE_ADMIN) ═══ #}
             {% if is_granted('ROLE_ADMIN') %}
             <div class="sanctum-section-title">Admin</div>
             <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
                 <span class="material-symbols-elev">group</span>
                 <span class="sanctum-link-label">Usuarios</span>
             </a>
-            <a href="/sanctum/tasks" class="sanctum-link" data-page="tasks">
+            <a href="{{ path('sanctum_tasks') }}" class="sanctum-link" data-page="tasks">
                 <span class="material-symbols-elev">task_alt</span>
                 <span class="sanctum-link-label">Tareas</span>
             </a>
@@ -189,11 +162,11 @@
                 <span class="material-symbols-elev">shield</span>
                 <span class="sanctum-link-label">Audit</span>
             </a>
-            <a href="/sanctum/settings" class="sanctum-link" data-page="settings">
+            <a href="{{ path('sanctum_settings') }}" class="sanctum-link" data-page="settings">
                 <span class="material-symbols-elev">settings</span>
                 <span class="sanctum-link-label">Settings</span>
             </a>
-            <a href="/sanctum/monitoring" class="sanctum-link" data-page="monitoring">
+            <a href="{{ path('sanctum_monitoring') }}" class="sanctum-link" data-page="monitoring">
                 <span class="material-symbols-elev">monitoring</span>
                 <span class="sanctum-link-label">Monitoring</span>
             </a>
@@ -221,7 +194,7 @@
     <main class="sanctum-main">
         <header class="sanctum-topbar">
         <div>
-            <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Command Center{% endblock %}</h2>
+            <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Inicio{% endblock %}</h2>
             <p class="text-xs text-[var(--outline-elev)] italic">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
         </div>
         <div class="flex items-center gap-3" data-controller="protocol notification-bell">
