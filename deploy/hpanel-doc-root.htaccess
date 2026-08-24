@@ -1,0 +1,40 @@
+# TNSVT — .htaccess for hPanel/Hostinger doc root
+#
+# The web server's document root on hPanel/Hostinger shared hosting
+# points to the project root (where `composer install` is run), not
+# to the standard `public/` subdir. To serve a standard Symfony
+# layout from this doc root, this .htaccess routes every request
+# to `public/index.php` (the Symfony front controller).
+#
+# Place this file at the doc root alongside `composer.json`, `vendor/`,
+# `src/`, etc. Do NOT replace `public/.htaccess` (that one is the
+# Symfony-standard file inside the public/ subdir and is required).
+#
+# Verified on hPanel + PHP 8.4 + Apache 2.4 with mod_rewrite.c.
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # If the file exists physically in the doc root, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # If the file exists in public/ (CSS/JS assets), redirect there
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Otherwise, route to public/index.php (Symfony front controller)
+    RewriteRule ^ public/index.php [L]
+</IfModule>
+
+# Deny access to sensitive files at doc root
+<FilesMatch "^(\.env|\.env\..*|composer\.(json|lock)|\.git|ssh_|id_)">
+    Require all denied
+</FilesMatch>
+
+# Disable directory listings
+Options -Indexes
+
+# Default error pages
+ErrorDocument 404 /public/index.php
+ErrorDocument 500 /public/index.php

@@ -1,5 +1,36 @@
 # Deployment Guide — T.N.S.V.T Sanctum on Hostinger
 
+## Hosting-specific layout (hPanel)
+
+On hPanel/Hostinger shared hosting, the web server's document root is
+the project root (where `composer install` runs), not the standard
+`public/` subdir. A standard Symfony project, however, expects the
+doc root to be `public/` so that vendor/, src/ and templates/ stay
+out of the public web space.
+
+There are two ways to bridge this:
+
+1. **Recommended** — keep the standard layout, drop a wrapper at the
+   doc root. Copy `deploy/hpanel-doc-root.htaccess` to the doc root
+   (alongside `composer.json`, `vendor/`, `src/`, `public/`). It
+   routes every request to `public/index.php` (the Symfony front
+   controller) while still letting the web server serve static files
+   from `public/assets/`, `public/uploads/`, etc.
+
+   ```bash
+   cp deploy/hpanel-doc-root.htaccess .htaccess
+   ```
+
+   Do NOT replace `public/.htaccess` — that is the Symfony-standard
+   file inside the public/ subdir and is still required.
+
+2. **Alternative** — symlink `public` to the project root so that
+   `public/index.php` and `./index.php` resolve to the same file.
+   This works but is fragile: PHP resolves symlinks in `__DIR__`,
+   which makes `require dirname(__DIR__).'/vendor/autoload_runtime.php'`
+   look one level above the project root. Use only if you fully
+   understand the implications; option 1 is safer.
+
 ## Pre-requisitos
 
 - PHP 8.4 con extensiones: intl, mbstring, sqlite3, opcache
