@@ -399,3 +399,334 @@
     .bento-countdown { font-size: 1.5rem; }
     .bento-kv { grid-template-columns: 1fr; }
 }
+
+/* ------ TNSVT Sprint C.6 — Cuestionarios Macro ------ */
+.macro-questionnaire-card {
+    padding: 1.25rem;
+}
+.macro-questionnaire-card .question {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.6rem;
+}
+.macro-questionnaire-card .question-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--on-surface-elev);
+    margin-bottom: 0.6rem;
+}
+.macro-questionnaire-card .question-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+.macro-questionnaire-card .question-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.4rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--on-surface-variant-elev);
+    transition: all 0.15s ease;
+}
+.macro-questionnaire-card .question-option:hover {
+    background: rgba(242, 202, 80, 0.06);
+    border-color: rgba(242, 202, 80, 0.3);
+}
+.macro-questionnaire-card .question-option input[type=radio] {
+    accent-color: var(--gold-elev);
+}
+.macro-questionnaire-card .question-option.selected {
+    background: rgba(242, 202, 80, 0.1);
+    border-color: var(--gold-elev);
+    color: var(--on-surface-elev);
+}
+.risk-tier-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--outline-elev);
+}
+.risk-tier-badge[data-tier=conservative] {
+    background: rgba(74, 222, 128, 0.15);
+    border-color: rgba(74, 222, 128, 0.4);
+    color: rgb(74, 222, 128);
+}
+.risk-tier-badge[data-tier=moderate] {
+    background: rgba(242, 202, 80, 0.15);
+    border-color: rgba(242, 202, 80, 0.4);
+    color: var(--gold-elev);
+}
+.risk-tier-badge[data-tier=aggressive] {
+    background: rgba(251, 146, 60, 0.15);
+    border-color: rgba(251, 146, 60, 0.4);
+    color: rgb(251, 146, 60);
+}
+.risk-tier-badge[data-tier=degen] {
+    background: rgba(248, 113, 113, 0.18);
+    border-color: rgba(248, 113, 113, 0.5);
+    color: rgb(248, 113, 113);
+}
+.macro-questionnaire-card .btn-start-questionnaire {
+    background: var(--gold-elev);
+    color: var(--on-primary-elev);
+    padding: 0.55rem 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+}
+.macro-questionnaire-card .btn-start-questionnaire:hover {
+    background: var(--gold-bright-elev, #ffe088);
+    transform: translateY(-1px);
+}
+
+/* ===== TNSVT Sprint F.1/F.2 — Progress bar + Result UI ===== */
+.macro-q-header {
+    padding: 0 1rem 0.85rem;
+    border-bottom: 1px solid var(--glass-border-elev);
+    margin-bottom: 0.85rem;
+}
+.macro-q-progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--outline-elev);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+}
+.macro-q-progress-pct {
+    color: var(--gold-elev);
+    font-weight: 700;
+}
+.macro-q-progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.macro-q-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-elev), var(--violet-elev));
+    border-radius: 2px;
+    transition: width 0.35s ease;
+}
+.macro-q-progress-fill.complete {
+    background: linear-gradient(90deg, #4ade80, var(--gold-elev));
+}
+
+/* Loading */
+.macro-q-loading {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--outline-elev);
+}
+.macro-q-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1rem;
+    border: 3px solid rgba(242, 202, 80, 0.2);
+    border-top-color: var(--gold-elev);
+    border-radius: 50%;
+    animation: macro-q-spin 0.8s linear infinite;
+}
+@keyframes macro-q-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Result */
+.macro-q-result {
+    padding: 1.25rem 1rem;
+    text-align: center;
+}
+.macro-q-result-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    color: var(--gold-elev);
+    margin: 0 0 0.3rem;
+    background: linear-gradient(135deg, var(--gold-elev) 0%, var(--violet-elev) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+.macro-q-result-sub {
+    font-size: 0.85rem;
+    color: var(--outline-elev);
+    margin: 0 0 1.5rem;
+}
+.macro-q-gauge {
+    position: relative;
+    width: 200px;
+    height: 110px;
+    margin: 0 auto 1.25rem;
+}
+.macro-q-gauge svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.macro-q-gauge-fill {
+    transition: stroke-dasharray 1s ease;
+    animation: macro-q-gauge-fill 1.2s ease-out;
+}
+@keyframes macro-q-gauge-fill {
+    from { stroke-dasharray: 0 300; }
+}
+.macro-q-score {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1;
+}
+.macro-q-score-label {
+    position: absolute;
+    bottom: -1.2rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--outline-elev);
+    opacity: 0.7;
+}
+.macro-q-tier-card {
+    margin: 1.75rem 1rem 1.25rem;
+    padding: 0.85rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid;
+    border-radius: 0.6rem;
+}
+.macro-q-tier-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+}
+.macro-q-tier-desc {
+    font-size: 0.78rem;
+    color: var(--outline-elev);
+    line-height: 1.4;
+}
+.macro-q-actions-footer {
+    margin-top: 1.25rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+}
+.macro-q-actions-footer .btn-start-questionnaire {
+    background: transparent;
+    color: var(--gold-elev);
+    border: 1px solid var(--gold-elev);
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+}
+.macro-q-actions-footer .btn-start-questionnaire:hover {
+    background: rgba(242, 202, 80, 0.1);
+}
+
+/* ===== TNSVT Sprint G.2 — Mini-dashboard de completion ===== */
+.macro-q-summary {
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+.macro-q-summary-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+.macro-q-summary-header > span {
+    color: var(--gold-elev);
+    font-size: 1.1rem;
+}
+.macro-q-summary-header h3 {
+    flex: 1;
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--on-surface-elev);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.05em;
+}
+.macro-q-summary-pct {
+    font-size: 0.85rem;
+    color: var(--gold-elev);
+    font-weight: 700;
+}
+.macro-q-summary-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+.macro-q-summary-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold-elev), var(--violet-elev));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+.macro-q-summary-fill.complete {
+    background: linear-gradient(90deg, #4ade80, var(--gold-elev));
+}
+.macro-q-summary-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+.macro-q-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+.macro-q-summary-card > span {
+    color: var(--gold-elev);
+    font-size: 1rem;
+}
+.macro-q-summary-name {
+    font-size: 0.75rem;
+    color: var(--on-surface-elev);
+    margin: 0;
+    font-weight: 600;
+}
+.macro-q-summary-status {
+    font-size: 0.7rem;
+    color: var(--outline-elev);
+    margin: 0;
+    opacity: 0.8;
+}
+.macro-q-summary-status.completed {
+    color: #4ade80;
+    opacity: 1;
+    font-weight: 600;
+}

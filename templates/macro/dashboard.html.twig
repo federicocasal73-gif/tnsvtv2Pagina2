@@ -238,6 +238,110 @@
         </div>
     </div>
 
+    {# ══════ TNSVT Sprint C.6 — Cuestionarios Macro ══════ #}
+    <section class="mt-8 mb-6" aria-label="Cuestionarios Macro">
+        <h2 class="text-cinzel-display text-lg tracking-wider flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-[var(--gold-elev)]">quiz</span>
+            CUESTIONARIOS DEL EJECUTOR
+        </h2>
+        <p class="text-sm text-[var(--outline-elev)] mb-6">Completá los cuestionarios para calibrar tu perfil de trading. La información es privada y se usa solo para ajustar tu dashboard macro.</p>
+
+        {# TNSVT Sprint G.2 — Mini dashboard de completion #}
+        <div class="macro-q-summary" id="macro-q-summary">
+            <div class="macro-q-summary-header">
+                <span class="material-symbols-outlined">analytics</span>
+                <h3>Tu Progreso</h3>
+                <span class="macro-q-summary-pct" id="macro-q-summary-pct">0%</span>
+            </div>
+            <div class="macro-q-summary-bar">
+                <div class="macro-q-summary-fill" id="macro-q-summary-fill" style="width: 0%"></div>
+            </div>
+            <div class="macro-q-summary-cards" id="macro-q-summary-cards">
+                <div class="macro-q-summary-card" data-type="risk_profile">
+                    <span class="material-symbols-outlined">tune</span>
+                    <div>
+                        <p class="macro-q-summary-name">Perfil de Riesgo</p>
+                        <p class="macro-q-summary-status" id="macro-q-summary-rp">Pendiente</p>
+                    </div>
+                </div>
+                <div class="macro-q-summary-card" data-type="market_knowledge">
+                    <span class="material-symbols-outlined">school</span>
+                    <div>
+                        <p class="macro-q-summary-name">Conocimiento del Mercado</p>
+                        <p class="macro-q-summary-status" id="macro-q-summary-mk">Pendiente</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ─── Cuestionario de Perfil de Riesgo ─── #}
+        <article class="macro-card macro-questionnaire-card mt-4" id="risk-profile-card">
+            <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <div>
+                    <h3 class="text-cinzel-display text-base tracking-wider flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[var(--gold-elev)]">tune</span>
+                        Perfil de Riesgo
+                    </h3>
+                    <p class="text-xs text-[var(--outline-elev)] mt-1">Evalúa tu tolerancia al riesgo y horizonte temporal.</p>
+                </div>
+                <span class="risk-tier-badge" id="risk-profile-tier-badge" data-tier="unknown">—</span>
+            </header>
+            <div id="risk-profile-body">
+                <p class="text-center text-[var(--outline-elev)] py-6">Cargando cuestionario...</p>
+            </div>
+            <div id="risk-profile-result" class="hidden mt-4">
+                <div class="glass-card-elev p-4">
+                    <p class="text-sm"><strong>Tu score:</strong> <span id="risk-profile-score" class="text-[var(--gold-elev)] text-xl font-bold">—</span> / 100</p>
+                    <p class="text-sm mt-1"><strong>Tier:</strong> <span id="risk-profile-tier" class="text-[var(--violet-elev)] font-bold">—</span></p>
+                    <p class="text-xs text-[var(--outline-elev)] mt-1" id="risk-profile-updated">—</p>
+                </div>
+            </div>
+        </article>
+
+        {# ─── Cuestionario de Conocimiento del Mercado ─── #}
+        <article class="macro-card macro-questionnaire-card mt-4" id="market-knowledge-card">
+            <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <div>
+                    <h3 class="text-cinzel-display text-base tracking-wider flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[var(--gold-elev)]">school</span>
+                        Conocimiento del Mercado
+                    </h3>
+                    <p class="text-xs text-[var(--outline-elev)] mt-1">Mide tu nivel de comprensión de conceptos financieros.</p>
+                </div>
+                <span class="risk-tier-badge" id="market-knowledge-tier-badge" data-tier="unknown">—</span>
+            </header>
+            <div id="market-knowledge-body">
+                <p class="text-center text-[var(--outline-elev)] py-6">Cargando cuestionario...</p>
+            </div>
+            <div id="market-knowledge-result" class="hidden mt-4">
+                <div class="glass-card-elev p-4">
+                    <p class="text-sm"><strong>Tu score:</strong> <span id="market-knowledge-score" class="text-[var(--gold-elev)] text-xl font-bold">—</span> / 100</p>
+                    <p class="text-sm mt-1"><strong>Tier:</strong> <span id="market-knowledge-tier" class="text-[var(--violet-elev)] font-bold">—</span></p>
+                    <p class="text-xs text-[var(--outline-elev)] mt-1" id="market-knowledge-updated">—</p>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    {# ── Modal genérico para cuestionarios ── #}
+    <div class="chat-modal-overlay hidden" id="macro-questionnaire-modal" role="dialog" aria-modal="true" aria-labelledby="macro-questionnaire-modal-title" aria-hidden="true" tabindex="-1">
+        <div class="chat-modal" style="max-width: 700px; width: 90%;">
+            <header class="chat-modal-header">
+                <h3 id="macro-questionnaire-modal-title">Cuestionario</h3>
+                <button type="button" class="chat-widget-header-btn" data-action="closeMacroQuestionnaire" aria-label="Cerrar">
+                    <span class="material-symbols-elev">close</span>
+                </button>
+            </header>
+            <div id="macro-questionnaire-modal-body" class="chat-modal-body" style="max-height: 60vh; overflow-y: auto;">
+                <p>Cargando...</p>
+            </div>
+            <footer class="flex justify-end gap-2 p-3 border-t border-[var(--glass-border-gold-elev)]">
+                <button type="button" class="diary-btn-secondary" data-action="closeMacroQuestionnaire">Cancelar</button>
+                <button type="button" class="diary-btn-primary" id="macro-questionnaire-submit-btn" disabled>Enviar respuestas</button>
+            </footer>
+        </div>
+    </div>
+
     <script>
     // ══════ F3 — Bento Grid ══════
     let _bentoState = null;
@@ -824,5 +928,368 @@
         </linearGradient></defs>`;
         svg.innerHTML = html;
     }
+
+    // ══════ TNSVT Sprint C.6 — Cuestionarios Macro ══════
+    const MACRO_QUESTIONNAIRES = {
+        risk_profile: { card: 'risk-profile-card', body: 'risk-profile-body', result: 'risk-profile-result', tierBadge: 'risk-profile-tier-badge', scoreEl: 'risk-profile-score', tierEl: 'risk-profile-tier' },
+        market_knowledge: { card: 'market-knowledge-card', body: 'market-knowledge-body', result: 'market-knowledge-result', tierBadge: 'market-knowledge-tier-badge', scoreEl: 'market-knowledge-score', tierEl: 'market-knowledge-tier' },
+    };
+
+    const macroUserCode = (window.TNSVT_USER && window.TNSVT_USER.code) || 'DEMO';
+
+    async function loadMacroQuestionnaire(type) {
+        const cfg = MACRO_QUESTIONNAIRES[type];
+        const card = document.getElementById(cfg.card);
+        const bodyEl = document.getElementById(cfg.body);
+        const tierBadge = document.getElementById(cfg.tierBadge);
+
+        // TNSVT Sprint G.2 — Actualizar mini-dashboard de completion
+        const updateSummaryForType = (completed, score, tier) => {
+            const statusEl = document.getElementById('macro-q-summary-' + (type === 'risk_profile' ? 'rp' : 'mk'));
+            if (!statusEl) return;
+            if (completed) {
+                statusEl.textContent = `${tier.toUpperCase()} (${score}/100)`;
+                statusEl.className = 'macro-q-summary-status completed';
+            } else {
+                statusEl.textContent = 'Pendiente';
+                statusEl.className = 'macro-q-summary-status';
+            }
+            updateMacroQSummary();
+        };
+
+        try {
+            const r = await window.apiFetch(`/api/macro/questionnaire/${type}?user_code=${macroUserCode}`);
+            if (!r.ok || !r.data || !r.data.success) {
+                bodyEl.innerHTML = `<p class="text-center text-[var(--error-elev)] py-4">Error al cargar cuestionario</p>`;
+                updateSummaryForType(false, 0, 'unknown');
+                return;
+            }
+
+            const data = r.data;
+            const tier = data.tier || 'unknown';
+            tierBadge.setAttribute('data-tier', tier);
+            tierBadge.textContent = tier === 'unknown' ? 'Pendiente' : tier.toUpperCase();
+            updateSummaryForType(data.completed, data.score || 0, tier);
+
+            if (data.completed && data.score !== undefined) {
+                // Ya completado: mostrar respuestas y resultado
+                let html = `<div class="questions-list">`;
+                data.questions.forEach((q, idx) => {
+                    const ans = data.answers[q.id];
+                    const opt = q.options[ans];
+                    html += `
+                        <div class="question">
+                            <div class="question-label">${idx + 1}. ${escapeMacroHTML(q.label)}</div>
+                            <div class="text-xs text-[var(--gold-elev)] font-semibold">Tu respuesta: ${escapeMacroHTML(opt ? opt.label : ans)}</div>
+                        </div>
+                    `;
+                });
+                html += `</div>
+                    <button type="button" class="btn-start-questionnaire" data-macro-retake="${type}">Rehacer cuestionario</button>
+                `;
+                bodyEl.innerHTML = html;
+                document.getElementById(cfg.result).classList.remove('hidden');
+                document.getElementById(cfg.scoreEl).textContent = data.score;
+                document.getElementById(cfg.tierEl).textContent = tier.toUpperCase();
+                // TNSVT Sprint G.4 — Mostrar fecha de actualización
+                const updatedEl = document.getElementById(cfg.scoreEl === 'risk-profile-score' ? 'risk-profile-updated' : 'market-knowledge-updated');
+                if (updatedEl && data.completed_at) {
+                    try {
+                        const dt = new Date(data.completed_at);
+                        updatedEl.textContent = `Última actualización: ${dt.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+                    } catch (e) { /* no-op */ }
+                }
+            } else {
+                // Pendiente: mostrar botón para empezar
+                bodyEl.innerHTML = `
+                    <p class="text-center text-[var(--outline-elev)] py-4">Cuestionario pendiente</p>
+                    <div class="flex justify-center">
+                        <button type="button" class="btn-start-questionnaire" data-macro-start="${type}">Empezar cuestionario</button>
+                    </div>
+                `;
+                document.getElementById(cfg.result).classList.add('hidden');
+            }
+        } catch (e) {
+            console.error('[macro-questionnaire] load error', e);
+            bodyEl.innerHTML = `<p class="text-center text-[var(--error-elev)] py-4">Error de red</p>`;
+        }
+    }
+
+    function escapeMacroHTML(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[m]));
+    }
+
+    function openMacroQuestionnaireModal(type) {
+        const modal = document.getElementById('macro-questionnaire-modal');
+        const title = document.getElementById('macro-questionnaire-modal-title');
+        const body = document.getElementById('macro-questionnaire-modal-body');
+        title.textContent = type === 'risk_profile' ? 'Perfil de Riesgo' : 'Conocimiento del Mercado';
+
+        window.apiFetch(`/api/macro/questionnaire/${type}?user_code=${macroUserCode}`).then(r => {
+            if (!r.ok || !r.data) {
+                body.innerHTML = '<p>Error al cargar preguntas</p>';
+                return;
+            }
+            const questions = r.data.questions;
+            const total = questions.length;
+
+            // TNSVT Sprint F.1 — Header con progress bar
+            let html = `
+                <div class="macro-q-header">
+                    <div class="macro-q-progress-info">
+                        <span id="macro-q-progress-text">Pregunta 1 de ${total}</span>
+                        <span id="macro-q-progress-pct">0%</span>
+                    </div>
+                    <div class="macro-q-progress-bar">
+                        <div class="macro-q-progress-fill" id="macro-q-progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="questions-form">
+            `;
+            questions.forEach((q, idx) => {
+                html += `<div class="question" data-question-idx="${idx}">
+                    <div class="question-label">${idx + 1}. ${escapeMacroHTML(q.label)}</div>
+                    <div class="question-options">`;
+                Object.entries(q.options).forEach(([key, opt]) => {
+                    html += `<label class="question-option" data-macro-q="${q.id}" data-macro-opt="${key}">
+                        <input type="radio" name="${q.id}" value="${key}">
+                        <span>${escapeMacroHTML(opt.label)}</span>
+                    </label>`;
+                });
+                html += `</div></div>`;
+            });
+            html += '</div>';
+            body.innerHTML = html;
+            modal.dataset.type = type;
+            modal.classList.remove('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+            body.scrollTop = 0;
+            // TNSVT Sprint K.5 — Focus management: focus first option for accessibility
+            const firstOpt = body.querySelector('.question-option');
+            if (firstOpt) firstOpt.focus();
+
+            // Wire selection styling + progress bar update
+            let answered = new Set();
+            const updateProgress = () => {
+                const pct = Math.round((answered.size / total) * 100);
+                const progressFill = body.querySelector('#macro-q-progress-fill');
+                const progressText = body.querySelector('#macro-q-progress-text');
+                const progressPct = body.querySelector('#macro-q-progress-pct');
+                if (progressFill) progressFill.style.width = pct + '%';
+                if (progressText) progressText.textContent = `Pregunta ${Math.min(answered.size + 1, total)} de ${total}`;
+                if (progressPct) progressPct.textContent = pct + '%';
+                // Marcar progress bar completa si todo respondido
+                if (answered.size === total && progressFill) {
+                    progressFill.classList.add('complete');
+                }
+                // TNSVT Sprint K.5 — Habilitar botón de envío solo cuando todas respondidas
+                const submitBtn = modal.querySelector('#macro-questionnaire-submit-btn');
+                if (submitBtn) submitBtn.disabled = answered.size < total;
+            };
+
+            body.querySelectorAll('.question-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    const qid = opt.dataset.macroQ;
+                    body.querySelectorAll(`[data-macro-q="${qid}"]`).forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    opt.querySelector('input').checked = true;
+                    answered.add(qid);
+                    updateProgress();
+                });
+            });
+
+            // TNSVT Sprint K.2 — Keyboard shortcuts 1-9 for answer selection
+            const handleKeydown = (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                if (e.repeat) return;
+                const key = e.key;
+                if (!/^[1-9]$/.test(key)) return;
+                const opts = body.querySelectorAll('.question-option');
+                if (opts.length === 0) return;
+                const idx = parseInt(key, 10) - 1;
+                if (idx >= opts.length) return;
+                opts[idx].click();
+            };
+            document.addEventListener('keydown', handleKeydown);
+            modal._cleanupKeydown = () => document.removeEventListener('keydown', handleKeydown);
+
+            // Inicializar progress bar
+            updateProgress();
+        });
+    }
+
+    function closeMacroQuestionnaireModal() {
+        const modal = document.getElementById('macro-questionnaire-modal');
+        if (modal._cleanupKeydown) {
+            modal._cleanupKeydown();
+            modal._cleanupKeydown = null;
+        }
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.add('hidden');
+    }
+
+    async function submitMacroQuestionnaire() {
+        const modal = document.getElementById('macro-questionnaire-modal');
+        const body = document.getElementById('macro-questionnaire-modal-body');
+        const type = modal.dataset.type;
+        if (!type) return;
+
+        // Recolectar respuestas
+        const inputs = modal.querySelectorAll('input[type=radio]:checked');
+        if (inputs.length === 0) {
+            if (window.apiToast) window.apiToast('Respondé todas las preguntas', 'error');
+            return;
+        }
+        const answers = {};
+        inputs.forEach(inp => {
+            answers[inp.name] = inp.value;
+        });
+
+        const submitBtn = document.getElementById('macro-questionnaire-submit-btn');
+        submitBtn.disabled = true;
+
+        // TNSVT Sprint F.2 — Mostrar loading state con cálculo
+        body.innerHTML = `
+            <div class="macro-q-loading">
+                <div class="macro-q-spinner"></div>
+                <p>Calculando tu perfil...</p>
+            </div>
+        `;
+
+        try {
+            const r = await window.apiFetch(`/api/macro/questionnaire/${type}`, {
+                method: 'POST',
+                body: JSON.stringify({ user_code: macroUserCode, answers }),
+            });
+            if (r.ok && r.data && r.data.success) {
+                const { score, tier } = r.data;
+                // TNSVT Sprint F.2 — Mostrar resultado visual con animación
+                body.innerHTML = renderQuestionnaireResult(type, score, tier);
+                // Cambiar texto del botón
+                submitBtn.textContent = 'Cerrar';
+                submitBtn.disabled = false;
+                submitBtn.onclick = () => {
+                    closeMacroQuestionnaireModal();
+                    loadMacroQuestionnaire(type);
+                };
+                if (window.apiToast) {
+                    window.apiToast(`¡Completado! Score: ${score}/100 — Tier: ${tier.toUpperCase()}`, 'success');
+                }
+            } else {
+                const msg = (r.data && r.data.error) || 'Error al guardar';
+                if (window.apiToast) window.apiToast(msg, 'error');
+                submitBtn.disabled = false;
+            }
+        } catch (e) {
+            console.error('[macro-questionnaire] submit error', e);
+            if (window.apiToast) window.apiToast('Error de red', 'error');
+            submitBtn.disabled = false;
+        }
+    }
+
+    /**
+     * TNSVT Sprint F.2 — Render visual del resultado con score gauge.
+     */
+    function renderQuestionnaireResult(type, score, tier) {
+        const tierColors = {
+            conservative: { color: '#4ade80', label: 'Conservador', desc: 'Prefieres preservar capital. Horizonte largo, riesgo bajo.' },
+            moderate:     { color: '#f2ca50', label: 'Moderado',     desc: 'Balance entre riesgo y retorno. Estrategia estándar.' },
+            aggressive:   { color: '#fb923c', label: 'Agresivo',     desc: 'Buscas retornos altos. Riesgo medio-alto, horizonte medio.' },
+            degen:        { color: '#f87171', label: 'Degen',        desc: 'Máximo riesgo. All-in en cada operación.' },
+        };
+        const tierInfo = tierColors[tier] || tierColors.moderate;
+        // Calcular ángulo para el gauge (180 grados = -90 a 90)
+        const pct = Math.max(0, Math.min(100, score));
+        const angle = -90 + (pct / 100) * 180;
+        const rad = (angle * Math.PI) / 180;
+        const cx = 100, cy = 100, r = 80;
+        const needleX = cx + (r - 12) * Math.cos(rad);
+        const needleY = cy + (r - 12) * Math.sin(rad);
+
+        return `
+            <div class="macro-q-result">
+                <h2 class="macro-q-result-title">¡Resultado calculado!</h2>
+                <p class="macro-q-result-sub">${escapeMacroHTML(type === 'risk_profile' ? 'Perfil de Riesgo' : 'Conocimiento del Mercado')}</p>
+
+                <div class="macro-q-gauge">
+                    <svg viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="gauge-grad-${type}" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="#4ade80"/>
+                                <stop offset="50%" stop-color="#f2ca50"/>
+                                <stop offset="100%" stop-color="#f87171"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M 20 100 A 80 80 0 0 1 180 100" stroke="rgba(255,255,255,0.1)" stroke-width="12" fill="none"/>
+                        <path d="M 20 100 A 80 80 0 0 1 ${needleX.toFixed(1)} ${needleY.toFixed(1)}" stroke="url(#gauge-grad-${type})" stroke-width="12" fill="none" stroke-linecap="round" class="macro-q-gauge-fill"/>
+                        <circle cx="${cx}" cy="${cy}" r="5" fill="${tierInfo.color}"/>
+                    </svg>
+                    <div class="macro-q-score" style="color: ${tierInfo.color}">${score}</div>
+                    <div class="macro-q-score-label">de 100 puntos</div>
+                </div>
+
+                <div class="macro-q-tier-card" style="border-color: ${tierInfo.color}">
+                    <div class="macro-q-tier-label" style="color: ${tierInfo.color}">${tierInfo.label.toUpperCase()}</div>
+                    <div class="macro-q-tier-desc">${tierInfo.desc}</div>
+                </div>
+
+                <div class="macro-q-actions-footer">
+                    <button type="button" class="btn-start-questionnaire" data-macro-retake="${type}">Rehacer</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Event listeners
+    document.querySelectorAll('[data-macro-start]').forEach(btn => {
+        btn.addEventListener('click', () => openMacroQuestionnaireModal(btn.dataset.macroStart));
+    });
+    document.querySelectorAll('[data-macro-retake]').forEach(btn => {
+        btn.addEventListener('click', () => openMacroQuestionnaireModal(btn.dataset.macroRetake));
+    });
+    document.querySelectorAll('[data-action="closeMacroQuestionnaire"]').forEach(btn => {
+        btn.addEventListener('click', closeMacroQuestionnaireModal);
+    });
+    document.getElementById('macro-questionnaire-submit-btn')?.addEventListener('click', submitMacroQuestionnaire);
+
+    // TNSVT Sprint G.2 — Actualizar mini-dashboard de completion
+    function updateMacroQSummary() {
+        const completed = document.querySelectorAll('.macro-q-summary-status.completed').length;
+        const total = 2;
+        const pct = Math.round((completed / total) * 100);
+        const fill = document.getElementById('macro-q-summary-fill');
+        const pctEl = document.getElementById('macro-q-summary-pct');
+        if (fill) fill.style.width = pct + '%';
+        if (pctEl) pctEl.textContent = pct + '%';
+        if (fill) {
+            if (pct === 100) fill.classList.add('complete');
+            else fill.classList.remove('complete');
+        }
+    }
+
+    // Inicializar los estados del summary
+    function initMacroQSummary() {
+        const cards = document.querySelectorAll('.macro-q-summary-card');
+        cards.forEach(card => {
+            const type = card.dataset.type;
+            // Estado por defecto: pendiente
+            const statusEl = document.getElementById('macro-q-summary-' + (type === 'risk_profile' ? 'rp' : 'mk'));
+            if (statusEl) {
+                statusEl.textContent = 'Cargando...';
+                statusEl.className = 'macro-q-summary-status';
+            }
+        });
+    }
+
+    // Hook en loadMacroQuestionnaire para actualizar el summary
+    const _origLoadMacroQ = loadMacroQuestionnaire;
+    // No podemos redefinir funciones declaradas, pero podemos inyectar lógica
+
+    // Cargar cuestionarios al inicio
+    initMacroQSummary();
+    loadMacroQuestionnaire('risk_profile');
+    loadMacroQuestionnaire('market_knowledge');
     </script>
 {% endblock %}
