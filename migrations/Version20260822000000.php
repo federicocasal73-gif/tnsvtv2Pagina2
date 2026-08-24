@@ -56,11 +56,16 @@ final class Version20260822000000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        // Disable FK checks so we can drop tables in any order. The schema
+        // is being torn down anyway; re-enabling at the end is belt-and-
+        // suspenders for the rest of the session.
+        $this->addSql('SET FOREIGN_KEY_CHECKS = 0');
         foreach (self::TABLES as $table) {
             if ($schema->hasTable($table)) {
                 $this->addSql('DROP TABLE IF EXISTS `' . $table . '`');
             }
         }
+        $this->addSql('SET FOREIGN_KEY_CHECKS = 1');
     }
 
     public function down(Schema $schema): void
