@@ -48,6 +48,8 @@ export default class extends Controller {
         this.activeConv = null;
         this.activeTab = 'all';
         this.pollTimer = null;
+        this._previouslyFocused = null;
+        this._modalTrigger = null;
         this.userSearchTimer = null;
         this.lastMessageCount = 0;
         this.typingTimer = null;
@@ -97,6 +99,9 @@ export default class extends Controller {
      * Escape: Cerrar modal o volver a lista
      */
     onGlobalKeydown(event) {
+        // Tab/Shift+Tab inside the new-DM modal: cycle within the modal.
+        this._trapModalFocus(event);
+
         // Ctrl+K (Cmd+K en Mac): Toggle chat
         if ((event.ctrlKey || event.metaKey) && event.key === 'k' && !event.shiftKey) {
             event.preventDefault();
@@ -277,6 +282,10 @@ export default class extends Controller {
         if (this.openValue) {
             this.close();
         } else {
+            // Remember which element opened the widget so we can restore focus.
+            if (document.activeElement && document.activeElement !== document.body) {
+                this._previouslyFocused = document.activeElement;
+            }
             this.openPanel();
         }
     }
@@ -290,6 +299,9 @@ export default class extends Controller {
         // Refrescar al abrir
         this.loadConversations();
         this.startPolling();
+        // Focus management: move focus into the panel for keyboard users.
+        // Prefer the search field; fall back to the first conversation.
+        this._moveFocusIntoPanel();
     }
 
     close() {
@@ -300,6 +312,44 @@ export default class extends Controller {
         this.toggleIconTarget.textContent = 'chat_bubble';
         this.stopPolling();
         this.backToList();
+        // Restore focus to the toggle button (or whatever opened it).
+        const restoreTo = this._previouslyFocused && document.contains(this._previouslyFocused)
+            ? this._previouslyFocused
+            : this.toggleTarget;
+        restoreTo.focus();
+    }
+
+    _moveFocusIntoPanel() {
+        // Wait for the panel to be visible before focusing.
+        requestAnimationFrame(() => {
+            if (this.hasSearchTarget) {
+                this.searchTarget.focus();
+                return;
+            }
+            const firstConv = this.panelTarget.querySelector('.chat-widget-item');
+            if (firstConv) firstConv.focus();
+        });
+    }
+
+    // Focus trap for the new-DM modal. Keeps Tab cycling inside the modal.
+    _trapModalFocus(event) {
+        if (!this.hasNewDmModalTarget) return;
+        const modal = this.newDmModalTarget;
+        if (modal.classList.contains('hidden')) return;
+        if (event.key !== 'Tab') return;
+        const focusables = modal.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
     }
 
     // ══════ Cargar conversaciones ══════
@@ -509,6 +559,8 @@ export default class extends Controller {
 
     // �═════ Nuevo DM ══════
     openNewDm() {
+        // Remember which control opened the modal so we can restore focus.
+        this._modalTrigger = document.activeElement;
         this.newDmModalTarget.classList.remove('hidden');
         this.loadUsers('');
         setTimeout(() => this.userSearchTarget.focus(), 100);
@@ -516,6 +568,12 @@ export default class extends Controller {
 
     closeNewDm() {
         this.newDmModalTarget.classList.add('hidden');
+        // Restore focus to the control that opened the modal.
+        const restoreTo = this._modalTrigger && document.contains(this._modalTrigger)
+            ? this._modalTrigger
+            : this.toggleTarget;
+        restoreTo.focus();
+        this._modalTrigger = null;
     }
 
     async loadUsers(q) {
