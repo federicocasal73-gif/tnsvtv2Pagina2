@@ -14,19 +14,15 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: WalletTransactionRepository::class)]
 #[ORM\Table(name: 'wallet_transactions')]
 #[ORM\Index(name: 'idx_wtx_user', columns: ['user_id'])]
-#[ORM\Index(name: 'idx_wtx_tournament', columns: ['ref_tournament_id'])]
 #[ORM\Index(name: 'idx_wtx_status', columns: ['status'])]
 #[ORM\Index(name: 'idx_wtx_created', columns: ['created_at'])]
 class WalletTransaction
 {
     public const TYPE_DEPOSIT   = 'deposit';     // user recibe USD (admin/MP/Binance)
-    public const TYPE_ENTRY_FEE = 'entry_fee';   // user paga para entrar a torneo
-    public const TYPE_PAYOUT    = 'payout';      // user recibe premio de torneo
-    public const TYPE_REFUND    = 'refund';      // devolucion (torneo cancelado)
+    public const TYPE_PAYOUT    = 'payout';      // user recibe premio
+    public const TYPE_REFUND    = 'refund';      // devolucion
     public const TYPE_WITHDRAW  = 'withdraw';    // user retira USD (pendiente)
-    public const TYPE_DUEL_ENTRY = 'duel_entry';  // entrada a duelo 1v1
-    public const TYPE_DUEL_WIN   = 'duel_win';    // premio de duelo 1v1
-    public const TYPE_DUEL_REFUND = 'duel_refund'; // devolucion de duelo cancelado/empate
+    public const TYPE_GIFT      = 'gift';        // regalo del admin
 
     public const STATUS_PENDING   = 'pending';
     public const STATUS_CONFIRMED  = 'confirmed';
@@ -100,8 +96,6 @@ class WalletTransaction
     public function setAmount(string $a): self { $this->amount = $a; return $this; }
     public function getCurrency(): string { return $this->currency; }
     public function setCurrency(string $c): self { $this->currency = $c; return $this; }
-    public function getRefTournament(): ?Tournament { return $this->refTournament; }
-    public function setRefTournament(?Tournament $t): self { $this->refTournament = $t; return $this; }
     public function getRefPaymentId(): ?string { return $this->refPaymentId; }
     public function setRefPaymentId(?string $s): self { $this->refPaymentId = $s; return $this; }
     public function getRefPaymentMethod(): ?string { return $this->refPaymentMethod; }
@@ -119,7 +113,7 @@ class WalletTransaction
 
     public function isCredit(): bool
     {
-        return in_array($this->type, [self::TYPE_DEPOSIT, self::TYPE_PAYOUT, self::TYPE_REFUND, self::TYPE_DUEL_WIN, self::TYPE_DUEL_REFUND], true);
+        return in_array($this->type, [self::TYPE_DEPOSIT, self::TYPE_PAYOUT, self::TYPE_REFUND, self::TYPE_GIFT], true);
     }
 
     public function getFormattedAmount(): string

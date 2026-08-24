@@ -23,9 +23,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: WalletTransaction::class)]
     private Collection $walletTransactions;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: TournamentEntry::class)]
-    private Collection $tournamentEntries;
-
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: DiaryEntry::class)]
     private Collection $diaryEntries;
 
@@ -38,13 +35,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->walletTransactions = new ArrayCollection();
-        $this->tournamentEntries = new ArrayCollection();
         $this->diaryEntries = new ArrayCollection();
         $this->connections = new ArrayCollection();
     }
 
     public function getWalletTransactions(): Collection { return $this->walletTransactions; }
-    public function getTournamentEntries(): Collection { return $this->tournamentEntries; }
     public function getDiaryEntries(): Collection { return $this->diaryEntries; }
     public function getConnections(): Collection { return $this->connections; }
     public function getJournalSetting(): ?JournalSetting { return $this->journalSetting; }
