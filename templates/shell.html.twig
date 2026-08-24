@@ -50,7 +50,10 @@
 {% block gateway_emblem %}{% endblock %}
 
 <div class="sanctum-layout">
-    <aside id="sanctum-sidebar" class="sanctum-sidebar">
+    <aside id="sanctum-sidebar" class="sanctum-sidebar" aria-label="Menú principal">
+        <button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Colapsar menú" aria-expanded="true" aria-controls="sanctum-sidebar">
+            <span class="material-symbols-elev" aria-hidden="true">chevron_left</span>
+        </button>
         <div class="sidebar-brand">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg gold-glow-elev flex items-center justify-center bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)]">
@@ -297,14 +300,27 @@
 
 <script>
 (function() {
-    // Active nav highlight
-    const path = window.location.pathname;
-    document.querySelectorAll('.sanctum-link[data-page]').forEach(a => {
-        if (a.getAttribute('href') === path) {
-            a.classList.add('active');
-            a.setAttribute('aria-current', 'page');
-        }
-    });
+      // Active nav highlight: match both exact path and data-page prefix so
+      // that /sanctum/guardian/anything still marks Guardian as active, etc.
+      (function markActiveNav() {
+          const path = window.location.pathname.replace(/\/+$/, '') || '/';
+          const links = document.querySelectorAll('#sanctum-sidebar .sanctum-link[data-page]');
+          let bestMatch = null;
+          let bestLen = -1;
+          links.forEach(a => {
+              const href = (a.getAttribute('href') || '').replace(/\/+$/, '') || '/';
+              if (path === href || path.startsWith(href + '/') || href === '/' && path.startsWith('/')) {
+                  if (href.length > bestLen) {
+                      bestMatch = a;
+                      bestLen = href.length;
+                  }
+              }
+          });
+          if (bestMatch) {
+              bestMatch.classList.add('active');
+              bestMatch.setAttribute('aria-current', 'page');
+          }
+      })();
 
     // Load user info from session via /api/auth/check (using robust helper)
     if (window.apiFetch) {
@@ -394,6 +410,30 @@
         link.addEventListener('blur', hide);
     });
     window.addEventListener('resize', hide);
+})();
+</script>
+
+<script>
+// Manual sidebar collapse/expand (user-driven, persisted in localStorage).
+(function() {
+    var btn = document.getElementById('sidebar-toggle');
+    var aside = document.getElementById('sanctum-sidebar');
+    if (!btn || !aside) return;
+    var KEY = 'tnsvt_sidebar_collapsed';
+    function apply(collapsed) {
+        aside.classList.toggle('sidebar-manual-collapsed', collapsed);
+        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        btn.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Colapsar menú');
+        var icon = btn.querySelector('.material-symbols-elev');
+        if (icon) icon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
+        try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch (_) {}
+    }
+    try {
+        if (localStorage.getItem(KEY) === '1') apply(true);
+    } catch (_) {}
+    btn.addEventListener('click', function () {
+        apply(aside.classList.contains('sidebar-manual-collapsed'));
+    });
 })();
 </script>
 
