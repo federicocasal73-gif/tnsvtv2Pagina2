@@ -2,13 +2,16 @@
 
 {% block title %}Dashboard · T.N.S.V.T{% endblock %}
 
-{% block topbar_title %}Command Center{% endblock %}
+{% block topbar_title %}T.N.S.V.T Dashboard{% endblock %}
 {% block topbar_subtitle %}Divine synchronization active.{% endblock %}
 
 {# ═══ F1.5 — URL ?tab= state ═══ #}
 {% set tab = app.request.query.get('tab', 'dashboard') %}
 {% set tabs = {
     'dashboard':    {label: 'DASHBOARD',     icon: 'dashboard',       desc: 'Tu centro de control'},
+    'markets':      {label: 'MARKETS',       icon: 'monitoring',      desc: 'Los Hilos del Mundo'},
+    'macro':        {label: 'MACRO EVENTS',  icon: 'event_upcoming',  desc: 'Calendario económico crítico'},
+    'prophecies':   {label: 'PROPHECIES',    icon: 'auto_awesome',    desc: 'Señales y revelaciones'},
     'registrar':    {label: 'REGISTRAR',     icon: 'edit_note',       desc: 'Asentar una operación cerrada'},
     'trade_log':    {label: 'TRADE LOG',     icon: 'list_alt',        desc: 'Historial completo de operaciones'},
     'estadisticas': {label: 'ESTADÍSTICAS',  icon: 'insights',        desc: 'Equity, calendario y métricas'},
@@ -119,10 +122,10 @@
         </div>
 
         <div class="cal-legend mt-3">
-            <span><span class="ec-legend-dot ec-legend-pos"></span>Día ganador</span>
-            <span><span class="ec-legend-dot ec-legend-neg"></span>Día perdedor</span>
-            <span><span class="ec-legend-dot ec-legend-mix"></span>Mixto</span>
-            <span><span class="ec-legend-dot" style="background: #8a3cff"></span>Abierta</span>
+            <span><span class="cal-legend-dot cal-dot-wins"></span>Día ganador</span>
+            <span><span class="cal-legend-dot cal-dot-losses"></span>Día perdedor</span>
+            <span><span class="cal-legend-dot cal-dot-mixed"></span>Mixto</span>
+            <span><span class="cal-legend-dot cal-dot-open"></span>Abierta</span>
         </div>
     </section>
 
@@ -335,11 +338,8 @@
 
     {# ══════ F1.5 — Stub panels for non-default tabs ══════ #}
     {% elseif tab == 'registrar' %}
-        <div class="tab-panel-stub">
-            <span class="material-symbols-elev" aria-hidden="true">edit_note</span>
-            <h2>REGISTRAR OPERACIÓN</h2>
-            <p><strong>Fase 2 ✅</strong> · Abrí el formulario completo para asentar una operación cerrada con todos los detalles: activo, dirección, precios, P&L y notas.</p>
-            <a href="/journal/new" class="btn-elev-primary">Asentar operación nueva →</a>
+        <div class="tab-panel-active">
+            {% include '_partials/dashboard/trade_form.html.twig' %}
         </div>
     {% elseif tab == 'trade_log' %}
         <div class="tab-panel-stub">
@@ -354,6 +354,27 @@
             <h2>ESTADÍSTICAS</h2>
             <p>Próximamente en <strong>F1.1 – F1.4</strong>: Equity Curve SVG · Calendario Mensual · P&L Mensual · Profit Factor · Expectativa · Win Rate.</p>
             <a href="/api/journal/drawdown" class="btn-elev-primary" target="_blank" rel="noopener">Ver preview (JSON)</a>
+        </div>
+    {% elseif tab == 'markets' %}
+        <div class="tab-panel-stub">
+            <span class="material-symbols-elev" aria-hidden="true">monitoring</span>
+            <h2>MARKETS</h2>
+            <p>Datos de mercados en desarrollo. Mientras tanto, podés consultar el calendario macro y las ventanas de no-operación en la sección completa.</p>
+            <a href="/macro" class="btn-elev-primary">Ir a Macro →</a>
+        </div>
+    {% elseif tab == 'macro' %}
+        <div class="tab-panel-stub">
+            <span class="material-symbols-elev" aria-hidden="true">event_upcoming</span>
+            <h2>MACRO EVENTS</h2>
+            <p>Los hilos del mundo y el calendario económico crítico están en la página dedicada de Macroeconomía.</p>
+            <a href="/macro" class="btn-elev-primary">Ver Macro →</a>
+        </div>
+    {% elseif tab == 'prophecies' %}
+        <div class="tab-panel-stub">
+            <span class="material-symbols-elev" aria-hidden="true">auto_awesome</span>
+            <h2>PROPHECIES</h2>
+            <p>Señales, correlación emocional-rentabilidad y el Oráculo completo están en su página dedicada.</p>
+            <a href="/oracle" class="btn-elev-primary">Ver Oráculo →</a>
         </div>
     {% else %}
         <div class="tab-panel-stub">
@@ -515,6 +536,16 @@
                 `;
             }).join('');
         }
+    }
+
+    function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     // Wire up events
@@ -802,6 +833,20 @@
         document.getElementById('stats-trade-count').textContent = s.total;
     }
 
+    // ══════ loadDashboard — orquestador principal del dashboard ══════
+    // Refresca las secciones principales del dashboard.
+    // Llamado en DOMContentLoaded y cada 60s para mantener datos frescos.
+    async function loadDashboard() {
+        // F1.5 guard: solo correr cuando el tab dashboard esté renderizado
+        if (!document.getElementById('stats-pf')) return;
+
+        // Stats + Guardian son los más importantes; refresca ambos en paralelo.
+        await Promise.all([
+            loadStats(),
+            loadGuardianWidget(),
+        ]);
+    }
+
     // ══════ F1.3 — Calendar state ══════
     let _CALstate = null;  // { year, month }
     function _nowYM() {
@@ -907,6 +952,9 @@
             `;
         }
         grid.innerHTML = headerHtml + bodyHtml;
+        // TNSVT Sprint I.2 — Animación de entrada al cambiar mes
+        grid.classList.add('cal-month-grid-animate');
+        setTimeout(() => grid.classList.remove('cal-month-grid-animate'), 400);
     }
 
     function wireCalendarNav() {
