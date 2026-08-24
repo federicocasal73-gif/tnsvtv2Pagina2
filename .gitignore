@@ -49,7 +49,21 @@ public/uploads/
 .DS_Store
 Thumbs.db
 bin/__pycache__/
+# Ad-hoc Python debug scripts (consolidation leftovers).
+# Use bin/console for Symfony debugging.
+bin/*.py
 ###< tnsvt v2 IDE / OS ###
+
+###> tnsvt v2 local artifacts ###
+# Firebase JWT vendor extracts (debug work, not part of the build).
+firebase-jwt*.zip
+firebase-jwt-*-extract/
+/firebase-jwt-*-extract/
+# Legacy "Services" namespace (plural). Was a one-off workaround file
+# for a Lexik JWT bug; never wired in services.yaml. If a real fix is
+# needed, use App\Service\* (singular) namespace.
+src/Services/
+###< tnsvt v2 local artifacts ###
 
 ###> tnsvt v2 build outputs ###
 /public/build/
