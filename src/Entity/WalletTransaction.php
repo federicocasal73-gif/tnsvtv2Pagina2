@@ -56,10 +56,6 @@ class WalletTransaction
     #[ORM\Column(length: 8)]
     private string $currency = 'USD';
 
-    #[ORM\ManyToOne(targetEntity: Tournament::class)]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
-    private ?Tournament $refTournament = null;
-
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $refPaymentId = null;
 

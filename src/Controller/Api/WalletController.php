@@ -103,12 +103,11 @@ class WalletController extends AbstractController
             'amount_formatted' => $tx->getFormattedAmount(),
             'currency' => $tx->getCurrency(),
             'is_credit' => $tx->isCredit(),
-            'status' => $tx->getStatus(),
-            'notes' => $tx->getNotes(),
-            'ref_tournament_id' => $tx->getRefTournament()?->getId(),
-            'ref_payment_id' => $tx->getRefPaymentId(),
-            'ref_payment_method' => $tx->getRefPaymentMethod(),
-            'created_at' => $tx->getCreatedAt()?->format('c'),
+              'status' => $tx->getStatus(),
+              'notes' => $tx->getNotes(),
+              'ref_payment_id' => $tx->getRefPaymentId(),
+              'ref_payment_method' => $tx->getRefPaymentMethod(),
+              'created_at' => $tx->getCreatedAt()?->format('c'),
             'confirmed_at' => $tx->getConfirmedAt()?->format('c'),
         ], $txs);
 
