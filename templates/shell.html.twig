@@ -320,6 +320,21 @@
               bestMatch.classList.add('active');
               bestMatch.setAttribute('aria-current', 'page');
           }
+          // Scroll the active item into view inside the .sanctum-nav
+          // scroll container (only if it would be clipped). We do this on
+          // load so the active page is visible even on a long menu where
+          // the active section sits past the viewport.
+          if (bestMatch) {
+              requestAnimationFrame(() => {
+                  const nav = bestMatch.closest('.sanctum-nav');
+                  if (!nav) return;
+                  const navRect = nav.getBoundingClientRect();
+                  const itemRect = bestMatch.getBoundingClientRect();
+                  if (itemRect.top < navRect.top || itemRect.bottom > navRect.bottom) {
+                      bestMatch.scrollIntoView({ block: 'center' });
+                  }
+              });
+          }
       })();
 
     // Load user info from session via /api/auth/check (using robust helper)

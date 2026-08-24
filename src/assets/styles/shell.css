@@ -61,7 +61,23 @@
     flex-direction: column;
     z-index: 30;
     transition: width 0.18s ease;
-    position: relative;
+}
+
+/* Internal nav scrolls independently of the brand/user-card rows.
+   This keeps the active link visible even when the menu grows past
+   100vh on small viewports. The brand stays pinned at top and the
+   user-card stays pinned at bottom by virtue of flex column + the
+   .sanctum-nav being a flex item with min-height:0. */
+#sanctum-sidebar .sanctum-nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+#sanctum-sidebar .sidebar-brand,
+#sanctum-sidebar .sidebar-user-card {
+    flex: 0 0 auto;
 }
 
 #sanctum-sidebar.sidebar-manual-collapsed {
