@@ -52,6 +52,11 @@ bin/__pycache__/
 # Ad-hoc Python debug scripts (consolidation leftovers).
 # Use bin/console for Symfony debugging.
 bin/*.py
+# Ad-hoc PHP debug scripts (JWT, lexik) — same category as bin/*.py.
+bin/diag_*.php
+bin/test_jwt_*.php
+bin/test_lexik_*.php
+bin/test_simple.php
 ###< tnsvt v2 IDE / OS ###
 
 ###> tnsvt v2 local artifacts ###
