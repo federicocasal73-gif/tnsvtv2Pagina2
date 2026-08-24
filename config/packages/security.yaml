@@ -36,6 +36,12 @@ security:
         - { path: ^/api/tasks, roles: PUBLIC_ACCESS }
         - { path: ^/api/academia, roles: PUBLIC_ACCESS }
         - { path: ^/api/frequencies/presets, roles: PUBLIC_ACCESS }
+        # TNSVT Sprint C — Cuestionarios Macro requieren autenticación
+        # TEMPORAL: usar IS_AUTHENTICATED_FULLY para evitar problemas con ROLE_USER en este firewall
+        - { path: ^/api/macro/questionnaire, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/macro/questionnaires, roles: IS_AUTHENTICATED_FULLY }
+        # TNSVT Sprint C — Reset del Cuaderno requiere autenticación
+        - { path: '^/api/diary/setup', methods: [DELETE], roles: IS_AUTHENTICATED_FULLY }
         # Admin-only Sanctum sub-routes. The catch-all ^/sanctum below opens the
         # rest (notably /sanctum/dashboard, which HomeController redirects every
         # authenticated user to). Fix for the 403 that blocked regular users.
