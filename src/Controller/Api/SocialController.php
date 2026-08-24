@@ -12,10 +12,10 @@ use App\Entity\User;
 use App\Repository\AccessRequestRepository;
 use App\Repository\BlockRepository;
 use App\Repository\ConnectionRepository;
+use App\Repository\JournalEntryRepository;
 use App\Repository\JournalPermissionRepository;
 use App\Repository\JournalSettingRepository;
 use App\Repository\UserRepository;
-use App\Repository\TradeRepository;
 use App\Security\RateLimiterTrait;
 use App\Service\RateLimiterService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,9 +37,9 @@ class SocialController extends AbstractController
         private ConnectionRepository $connectionRepo,
         private JournalPermissionRepository $permissionRepo,
         private JournalSettingRepository $settingRepo,
-        private TradeRepository $tradeRepo,
         private BlockRepository $blockRepo,
         private RateLimiterService $rateLimiter,
+        private JournalEntryRepository $journalEntryRepo,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -562,11 +562,11 @@ class SocialController extends AbstractController
 
             $stats = null;
             if ($status === 'connected') {
-                // ⛧ FIX BUG-4: Respetar visibilidad del journal del target antes de devolver stats
+                // Respetar visibilidad del journal del target antes de devolver stats
                 $setting = $this->settingRepo->findByUser($u);
                 $vis = $setting?->getVisibility() ?? JournalSetting::VISIBILITY_PUBLIC;
                 if ($vis !== JournalSetting::VISIBILITY_PRIVATE) {
-                    $stats = $this->tradeRepo->computeStatsForUser($u);
+                    $stats = $this->computeJournalStats($u);
                 }
             }
 
@@ -615,5 +615,46 @@ class SocialController extends AbstractController
         $notif->setCreatedAt(new \DateTimeImmutable());
         $notif->setLink('/?tab=social');
         $this->em->persist($notif);
+    }
+
+    /**
+     * Aggregate the target user's journal into a public-safe stats
+     * summary (matches what the deleted TradeRepository::computeStatsForUser
+     * returned, but pulled from JournalEntry instead of tournament trades).
+     */
+    private function computeJournalStats(User $user): array
+    {
+        $entries = $this->journalEntryRepo->findAllForUser($user->getCode());
+        $total = count($entries);
+        if ($total === 0) {
+            return [
+                'total_trades' => 0,
+                'wins' => 0,
+                'losses' => 0,
+                'win_rate' => 0,
+                'total_pnl' => 0,
+            ];
+        }
+
+        $wins = 0;
+        $losses = 0;
+        $totalPnl = 0.0;
+        foreach ($entries as $e) {
+            $pnl = (float) ($e->getPnl() ?? 0);
+            $totalPnl += $pnl;
+            if ($e->getResult() === \App\Entity\JournalEntry::RESULT_WIN) {
+                $wins++;
+            } elseif ($e->getResult() === \App\Entity\JournalEntry::RESULT_LOSS) {
+                $losses++;
+            }
+        }
+
+        return [
+            'total_trades' => $total,
+            'wins' => $wins,
+            'losses' => $losses,
+            'win_rate' => $total > 0 ? round($wins / $total * 100, 1) : 0,
+            'total_pnl' => round($totalPnl, 2),
+        ];
     }
 }
