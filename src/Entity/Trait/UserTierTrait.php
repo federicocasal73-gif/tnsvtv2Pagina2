@@ -42,6 +42,9 @@ trait UserTierTrait
     #[ORM\Column(length: 50, nullable: true, options: ['default' => 'chime'])]
     private ?string $notificationSound = 'chime';
 
+    #[ORM\Column(length: 16, nullable: true, options: ['default' => 'auto'])]
+    private ?string $themePreference = 'auto';
+
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $dailyLogin = null;
 
@@ -74,6 +77,17 @@ trait UserTierTrait
 
     public function getNotificationSound(): ?string { return $this->notificationSound; }
     public function setNotificationSound(?string $s): static { $this->notificationSound = $s; return $this; }
+
+    public function getThemePreference(): ?string { return $this->themePreference ?? 'auto'; }
+    public function setThemePreference(?string $t): static
+    {
+        $allowed = ['dark', 'light', 'auto'];
+        if ($t !== null && !in_array($t, $allowed, true)) {
+            throw new \InvalidArgumentException("Invalid theme: $t");
+        }
+        $this->themePreference = $t ?? 'auto';
+        return $this;
+    }
 
     public function getDailyLogin(): ?array { return $this->dailyLogin; }
     public function setDailyLogin(?array $v): static { $this->dailyLogin = $v; return $this; }

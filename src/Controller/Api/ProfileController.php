@@ -40,6 +40,7 @@ class ProfileController extends AbstractController
                 'tier' => $user->getTier(),
                 'avatar_url' => $user->getAvatarUrl(),
                 'notification_sound' => $user->getNotificationSound() ?? 'chime',
+                'theme_preference' => $user->getThemePreference() ?? 'auto',
                 'reputation' => $user->getReputation(),
                 'coins' => $user->getCoins(),
                 'wallet_balance' => $user->getWalletBalance(),
@@ -67,6 +68,9 @@ class ProfileController extends AbstractController
         if (isset($data['notification_sound'])) {
             $user->setNotificationSound($data['notification_sound']);
         }
+        if (isset($data['theme_preference'])) {
+            $user->setThemePreference($data['theme_preference']);
+        }
 
         $this->em->flush();
 
@@ -74,6 +78,7 @@ class ProfileController extends AbstractController
             'code' => $user->getCode(),
             'name' => $user->getName(),
             'notification_sound' => $user->getNotificationSound(),
+            'theme_preference' => $user->getThemePreference(),
         ]]);
     }
 
