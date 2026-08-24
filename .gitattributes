@@ -1,0 +1,19 @@
+# TNSVT — Line endings and diff configuration
+# Force LF for all text files; let git auto-detect binary.
+# Works in combination with .editorconfig (end_of_line = lf) to prevent
+# CRLF contamination on Windows where core.autocrlf=true by default.
+
+*               text=auto eol=lf
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.pdf           binary
+*.zip           binary
+*.gz            binary
+*.tar           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+*.eot           binary
