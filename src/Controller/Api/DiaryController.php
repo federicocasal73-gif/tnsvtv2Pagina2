@@ -151,4 +151,34 @@ class DiaryController extends AbstractController
 
         return new JsonResponse(['success' => true]);
     }
+
+    /**
+     * TNSVT Sprint C.1 — Reset de la clave del Cuaderno.
+     * Borra el setup_token (clave maestra de cifrado) y todas las entradas del usuario.
+     * Tras esto el usuario debe configurar nueva clave y empezar de cero.
+     */
+    #[Route('/setup', name: 'api_diary_setup_reset', methods: ['DELETE'])]
+    public function resetSetup(Request $request): JsonResponse
+    {
+        $user = $this->getCurrentUser($request);
+        if (!$user) return new JsonResponse(['error' => 'Unauthorized'], 401);
+
+        // Borrar todas las entradas del usuario (ya no se pueden descifrar)
+        $entries = $this->diaryRepo->findByUser($user);
+        foreach ($entries as $entry) {
+            $this->em->remove($entry);
+        }
+
+        // Resetear setup_token y setup_iv
+        $user->setDiarySetupToken(null);
+        $user->setDiarySetupIv(null);
+
+        $this->em->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => 'Cuaderno reseteado. Todas las entradas eliminadas, clave maestra borrada.',
+            'entries_deleted' => count($entries),
+        ]);
+    }
 }
