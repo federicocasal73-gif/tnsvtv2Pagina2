@@ -22,9 +22,10 @@ final class Version20260816204200 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $platform = $this->connection->getDatabasePlatform()->getName();
+        $platform = $this->connection->getDatabasePlatform();
+        $platformClass = (new \ReflectionClass($platform))->getShortName();
 
-        if ($platform === 'sqlite') {
+        if ($platformClass === 'SqlitePlatform') {
             $this->addSql(<<<'SQL'
                 CREATE TABLE messenger_messages (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
