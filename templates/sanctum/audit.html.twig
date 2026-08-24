@@ -6,7 +6,7 @@
 {% block topbar_subtitle %}Registro de acciones administrativas con filtros e iconos{% endblock %}
 
 {% block content %}
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto" data-controller="audit">
         {# Toolbar #}
         <div class="glass-card-elev p-4 mb-6">
             <div class="flex items-center justify-between flex-wrap gap-4">
@@ -57,114 +57,4 @@
         {# Pagination #}
         <div id="pagination" class="flex items-center justify-center gap-2 mt-4 text-sm"></div>
     </div>
-
-    <script>
-    let currentPage = 1;
-    const perPage = 25;
-    let currentFilter = { result: '', search: '' };
-
-    async function loadAudit() {
-        const list = document.getElementById('entries-list');
-        list.classList.add('loading-pulse');
-        try {
-            let url = `/sanctum/api/audit?page=${currentPage}&per_page=${perPage}`;
-            if (currentFilter.result) url += `&result=${encodeURIComponent(currentFilter.result)}`;
-            const r = await fetch(url);
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            const data = await r.json();
-            if (!data.success) throw new Error(data.error || 'unknown');
-            renderEntries(data.entries, data.pagination);
-        } catch (e) {
-            list.innerHTML = '<p class="text-red-400 text-center py-8">Error: ' + e.message + '</p>';
-        } finally {
-            list.classList.remove('loading-pulse');
-        }
-    }
-
-    async function loadStats() {
-        try {
-            const r = await fetch(`/sanctum/api/audit?page=1&per_page=1000`);
-            if (!r.ok) return;
-            const data = await r.json();
-            if (!data.success) return;
-            const total = data.entries.length;
-            const success = data.entries.filter(e => e.result === 'success').length;
-            const failed = data.entries.filter(e => e.result === 'fail').length;
-            const elStatTotal = document.getElementById('stat-total');
-            const elStatSuccess = document.getElementById('stat-success');
-            const elStatFailed = document.getElementById('stat-failed');
-            if (elStatTotal) elStatTotal.textContent = total;
-            if (elStatSuccess) elStatSuccess.textContent = success;
-            if (elStatFailed) elStatFailed.textContent = failed;
-        } catch (e) {}
-    }
-
-    function renderEntries(entries, pagination) {
-        const list = document.getElementById('entries-list');
-        if (!entries || entries.length === 0) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas de audit log</p>';
-            const elPag = document.getElementById('pagination');
-            if (elPag) elPag.innerHTML = '';
-            return;
-        }
-
-        // Filter by search
-        const filtered = currentFilter.search
-            ? entries.filter(e => e.action.toLowerCase().includes(currentFilter.search.toLowerCase()))
-            : entries;
-
-        list.innerHTML = filtered.map(e => {
-            const iconClass = e.result === 'success' ? 'success' : 'fail';
-            const iconName = e.result === 'success' ? 'check_circle' : 'cancel';
-            return `
-            <div class="audit-entry">
-                <div class="audit-icon ${iconClass}">
-                    <span class="material-symbols-elev">${iconName}</span>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="action-tag">${escapeHtml(e.action)}</span>
-                        <span class="status-pill ${e.result}">${e.result}</span>
-                        ${e.admin && e.admin.startsWith('ADMIN') ? '<span class="status-pill admin">ADMIN</span>' : ''}
-                    </div>
-                    <p class="text-xs text-[var(--outline-elev)] mt-1">
-                        <span class="font-mono">${escapeHtml(e.admin || '—')}</span>
-                        ${e.ip ? '<span class="ml-2">· ' + escapeHtml(e.ip) + '</span>' : ''}
-                    </p>
-                </div>
-                <p class="text-xs text-[var(--outline-elev)] font-mono whitespace-nowrap">${(e.time || '').substring(0, 16).replace('T', ' ')}</p>
-            </div>`;
-        }).join('');
-
-        // Pagination
-        renderPagination(pagination);
-    }
-
-    function renderPagination(p) {
-        const elPag = document.getElementById('pagination');
-        if (!p || p.pages <= 1) {
-            if (elPag) elPag.innerHTML = '';
-            return;
-        }
-        const html = [];
-        if (p.page > 1) html.push(`<button class="btn-elev-ghost text-xs" data-page="${p.page - 1}">← Anterior</button>`);
-        html.push(`<span class="px-3 text-[var(--on-surface-elev)]">Página ${p.page} de ${p.pages} · ${p.total} total</span>`);
-        if (p.page < p.pages) html.push(`<button class="btn-elev-ghost text-xs" data-page="${p.page + 1}">Siguiente →</button>`);
-        if (elPag) elPag.innerHTML = html.join('');
-        document.querySelectorAll('#pagination button[data-page]').forEach(b => {
-            b.addEventListener('click', () => { currentPage = parseInt(b.dataset.page); loadAudit(); });
-        });
-    }
-
-    function escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-
-    document.getElementById('refresh-btn').addEventListener('click', loadAudit);
-    document.getElementById('filter-result').addEventListener('change', e => { currentFilter.result = e.target.value; currentPage = 1; loadAudit(); });
-    document.getElementById('filter-search').addEventListener('input', e => { currentFilter.search = e.target.value; loadAudit(); });
-
-    loadAudit();
-    loadStats();
-    </script>
 {% endblock %}

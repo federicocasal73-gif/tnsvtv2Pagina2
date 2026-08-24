@@ -12,7 +12,7 @@
 {# Three.js for Sacred Sigil #}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" defer></script>
 
-<div class="max-w-2xl mx-auto pb-24">
+<div class="max-w-2xl mx-auto pb-24" data-controller="profile">
     {# ─── Profile Hero with 3D Sigil ─── #}
     <div class="glass-card-elev">
         <div class="text-center mb-4">
@@ -168,93 +168,6 @@
         </button>
     </div>
 </div>
-
-<script>
-(function() {
-    'use strict';
-    const nameEl = document.getElementById('profile-name');
-    const codeEl = document.getElementById('profile-code');
-    const tierEl = document.getElementById('profile-tier');
-    const vipEl = document.getElementById('profile-vip');
-    const avatarImg = document.getElementById('avatar-img');
-    const avatarInitial = document.getElementById('avatar-initial');
-    const avatarInput = document.getElementById('avatar-input');
-    const editName = document.getElementById('edit-name');
-    const editSound = document.getElementById('edit-sound');
-    const saveBtn = document.getElementById('save-profile');
-
-    // Load profile
-    apiFetch('/api/profile/{{ app.user.code }}').then(r => {
-        if (!r.success) return;
-        const u = r.user;
-        nameEl.textContent = u.name || '—';
-        codeEl.textContent = u.code || '—';
-        tierEl.textContent = u.tier || 'INITIATE';
-        if (u.avatar_url) {
-            avatarImg.src = u.avatar_url;
-            avatarImg.style.display = '';
-            avatarInitial.style.display = 'none';
-        } else {
-            avatarInitial.textContent = (u.name || '?').charAt(0);
-        }
-        const _elProfileReputation = document.getElementById('profile-reputation');
-        if (_elProfileReputation) _elProfileReputation.textContent = u.reputation || 0;
-        const _elProfileCoins = document.getElementById('profile-coins');
-        if (_elProfileCoins) _elProfileCoins.textContent = u.coins || 0;
-        const _elProfileWallet = document.getElementById('profile-wallet');
-        if (_elProfileWallet) _elProfileWallet.textContent = '$' + (u.wallet_balance || '0');
-        if (u.vip_until) vipEl.style.display = '';
-        editName.value = u.name || '';
-        editSound.value = u.notification_sound || 'chime';
-    }).catch(() => {});
-
-    // Avatar upload
-    avatarInput.addEventListener('change', function() {
-        const file = this.files[0];
-        if (!file) return;
-        const fd = new FormData();
-        fd.append('avatar', file);
-        apiFetch('/api/profile/avatar', { method: 'POST', body: fd, headers: {} })
-            .then(r => {
-                if (r.success) {
-                    avatarImg.src = r.avatar_url + '?t=' + Date.now();
-                    avatarImg.style.display = '';
-                    avatarInitial.style.display = 'none';
-                    apiToast('Avatar actualizado', 'success');
-                }
-            })
-            .catch(() => apiToast('Error al subir avatar', 'error'));
-    });
-
-    // Save profile
-    saveBtn.addEventListener('click', function() {
-        apiFetch('/api/profile', {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: editName.value, notification_sound: editSound.value }),
-        }).then(r => {
-            if (r.success) {
-                nameEl.textContent = r.user.name;
-                apiToast('Perfil guardado', 'success');
-            }
-        }).catch(() => apiToast('Error al guardar', 'error'));
-    });
-
-    // Load journal stats
-    apiFetch('/api/journal/stats').then(r => {
-        const _elJsTotal = document.getElementById('js-total');
-        if (_elJsTotal) _elJsTotal.textContent = r.total || 0;
-        const _elJsWins = document.getElementById('js-wins');
-        if (_elJsWins) _elJsWins.textContent = r.wins || 0;
-        const _elJsWinrate = document.getElementById('js-winrate');
-        if (_elJsWinrate) _elJsWinrate.textContent = (r.win_rate || 0) + '%';
-        const pnl = parseFloat(r.total_pnl || 0);
-        const pnlEl = document.getElementById('js-pnl');
-        pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
-        pnlEl.className = 'text-lg font-bold ' + (pnl >= 0 ? 'text-green-400' : 'text-red-400');
-    }).catch(() => {});
-})();
-</script>
 
 {# Sacred Sigil 3D #}
 <script src="{{ asset('js/modules/sacred-sigil.js') }}" defer></script>

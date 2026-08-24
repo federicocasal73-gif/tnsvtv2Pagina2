@@ -1,0 +1,172 @@
+import { Controller } from '@hotwired/stimulus';
+
+export default class extends Controller {
+    connect() {
+        this.loadStatus();
+        this._interval = setInterval(() => this.loadStatus(), 30000);
+
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.loadStatus());
+        }
+    }
+
+    disconnect() {
+        if (this._interval) clearInterval(this._interval);
+    }
+
+    async loadStatus() {
+        const grid = document.getElementById('status-grid');
+        try {
+            const r = await fetch('/sanctum/api/monitoring/status');
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const json = await r.json();
+            if (!json.success) throw new Error('API error');
+            this.render(json.data);
+            const elLastRefresh = document.getElementById('last-refresh');
+            if (elLastRefresh) elLastRefresh.textContent = new Date().toLocaleTimeString();
+        } catch (e) {
+            grid.innerHTML = `<p class="col-span-full text-red-400 text-center py-8">Error: ${e.message}</p>`;
+        }
+    }
+
+    render(d) {
+        const html = `
+            ${this.renderServer(d.server)}
+            ${this.renderDatabase(d.database)}
+            ${this.renderPhp(d.php, d.opcache)}
+            ${this.renderBusiness(d.business)}
+            ${this.renderSecurity(d.security, d.recent_audit)}
+            ${this.renderErrors(d.recent_errors)}
+        `;
+        const elStatusGrid = document.getElementById('status-grid');
+        if (elStatusGrid) elStatusGrid.innerHTML = html;
+    }
+
+    renderServer(s) {
+        return `
+        <div class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">dns</span>
+                Server
+            </h3>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">PHP</dt><dd class="font-mono text-[var(--on-surface-elev)]">${s.php_version}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">OS</dt><dd class="font-mono text-[var(--on-surface-elev)]">${s.os}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">SAPI</dt><dd class="font-mono text-[var(--on-surface-elev)]">${s.sapi}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Hostname</dt><dd class="font-mono text-[var(--on-surface-elev)]">${s.hostname || 'n/a'}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Uptime</dt><dd class="font-mono text-[var(--on-surface-elev)]">${s.uptime || 'n/a'}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Memory</dt><dd class="font-mono text-[var(--on-surface-elev)]">${s.memory_used_mb} / ${s.memory_limit} (peak ${s.memory_peak_mb})</dd></div>
+            </dl>
+        </div>`;
+    }
+
+    renderDatabase(d) {
+        const status = d.status === 'ok'
+            ? '<span class="status-pill status-active">OK</span>'
+            : '<span class="status-pill status-inactive">ERR</span>';
+        return `
+        <div class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">storage</span>
+                Database
+                ${status}
+            </h3>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Version</dt><dd class="font-mono text-[var(--on-surface-elev)]">${d.version || 'n/a'}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Database</dt><dd class="font-mono text-[var(--on-surface-elev)]">${d.database}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Tables</dt><dd class="font-mono text-[var(--gold-elev)]">${d.tables}</dd></div>
+                <div class="border-t border-[var(--outline-variant-elev)] my-3"></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Users total</dt><dd class="font-mono text-[var(--on-surface-elev)]">${d.users_total}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Active</dt><dd class="font-mono text-[var(--gold-elev)]">${d.users_active}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Admins</dt><dd class="font-mono text-[var(--gold-elev)]">${d.users_admin}</dd></div>
+            </dl>
+        </div>`;
+    }
+
+    renderPhp(p, op) {
+        const opcacheStatus = op.status === 'enabled'
+            ? '<span class="status-pill status-active">ON</span>'
+            : (op.status === 'disabled' ? '<span class="status-pill status-inactive">OFF</span>' : '<span class="status-pill">N/A</span>');
+        return `
+        <div class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">code</span>
+                PHP Runtime
+            </h3>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Memory limit</dt><dd class="font-mono">${p.memory_limit}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Max execution</dt><dd class="font-mono">${p.max_execution_time}s</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Upload max</dt><dd class="font-mono">${p.upload_max_filesize}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Post max</dt><dd class="font-mono">${p.post_max_size}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Timezone</dt><dd class="font-mono">${p.date_timezone}</dd></div>
+                <div class="border-t border-[var(--outline-variant-elev)] my-3"></div>
+                <div class="flex justify-between items-center"><dt class="text-[var(--outline-elev)]">Opcache</dt><dd>${opcacheStatus}</dd></div>
+                ${op.status === 'enabled' ? `
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Memory used</dt><dd class="font-mono">${op.memory_used_mb} MB / ${op.memory_free_mb} MB free</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Cached scripts</dt><dd class="font-mono text-[var(--gold-elev)]">${op.cached_scripts}</dd></div>
+                <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Hits / Misses</dt><dd class="font-mono">${op.hits} / ${op.misses}</dd></div>
+                ` : ''}
+            </dl>
+        </div>`;
+    }
+
+    renderBusiness(b) {
+        const rows = Object.entries(b).map(([k, v]) => `
+            <div class="flex justify-between">
+                <dt class="text-[var(--outline-elev)]">${k.replace(/_/g, ' ')}</dt>
+                <dd class="font-mono text-[var(--gold-elev)]">${v}</dd>
+            </div>
+        `).join('');
+        return `
+        <div class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">monitoring</span>
+                Business Metrics
+            </h3>
+            <dl class="space-y-2 text-sm">${rows}</dl>
+        </div>`;
+    }
+
+    renderSecurity(s, audit) {
+        const auditRows = audit.slice(0, 5).map(a => `
+            <div class="flex items-center justify-between p-2 rounded glass-card-elev text-xs">
+                <span><span class="text-[var(--outline-elev)]">${a.time}</span> <span class="font-mono">${a.admin}</span></span>
+                <span class="${a.result === 'success' ? 'text-[var(--gold-elev)]' : 'text-red-400'}">${a.action}</span>
+            </div>
+        `).join('');
+        return `
+        <div class="glass-card-elev p-6 col-span-full">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">shield</span>
+                Security & Recent Activity
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <dl class="space-y-2 text-sm">
+                    <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Audit log total</dt><dd class="font-mono text-[var(--on-surface-elev)]">${s.admin_audit_total}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Audit log 24h</dt><dd class="font-mono text-[var(--gold-elev)]">${s.admin_audit_24h}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Failed 24h</dt><dd class="font-mono ${s.admin_audit_failed_24h > 0 ? 'text-red-400' : 'text-[var(--outline-elev)]'}">${s.admin_audit_failed_24h}</dd></div>
+                    <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Locked users</dt><dd class="font-mono">${s.locked_users}</dd></div>
+                </dl>
+                <div>
+                    <p class="text-xs uppercase tracking-wider text-[var(--outline-elev)] mb-2">Recent admin actions</p>
+                    <div class="space-y-1">${auditRows || '<p class="text-xs text-[var(--outline-elev)]">No recent activity</p>'}</div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    renderErrors(errors) {
+        const errRows = errors.length === 0
+            ? '<p class="text-xs text-[var(--gold-elev)]">No recent errors</p>'
+            : errors.slice(0, 5).map(e => `<p class="text-xs text-red-400 font-mono break-all mb-1">${e.substring(0, 200)}</p>`).join('');
+        return `
+        <div class="glass-card-elev p-6 col-span-full">
+            <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
+                <span class="material-symbols-elev text-red-400">error</span>
+                Recent Errors (last 10)
+            </h3>
+            <div>${errRows}</div>
+        </div>`;
+    }
+}
