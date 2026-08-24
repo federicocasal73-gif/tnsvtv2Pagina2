@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto"
-     data-controller="profile-public"
+     data-controller="profile_public"
      data-profile-public-user-code-value="{{ app.request.attributes.get('code') ?? '' }}">
     <div data-profile-public-target="container">
         <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando perfil...</p>

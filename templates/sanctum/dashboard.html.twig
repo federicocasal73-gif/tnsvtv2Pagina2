@@ -256,7 +256,7 @@
         </section>
 
         {# Recent Signals + Task Sovereignty #}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" data-controller="dashboard-tasks">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" data-controller="dashboard_tasks">
             <div class="glass-card-elev p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
@@ -464,7 +464,7 @@
             if (window.apiToast) apiToast('Tarea creada', 'success');
             closeCreateTask();
             // Reload tasks via controller
-            const ctrl = window.Stimulus && document.querySelector('[data-controller="dashboard-tasks"]');
+            const ctrl = window.Stimulus && document.querySelector('[data-controller="dashboard_tasks"]');
             if (ctrl && ctrl.dataset) {
                 const app = window.Stimulus.application;
                 const instance = app.getControllerForElementAndIdentifier(ctrl, 'dashboard-tasks');
