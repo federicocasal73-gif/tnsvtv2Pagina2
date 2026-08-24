@@ -1,6 +1,0 @@
-/* Duels — extracted from sanctum/duels.html.twig */
-.duel-card { padding:1rem; display:flex; align-items:center; gap:1rem; }
-.duel-vs { font-weight:700; font-size:1.25rem; color:var(--gold-elev); }
-.duel-info { flex:1; }
-.duel-players { font-weight:600; font-size:0.9375rem; }
-.duel-meta { font-size:0.75rem; color:var(--outline-elev); }
