@@ -7,6 +7,7 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = [
         'sound',
+        'theme',
         'savePrefsBtn',
         'reloadBtn',
         'container',
@@ -25,8 +26,16 @@ export default class extends Controller {
         if (!this.hasUserCodeValue) return;
         try {
             const r = await window.apiFetch(`/api/profile/${this.userCodeValue}`);
-            if (r.ok && r.data?.user?.notification_sound) {
-                this.soundTarget.value = r.data.user.notification_sound;
+            if (r.ok && r.data?.user) {
+                if (r.data.user.notification_sound && this.hasSoundTarget) {
+                    this.soundTarget.value = r.data.user.notification_sound;
+                }
+                if (r.data.user.theme_preference && this.hasThemeTarget) {
+                    this.themeTarget.value = r.data.user.theme_preference;
+                    if (window.tnsvtTheme) {
+                        window.tnsvtTheme.set(r.data.user.theme_preference);
+                    }
+                }
             }
         } catch (e) {
             // Silent fail
@@ -102,8 +111,8 @@ export default class extends Controller {
     }
 
     async saveAll() {
-        if (!this.hasSoundTarget) return;
-        await this.persistPreference(this.soundTarget.value);
+        if (this.hasSoundTarget) await this.persistPreference(this.soundTarget.value);
+        if (this.hasThemeTarget) await this.persistPreference(this.themeTarget.value);
     }
 
     async persistPreference(value) {
@@ -112,10 +121,15 @@ export default class extends Controller {
             this.savePrefsBtnTarget.textContent = 'Guardando...';
         }
         try {
+            // Detectar qué campo se está guardando según el target activo.
+            const payload = {};
+            if (this.hasSoundTarget) payload.notification_sound = this.soundTarget.value;
+            if (this.hasThemeTarget) payload.theme_preference = this.themeTarget.value;
+
             const r = await window.apiFetch('/api/profile', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ notification_sound: value }),
+                body: JSON.stringify(payload),
             });
             if (r.ok && this.hasSavePrefsBtnTarget) {
                 this.savePrefsBtnTarget.textContent = '✓ Guardado';

@@ -198,3 +198,122 @@ body.gateway-emblem #bg-shader-canvas {
     -webkit-text-fill-color: transparent;
     color: var(--starlight-white-elev);
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+ * LIGHT MODE — Tema claro celestial
+ * Mantiene la identidad celestial (dorado + violeta) pero sobre fondo claro.
+ * Se activa con data-theme="light" en <html>.
+ * ════════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+    /* === Surface palette — Crema celestial === */
+    --void-elev: #f5f1e8;
+    --void-deep-elev: #ece5d3;
+    --surface-elev: #faf6ec;
+    --surface-low-elev: #f5f1e8;
+    --surface-container-elev: #ffffff;
+    --surface-high-elev: #ffffff;
+    --surface-container-high-elev: #ffffff;
+    --surface-container-highest-elev: #ffffff;
+    --surface-container-low-elev: #faf6ec;
+    --surface-container-lowest-elev: #f0e9d8;
+    --surface-bright-elev: #ffffff;
+    --surface-dim-elev: #f0e9d8;
+    --surface-variant-elev: #e8dfc9;
+
+    /* === Text — Tinta oscura celestial === */
+    --on-surface-elev: #2c2419;
+    --on-surface-variant-elev: #4a4035;
+    --on-surface-dim-elev: #6b6256;
+    --on-primary-elev: #ffffff;
+    --on-primary-container-elev: #554300;
+    --on-secondary-elev: #ffffff;
+    --on-secondary-container-elev: #41008b;
+    --on-tertiary-elev: #ffffff;
+    --on-tertiary-container-elev: #082b72;
+    --on-background-elev: #2c2419;
+    --background-elev: #faf6ec;
+
+    /* === Outline === */
+    --outline-elev: #8a7e6a;
+    --outline-variant-elev: #c9bfa8;
+
+    /* === Nebula/Violet — tono más sobrio para fondo claro === */
+    --nebula-elev: #6d3fc0;
+    --nebula-glow-elev: rgba(124, 58, 237, 0.18);
+
+    /* === Glass effects — sutiles en claro === */
+    --glass-bg-elev: rgba(0, 0, 0, 0.03);
+    --glass-bg-strong-elev: rgba(0, 0, 0, 0.05);
+    --glass-border-elev: rgba(0, 0, 0, 0.08);
+    --glass-border-strong-elev: rgba(0, 0, 0, 0.15);
+    --glass-border-gold-elev: rgba(212, 175, 55, 0.3);
+
+    /* === Glow effects — más sutiles en claro === */
+    --gold-glow-elev: 0 0 18px rgba(212, 175, 55, 0.2);
+    --gold-glow-strong-elev: 0 0 30px rgba(242, 202, 80, 0.35);
+    --purple-glow-elev: 0 0 30px rgba(111, 4, 228, 0.12);
+    --glow-gold-elev: 0 0 15px rgba(212, 175, 55, 0.25);
+    --glow-gold-strong-elev: 0 0 35px rgba(212, 175, 55, 0.4);
+    --glow-violet-elev: 0 0 15px rgba(138, 60, 255, 0.2);
+    --glow-violet-strong-elev: 0 0 35px rgba(138, 60, 255, 0.35);
+
+    /* === Muted text === */
+    --muted-elev: #8a7e6a;
+
+    /* === Shadows — más pronunciadas para dar profundidad === */
+    --shadow-sm-elev: 0 2px 6px rgba(0, 0, 0, 0.08);
+    --shadow-md-elev: 0 4px 14px rgba(0, 0, 0, 0.1);
+    --shadow-lg-elev: 0 8px 28px rgba(0, 0, 0, 0.14);
+    --shadow-gold-elev: 0 0 18px rgba(212, 175, 55, 0.15);
+    --shadow-purple-elev: 0 0 30px rgba(111, 4, 228, 0.1);
+
+    /* === Background stars — más sutiles en claro === */
+    --bg-stars-opacity: 0.15;
+    --bg-gradient-base: #f5f1e8;
+    --bg-gradient-mid: #ece5d3;
+    --bg-gradient-end: #faf6ec;
+}
+
+/* === Sincronizar html.dark / html.light con data-theme === */
+html.dark {
+    /* Modo oscuro forzado */
+}
+html.light {
+    /* Modo claro forzado */
+}
+
+/* En modo auto, el media query se aplica al <html>, no al :root con atributo */
+@media (prefers-color-scheme: light) {
+    html[data-theme="auto"] {
+        /* Light tokens heredados del [data-theme="light"] */
+        --void-elev: #f5f1e8;
+        --void-deep-elev: #ece5d3;
+        --surface-elev: #faf6ec;
+        --surface-low-elev: #f5f1e8;
+        --surface-container-elev: #ffffff;
+        --surface-high-elev: #ffffff;
+        --surface-container-high-elev: #ffffff;
+        --surface-container-highest-elev: #ffffff;
+        --surface-container-low-elev: #faf6ec;
+        --surface-container-lowest-elev: #f0e9d8;
+        --surface-bright-elev: #ffffff;
+        --surface-dim-elev: #f0e9d8;
+        --surface-variant-elev: #e8dfc9;
+        --on-surface-elev: #2c2419;
+        --on-surface-variant-elev: #4a4035;
+        --on-surface-dim-elev: #6b6256;
+        --on-background-elev: #2c2419;
+        --background-elev: #faf6ec;
+        --outline-elev: #8a7e6a;
+        --outline-variant-elev: #c9bfa8;
+        --nebula-elev: #6d3fc0;
+        --glass-bg-elev: rgba(0, 0, 0, 0.03);
+        --glass-bg-strong-elev: rgba(0, 0, 0, 0.05);
+        --glass-border-elev: rgba(0, 0, 0, 0.08);
+        --glass-border-gold-elev: rgba(212, 175, 55, 0.3);
+        --bg-stars-opacity: 0.15;
+        --bg-gradient-base: #f5f1e8;
+        --bg-gradient-mid: #ece5d3;
+        --bg-gradient-end: #faf6ec;
+    }
+}

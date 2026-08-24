@@ -20,6 +20,7 @@
     {# Public shell loads ONLY the tokens + home styles.
        NO Sanctum CSS (no elev/v2/glass-premium) — clean boundary. #}
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/components.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/home.css') }}" />
 
     {% block stylesheets %}{% endblock %}
@@ -29,6 +30,7 @@
 
 {# ═══ FASE 0 — Fondo estrellado (V2 identidad visual) ═══ #}
 {% block background %}{% endblock %}
+<script src="{{ asset('js/modules/theme.js') }}" defer></script>
 <script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
 
 {# Public shell loads ONLY the tokens + home styles. #}
