@@ -228,9 +228,22 @@
                             <span class="material-symbols-elev protocol-modal-icon" aria-hidden="true">shield_person</span>
                             Protocolo Guardian
                         </h2>
-                        <button type="button" class="protocol-close" aria-label="Cerrar" data-action="protocol#onClose">
-                            <span class="material-symbols-elev" aria-hidden="true">close</span>
-                        </button>
+                        <div class="protocol-header-actions">
+                            <button type="button"
+                                    class="protocol-dismiss-24h"
+                                    data-action="protocol#dismissFor24h"
+                                    title="Cerrar y no mostrar de nuevo por 24 horas"
+                                    aria-label="Cerrar y no mostrar de nuevo por 24 horas">
+                                <span class="material-symbols-elev" aria-hidden="true">schedule</span>
+                                <span class="protocol-dismiss-24h-label">Cerrar por 24h</span>
+                            </button>
+                            <button type="button"
+                                    class="protocol-close"
+                                    aria-label="Cerrar"
+                                    data-action="protocol#onClose">
+                                <span class="material-symbols-elev" aria-hidden="true">close</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="protocol-modal-body hidden" data-protocol-target="content">

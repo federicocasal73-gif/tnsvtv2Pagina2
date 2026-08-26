@@ -602,6 +602,14 @@
     animation: v2-fade-in 0.2s ease-out;
 }
 
+/* The hidden HTML attribute must win over the display:flex above
+   so the modal stays dismissed after a page reload. Without this
+   rule, the user-agent stylesheet's [hidden] { display:none } has
+   the same specificity as .protocol-overlay and loses on tie-break. */
+.protocol-overlay[hidden] {
+    display: none;
+}
+
 .protocol-modal {
     width: 100%;
     max-width: 580px;
@@ -649,6 +657,18 @@
     background: rgba(242, 202, 80, 0.1);
     border-color: var(--gold-elev);
     color: var(--gold-elev);
+}
+.protocol-dismiss-24h-label {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+@media (max-width: 520px) {
+    .protocol-dismiss-24h-label {
+        display: none;
+    }
+    .protocol-dismiss-24h {
+        padding: 0.4rem 0.5rem;
+    }
 }
 
 .protocol-modal-title {
