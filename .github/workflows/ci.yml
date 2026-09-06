@@ -43,6 +43,7 @@ jobs:
             - name: Setup database
               run: |
                   mkdir -p var
+                  php bin/console cache:warmup --env=test --no-debug
                   php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
@@ -80,6 +81,7 @@ jobs:
             - name: Setup database
               run: |
                   mkdir -p var
+                  php bin/console cache:warmup --env=test --no-debug
                   php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
@@ -157,6 +159,7 @@ jobs:
 
             - name: Setup database
               run: |
+                  php bin/console cache:warmup --env=test --no-debug
                   php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
