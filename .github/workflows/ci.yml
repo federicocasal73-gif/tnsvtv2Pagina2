@@ -43,7 +43,6 @@ jobs:
             - name: Setup database
               run: |
                   mkdir -p var
-                  php bin/console doctrine:database:create --if-not-exists --no-interaction
                   php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
@@ -81,7 +80,6 @@ jobs:
             - name: Setup database
               run: |
                   mkdir -p var
-                  php bin/console doctrine:database:create --if-not-exists --no-interaction
                   php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
@@ -111,8 +109,7 @@ jobs:
               run: composer install --no-interaction --prefer-dist --no-progress
 
             - name: Lint templates
-              run: |
-                  find templates -name '*.twig' -print0 | xargs -0 -I {} php bin/console lint:twig {}
+              run: php bin/console lint:twig templates
 
     lint-js:
         name: JS Syntax Check
@@ -126,8 +123,7 @@ jobs:
                   node-version: '20'
 
             - name: JS Syntax
-              run: |
-                  find src/assets/controllers -name '*.js' -print0 | xargs -0 -n 1 node --check
+              run: find src/assets/controllers -name '*.js' -print0 | xargs -0 -n 1 node --check
 
     security-audit:
         name: Composer Security Audit
@@ -161,7 +157,6 @@ jobs:
 
             - name: Setup database
               run: |
-                  php bin/console doctrine:database:create --if-not-exists --no-interaction
                   php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
