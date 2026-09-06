@@ -39,6 +39,14 @@ jobs:
 
             - name: Install dependencies
               run: composer install --no-interaction --prefer-dist --no-progress
+            - name: Generate JWT keys
+              run: |
+                  mkdir -p config/jwt var
+                  if \[ ! -f config/jwt/private.pem \]; then
+                      openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048 -aes-256-cbc -pass pass:ci
+                      openssl pkey -in config/jwt/private.pem -passin pass:ci -pubout -out config/jwt/public.pem
+                  fi
+
 
             - name: Setup database
               run: |
@@ -77,6 +85,15 @@ jobs:
 
             - name: Install dependencies
               run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: Generate JWT keys
+              run: |
+                  mkdir -p config/jwt var
+                  if [ ! -f config/jwt/private.pem ]; then
+                      openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048 -aes-256-cbc -pass pass:ci
+                      openssl pkey -in config/jwt/private.pem -passin pass:ci -pubout -out config/jwt/public.pem
+                  fi
+
 
             - name: Setup database
               run: |
@@ -156,6 +173,14 @@ jobs:
 
             - name: Install dependencies
               run: composer install --no-interaction --prefer-dist --no-progress
+            - name: Generate JWT keys
+              run: |
+                  mkdir -p config/jwt var
+                  if \[ ! -f config/jwt/private.pem \]; then
+                      openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048 -aes-256-cbc -pass pass:ci
+                      openssl pkey -in config/jwt/private.pem -passin pass:ci -pubout -out config/jwt/public.pem
+                  fi
+
 
             - name: Setup database
               run: |
