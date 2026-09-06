@@ -52,7 +52,10 @@ class FeedController extends AbstractController
     public function list(Request $request): JsonResponse
     {
         $category = $request->query->get('category', 'all');
-        $posts = $this->feedPostRepository->findLatest(category: $category);
+        $limit = max(1, min(50, (int) $request->query->get('limit', 20)));
+        $offset = max(0, (int) $request->query->get('offset', 0));
+        $beforeId = $request->query->get('before_id') ? (int) $request->query->get('before_id') : null;
+        $posts = $this->feedPostRepository->findLatest(limit: $limit, category: $category, offset: $offset, beforeId: $beforeId);
 
         $data = array_map(function (FeedPost $p) {
             $signal = $p->getSignal();

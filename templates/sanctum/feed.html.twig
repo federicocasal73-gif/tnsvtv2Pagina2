@@ -48,6 +48,8 @@
     <div class="feed-list" id="feed-list">
         <div class="feed-loading" id="feed-loading">Cargando publicaciones...</div>
     </div>
+    <div id="feed-sentinel" style="height:1px;"></div>
+    <button id="feed-load-more" class="ui-btn ui-btn-ghost ui-btn-size-sm" style="display:none; margin: 1rem auto;">Cargar más</button>
 
 </main>
 
@@ -110,21 +112,78 @@
         return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
     }
 
-    async function loadFeed() {
-        if (!$list) return;
-        $list.innerHTML = '<div class="feed-loading">Cargando publicaciones...</div>';
+    let feedNextBeforeId = null;
+    let feedHasMore = true;
+    let feedIsLoading = false;
+
+    async function loadFeed({ append = false } = {}) {
+        if (!$list || feedIsLoading) return;
+        if (!append) {
+            feedNextBeforeId = null;
+            feedHasMore = true;
+            $list.innerHTML = '<div class="feed-loading">Cargando publicaciones...</div>';
+            document.getElementById('feed-load-more')?.style.setProperty('display','none');
+        } else {
+            if (!feedHasMore || !feedNextBeforeId) return;
+        }
+        feedIsLoading = true;
         try {
-            const r = await apiFetch(`/api/feed?category=${encodeURIComponent(state.category)}`, { silent: true });
+            let url = `/api/feed?category=${encodeURIComponent(state.category)}&limit=10`;
+            if (append && feedNextBeforeId) url += `&before_id=${feedNextBeforeId}`;
+            const r = await apiFetch(url, { silent: true });
             if (!r.ok || !r.data || !Array.isArray(r.data)) {
-                $list.innerHTML = '';
-                apiEmpty($list, { icon: 'cloud_off', message: 'Sin datos disponibles' });
+                if (!append) {
+                    $list.innerHTML = '';
+                    apiEmpty($list, { icon: 'cloud_off', message: 'Sin datos disponibles' });
+                }
+                feedHasMore = false;
                 return;
             }
             const me = window.TNSVT_USER ? window.TNSVT_USER.code : '';
-            renderFeed(r.data, me);
+            if (append) {
+                appendFeed(r.data, me);
+            } else {
+                renderFeed(r.data, me);
+            }
+            if (r.data.length < 10) feedHasMore = false;
+            else feedNextBeforeId = r.data[r.data.length - 1]?.id || null;
+            document.getElementById('feed-load-more').style.display = feedHasMore ? 'block' : 'none';
         } catch (e) {
-            $list.innerHTML = '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">cloud_off</span><p>Sin conexión.</p></div>';
+            if (!append) $list.innerHTML = '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">cloud_off</span><p>Sin conexión.</p></div>';
+            feedHasMore = false;
+        } finally {
+            feedIsLoading = false;
         }
+    }
+    function appendFeed(posts, meCode) {
+        if (!posts.length) { feedHasMore = false; return; }
+        const frag = document.createElement('div');
+        // reuse render by appending
+        const tmp = document.createElement('div');
+        tmp.innerHTML = posts.map(p => renderPostHtml(p, meCode)).join('');
+        // wire events for new nodes
+        while (tmp.firstChild) $list.appendChild(tmp.firstChild);
+        // re-bind like/comment for new nodes only (simplified: re-bind all)
+        $list.querySelectorAll('.feed-like-btn').forEach(b => {
+            if (b.dataset.bound) return; b.dataset.bound='1';
+            b.addEventListener('click', () => likePost(parseInt(b.dataset.id, 10), b));
+        });
+    }
+    function renderPostHtml(p, meCode) {
+        const cat = p.cat || 'general';
+        const cls = catClass(cat);
+        const sig = p.signal;
+        const sigHtml = sig && typeof sig === 'object' ? `<div class="feed-post-signal">${Object.entries(sig).slice(0,4).map(([k,v])=>`<div><div class="feed-post-signal-field-label">${esc(k.replace(/_/g,' '))}</div><div class="feed-post-signal-field-value gold">${esc(String(v))}</div></div>`).join('')}</div>` : '';
+        const photoHtml = p.photo ? `<img class="feed-post-photo" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura" loading="lazy" decoding="async" />` : '';
+        const comments = Array.isArray(p.comments) ? p.comments : [];
+        const myPost = meCode && p.author_code === meCode;
+        const liked = _likedIds.has(p.id);
+        return `<article class="feed-post cat-${esc(cat)}" data-id="${p.id}">
+            <header class="feed-post-head"><div class="feed-avatar">${esc(initials(p.author_name))}</div><div class="feed-author-block"><div class="feed-author-name">${esc(p.author_name||'Anónimo')}</div><div class="feed-author-meta"><span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span><span>· ${esc(relTime(p.created_at))}</span></div></div>${myPost?`<button type="button" class="feed-action feed-post-delete" data-id="${p.id}"><span class="material-symbols-elev" style="font-size:1rem;">delete</span></button>`:''}</header>
+            <div class="feed-post-body">${esc(p.text||'')}</div>${sigHtml}${photoHtml}
+            <div class="feed-post-actions"><button type="button" class="feed-action feed-like-btn ${liked?'liked':''}" data-id="${p.id}"><span class="material-symbols-elev" style="font-size:1.05rem;">favorite</span><span data-likes-count>${p.likes||0}</span></button><button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}"><span class="material-symbols-elev" style="font-size:1.05rem;">chat_bubble</span><span data-comments-count>${comments.length}</span></button></div>
+            <div class="feed-comments" data-id="${p.id}" data-collapsed="true">${comments.map(c=>`<div class="feed-comment"><div class="feed-comment-avatar">${esc(initials(c.author))}</div><div class="feed-comment-body"><span class="feed-comment-author">${esc(c.author||'')}</span><span class="feed-comment-text">${esc(c.text||'')}</span><span class="feed-comment-time">${esc(relTime(c.date))}</span></div></div>`).join('')}<form class="feed-comment-form" data-id="${p.id}"><input type="text" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" /><button type="submit" class="feed-comment-submit">Comentar</button></form></div>
+        </article>`;
     }
 
     function renderFeed(posts, meCode) {
@@ -414,11 +473,21 @@
         }
     }
 
+    // Infinite scroll + Load more
+    const sentinel = document.getElementById('feed-sentinel');
+    const loadMoreBtn = document.getElementById('feed-load-more');
+    if (loadMoreBtn) loadMoreBtn.addEventListener('click', () => loadFeed({ append: true }));
+    if (sentinel && 'IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting && feedHasMore && !feedIsLoading) loadFeed({ append: true });
+        }, { rootMargin: '400px' }).observe(sentinel);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         loadFeed();
         loadSideConversations();
         loadSideTop();
-        // Refresh feed every 60s (silent)
+        // Refresh feed every 60s (silent) — reset to first page
         setInterval(() => { loadFeed(); loadSideConversations(); loadSideTop(); }, 60 * 1000);
     });
 })();
