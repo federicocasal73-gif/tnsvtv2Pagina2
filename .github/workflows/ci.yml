@@ -39,16 +39,20 @@ jobs:
 
             - name: Install dependencies
               run: composer install --no-interaction --prefer-dist --no-progress
+
             - name: Generate JWT keys
               run: |
                   mkdir -p config/jwt var
-                  if \[ ! -f config/jwt/private.pem \]; then
-                      openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048 -aes-256-cbc -pass pass:ci
-                      openssl pkey -in config/jwt/private.pem -passin pass:ci -pubout -out config/jwt/public.pem
+                  if [ ! -f config/jwt/private.pem ]; then
+                      openssl genrsa -out config/jwt/private.pem 2048 2>/dev/null
+                      openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem 2>/dev/null
                   fi
-
+              env:
+                  JWT_PASSPHRASE: ''
 
             - name: Setup database
+              env:
+                  JWT_PASSPHRASE: ''
               run: |
                   mkdir -p var
                   php bin/console cache:warmup --env=test --no-debug
@@ -56,9 +60,13 @@ jobs:
                   php bin/setup-messenger-db.php
 
             - name: Run PHPStan
+              env:
+                  JWT_PASSPHRASE: ''
               run: php vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
             - name: Generate OpenAPI spec
+              env:
+                  JWT_PASSPHRASE: ''
               run: |
                   php bin/console openapi:generate
                   php bin/console lint:yaml config/packages/sentry.yaml
@@ -90,12 +98,15 @@ jobs:
               run: |
                   mkdir -p config/jwt var
                   if [ ! -f config/jwt/private.pem ]; then
-                      openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048 -aes-256-cbc -pass pass:ci
-                      openssl pkey -in config/jwt/private.pem -passin pass:ci -pubout -out config/jwt/public.pem
+                      openssl genrsa -out config/jwt/private.pem 2048 2>/dev/null
+                      openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem 2>/dev/null
                   fi
-
+              env:
+                  JWT_PASSPHRASE: ''
 
             - name: Setup database
+              env:
+                  JWT_PASSPHRASE: ''
               run: |
                   mkdir -p var
                   php bin/console cache:warmup --env=test --no-debug
@@ -103,6 +114,8 @@ jobs:
                   php bin/setup-messenger-db.php
 
             - name: Run tests
+              env:
+                  JWT_PASSPHRASE: ''
               run: php vendor/bin/phpunit --coverage-text --colors=never
 
             - name: Upload coverage
@@ -173,24 +186,32 @@ jobs:
 
             - name: Install dependencies
               run: composer install --no-interaction --prefer-dist --no-progress
+
             - name: Generate JWT keys
               run: |
                   mkdir -p config/jwt var
-                  if \[ ! -f config/jwt/private.pem \]; then
-                      openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:2048 -aes-256-cbc -pass pass:ci
-                      openssl pkey -in config/jwt/private.pem -passin pass:ci -pubout -out config/jwt/public.pem
+                  if [ ! -f config/jwt/private.pem ]; then
+                      openssl genrsa -out config/jwt/private.pem 2048 2>/dev/null
+                      openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem 2>/dev/null
                   fi
-
+              env:
+                  JWT_PASSPHRASE: ''
 
             - name: Setup database
+              env:
+                  JWT_PASSPHRASE: ''
               run: |
                   php bin/console cache:warmup --env=test --no-debug
                   php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
             - name: Dispatch test message
+              env:
+                  JWT_PASSPHRASE: ''
               run: |
                   php bin/console messenger:setup-transports --no-interaction || true
 
             - name: Consume messages (5s smoke test)
+              env:
+                  JWT_PASSPHRASE: ''
               run: timeout 5 php bin/console messenger:consume async --time-limit=5 -vv || true
