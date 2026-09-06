@@ -43,8 +43,8 @@ jobs:
             - name: Setup database
               run: |
                   mkdir -p var
-                  bin/console doctrine:database:create --if-not-exists --no-interaction
-                  bin/console doctrine:schema:create --no-interaction
+                  php bin/console doctrine:database:create --if-not-exists --no-interaction
+                  php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
             - name: Run PHPStan
@@ -81,8 +81,8 @@ jobs:
             - name: Setup database
               run: |
                   mkdir -p var
-                  bin/console doctrine:database:create --if-not-exists --no-interaction
-                  bin/console doctrine:schema:create --no-interaction
+                  php bin/console doctrine:database:create --if-not-exists --no-interaction
+                  php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
             - name: Run tests
@@ -112,7 +112,7 @@ jobs:
 
             - name: Lint templates
               run: |
-                  find templates -name '*.twig' -print0 | xargs -0 -I {} bin/console lint:twig {}
+                  find templates -name '*.twig' -print0 | xargs -0 -I {} php bin/console lint:twig {}
 
     lint-js:
         name: JS Syntax Check
@@ -127,7 +127,7 @@ jobs:
 
             - name: JS Syntax
               run: |
-                  find assets/controllers -name '*.js' -print0 | xargs -0 -n 1 node --check
+                  find src/assets/controllers -name '*.js' -print0 | xargs -0 -n 1 node --check
 
     security-audit:
         name: Composer Security Audit
@@ -161,8 +161,8 @@ jobs:
 
             - name: Setup database
               run: |
-                  bin/console doctrine:database:create --if-not-exists --no-interaction
-                  bin/console doctrine:schema:create --no-interaction
+                  php bin/console doctrine:database:create --if-not-exists --no-interaction
+                  php bin/console doctrine:schema:create --no-interaction
                   php bin/setup-messenger-db.php
 
             - name: Dispatch test message
