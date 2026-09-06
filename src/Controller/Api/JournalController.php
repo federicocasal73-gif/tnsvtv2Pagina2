@@ -54,66 +54,72 @@ class JournalController extends AbstractController
     #[Route('', name: 'api_journal_list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
-        $targetCode = $request->query->get('user_code');
-        if (!$targetCode) {
-            return $this->json(['error' => 'Usuario requerido'], 400);
-        }
-        $target = $this->userRepository->findByCode($targetCode);
-        if (!$target) return $this->json(['error' => 'Usuario inválido'], 401);
-
-        $currentUser = $this->getCurrentUser($request);
-        if (!$currentUser) return $this->json(['error' => 'Unauthorized'], 401);
-
-        $isOwner = $currentUser === $target;
-        $isAdmin = $currentUser->getIsAdmin();
-
-        if (!$isOwner && !$isAdmin) {
-            $setting = $this->settingRepo->findByUser($target);
-            $visibility = $setting?->getVisibility() ?? JournalSetting::VISIBILITY_PUBLIC;
-
-            if ($visibility === JournalSetting::VISIBILITY_PRIVATE) {
-                return $this->json(['error' => 'Este journal es privado'], 403);
+        try {
+            $targetCode = $request->query->get('user_code');
+            if (!$targetCode) {
+                return $this->json(['error' => 'Usuario requerido'], 400);
             }
+            $target = $this->userRepository->findByCode($targetCode);
+            if (!$target) return $this->json(['error' => 'Usuario inválido'], 401);
 
-            $connected = $this->connectionRepo->areConnected($currentUser, $target);
-            if ($visibility === JournalSetting::VISIBILITY_CONNECTIONS && !$connected) {
-                return $this->json(['error' => 'Debes estar conectado para ver este journal'], 403);
-            }
+            $currentUser = $this->getCurrentUser($request);
+            if (!$currentUser) return $this->json(['error' => 'Unauthorized'], 401);
 
-            if (!$connected) {
-                return $this->json(['error' => 'Debes estar conectado para ver este journal'], 403);
-            }
+            $isOwner = $currentUser === $target;
+            $isAdmin = $currentUser->getIsAdmin();
 
-            $perm = $this->permissionRepo->findByGrantorAndGrantee($target, $currentUser);
-            if (!$perm) {
-                return $this->json(['error' => 'Sin permisos configurados'], 403);
+            if (!$isOwner && !$isAdmin) {
+                $setting = $this->settingRepo->findByUser($target);
+                $visibility = $setting?->getVisibility() ?? JournalSetting::VISIBILITY_PUBLIC;
+
+                if ($visibility === JournalSetting::VISIBILITY_PRIVATE) {
+                    return $this->json(['error' => 'Este journal es privado'], 403);
+                }
+
+                $connected = $this->connectionRepo->areConnected($currentUser, $target);
+                if ($visibility === JournalSetting::VISIBILITY_CONNECTIONS && !$connected) {
+                    return $this->json(['error' => 'Debes estar conectado para ver este journal'], 403);
+                }
+
+                if (!$connected) {
+                    return $this->json(['error' => 'Debes estar conectado para ver este journal'], 403);
+                }
+
+                $perm = $this->permissionRepo->findByGrantorAndGrantee($target, $currentUser);
+                if (!$perm) {
+                    return $this->json(['error' => 'Sin permisos configurados'], 403);
+                }
+
+                $trades = $this->loadEntriesForOwner($target, $request);
+                $stats = $this->computeStats($trades);
+
+                $data = array_map(fn(JournalEntry $t) => $this->mapTrade($t, $perm, 'connected'), $trades);
+
+                return $this->json([
+                    'success' => true,
+                    'scope' => 'connected',
+                    'trades' => $data,
+                    'stats' => $stats,
+                ]);
             }
 
             $trades = $this->loadEntriesForOwner($target, $request);
             $stats = $this->computeStats($trades);
 
-            $data = array_map(fn(JournalEntry $t) => $this->mapTrade($t, $perm, 'connected'), $trades);
+            $data = array_map(fn(JournalEntry $t) => $this->mapTrade($t, null, 'owner'), $trades);
 
             return $this->json([
                 'success' => true,
-                'scope' => 'connected',
+                'scope' => 'owner',
                 'trades' => $data,
                 'stats' => $stats,
+                'account_id' => $request->query->get('account_id') ? (int) $request->query->get('account_id') : null,
             ]);
+        } catch (\Throwable $e) {
+            // Defense in depth: log para ops, respuesta segura al cliente.
+            @error_log('[api_journal_list] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+            return $this->json(['error' => 'Error interno al cargar el journal'], 500);
         }
-
-        $trades = $this->loadEntriesForOwner($target, $request);
-        $stats = $this->computeStats($trades);
-
-        $data = array_map(fn(JournalEntry $t) => $this->mapTrade($t, null, 'owner'), $trades);
-
-        return $this->json([
-            'success' => true,
-            'scope' => 'owner',
-            'trades' => $data,
-            'stats' => $stats,
-            'account_id' => $request->query->get('account_id') ? (int) $request->query->get('account_id') : null,
-        ]);
     }
 
     #[Route('/stats', name: 'api_journal_stats', methods: ['GET'])]
@@ -392,10 +398,15 @@ class JournalController extends AbstractController
         $tags = $this->parseList($t->getTags());
 
         if ($accountId !== null) {
-            $acc = $this->accountRepo->find((int) $accountId);
-            if ($acc && $acc->getUser() && $acc->getUser()->getCode() === $t->getUserCode()) {
-                $accountName = $acc->getName();
-            } else {
+            try {
+                $acc = $this->accountRepo->find((int) $accountId);
+                if ($acc && $acc->getUser() && $acc->getUser()->getCode() === $t->getUserCode()) {
+                    $accountName = $acc->getName();
+                } else {
+                    $accountId = null;
+                }
+            } catch (\Doctrine\ORM\EntityNotFoundException) {
+                // FK huérfana: la cuenta o su user fue eliminado. No romper la lista por un registro huérfano.
                 $accountId = null;
             }
         }

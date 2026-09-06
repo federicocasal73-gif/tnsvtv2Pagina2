@@ -1,0 +1,11 @@
+/*
+ * app.css — placeholder
+ *
+ * Historical entry point referenced from src/assets/app.js (line 8).
+ * The actual stylesheet imports live in src/assets/styles/components.css
+ * (which shell.html.twig loads via {{ asset('styles/components.css') }}).
+ *
+ * This file is intentionally empty — it exists only so that the
+ * dynamic-import in app.js does not 404 in dev environments.
+ * If you need to add truly global app-level styles, do it here.
+ */

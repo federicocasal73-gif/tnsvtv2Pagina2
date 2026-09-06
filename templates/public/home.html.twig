@@ -201,6 +201,8 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ importmap('divine_overlay') }}
+
     {# Three.js for sacred geometry 3D hero #}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" defer></script>
     <script src="{{ asset('js/modules/gateway-3d.js') }}" defer></script>

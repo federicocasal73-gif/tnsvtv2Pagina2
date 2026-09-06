@@ -9,6 +9,10 @@ const ICONS = {
     dm: 'chat_bubble',
     academia: 'school',
     task: 'task_alt',
+    task_graded: 'verified',
+    task_overdue: 'warning',
+    task_revision_requested: 'undo',
+    achievement_unlocked: 'emoji_events',
     access_request: 'person_add',
     access_accepted: 'check_circle',
     access_rejected: 'cancel',
@@ -26,6 +30,10 @@ const LINKS = {
     dm: '/chat',
     academia: '/sanctum',
     task: '/sanctum/tasks',
+    task_graded: '/sanctum/tasks',
+    task_overdue: '/sanctum/tasks',
+    task_revision_requested: '/sanctum/tasks',
+    achievement_unlocked: '/sanctum/campus',
     access_request: '/sanctum/social',
     access_accepted: '/sanctum/social',
     access_rejected: '/sanctum/social',
@@ -69,8 +77,10 @@ export default class extends Controller {
             return;
         }
         this.listTarget.innerHTML = notifs.map((n) => {
-            const icon = ICONS[n.type] || 'notifications';
-            const link = n.link || LINKS[n.type] || '/feed';
+            const icon = ICONS[n.type] || ICONS[n.type?.split('_')[0]] || 'notifications';
+            let link = n.link || LINKS[n.type] || '/feed';
+            if (link.startsWith('task:')) link = '/sanctum/tasks/' + link.split(':')[1];
+            if (link.startsWith('chat:')) link = '/chat';
             const time = n.ts ? new Date(n.ts).toLocaleString() : '';
             const unreadClass = n.read ? '' : 'border-l-4 border-[var(--gold-elev)] bg-[rgba(242,202,80,0.05)]';
             return `<a href="${this.escapeHtml(link)}" data-id="${n.id}" class="block glass-card-elev p-3 ${unreadClass} hover:bg-[var(--glass-bg-elev)] transition">`

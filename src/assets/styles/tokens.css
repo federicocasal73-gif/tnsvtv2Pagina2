@@ -150,6 +150,72 @@
     --bg-gradient-base: var(--void-elev);
     --bg-gradient-mid: #100b1c;
     --bg-gradient-end: var(--surface-elev);
+
+    /* === FASE 1 — Breakpoints (canonical) ===
+     * Use as `@media (min-width: 480px)` in CSS or with JS via matchMedia.
+     * Tailwind-compatible naming where possible.
+     */
+    --bp-sm: 480px;    /* Mobile small  */
+    --bp-md: 768px;    /* Tablet portrait / Mobile large */
+    --bp-lg: 1024px;   /* Tablet landscape / Desktop small */
+    --bp-xl: 1280px;   /* Desktop */
+    --bp-xxl: 1536px;  /* Desktop large */
+
+    /* === FASE 1 — Spacing scale (4px base, harmonized) ===
+     * Replaces ad-hoc px values across components.
+     */
+    --space-0: 0;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 28px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-24: 96px;
+
+    /* === FASE 1 — Extended radius scale === */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
+    --radius-full: 9999px;
+
+    /* === FASE 1 — Z-index layers ===
+     * Use as `z-index: var(--z-modal);` etc.
+     */
+    --z-base: 1;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-header: 300;
+    --z-sidebar: 400;
+    --z-overlay: 500;
+    --z-modal: 600;
+    --z-popover: 700;
+    --z-toast: 800;
+    --z-tooltip: 900;
+    --z-notification-bell: 950;
+    --z-chat-widget: 975;
+    --z-modal-critical: 1000;
+
+    /* === FASE 1 — Transitions ===
+     * Reusable timing tokens.
+     */
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+    --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+    --duration-instant: 50ms;
+    --duration-fast: 150ms;
+    --duration-base: 250ms;
+    --duration-slow: 400ms;
+    --duration-slower: 600ms;
 }
 
 /* === FASE 0 — Background canvas overlay (V2 identity) === */

@@ -10,7 +10,7 @@ use App\Repository\UserRepository;
 use App\Security\RateLimiterTrait;
 use App\Service\ImageValidationService;
 use App\Service\LinkPreview\LinkPreviewService;
-use App\Service\RateLimiterService;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,9 +28,9 @@ class FeedController extends AbstractController
         private FeedPostRepository $feedPostRepository,
         private LikedPostRepository $likedPostRepository,
         private UserRepository $userRepository,
-        private RateLimiterService $rateLimiter,
         private LinkPreviewService $linkPreviewService,
         private ImageValidationService $imageValidation,
+        private NotificationService $notifier,
     ) {}
 
     private function getCurrentUser(Request $request): ?\App\Entity\User
@@ -143,7 +143,7 @@ class FeedController extends AbstractController
         $content = $isSignal
             ? sprintf('%s publicó una señal: %s', $user->getName() ?? 'Trader', mb_substr($data['text'] ?? '', 0, 80))
             : sprintf('%s publicó: %s', $user->getName() ?? 'Trader', mb_substr($data['text'] ?? '', 0, 80));
-        $this->pushService->broadcast($type, $content, ['post_id' => (string) $post->getId()], link: 'feed');
+        $this->notifier->broadcast($type, $content, ['post_id' => (string) $post->getId()], 'feed');
 
         return $this->json(['success' => true, 'id' => $post->getId()], Response::HTTP_CREATED);
     }
@@ -238,12 +238,12 @@ class FeedController extends AbstractController
         $notifiedCodes = [];
 
         if ($post->getAuthor() && $post->getAuthor()->getId() !== ($author?->getId())) {
-            $this->pushService->notify(
+            $this->notifier->notify(
                 $post->getAuthor(),
                 'comment',
                 sprintf('%s comentó tu publicación: %s', $authorName, $preview !== '' ? $preview : '[foto]'),
                 ['post_id' => (string) $post->getId(), 'from_code' => $authorCode],
-                link: 'feed'
+                'feed'
             );
             $notifiedCodes[$post->getAuthor()->getCode()] = true;
         }
@@ -254,12 +254,12 @@ class FeedController extends AbstractController
                 if (isset($notifiedCodes[$code])) continue;
                 $mentioned = $this->userRepository->findByCode($code);
                 if ($mentioned && $mentioned->isActive() && (!$author || $mentioned->getId() !== $author->getId())) {
-                    $this->pushService->notify(
+                    $this->notifier->notify(
                         $mentioned,
                         'mention',
                         sprintf('%s te mencionó: %s', $authorName, $preview !== '' ? $preview : '[foto]'),
                         ['post_id' => (string) $post->getId(), 'from_code' => $authorCode],
-                        link: 'feed'
+                        'feed'
                     );
                     $notifiedCodes[$code] = true;
                 }

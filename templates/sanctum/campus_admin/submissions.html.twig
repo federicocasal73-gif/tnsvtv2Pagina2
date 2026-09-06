@@ -1,0 +1,53 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}Bandeja de entregas · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Bandeja de entregas{% endblock %}
+{% block topbar_subtitle %}Tareas enviadas por alumnos pendientes de revisión{% endblock %}
+
+{% block content %}
+<div class="campus-admin-shell" data-controller="campus-admin-submissions"
+     data-campus-admin-submissions-token-value="{{ app.user ? app.user.code : '' }}">
+
+    <header class="campus-admin-header">
+        <div>
+            <h1 class="campus-admin-title">Bandeja de entregas</h1>
+            <p class="campus-admin-subtitle">Revisa, aprueba o devuelve las entregas pendientes.</p>
+        </div>
+    </header>
+
+    {# ─── Status filter ─── #}
+    <nav class="campus-admin-tabs" aria-label="Filtros de estado">
+        <button type="button" class="campus-admin-tab is-active" data-campus-admin-submissions-target="tabAll"
+                data-action="click->campus-admin-submissions#loadAll">
+            <span class="material-symbols-elev">inbox</span>
+            Todas
+        </button>
+        <button type="button" class="campus-admin-tab" data-campus-admin-submissions-target="tabPending"
+                data-action="click->campus-admin-submissions#loadPending">
+            <span class="material-symbols-elev">pending</span>
+            Pendientes
+        </button>
+        <button type="button" class="campus-admin-tab" data-campus-admin-submissions-target="tabApproved"
+                data-action="click->campus-admin-submissions#loadApproved">
+            <span class="material-symbols-elev">check_circle</span>
+            Aprobadas
+        </button>
+        <button type="button" class="campus-admin-tab" data-campus-admin-submissions-target="tabRevision"
+                data-action="click->campus-admin-submissions#loadRevision">
+            <span class="material-symbols-elev">undo</span>
+            Devueltas
+        </button>
+    </nav>
+
+    <section class="campus-admin-list" data-campus-admin-submissions-target="list">
+        {% include '_partials/loading_state.html.twig' with {
+            icon: 'progress_activity',
+            message: 'Cargando entregas…',
+            size: 'md'
+        } only %}
+    </section>
+</div>
+{% endblock %}

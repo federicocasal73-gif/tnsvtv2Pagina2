@@ -60,8 +60,10 @@ export default class extends Controller {
             action = '<span class="social-btn primary" style="opacity:0.6;cursor:default;">Sos vos</span>';
         } else if (status === 'connected' || status === 'accepted') {
             action = '<button type="button" class="social-btn connected" disabled>✓ Conectado</button>';
-        } else if (status === 'pending' || status === 'sent') {
-            action = '<button type="button" class="social-btn pending" disabled>⏳ Pendiente</button>';
+        } else if (status === 'pending' || status === 'pending_sent' || status === 'sent') {
+            action = '<button type="button" class="social-btn pending" disabled>⏳ Solicitud enviada</button>';
+        } else if (status === 'pending_received') {
+            action = '<button type="button" class="social-btn ghost" data-action="request" data-code="' + this.esc(u.code) + '">Aceptar / Ver</button>';
         } else if (status === 'declined' || status === 'rejected') {
             action = '<button type="button" class="social-btn ghost" data-action="request" data-code="' + this.esc(u.code) + '">Reenviar</button>';
         } else if (status === 'blocked') {
@@ -137,11 +139,15 @@ export default class extends Controller {
             const response = await fetch(url);
             const r = await response.json();
 
-            if (!r.ok || !r.data || !Array.isArray(r.data.users)) {
+            if (!r.success || !Array.isArray(r.users)) {
                 list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros para mostrar.</p>';
                 return;
             }
-            this.allUsers = r.data.users;
+            this.allUsers = r.users.map(u => ({
+                ...u,
+                role: u.is_admin ? 'admin' : 'trader',
+                access_status: u.status,
+            }));
             const badge = document.getElementById('badge-users');
             if (badge) {
                 badge.textContent = this.allUsers.length;
@@ -173,12 +179,12 @@ export default class extends Controller {
             const response = await fetch('/api/access-request?user_code=' + encodeURIComponent(this.me));
             const r = await response.json();
 
-            if (!r.ok || !r.data) {
+            if (!r.success) {
                 list.innerHTML = '<p class="social-empty">Sin solicitudes</p>';
                 return;
             }
-            const items = Array.isArray(r.data) ? r.data : (r.data.requests || []);
-            this.myRequests = items.filter(x => x.target_code === this.me && x.status === 'pending');
+            const items = Array.isArray(r.received) ? r.received : [];
+            this.myRequests = items.filter(x => x.status === 'pending');
 
             const pending = document.getElementById('badge-requests');
             if (pending) {
@@ -214,11 +220,15 @@ export default class extends Controller {
             const response = await fetch('/api/connections?user_code=' + encodeURIComponent(this.me));
             const r = await response.json();
 
-            if (!r.ok || !r.data) {
+            if (!r.success) {
                 list.innerHTML = '<p class="social-empty">Sin conexiones.</p>';
                 return;
             }
-            this.connections = r.data.connections || [];
+            this.connections = (r.connections || []).map(c => ({
+                ...c,
+                connected_code: c.user_code,
+                connected_name: c.user_name,
+            }));
             const badge = document.getElementById('badge-connections');
             if (badge) {
                 badge.textContent = this.connections.length;
@@ -275,11 +285,11 @@ export default class extends Controller {
                 body: JSON.stringify({ user_code: this.me, target_code: targetCode })
             });
             const r = await response.json();
-            if (r.ok && r.data && r.data.success) {
+            if (r.success) {
                 this.toast('Solicitud enviada a ' + targetCode, 'success');
                 this.loadUsers();
             } else {
-                this.toast((r.data && r.data.error) || 'Error al enviar solicitud', 'error');
+                this.toast(r.error || 'Error al enviar solicitud', 'error');
             }
         } catch (e) {
             this.toast('Error de red', 'error');
@@ -294,12 +304,12 @@ export default class extends Controller {
                 body: JSON.stringify({ user_code: this.me, status: status })
             });
             const r = await response.json();
-            if (r.ok && r.data && r.data.success) {
+            if (r.success) {
                 this.toast('Solicitud ' + (status === 'accepted' ? 'aceptada' : 'rechazada'), 'success');
                 this.loadReceived();
                 this.loadUsers();
             } else {
-                this.toast((r.data && r.data.error) || 'Error', 'error');
+                this.toast(r.error || 'Error', 'error');
             }
         } catch (e) {
             this.toast('Error de red', 'error');
@@ -312,11 +322,12 @@ export default class extends Controller {
             const response = await fetch('/api/connections/' + id + '?code=' + encodeURIComponent(this.me), {
                 method: 'DELETE'
             });
+            const r = await response.json().catch(() => null);
             if (response.ok) {
                 this.toast('Conexión eliminada', 'success');
                 this.loadConnections();
             } else {
-                this.toast('Error al eliminar', 'error');
+                this.toast((r && r.error) || 'Error al eliminar', 'error');
             }
         } catch (e) {
             this.toast('Error de red', 'error');

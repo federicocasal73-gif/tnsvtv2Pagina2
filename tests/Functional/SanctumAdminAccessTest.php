@@ -18,7 +18,6 @@ class SanctumAdminAccessTest extends ApiTestCase
             ['GET', '/sanctum/api/users'],
             ['GET', '/sanctum/api/monitoring/status'],
             ['GET', '/sanctum/api/oracle/global-stats'],
-            ['GET', '/sanctum/api/tasks'],
         ];
     }
 

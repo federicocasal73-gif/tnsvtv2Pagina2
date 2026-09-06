@@ -24,8 +24,8 @@ export default class extends Controller {
 
     async load() {
         try {
-            const r = await window.apiFetch('/api/leaderboard/game/top?limit=10');
-            const data = Array.isArray(r) ? r : (r?.data?.entries || r?.data || []);
+            const r = await window.apiFetch('/api/leaderboard?limit=50');
+            const data = Array.isArray(r?.data) ? r.data : (Array.isArray(r) ? r : []);
             if (data.length === 0) {
                 this.renderEmpty();
                 return;
@@ -51,7 +51,7 @@ export default class extends Controller {
             <div class="glass-card-elev podium-card">
                 <div class="podium-avatar">${this.escape((p.name || p.code || '?').charAt(0))}</div>
                 <div class="podium-name">${this.escape(p.name || p.code || '')}</div>
-                <div class="podium-score">${p.score || 0} pts</div>
+                <div class="podium-score">${(p.total_pnl ?? 0).toFixed ? '$' + p.total_pnl.toFixed(2) : '$' + (p.total_pnl || 0)}</div>
             </div>
         `).join('');
         this.podiumTarget.innerHTML = podiumHTML;
@@ -63,12 +63,13 @@ export default class extends Controller {
             const medal = medals[i] || '';
             const initial = this.escape((p.name || p.code || '?').charAt(0));
             const name = this.escape(p.name || p.code || '');
+            const score = p.total_pnl ?? 0;
             return `
                 <div class="lb-rank">
                     <span class="lb-pos ${medal}">${i + 1}</span>
                     <span class="lb-avatar-mini">${initial}</span>
                     <span class="lb-name">${name}</span>
-                    <span class="lb-score">${p.score || 0}</span>
+                    <span class="lb-score">$${Number(score).toFixed(2)}</span>
                 </div>
             `;
         }).join('');

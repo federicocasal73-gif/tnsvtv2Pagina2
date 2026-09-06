@@ -11,13 +11,26 @@ export default class extends Controller {
         if (!this.hasTaskListTarget) return;
 
         try {
-            const res = await fetch('/sanctum/api/tasks');
-            const data = await res.json();
+            // Try new unified API first (supports X-Game-Code), fallback to legacy
+            let data = null;
+            try {
+                const r = await fetch('/api/tasks/mine?sort=due_date&order=asc', {
+                    headers: { 'X-Game-Code': document.body?.dataset?.userCode || '' },
+                });
+                if (r.ok) {
+                    const j = await r.json();
+                    if (j.tasks) data = { success: true, tasks: j.tasks.slice(0,5), activeCount: j.count };
+                }
+            } catch {}
+            if (!data) {
+                const res = await fetch('/sanctum/api/tasks');
+                data = await res.json();
+            }
 
-            if (data.success) {
+            if (data && data.success) {
                 this.renderTasks(data.tasks || []);
                 if (this.hasPnlMetaTarget) {
-                    this.pnlMetaTarget.textContent = `${data.activeCount || 0} activas`;
+                    this.pnlMetaTarget.textContent = `${data.activeCount ?? data.count ?? 0} activas`;
                 }
                 this.renderSignals(data.tasks || []);
             } else {

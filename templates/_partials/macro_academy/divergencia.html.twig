@@ -1,0 +1,143 @@
+{# ══════════════════════════════════════════════
+   Macro Academy — Panel 7: Divergencia & Convergencia
+   ══════════════════════════════════════════════ #}
+<div id="mc-divergencia" class="mpanel">
+
+    <div class="mp-header">
+        <div class="mp-label">Macroeconomía TNSVT</div>
+        <div class="mp-title">⚡ Divergencia & Convergencia</div>
+        <div class="mp-desc">El secreto del macro trading. Cuando dos economías van en direcciones opuestas, el par tiene tendencia de semanas o meses.</div>
+    </div>
+
+    <div class="manuscript-quote">"Cuando operás un par de divisas no estás operando 1 activo — estás operando 2 economías al mismo tiempo. Tenés que analizarlas por separado antes de unirlas."</div>
+
+    <div class="mc-card" style="border-left:3px solid var(--gold-bright);margin-bottom:14px;">
+        <div class="mc-card-title" style="font-size:0.9rem;margin-bottom:10px;">🔀 ¿Qué es la Divergencia Monetaria?</div>
+        <p class="mc-card-text" style="margin-bottom:12px;">Ocurre cuando dos bancos centrales tienen <strong style="color:var(--gold-bright);">políticas monetarias opuestas</strong>. Una economía crece y sube tasas mientras la otra se debilita y las baja. Esto crea una tendencia estructural clara en el par de divisas.</p>
+        <div class="mc-grid2">
+            <div style="background:rgba(52,199,89,0.06);border:1px solid rgba(52,199,89,0.2);border-radius:8px;padding:12px;">
+                <div style="font-family:'Orbitron',sans-serif;font-size:0.6rem;color:#34c759;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Economía Fuerte (Hawkish)</div>
+                <p style="font-size:0.78rem;line-height:1.5;">✅ PIB creciendo<br>✅ Inflación controlada<br>✅ Tasas subiendo o altas<br>✅ Empleo fuerte<br><strong style="color:#34c759;">→ Su moneda SUBE</strong></p>
+            </div>
+            <div style="background:rgba(255,59,48,0.06);border:1px solid rgba(255,59,48,0.2);border-radius:8px;padding:12px;">
+                <div style="font-family:'Orbitron',sans-serif;font-size:0.6rem;color:var(--red-impact);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Economía Débil (Dovish)</div>
+                <p style="font-size:0.78rem;line-height:1.5;">❌ PIB estancado o negativo<br>❌ Inflación desbordada o muy baja<br>❌ Tasas bajando o bajas<br>❌ Desempleo subiendo<br><strong style="color:var(--red-impact);">→ Su moneda BAJA</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mc-accordion" id="mca-div1" onclick="mcToggleAcc('div1')">
+        <div class="mc-accordion-hdr">
+            <div class="mc-acc-num" style="font-size:1.2rem;">💡</div>
+            <div class="mc-acc-meta">
+                <div class="mc-acc-name" style="font-size:0.9rem;">Ejemplo: FED Hawkish vs BCE Dovish</div>
+                <div class="mc-acc-sub">La divergencia más famosa de los últimos años</div>
+                <div class="mc-acc-tags"><span class="mc-tag mc-tag-red">EUR/USD bajista</span><span class="mc-tag mc-tag-gold">2022-2023</span></div>
+            </div>
+            <div class="mc-chevron">▼</div>
+        </div>
+        <div class="mc-acc-body"><div class="mc-acc-inner" onclick="event.stopPropagation()">
+            <div class="mc-trick-box">
+                <span class="mc-trick-label">📖 El Escenario Completo</span>
+                <p style="font-size:0.82rem;line-height:1.7;">
+                    <strong style="color:var(--gold-bright);">USA (FED):</strong> Inflación al 9%, sube tasas agresivamente de 0.25% → 5.25% en 18 meses.<br>
+                    <strong style="color:var(--gold-bright);">Europa (BCE):</strong> También tiene inflación pero la economía está más débil. Sube tasas más lento y menos.<br><br>
+                    <strong style="color:#34c759;">Resultado:</strong> El diferencial de tasas entre USD y EUR se amplía → el capital global prefiere dólares (más rendimiento, economía más fuerte) → <strong style="color:var(--red-impact);">EUR/USD cae de 1.15 a 0.96 (paridad)</strong> en un año.<br><br>
+                    <strong style="color:var(--gold-bright);">¿Cómo lo operaste?</strong> Con el sesgo bajista en EUR/USD claro, cada retroceso técnico al alza era una oportunidad de venta. El macro te daba la dirección; el técnico te daba la entrada precisa.
+                </p>
+            </div>
+            <div style="background:rgba(9,5,18,0.8);border:1px dashed rgba(212,175,55,0.2);border-radius:10px;padding:16px;margin-top:14px;">
+                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
+                <p style="font-size:0.82rem;margin-bottom:12px;">La FED sube tasas al 5% mientras el Banco de Japón las mantiene en 0%. ¿Qué sesgo macro tenés en USD/JPY?</p>
+                <div style="display:flex;flex-direction:column;gap:8px;" id="div-q1-opts">
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('div-q1','A',true,'div-q1-fb')"><div class="mc-quiz-letter">A</div> Sesgo alcista en USD/JPY — el dólar es más atractivo por las tasas altas</button>
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('div-q1','B',false,'div-q1-fb')"><div class="mc-quiz-letter">B</div> Sesgo bajista — Japón tiene economía más fuerte</button>
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('div-q1','C',false,'div-q1-fb')"><div class="mc-quiz-letter">C</div> No hay sesgo, las tasas no afectan los pares</button>
+                </div>
+                <div class="mc-quiz-fb" id="div-q1-fb" style="margin-top:10px;"></div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="mc-card" style="border-left:3px solid var(--orange-impact);margin-top:14px;margin-bottom:14px;">
+        <div class="mc-card-title" style="color:var(--orange-impact);margin-bottom:10px;">⚠️ La Convergencia — El Peor Escenario para Operar</div>
+        <p class="mc-card-text">Ocurre cuando dos economías van <strong style="color:var(--orange-impact);">en la misma dirección al mismo tiempo</strong>. Ambas subiendo tasas, ambas en recesión, ambas con inflación similar. El resultado es una <strong>lateralización brutal y molesta</strong> en el par de divisas entre ellas.</p>
+        <div class="mc-trick-box" style="margin-top:12px;background:rgba(255,149,0,0.06);border-color:rgba(255,149,0,0.2);">
+            <span class="mc-trick-label" style="color:var(--orange-impact);">🚨 Regla de Oro — Convergencia</span>
+            <p style="font-size:0.82rem;line-height:1.7;">Si dos bancos centrales están haciendo exactamente lo mismo al mismo tiempo, <strong style="color:var(--orange-impact);">NO OPERÉS ESE PAR</strong>. El mercado lateral destroza tu ratio riesgo/beneficio. Buscá otro par donde haya divergencia clara.</p>
+        </div>
+    </div>
+
+    <div style="background:rgba(9,5,18,0.8);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:20px;margin-bottom:14px;">
+        <div class="mc-card-title" style="margin-bottom:14px;">🔬 Cómo Identificar Divergencia en 3 Pasos</div>
+        <div class="mc-protocol-step"><div class="mc-step-num">1</div><div class="mc-step-text"><strong>Comparar tasas de interés actuales.</strong> ¿Cuánto tiene cada banco central? Una diferencia mayor a 1.5% ya es divergencia operativa. Buscá en <em style="color:var(--gold-bright);">TradingEconomics.com → Interest Rates</em>.</div></div>
+        <div class="mc-protocol-step"><div class="mc-step-num">2</div><div class="mc-step-text"><strong>Comparar tendencia de los datos de inflación.</strong> ¿Uno sube y el otro baja? Si el CPI de EE.UU. está cayendo mientras el de Europa está subiendo, el dólar tiende a debilitarse y el EUR a fortalecerse.</div></div>
+        <div class="mc-protocol-step"><div class="mc-step-num">3</div><div class="mc-step-text"><strong>Leer los comunicados del banco central.</strong> ¿Uno es hawkish y el otro dovish? Las palabras "further tightening" (más subidas) vs "pausing" (pausa) te dicen todo. Buscá el tono en cada conferencia de prensa.</div></div>
+    </div>
+
+    <div style="background:rgba(9,5,18,0.8);border:1px solid rgba(197,160,40,0.2);border-radius:12px;padding:20px;margin-bottom:14px;">
+        <div class="mc-card-title" style="margin-bottom:16px;">🎯 Quiz — Identificá la Divergencia</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
+                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 1</div>
+                <p style="font-size:0.82rem;margin-bottom:10px;">FED: Tasas al 5.25%, hawkish. BCE: Tasas al 2%, dovish. GDP USA +3%, GDP Europa -0.5%. ¿Sesgo en EUR/USD?</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;" id="div-esc1-opts">
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc1','A',false,'div-esc1-fb')"><div class="mc-quiz-letter">A</div> Alcista EUR/USD</button>
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc1','B',true,'div-esc1-fb')"><div class="mc-quiz-letter">B</div> Bajista EUR/USD</button>
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc1','C',false,'div-esc1-fb')"><div class="mc-quiz-letter">C</div> Lateral sin sesgo</button>
+                </div>
+                <div class="mc-quiz-fb" id="div-esc1-fb" style="margin-top:8px;"></div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
+                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 2</div>
+                <p style="font-size:0.82rem;margin-bottom:10px;">FED: Tasas al 4.5%, empezando a bajar. RBA (Australia): Tasas al 4.35%, hawkish, aún subiendo. ¿Sesgo en AUD/USD?</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;" id="div-esc2-opts">
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc2','A',true,'div-esc2-fb')"><div class="mc-quiz-letter">A</div> Alcista AUD/USD</button>
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc2','B',false,'div-esc2-fb')"><div class="mc-quiz-letter">B</div> Bajista AUD/USD</button>
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc2','C',false,'div-esc2-fb')"><div class="mc-quiz-letter">C</div> Lateral sin sesgo</button>
+                </div>
+                <div class="mc-quiz-fb" id="div-esc2-fb" style="margin-top:8px;"></div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
+                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 3</div>
+                <p style="font-size:0.82rem;margin-bottom:10px;">FED: Tasas al 4%, bajando lentamente. BCE: Tasas al 4%, bajando al mismo ritmo. ¿Qué harías con EUR/USD?</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;" id="div-esc3-opts">
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc3','A',false,'div-esc3-fb')"><div class="mc-quiz-letter">A</div> Comprarlo con fuerza</button>
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc3','B',false,'div-esc3-fb')"><div class="mc-quiz-letter">B</div> Venderlo con fuerza</button>
+                    <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc3','C',true,'div-esc3-fb')"><div class="mc-quiz-letter">C</div> Buscar otro par — convergencia = lateral molesto</button>
+                </div>
+                <div class="mc-quiz-fb" id="div-esc3-fb" style="margin-top:8px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div style="background:rgba(138,60,255,0.06);border:1px solid rgba(138,60,255,0.25);border-radius:14px;padding:22px;">
+        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--violet);margin-bottom:6px;">✍️ Tarea Práctica — Mapa de Divergencias</div>
+        <p style="font-size:0.82rem;color:#a499b8;line-height:1.6;margin-bottom:14px;">Cada domingo antes de abrir el mercado, completá esta tabla mentalmente (o anotala en papel):</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            <div class="mc-data-row" style="border-color:rgba(138,60,255,0.15);">
+                <span class="mc-data-label">Par a analizar</span>
+                <span style="font-size:0.78rem;color:var(--gold-bright);">EUR/USD, GBP/USD, AUD/USD, USD/JPY</span>
+            </div>
+            <div class="mc-data-row" style="border-color:rgba(138,60,255,0.15);">
+                <span class="mc-data-label">Tasas de interés de cada economía</span>
+                <span style="font-size:0.78rem;color:#a499b8;">TradingEconomics.com</span>
+            </div>
+            <div class="mc-data-row" style="border-color:rgba(138,60,255,0.15);">
+                <span class="mc-data-label">Tendencia del CPI (subiendo o bajando)</span>
+                <span style="font-size:0.78rem;color:#a499b8;">ForexFactory → filtrar CPI de cada país</span>
+            </div>
+            <div class="mc-data-row" style="border-color:rgba(138,60,255,0.15);">
+                <span class="mc-data-label">Tono del último comunicado del BC</span>
+                <span style="font-size:0.78rem;color:#a499b8;">¿Hawkish, Dovish o Neutral?</span>
+            </div>
+            <div class="mc-data-row" style="border-color:rgba(138,60,255,0.15);">
+                <span class="mc-data-label">Conclusión: ¿Hay divergencia?</span>
+                <span style="font-size:0.78rem;color:var(--gold-bright);">Si sí → ¿alcista o bajista en el par?</span>
+            </div>
+        </div>
+        <div style="margin-top:14px;background:rgba(197,160,40,0.06);border:1px solid rgba(197,160,40,0.15);border-radius:8px;padding:12px;">
+            <p style="font-size:0.78rem;line-height:1.5;"><strong style="color:var(--gold-bright);">Meta:</strong> Identificar semanalmente el par con la divergencia más clara. Ese es tu par principal de la semana. El técnico solo confirma lo que el macro ya te dijo.</p>
+        </div>
+    </div>
+</div>

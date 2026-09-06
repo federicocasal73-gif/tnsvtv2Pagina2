@@ -32,6 +32,9 @@
 {% block background %}{% endblock %}
 <script src="{{ asset('js/modules/theme.js') }}" defer></script>
 <script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
+{% block javascripts %}
+    {{ importmap('divine_overlay') }}
+{% endblock %}
 
 {# Public shell loads ONLY the tokens + home styles. #}
 {% block public_nav %}{% include 'public/_public_nav.html.twig' with {} %}{% endblock %}
@@ -50,6 +53,5 @@
     {% block floats %}{% endblock %}
 </div>
 
-{% block javascripts %}{% endblock %}
 </body>
 </html>

@@ -2,7 +2,9 @@
 
 namespace App;
 
+use App\Message\MarkTasksOverdueMessage;
 use Symfony\Component\Scheduler\Attribute\AsSchedule;
+use Symfony\Component\Scheduler\RecurringMessage;
 use Symfony\Component\Scheduler\Schedule as SymfonySchedule;
 use Symfony\Component\Scheduler\ScheduleProviderInterface;
 use Symfony\Contracts\Cache\CacheInterface;
@@ -21,8 +23,12 @@ class Schedule implements ScheduleProviderInterface
             ->stateful($this->cache) // ensure missed tasks are executed
             ->processOnlyLastMissedRun(true) // ensure only last missed task is run
 
-            // add your own tasks here
-            // see https://symfony.com/doc/current/scheduler.html#attaching-recurring-messages-to-a-schedule
+            // TNSVT Phase 3 — mark all tasks as overdue every 24h.
+            // The handler updates status='overdue' on tasks with due_date < now
+            // (excluding approved ones) and notifies the assignee + creator.
+            ->add(
+                RecurringMessage::every('24 hours', new MarkTasksOverdueMessage())
+            )
         ;
     }
 }

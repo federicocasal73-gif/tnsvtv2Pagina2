@@ -1,0 +1,112 @@
+{# ══════════════════════════════════════════════
+   Macro Academy — Panel 1: Bancos Centrales
+   Incluye slider "Carlitos" interactivo
+   ══════════════════════════════════════════════ #}
+<div id="mc-bancos" class="mpanel active">
+
+    <div class="mp-header">
+        <div class="mp-label">Macroeconomía TNSVT</div>
+        <div class="mp-title">🏛 Bancos Centrales</div>
+        <div class="mp-desc">El actor que nadie ve pero que mueve todo. Antes de leer un gráfico, entendé quién controla el dinero.</div>
+    </div>
+
+    <div class="mc-golden-rule">
+        <div class="rule-label">🏛 Concepto Fundacional</div>
+        <div class="rule-text">En Forex, los Bancos Centrales son los únicos actores que pueden modificar el valor de una divisa. <em>Todo lo demás es consecuencia.</em></div>
+    </div>
+
+    <div class="mc-grid2">
+        <div class="mc-flow-node" data-node="fed">
+            <span class="mc-flow-node-icon">🏛</span>
+            <div class="mc-flow-node-title">Banco Central (FED/BCE)</div>
+            <div class="mc-flow-node-desc">El dueño del dinero digital</div>
+        </div>
+        <div class="mc-flow-node" data-node="bonos">
+            <span class="mc-flow-node-icon">📜</span>
+            <div class="mc-flow-node-title">Compra de Bonos</div>
+            <div class="mc-flow-node-desc">Inyecta liquidez al Estado</div>
+        </div>
+        <div class="mc-flow-node" data-node="tasas">
+            <span class="mc-flow-node-icon">📈</span>
+            <div class="mc-flow-node-title">Tasas de Interés</div>
+            <div class="mc-flow-node-desc">El precio del dinero</div>
+        </div>
+        <div class="mc-flow-node" data-node="ciudadanos">
+            <span class="mc-flow-node-icon">👥</span>
+            <div class="mc-flow-node-title">Economía Real</div>
+            <div class="mc-flow-node-desc">Donde todo termina impactando</div>
+        </div>
+    </div>
+
+    <div class="mc-info-box" id="mc-node-info">
+        <div class="mc-info-box-label" id="mc-node-label">ℹ️ Información</div>
+        <p id="mc-node-text" style="font-size:0.82rem;line-height:1.6;color:#e2dcf0;"></p>
+    </div>
+
+    <div class="mc-grid2" style="margin-top:16px;">
+        <div class="mc-card" style="border-left: 3px solid #34c759;">
+            <span class="mc-card-icon">💉</span>
+            <div class="mc-card-title">Inyectar Liquidez</div>
+            <p class="mc-card-text">Tasas <strong style="color:#34c759">bajas</strong> + compra de bonos. El dinero fluye, la economía se calienta. <em>Dólar se debilita, acciones suben.</em></p>
+        </div>
+        <div class="mc-card" style="border-left: 3px solid var(--red-impact);">
+            <span class="mc-card-icon">🔒</span>
+            <div class="mc-card-title">Encarecer el Crédito</div>
+            <p class="mc-card-text">Subida de tasas. El dinero se vuelve caro, la inflación cae. <em>Dólar se fortalece, acciones bajan.</em></p>
+        </div>
+    </div>
+
+    {# ═══ Slider Carlitos — tasas interactivas ═══ #}
+    <div style="background:rgba(9,5,18,0.8);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:20px;margin-top:16px;">
+        <div class="mc-card-title" style="margin-bottom:6px;">💡 El Ejemplo de Carlitos — Tasas Interactivas</div>
+        <p style="color:#645a78;font-size:0.78rem;margin-bottom:14px;">Mové el slider para entender cómo las tasas impactan en la economía</p>
+        <div class="mc-slider-row">
+            <label>Tasa de interés del préstamo de $1,000:</label>
+            <input type="range" min="0" max="20" value="1" id="mc-rate-slider" style="width:100%;accent-color:var(--gold-bright);" oninput="mcCalcInterest()" aria-label="Tasa de interes anual">
+            <div class="text-micro text-label--muted" style="display:flex;justify-content:space-between;">
+                <span>0%</span><span>10%</span><span>20%</span>
+            </div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(212,175,55,0.1);border-radius:8px;padding:14px;margin-top:12px;">
+            <div class="mc-data-row"><span class="mc-data-label">Tasa</span><span class="mc-data-val neut" id="mc-rate-val">1%</span></div>
+            <div class="mc-data-row"><span class="mc-data-label">Carlitos devuelve</span><span class="mc-data-val" style="color:var(--gold-bright);" id="mc-total-val">$1,010</span></div>
+            <div class="mc-data-row"><span class="mc-data-label">¿Acepta el préstamo?</span><span class="mc-data-val up" id="mc-accept-val">😊 Sí, es barato</span></div>
+            <div class="mc-data-row"><span class="mc-data-label">Efecto en economía</span><span class="mc-data-val up" id="mc-econ-val">📈 Se estimula</span></div>
+            <div class="mc-data-row"><span class="mc-data-label">Efecto en Dólar</span><span class="mc-data-val down" id="mc-dollar-val">📉 Se debilita</span></div>
+        </div>
+    </div>
+
+    {# ═══ Lista de Bancos Centrales ═══ #}
+    <div class="mc-cheat-grid" style="margin-top:16px;">
+        <div class="mc-cheat-item" style="border-color:rgba(197,160,40,0.3);">
+            <span class="mc-cheat-sym" style="color:var(--gold-bright);">USD</span>
+            <div class="mc-cheat-name">FED / FOMC</div>
+            <div class="mc-cheat-desc">El más importante del mundo. EE.UU.</div>
+        </div>
+        <div class="mc-cheat-item">
+            <span class="mc-cheat-sym" style="color:#60A5FA;">EUR</span>
+            <div class="mc-cheat-name">ECB</div>
+            <div class="mc-cheat-desc">European Central Bank. Zona Euro.</div>
+        </div>
+        <div class="mc-cheat-item">
+            <span class="mc-cheat-sym" style="color:var(--violet);">GBP</span>
+            <div class="mc-cheat-name">BoE</div>
+            <div class="mc-cheat-desc">Bank of England. Reino Unido.</div>
+        </div>
+        <div class="mc-cheat-item">
+            <span class="mc-cheat-sym" style="color:var(--orange-impact);">JPY</span>
+            <div class="mc-cheat-name">BoJ</div>
+            <div class="mc-cheat-desc">Bank of Japan.</div>
+        </div>
+        <div class="mc-cheat-item">
+            <span class="mc-cheat-sym" style="color:#34c759;">CAD</span>
+            <div class="mc-cheat-name">BoC</div>
+            <div class="mc-cheat-desc">Bank of Canada.</div>
+        </div>
+        <div class="mc-cheat-item">
+            <span class="mc-cheat-sym" style="color:var(--red-impact);">AUD</span>
+            <div class="mc-cheat-name">RBA</div>
+            <div class="mc-cheat-desc">Royal Bank of Australia.</div>
+        </div>
+    </div>
+</div>

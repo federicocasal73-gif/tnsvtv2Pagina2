@@ -1,0 +1,240 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}{{ task.title }} · Tareas · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Detalle de tarea{% endblock %}
+{% block topbar_subtitle %}{{ task.title }}{% endblock %}
+
+{% block content %}
+<div class="tasks-shell" data-controller="tasks"
+     data-tasks-target="detailContainer"
+     data-task-id="{{ task.id }}"
+     data-tasks-user-code-value="{{ app.user ? app.user.code : '' }}"
+     data-tasks-is-admin-value="{{ is_granted('ROLE_ADMIN') ? '1' : '0' }}">
+
+    <nav class="campus-breadcrumb" aria-label="Ruta de navegación">
+        <a href="/sanctum/tasks" data-action="click->tasks#backToList">← Volver a Tareas</a>
+        <span class="campus-breadcrumb-sep">›</span>
+        <span>{{ task.title }}</span>
+    </nav>
+
+    <article class="task-detail">
+        {# ─── Header ─── #}
+        <header class="task-detail-header">
+            <div class="task-detail-header-main">
+                <h1 class="task-detail-title">{{ task.title }}</h1>
+                {% if task.description %}
+                    <p class="task-detail-description">{{ task.description }}</p>
+                {% endif %}
+                <div class="task-detail-meta">
+                    {{ ui.status_pill(task.status) }}
+                    {{ ui.status_pill(task.priority, task.priorityLabel|default('')) }}
+                    {% if task.dueDate %}
+                        <span class="task-detail-due">
+                            <span class="material-symbols-elev">schedule</span>
+                            Vence: {{ task.dueDate|date('d/m/Y H:i') }}
+                        </span>
+                    {% endif %}
+                    {% if task.estimatedMinutes %}
+                        <span class="task-detail-due">
+                            <span class="material-symbols-elev">timer</span>
+                            ~{{ task.estimatedMinutes }} min
+                        </span>
+                    {% endif %}
+                    {% if task.isOverdue %}
+                        <span class="status-pill status-pill-overdue size-sm">Vencida</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="task-detail-header-actions" data-tasks-target="actionBar">
+                {# Status transition buttons rendered by JS based on role + current status #}
+            </div>
+        </header>
+
+        {# ─── Layout 2-col ─── #}
+        <div class="task-detail-grid">
+            {# Left: submission + comments + feedback timeline #}
+            <div class="task-detail-timeline">
+                {# ─── Submission area (student only) ─── #}
+                {% if not is_granted('ROLE_ADMIN') and app.user and task.assignedTo and app.user.code == task.assignedTo.code %}
+                    <section class="task-detail-submit glass-card-elev" data-tasks-target="submitCard">
+                        <h2 class="task-section-title">
+                            <span class="material-symbols-elev">upload_file</span>
+                            Entregar trabajo
+                        </h2>
+                        <form data-action="submit->tasks#onSubmit" class="task-submit-form">
+                            <label class="task-field">
+                                <span class="task-field-label">Comentario al mentor</span>
+                                <textarea name="comments" rows="3" placeholder="Describe brevemente lo entregado…" class="task-field-textarea"></textarea>
+                            </label>
+                            <label class="task-field">
+                                <span class="task-field-label">Archivo (opcional)</span>
+                                <input type="file" name="file" class="task-field-input" />
+                            </label>
+                            <button type="submit" class="ui-btn ui-btn-primary ui-btn-size-md">
+                                <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">upload</span>
+                                <span class="ui-btn-label">Entregar</span>
+                            </button>
+                        </form>
+                    </section>
+                {% endif %}
+
+                {# ─── Submissions list ─── #}
+                <section class="task-detail-section" data-tasks-target="submissionsSection">
+                    <h2 class="task-section-title">
+                        <span class="material-symbols-elev">history</span>
+                        Entregas
+                    </h2>
+                    <div class="task-timeline" data-tasks-target="submissionsList">
+                        {% include '_partials/loading_state.html.twig' with {
+                            icon: 'progress_activity',
+                            message: 'Cargando entregas...',
+                            size: 'sm'
+                        } only %}
+                    </div>
+                </section>
+
+                {# ─── Feedback (mentor grade) ─── #}
+                <section class="task-detail-section" data-tasks-target="feedbackSection">
+                    <h2 class="task-section-title">
+                        <span class="material-symbols-elev">grade</span>
+                        Calificación
+                    </h2>
+                    <div class="task-feedback" data-tasks-target="feedbackContent">
+                        {% include '_partials/loading_state.html.twig' with {
+                            icon: 'progress_activity',
+                            message: 'Cargando...',
+                            size: 'sm'
+                        } only %}
+                    </div>
+
+                    {# Mentor grade form #}
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <form data-action="submit->tasks#onGrade" class="task-grade-form" data-tasks-target="gradeForm">
+                            <label class="task-field">
+                                <span class="task-field-label">Nota (0–10)</span>
+                                <input type="number" min="0" max="10" step="0.1" name="grade" placeholder="9.5" class="task-field-input" />
+                            </label>
+                            <label class="task-field">
+                                <span class="task-field-label">Comentario</span>
+                                <textarea name="comment" rows="2" placeholder="Feedback para el alumno…" class="task-field-textarea"></textarea>
+                            </label>
+                            <div class="task-grade-actions">
+                                <button type="submit" data-action="tasks#onGradeApprove" data-grade="approved"
+                                        class="ui-btn ui-btn-primary ui-btn-size-sm">
+                                    <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">check_circle</span>
+                                    Aprobar
+                                </button>
+                                <button type="submit" data-action="tasks#onGradeRevision" data-grade="needs_revision"
+                                        class="ui-btn ui-btn-secondary ui-btn-size-sm">
+                                    <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">undo</span>
+                                    Devolver
+                                </button>
+                            </div>
+                        </form>
+                    {% endif %}
+                </section>
+
+                {# ─── Comments thread ─── #}
+                <section class="task-detail-section">
+                    <h2 class="task-section-title">
+                        <span class="material-symbols-elev">forum</span>
+                        Comentarios
+                        <span class="task-section-count" data-tasks-target="commentsCount">—</span>
+                    </h2>
+                    <div class="task-comments" data-tasks-target="commentsList"></div>
+                    <form data-action="submit->tasks#onComment" class="task-comment-form">
+                        <textarea name="body" rows="2" placeholder="Escribe un comentario…" class="task-field-textarea" required></textarea>
+                        <button type="submit" class="ui-btn ui-btn-primary ui-btn-size-sm">
+                            <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">send</span>
+                            Enviar comentario
+                        </button>
+                    </form>
+                </section>
+            </div>
+
+            {# Right: details sidebar #}
+            <aside class="task-detail-sidebar">
+                {# ─── People ─── #}
+                <section class="task-detail-section">
+                    <h2 class="task-section-title">
+                        <span class="material-symbols-elev">group</span>
+                        Personas
+                    </h2>
+                    <dl class="task-detail-dl">
+                        {% if task.assignedTo %}
+                            <dt>Asignada a</dt>
+                            <dd>
+                                <span class="task-person-chip">
+                                    <span class="material-symbols-elev">person</span>
+                                    {{ task.assignedTo.name }} ({{ task.assignedTo.code }})
+                                </span>
+                            </dd>
+                        {% endif %}
+                        {% if task.assignedBy %}
+                            <dt>Asignada por</dt>
+                            <dd>
+                                <span class="task-person-chip">
+                                    <span class="material-symbols-elev">person_outline</span>
+                                    {{ task.assignedBy.name }} ({{ task.assignedBy.code }})
+                                </span>
+                            </dd>
+                        {% endif %}
+                    </dl>
+                </section>
+
+                {# ─── Instructions ─── #}
+                {% if task.instructions %}
+                    <section class="task-detail-section">
+                        <h2 class="task-section-title">
+                            <span class="material-symbols-elev">menu_book</span>
+                            Instrucciones
+                        </h2>
+                        <pre class="task-instructions">{{ task.instructions }}</pre>
+                    </section>
+                {% endif %}
+
+                {# ─── Links ─── #}
+                {% if task.links %}
+                    <section class="task-detail-section">
+                        <h2 class="task-section-title">
+                            <span class="material-symbols-elev">link</span>
+                            Enlaces
+                        </h2>
+                        <ul class="task-links-list">
+                            {% for link in task.links %}
+                                <li>
+                                    <a href="{{ link.url }}" target="_blank" rel="noopener" class="task-link">
+                                        <span class="material-symbols-elev">open_in_new</span>
+                                        {{ link.title|default(link.url) }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
+
+                {# ─── Timeline metadata ─── #}
+                <section class="task-detail-section">
+                    <h2 class="task-section-title">
+                        <span class="material-symbols-elev">schedule</span>
+                        Historial
+                    </h2>
+                    <dl class="task-detail-dl">
+                        <dt>Creada</dt>
+                        <dd>{{ task.createdAt|date('d/m/Y H:i') }}</dd>
+                        <dt>Última actualización</dt>
+                        <dd>{{ task.updatedAt|date('d/m/Y H:i') }}</dd>
+                        {% if task.completedAt %}
+                            <dt>Completada</dt>
+                            <dd>{{ task.completedAt|date('d/m/Y H:i') }}</dd>
+                        {% endif %}
+                    </dl>
+                </section>
+            </aside>
+        </div>
+    </article>
+</div>
+{% endblock %}

@@ -1,0 +1,290 @@
+{# ────────────────────────────────────────────────────────────
+ # TNSVT — Partial: Feed del Cónclave embebido (Inicio)
+ # Versión compacta del /feed (sin sidebar) para integrarse
+ # como tab "CÓNCLAVE" dentro del Dashboard.
+ # ──────────────────────────────────────────────────────────── #}
+<div class="feed-embedded" id="dashboard-feed">
+
+    <header class="feed-embedded-head">
+        <div>
+            <h2 class="text-cinzel-display text-lg tracking-wider flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">forum</span>
+                CÓNCLAVE
+            </h2>
+            <p class="text-xs text-[var(--outline-elev)] mt-1">
+                Señales, resultados y decisiones ejecutadas por la hermandad.
+            </p>
+        </div>
+        <a href="/feed" class="feed-embedded-full-link">
+            Ver completo
+            <span class="material-symbols-elev" style="font-size: 0.875rem;">arrow_forward</span>
+        </a>
+    </header>
+
+    {# ─── Composer ─── #}
+    <article class="feed-composer feed-embedded-composer" aria-label="Composer">
+        <textarea id="embedded-composer-text" class="feed-composer-textarea"
+                  placeholder="¿Qué querés compartir con el Cónclave?" maxlength="2000"></textarea>
+        <div class="feed-composer-footer">
+            <div class="feed-composer-chips" id="embedded-composer-chips">
+                <button class="feed-composer-chip" data-cat="general"     type="button">General</button>
+                <button class="feed-composer-chip" data-cat="señales"     type="button">Señales</button>
+                <button class="feed-composer-chip" data-cat="result-win"  type="button">Resultado +</button>
+                <button class="feed-composer-chip" data-cat="result-loss" type="button">Resultado −</button>
+                <button class="feed-composer-chip" data-cat="projection"  type="button">Proyección</button>
+                <button class="feed-composer-chip" data-cat="question"    type="button">Pregunta</button>
+            </div>
+            <button id="embedded-composer-submit" class="feed-composer-submit" disabled>Publicar</button>
+        </div>
+    </article>
+
+    {# ─── Lista de posts ─── #}
+    <div class="feed-list feed-embedded-list" id="embedded-feed-list" aria-live="polite">
+        <div class="feed-loading" id="embedded-feed-loading">Cargando publicaciones...</div>
+    </div>
+
+</div>
+
+<script>
+(function() {
+    'use strict';
+    const root = document.getElementById('dashboard-feed');
+    if (!root) return;
+
+    const FEED_LIMIT = 8; // versión embebida: solo los últimos N posts
+    const state = { activeCat: 'general', category: 'all' };
+    const $list = document.getElementById('embedded-feed-list');
+    const $loading = document.getElementById('embedded-feed-loading');
+    const $text = document.getElementById('embedded-composer-text');
+    const $submit = document.getElementById('embedded-composer-submit');
+    const $chips = document.getElementById('embedded-composer-chips');
+    let _likedIds = new Set();
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+    function relTime(iso) {
+        try {
+            const d = new Date(iso);
+            const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+            if (diff < 60)   return 'hace ' + diff + 's';
+            if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + 'm';
+            if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + 'h';
+            return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
+        } catch (e) { return ''; }
+    }
+    function catLabel(cat) {
+        return ({
+            'general': 'General', 'señales': 'Señal', 'result-win': 'Resultado +',
+            'result-loss': 'Resultado −', 'projection': 'Proyección', 'question': 'Pregunta'
+        })[cat] || cat;
+    }
+    function catClass(cat) {
+        return ({
+            'general': 'cat-general', 'señales': 'cat-signal', 'result-win': 'cat-result-win',
+            'result-loss': 'cat-result-loss', 'projection': 'cat-projection', 'question': 'cat-question'
+        })[cat] || 'cat-general';
+    }
+    function initials(name) {
+        return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    async function loadFeed() {
+        if (!$list) return;
+        $list.innerHTML = '<div class="feed-loading">Cargando publicaciones...</div>';
+        try {
+            const r = await apiFetch(`/api/feed?category=${encodeURIComponent(state.category)}`, { silent: true });
+            if (!r.ok || !r.data || !Array.isArray(r.data)) {
+                if (window.apiEmpty) apiEmpty($list, { icon: 'cloud_off', message: 'Sin datos disponibles' });
+                return;
+            }
+            const me = window.TNSVT_USER ? window.TNSVT_USER.code : '';
+            // truncar a FEED_LIMIT en cliente
+            const posts = r.data.slice(0, FEED_LIMIT);
+            renderFeed(posts, me);
+        } catch (e) {
+            $list.innerHTML = '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">cloud_off</span><p>Sin conexión.</p></div>';
+        }
+    }
+
+    function renderFeed(posts, meCode) {
+        if (posts.length === 0) {
+            $list.innerHTML = `
+                <div class="feed-empty">
+                    <span class="material-symbols-elev feed-empty-icon">forum</span>
+                    <p style="font-size:1rem;color:var(--on-surface-elev);">No hay publicaciones todavía.</p>
+                    <p>Sé el primero en escribir.</p>
+                </div>
+            `;
+            return;
+        }
+
+        $list.innerHTML = posts.map(p => {
+            const cat = p.cat || 'general';
+            const cls = catClass(cat);
+            const sig = p.signal;
+            const sigHtml = sig && typeof sig === 'object' ? `
+                <div class="feed-post-signal">
+                    ${Object.entries(sig).slice(0, 4).map(([k, v]) => `
+                        <div>
+                            <div class="feed-post-signal-field-label">${esc(k.replace(/_/g, ' '))}</div>
+                            <div class="feed-post-signal-field-value gold">${esc(String(v))}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+            const photoHtml = p.photo ? `<img class="feed-post-photo" style="width:auto;height:auto;max-width:100%;max-height:280px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura de ${esc(p.user || 'usuario')}" loading="lazy" decoding="async" />` : '';
+            const comments = Array.isArray(p.comments) ? p.comments : [];
+            const myPost = meCode && p.author_code === meCode;
+            const liked = _likedIds.has(p.id);
+
+            return `
+                <article class="feed-post cat-${esc(cat)}" data-id="${p.id}">
+                    <header class="feed-post-head">
+                        <div class="feed-avatar">${esc(initials(p.author_name))}</div>
+                        <div class="feed-author-block">
+                            <div class="feed-author-name">${esc(p.author_name || 'Anónimo')}</div>
+                            <div class="feed-author-meta">
+                                <span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span>
+                                <span>· ${esc(relTime(p.created_at))}</span>
+                            </div>
+                        </div>
+                    </header>
+                    <div class="feed-post-body">${esc(p.text || '')}</div>
+                    ${sigHtml}
+                    ${photoHtml}
+                    <div class="feed-post-actions">
+                        <button type="button" class="feed-action feed-like-btn ${liked ? 'liked' : ''}" data-id="${p.id}">
+                            <span class="material-symbols-elev" style="font-size:1.05rem;">favorite</span>
+                            <span data-likes-count>${p.likes || 0}</span>
+                        </button>
+                        <button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}">
+                            <span class="material-symbols-elev" style="font-size:1.05rem;">chat_bubble</span>
+                            <span data-comments-count>${comments.length}</span>
+                        </button>
+                    </div>
+                    <div class="feed-comments" data-id="${p.id}" data-collapsed="true">
+                        ${comments.slice(0, 3).map(c => `
+                            <div class="feed-comment">
+                                <div class="feed-comment-avatar">${esc(initials(c.author))}</div>
+                                <div class="feed-comment-body">
+                                    <span class="feed-comment-author">${esc(c.author || '')}</span>
+                                    <span class="feed-comment-text">${esc(c.text || '')}</span>
+                                    <span class="feed-comment-time">${esc(relTime(c.date))}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                        <form class="feed-comment-form" data-id="${p.id}">
+                            <input type="text" class="feed-comment-input" placeholder="Comentá..." maxlength="500" />
+                            <button type="submit" class="feed-comment-submit">Comentar</button>
+                        </form>
+                    </div>
+                </article>
+            `;
+        }).join('');
+
+        // Wire actions
+        $list.querySelectorAll('.feed-like-btn').forEach(b => {
+            b.addEventListener('click', () => likePost(parseInt(b.dataset.id, 10), b));
+        });
+        $list.querySelectorAll('.feed-toggle-comments').forEach(b => {
+            b.addEventListener('click', () => {
+                const id = parseInt(b.dataset.id, 10);
+                const c = $list.querySelector(`.feed-comments[data-id="${id}"]`);
+                if (!c) return;
+                const collapsed = c.getAttribute('data-collapsed') === 'true';
+                c.setAttribute('data-collapsed', collapsed ? 'false' : 'true');
+                b.classList.toggle('active', !collapsed);
+                if (!collapsed) {
+                    const input = c.querySelector('.feed-comment-input');
+                    if (input) input.focus();
+                }
+            });
+        });
+        $list.querySelectorAll('.feed-comment-form').forEach(f => {
+            f.addEventListener('submit', e => {
+                e.preventDefault();
+                const id = parseInt(f.dataset.id, 10);
+                const input = f.querySelector('.feed-comment-input');
+                const text = input.value.trim();
+                if (!text) return;
+                input.disabled = true;
+                apiFetch(`/api/feed/${id}/comment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                }).then(r => {
+                    input.disabled = false;
+                    if (r.ok && r.data && r.data.success) {
+                        input.value = '';
+                        loadFeed();
+                    } else {
+                        if (window.apiToast) apiToast(r.data && r.data.error ? r.data.error : 'Error al comentar', 'error');
+                    }
+                }).catch(() => { input.disabled = false; });
+            });
+        });
+    }
+
+    async function likePost(id, btn) {
+        const liked = btn.classList.contains('liked');
+        const action = liked ? 'unlike' : 'like';
+        const r = await apiFetch(`/api/feed/${id}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action })
+        });
+        if (r.ok && r.data && typeof r.data.likes === 'number') {
+            const countEl = btn.querySelector('[data-likes-count]');
+            countEl.textContent = r.data.likes;
+            btn.classList.toggle('liked');
+            if (!liked) _likedIds.add(id); else _likedIds.delete(id);
+        }
+    }
+
+    // ─── Composer ───
+    function updateSubmitState() {
+        $submit.disabled = !($text.value.trim().length > 0 && state.activeCat);
+    }
+    $text.addEventListener('input', updateSubmitState);
+    $chips.querySelectorAll('.feed-composer-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            $chips.querySelectorAll('.feed-composer-chip').forEach(c => c.classList.toggle('active', c === chip));
+            state.activeCat = chip.dataset.cat;
+            updateSubmitState();
+        });
+    });
+    $chips.querySelector('[data-cat="general"]').classList.add('active');
+
+    $submit.addEventListener('click', async () => {
+        const text = $text.value.trim();
+        if (!text || !state.activeCat) return;
+        $submit.disabled = true;
+        $submit.textContent = 'Publicando...';
+        try {
+            const r = await apiFetch('/api/feed', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, cat: state.activeCat })
+            });
+            if (r.ok && r.data && r.data.success) {
+                $text.value = '';
+                await loadFeed();
+                if (window.apiToast) apiToast('Publicado en el Cónclave', 'success');
+            } else {
+                if (window.apiToast) apiToast(r.data && r.data.error ? r.data.error : 'Error al publicar', 'error');
+            }
+        } finally {
+            $submit.textContent = 'Publicar';
+            updateSubmitState();
+        }
+    });
+
+    // ─── Lifecycle ───
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!document.getElementById('dashboard-feed')) return;
+        loadFeed();
+        setInterval(() => { if (document.getElementById('dashboard-feed')) loadFeed(); }, 60 * 1000);
+    });
+})();
+</script>

@@ -9,6 +9,10 @@ const ICONS = {
     dm: 'chat_bubble',
     academia: 'school',
     task: 'task_alt',
+    task_graded: 'verified',
+    task_overdue: 'warning',
+    task_revision_requested: 'undo',
+    achievement_unlocked: 'emoji_events',
     access_request: 'person_add',
     access_accepted: 'check_circle',
     access_rejected: 'cancel',
@@ -25,6 +29,10 @@ const LINKS = {
     dm: '/chat',
     academia: '/sanctum',
     task: '/sanctum/tasks',
+    task_graded: '/sanctum/tasks',
+    task_overdue: '/sanctum/tasks',
+    task_revision_requested: '/sanctum/tasks',
+    achievement_unlocked: '/sanctum/campus',
     access_request: '/sanctum/social',
     access_accepted: '/sanctum/social',
     access_rejected: '/sanctum/social',
@@ -115,8 +123,11 @@ export default class extends Controller {
 
         const recent = notifs.slice(0, MAX_ITEMS);
         listEl.innerHTML = recent.map((n) => {
-            const icon = ICONS[n.type] || 'notifications';
-            const link = n.link || LINKS[n.type] || '/feed';
+            const icon = ICONS[n.type] || ICONS[n.type?.split('_')[0]] || 'notifications';
+            let link = n.link || LINKS[n.type] || '/feed';
+            // Deep-link task:taskId → /sanctum/tasks/{id}
+            if (link.startsWith('task:')) link = '/sanctum/tasks/' + link.split(':')[1];
+            if (link.startsWith('chat:')) link = '/chat';
             const time = n.ts ? new Date(n.ts).toLocaleString() : '';
             const unreadClass = n.read ? '' : 'notif-popover-item-unread';
             return `<a href="${this.escapeHtml(link)}" class="notif-popover-item ${unreadClass}">

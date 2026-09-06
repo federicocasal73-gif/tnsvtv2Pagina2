@@ -1,0 +1,348 @@
+/*
+ * TNSVT — Onboarding Wizard Styles
+ * Modal first-login con 4 slides, animaciones suaves, accesibilidad.
+ */
+
+/* ═══ Overlay (backdrop) ═══ */
+.onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+
+    background: radial-gradient(ellipse at center,
+        rgba(10, 6, 24, 0.85) 0%,
+        rgba(5, 3, 12, 0.92) 50%,
+        rgba(1, 0, 3, 0.96) 100%);
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+
+    animation: onboardingFadeIn 400ms ease;
+}
+
+.onboarding-overlay[hidden] {
+    display: none;
+}
+
+@keyframes onboardingFadeIn {
+    from { opacity: 0; backdrop-filter: blur(0); }
+    to   { opacity: 1; backdrop-filter: blur(12px) saturate(140%); }
+}
+
+/* ═══ Card ═══ */
+.onboarding-card {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    padding: 3rem 2.5rem 2rem;
+    background: linear-gradient(135deg,
+        rgba(20, 12, 40, 0.95) 0%,
+        rgba(15, 8, 30, 0.95) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 16px;
+    box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(212, 175, 55, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+    animation: onboardingCardIn 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes onboardingCardIn {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ═══ Skip button ═══ */
+.onboarding-skip {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-radius: 999px;
+    color: var(--outline-elev);
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.onboarding-skip:hover {
+    color: var(--gold-elev);
+    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(212, 175, 55, 0.06);
+}
+
+.onboarding-skip:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 2px;
+}
+
+/* ═══ Slides container ═══ */
+.onboarding-slides {
+    position: relative;
+    min-height: 320px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.onboarding-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem 0;
+
+    opacity: 0;
+    transform: translateX(40px);
+    pointer-events: none;
+    transition: opacity 350ms ease, transform 400ms cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.onboarding-slide.active {
+    position: relative;
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.onboarding-slide.exit-left {
+    transform: translateX(-40px);
+    opacity: 0;
+}
+
+/* ═══ Illustration ═══ */
+.onboarding-illustration {
+    margin-bottom: 1rem;
+}
+
+.onboarding-icon {
+    font-size: 4.5rem;
+    color: var(--gold-elev);
+    filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.45));
+    animation: onboardingIconPulse 3s ease-in-out infinite;
+}
+
+@keyframes onboardingIconPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.45)); }
+    50%      { transform: scale(1.05); filter: drop-shadow(0 0 28px rgba(212, 175, 55, 0.65)); }
+}
+
+/* ═══ Text ═══ */
+.onboarding-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+    background: linear-gradient(to right, #fff, var(--gold-bright));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.75rem;
+    line-height: 1.2;
+}
+
+.onboarding-text {
+    color: var(--on-surface-elev);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.onboarding-text strong {
+    color: var(--gold-bright);
+}
+
+/* ═══ List (slides 2 y 3) ═══ */
+.onboarding-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    text-align: left;
+    max-width: 360px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.onboarding-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: var(--on-surface-elev);
+}
+
+.onboarding-list li .material-symbols-elev {
+    font-size: 1.2rem;
+    color: var(--gold-elev);
+}
+
+.onboarding-list li strong {
+    color: var(--gold-bright);
+    margin-right: 4px;
+}
+
+/* ═══ CTA (slide 4) ═══ */
+.onboarding-cta {
+    margin-top: 1.5rem;
+}
+
+.onboarding-cta .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    font-size: 0.88rem;
+}
+
+/* ═══ Footer (dots + nav) ═══ */
+.onboarding-footer {
+    border-top: 1px solid rgba(212, 175, 55, 0.1);
+    padding-top: 1.25rem;
+}
+
+.onboarding-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+}
+
+.onboarding-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(212, 175, 55, 0.2);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.onboarding-dot.active {
+    width: 28px;
+    border-radius: 4px;
+    background: var(--gold-elev);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+}
+
+.onboarding-dot:focus-visible {
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+}
+
+/* ═══ Nav buttons ═══ */
+.onboarding-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.onboarding-btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid;
+}
+
+.onboarding-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.onboarding-btn-secondary {
+    background: transparent;
+    border-color: rgba(212, 175, 55, 0.2);
+    color: var(--outline-elev);
+}
+
+.onboarding-btn-secondary:not(:disabled):hover {
+    color: var(--gold-elev);
+    border-color: rgba(212, 175, 55, 0.5);
+    background: rgba(212, 175, 55, 0.04);
+}
+
+.onboarding-btn-primary {
+    background: var(--gold-elev);
+    border-color: var(--gold-elev);
+    color: #000;
+    font-weight: 700;
+}
+
+.onboarding-btn-primary:hover {
+    background: var(--gold-bright);
+    border-color: var(--gold-bright);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+}
+
+.onboarding-btn:focus-visible {
+    outline: 2px solid var(--gold-bright);
+    outline-offset: 2px;
+}
+
+.onboarding-counter {
+    color: var(--outline-elev);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+}
+
+.onboarding-counter [data-onboarding-counter] {
+    color: var(--gold-elev);
+    font-weight: 700;
+}
+
+/* ═══ Mobile ═══ */
+@media (max-width: 640px) {
+    .onboarding-overlay {
+        padding: 1rem;
+    }
+
+    .onboarding-card {
+        padding: 2.5rem 1.5rem 1.5rem;
+    }
+
+    .onboarding-icon {
+        font-size: 3.5rem;
+    }
+
+    .onboarding-title {
+        font-size: 1.25rem;
+    }
+
+    .onboarding-text {
+        font-size: 0.85rem;
+    }
+
+    .onboarding-btn {
+        padding: 7px 14px;
+        font-size: 0.8rem;
+    }
+}
+
+/* ═══ Reduced motion ═══ */
+@media (prefers-reduced-motion: reduce) {
+    .onboarding-overlay,
+    .onboarding-card,
+    .onboarding-icon,
+    .onboarding-slide {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .onboarding-slide {
+        transform: none !important;
+    }
+}

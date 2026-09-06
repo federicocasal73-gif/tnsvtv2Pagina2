@@ -1,0 +1,94 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}Nueva tarea · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Nueva tarea{% endblock %}
+{% block topbar_subtitle %}Asignar trabajo a un alumno{% endblock %}
+
+{% block content %}
+<div class="tasks-shell" data-controller="tasks"
+     data-tasks-user-code-value="{{ app.user ? app.user.code : '' }}">
+
+    <nav class="campus-breadcrumb" aria-label="Ruta">
+        <a href="/sanctum/tasks" data-action="click->tasks#backToList">← Volver a Tareas</a>
+        <span class="campus-breadcrumb-sep">›</span>
+        <span>Nueva tarea</span>
+    </nav>
+
+    <div class="ui-card ui-card-elevated ui-card-padding-lg task-new-card" data-tasks-target="newFormCard">
+        <header class="ui-card-header">
+            <h2 class="ui-card-title">Crear nueva tarea</h2>
+        </header>
+
+        <form data-action="submit->tasks#onCreate" class="task-new-form" data-tasks-target="newForm">
+            <label class="task-field">
+                <span class="task-field-label">Título *</span>
+                <input type="text" name="title" required maxlength="255" placeholder="Ej: Planificar Risk Management semanal" class="task-field-input" />
+            </label>
+
+            <label class="task-field">
+                <span class="task-field-label">Descripción</span>
+                <textarea name="description" rows="3" maxlength="5000" placeholder="Resumen breve de la tarea" class="task-field-textarea"></textarea>
+            </label>
+
+            <label class="task-field">
+                <span class="task-field-label">Instrucciones</span>
+                <textarea name="instructions" rows="5" placeholder="Pasos, criterios de aceptación, recursos…" class="task-field-textarea"></textarea>
+            </label>
+
+            <div class="task-field-grid">
+                <label class="task-field">
+                    <span class="task-field-label">Asignar a (código de usuario)</span>
+                    <input type="text" name="assigned_to" required placeholder="Ej: ALUMNO01" class="task-field-input" />
+                </label>
+
+                <label class="task-field">
+                    <span class="task-field-label">Prioridad</span>
+                    <select name="priority" class="task-field-input">
+                        <option value="low">Baja</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="high">Alta</option>
+                        <option value="urgent">Urgente</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="task-field-grid">
+                <label class="task-field">
+                    <span class="task-field-label">Tipo</span>
+                    <select name="type" class="task-field-input">
+                        <option value="general">General</option>
+                        <option value="academic">Académica</option>
+                        <option value="personal">Personal</option>
+                    </select>
+                </label>
+
+                <label class="task-field">
+                    <span class="task-field-label">Tiempo estimado (min)</span>
+                    <input type="number" name="estimated_minutes" min="1" placeholder="60" class="task-field-input" />
+                </label>
+            </div>
+
+            <label class="task-field">
+                <span class="task-field-label">Fecha de vencimiento</span>
+                <input type="datetime-local" name="due_date" class="task-field-input" />
+            </label>
+
+            <label class="task-field task-field-checkbox">
+                <input type="checkbox" name="send_notification" checked />
+                <span>Notificar al alumno por email/push</span>
+            </label>
+
+            <footer class="task-new-actions">
+                <a href="/sanctum/tasks" class="ui-btn ui-btn-ghost ui-btn-size-md">Cancelar</a>
+                <button type="submit" class="ui-btn ui-btn-primary ui-btn-size-md">
+                    <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">add_task</span>
+                    <span class="ui-btn-label">Crear tarea</span>
+                </button>
+            </footer>
+        </form>
+    </div>
+</div>
+{% endblock %}

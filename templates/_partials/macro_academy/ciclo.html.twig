@@ -1,0 +1,62 @@
+{# ══════════════════════════════════════════════
+   Macro Academy — Panel 3: Ciclo Mensual (4 capítulos)
+   ══════════════════════════════════════════════ #}
+<div id="mc-ciclo" class="mpanel">
+
+    <div class="mp-header">
+        <div class="mp-title">📅 El Ciclo Mensual</div>
+        <div class="mp-desc">4 capítulos que se repiten cada mes.</div>
+    </div>
+
+    <div class="mc-cycle-wrap">
+        <div class="mc-cycle-tab active" onclick="mcCycle(0)" role="tab" aria-selected="true">
+            <span class="c-num">1</span><div class="c-label">Semana</div><div class="c-phase">La Expectativa</div>
+        </div>
+        <div class="mc-cycle-tab" onclick="mcCycle(1)" role="tab" aria-selected="false">
+            <span class="c-num">1V</span><div class="c-label">Viernes</div><div class="c-phase">El Detonante</div>
+        </div>
+        <div class="mc-cycle-tab" onclick="mcCycle(2)" role="tab" aria-selected="false">
+            <span class="c-num">2-3</span><div class="c-label">Semanas</div><div class="c-phase">La Tendencia</div>
+        </div>
+        <div class="mc-cycle-tab" onclick="mcCycle(3)" role="tab" aria-selected="false">
+            <span class="c-num">4</span><div class="c-label">Semana</div><div class="c-phase">El Juicio</div>
+        </div>
+    </div>
+
+    <div class="mc-cycle-body active" id="mc-cy0">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(255,149,0,0.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">🌅</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--orange-impact);">Capítulo 1: La Expectativa</div><div style="font-size:0.72rem;color:#645a78;">Semana 1 — El mercado se mueve por rumores</div></div>
+        </div>
+        <div class="mc-protocol-step"><div class="mc-event-pill mc-soft">Soft Data</div><div><strong style="font-size:0.85rem;">PMI Manufacturing & Services + ADP</strong><br><span style="color:#a499b8;font-size:0.78rem;line-height:1.6;">Los grandes jugadores se están posicionando basándose en lo que creen que pasará. Si los PMIs son positivos, verás al Dólar subir suavemente.</span></div></div>
+        <div class="mc-trick-box"><span class="mc-trick-label" style="color:var(--orange-impact);">🎯 Tu Misión</span><p><strong>OBSERVAR.</strong> Identificá la intención institucional antes del caos. Buscá divergencias entre monedas para anticipar la dirección del enjambre.</p></div>
+    </div>
+
+    <div class="mc-cycle-body" id="mc-cy1">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(255,59,48,0.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">💥</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--red-impact);">Capítulo 2: El Detonante</div><div style="font-size:0.72rem;color:#645a78;">Primer viernes del mes — La volatilidad explota</div></div>
+        </div>
+        <div class="mc-protocol-step"><div class="mc-event-pill mc-hard">Hard Data</div><div><strong style="font-size:0.85rem;">NFP — Non-Farm Payrolls 💣</strong><br><span style="color:#a499b8;font-size:0.78rem;line-height:1.6;">El primer gran "Reality Check". El precio barre arriba Y abajo en los primeros minutos antes de elegir dirección. El enjambre institucional caza los stops del retail.</span></div></div>
+        <div class="mc-protocol-step" style="background:rgba(197,160,40,0.04);border:1px solid rgba(197,160,40,0.15);border-radius:8px;align-items:flex-start;padding:10px;"><div><strong style="font-size:0.82rem;color:var(--gold-bright);">⚠️ TIP Importante</strong><br><span style="color:#a499b8;font-size:0.78rem;line-height:1.6;">Si el mes comienza un viernes, el NFP puede retrasarse al segundo viernes. Siempre verificá tu calendario económico.</span></div></div>
+        <div class="mc-trick-box" style="background:rgba(255,59,48,0.06);border-color:rgba(255,59,48,0.2);"><span class="mc-trick-label" style="color:var(--red-impact);">🎯 Tu Misión</span><p><strong>ESPERAR.</strong> El NFP barre ambos lados los primeros 15-30 minutos. No seas el primero en entrar. Esperá que el caos se asiente y la dirección real se revele.</p></div>
+    </div>
+
+    <div class="mc-cycle-body" id="mc-cy2">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(52,199,89,0.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">📈</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1.1rem;color:#34c759;">Capítulo 3: La Tendencia</div><div style="font-size:0.72rem;color:#645a78;">Días 10-15 — La verdad sale a la luz</div></div>
+        </div>
+        <div class="mc-protocol-step"><div class="mc-event-pill mc-hard">Hard Data</div><div><strong style="font-size:0.85rem;">CPI — Inflación 🔥 & PPI</strong><br><span style="color:#a499b8;font-size:0.78rem;line-height:1.6;">A diferencia del NFP (errático), el CPI es direccional. Si confirma la tendencia, es el mejor momento para Swing Trading. La tendencia suele durar días.</span></div></div>
+        <div class="mc-trick-box" style="background:rgba(52,199,89,0.06);border-color:rgba(52,199,89,0.2);"><span class="mc-trick-label" style="color:#34c759;">🎯 Tu Misión</span><p><strong>ATACAR.</strong> Si el CPI rompe estructura, agrega posiciones. Es el momento de mayor claridad del mes. El enjambre institucional ya eligió bando.</p></div>
+    </div>
+
+    <div class="mc-cycle-body" id="mc-cy3">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(138,60,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">⚖️</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--violet);">Capítulo 4: El Juicio Final</div><div style="font-size:0.72rem;color:#645a78;">Cierre del mes — Las consecuencias</div></div>
+        </div>
+        <div class="mc-protocol-step"><div class="mc-event-pill mc-critical">Crítico</div><div><strong style="font-size:0.85rem;">FOMC — Tasas de Interés ☢️</strong><br><span style="color:#a499b8;font-size:0.78rem;line-height:1.6;">Cada ~6 semanas. Cuando toca, es el evento más importante del planeta. El algoritmo buscará liquidar cuentas sobre-apalancadas durante la conferencia.</span></div></div>
+        <div class="mc-trick-box" style="background:rgba(138,60,255,0.06);border-color:rgba(138,60,255,0.2);"><span class="mc-trick-label" style="color:var(--violet);">🎯 Tu Misión</span><p><strong>PROTEGER.</strong> Si hay FOMC, cerrá o reducí posiciones antes de las 14:00 NY. Esperá al día siguiente para ver la verdadera intención institucional post-decisión.</p></div>
+    </div>
+</div>

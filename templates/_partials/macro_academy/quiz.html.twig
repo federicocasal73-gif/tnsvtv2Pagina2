@@ -1,0 +1,134 @@
+{# ══════════════════════════════════════════════
+   Macro Academy — Panel 12: Quiz Completo (10 preguntas)
+   Cada .mc-quiz-opt necesita clase "mc-quiz-correct" si es la correcta
+   (detectada por el JS) o ninguna si es incorrecta.
+   ══════════════════════════════════════════════ #}
+<div id="mc-quiz" class="mpanel">
+
+    <div class="mp-header">
+        <div class="mp-label">Macroeconomía TNSVT</div>
+        <div class="mp-title">🎯 Quiz Completo — 10 Preguntas</div>
+        <div class="mp-desc">Evaluación final que cubre todos los módulos: bancos, ciclo, gigantes, dot plot, geopolítica y divergencia.</div>
+    </div>
+
+    <div id="mc-quiz-container">
+
+        <div class="mc-quiz-box" id="mcq1" style="display:block;">
+            <div class="mc-quiz-q">🏦 1/10 — ¿Cuál es el único actor que puede modificar directamente el precio de una divisa en Forex?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q1',this,false)"><div class="mc-quiz-letter">A</div>Hedge Funds como Bridgewater o Renaissance</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q1',this,true)"><div class="mc-quiz-letter">B</div>Los Bancos Centrales</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q1',this,false)"><div class="mc-quiz-letter">C</div>BlackRock, JP Morgan y grandes fondos de inversión</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q1',this,false)"><div class="mc-quiz-letter">D</div>Los traders retail actuando en conjunto</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q1"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq2" style="display:none;">
+            <div class="mc-quiz-q">📊 2/10 — El NFP sale excelente (empleos muy altos) pero el Dólar CAE en los minutos siguientes. ¿Cuál es la razón más probable?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q2',this,false)"><div class="mc-quiz-letter">A</div>Fue un error temporal del mercado que se va a corregir</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q2',this,false)"><div class="mc-quiz-letter">B</div>El CPI salió mal el mismo día y opacó al NFP</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q2',this,true)"><div class="mc-quiz-letter">C</div>Los salarios por hora (Average Hourly Earnings) bajaron — sin presión inflacionaria</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q2',this,false)"><div class="mc-quiz-letter">D</div>La FED subió tasas inesperadamente ese mismo día</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q2"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq3" style="display:none;">
+            <div class="mc-quiz-q">📅 3/10 — Es el día 12 del mes. ¿En qué "capítulo" del ciclo mensual estás y qué evento deberías estar monitoreando?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q3',this,false)"><div class="mc-quiz-letter">A</div>Capítulo 1 (La Expectativa) — esperando PMIs</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q3',this,false)"><div class="mc-quiz-letter">B</div>Capítulo 2 (El Detonante) — preparándome para el NFP</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q3',this,true)"><div class="mc-quiz-letter">C</div>Capítulo 3 (La Tendencia) — zona del CPI/inflación</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q3',this,false)"><div class="mc-quiz-letter">D</div>Capítulo 4 (El Juicio Final) — esperando FOMC</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q3"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq4" style="display:none;">
+            <div class="mc-quiz-q">📍 4/10 — La FED no mueve tasas hoy. Pero el nuevo Dot Plot muestra que la mayoría de miembros proyectan 3 recortes para fin de año. ¿Qué debería pasar con el DXY?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q4',this,false)"><div class="mc-quiz-letter">A</div>Sube — las tasas no bajaron hoy, el dólar sigue siendo atractivo</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q4',this,true)"><div class="mc-quiz-letter">B</div>Baja — el mercado anticipa recortes futuros y empieza a vender dólares ahora</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q4',this,false)"><div class="mc-quiz-letter">C</div>Queda lateral — esperará a que se concreten los recortes</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q4',this,false)"><div class="mc-quiz-letter">D</div>Sube y baja erráticamente sin dirección clara</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q4"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq5" style="display:none;">
+            <div class="mc-quiz-q">🔩 5/10 — El Headline CPI baja (buena noticia), pero el Core CPI sube. ¿Qué postura tomará la FED probablemente?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q5',this,false)"><div class="mc-quiz-letter">A</div>Bajará tasas — el Headline CPI cayó, la inflación está controlada</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q5',this,true)"><div class="mc-quiz-letter">B</div>Se mantendrá agresiva (hawkish) — el Core muestra inflación subyacente aún viva</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q5',this,false)"><div class="mc-quiz-letter">C</div>Ignorará los datos y seguirá el cronograma planeado</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q5',this,false)"><div class="mc-quiz-letter">D</div>Bajará tasas para estimular la economía ante la caída del Headline</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q5"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq6" style="display:none;">
+            <div class="mc-quiz-q">⚔️ 6/10 — Son las 8:29 AM. El NFP sale en 1 minuto. ¿Cuál es tu acción correcta según el protocolo operativo?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q6',this,false)"><div class="mc-quiz-letter">A</div>Entrás inmediatamente cuando salga el número en la dirección del dato</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q6',this,false)"><div class="mc-quiz-letter">B</div>Ponés una orden pendiente buy stop y sell stop para capturar el movimiento</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q6',this,true)"><div class="mc-quiz-letter">C</div>Manos fuera del ratón, cancelás órdenes pendientes y esperás mínimo hasta las 8:45</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q6',this,false)"><div class="mc-quiz-letter">D</div>Abrís posiciones en ambas direcciones para cubrir cualquier movimiento</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q6"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq7" style="display:none;">
+            <div class="mc-quiz-q">🌍 7/10 — Estalla un conflicto armado en Europa Central. En los siguientes 30 minutos, ¿cuál de estos movimientos es el más probable?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q7',this,false)"><div class="mc-quiz-letter">A</div>EUR/USD sube — Europa muestra fortaleza ante el conflicto</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q7',this,false)"><div class="mc-quiz-letter">B</div>AUD/NZD sube — los pares de Oceanía son refugio en conflictos europeos</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q7',this,true)"><div class="mc-quiz-letter">C</div>EUR cae, USD/CHF/JPY/Oro suben — modo Risk Off activo, huida hacia refugios</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q7',this,false)"><div class="mc-quiz-letter">D</div>El mercado no reacciona hasta que la situación se confirme por medios oficiales</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q7"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq8" style="display:none;">
+            <div class="mc-quiz-q">⚡ 8/10 — FED: tasas al 5.25%, hawkish. BCE: tasas al 1.5%, dovish. GDP USA: +3.2%. GDP Europa: -0.8%. ¿Cuál es el sesgo macro correcto?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q8',this,false)"><div class="mc-quiz-letter">A</div>Alcista en EUR/USD — Europa tiene potencial de recuperación</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q8',this,true)"><div class="mc-quiz-letter">B</div>Bajista en EUR/USD — divergencia total: USA fuerte + hawkish vs Europa débil + dovish</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q8',this,false)"><div class="mc-quiz-letter">C</div>Lateral — hay convergencia porque ambas economías tienen inflación</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q8',this,false)"><div class="mc-quiz-letter">D</div>Alcista en EUR/USD — Europa tiene tasas más bajas y eso atrae inversión</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q8"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq9" style="display:none;">
+            <div class="mc-quiz-q">🛢 9/10 — El precio del petróleo sube un 25% en un mes por tensiones en Medio Oriente. ¿Qué par de Forex tiene sesgo macro más claro por esto?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q9',this,false)"><div class="mc-quiz-letter">A</div>EUR/GBP — ambas economías europeas se ven igual de afectadas</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q9',this,false)"><div class="mc-quiz-letter">B</div>AUD/NZD — la correlación con petróleo es indirecta para estas monedas</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q9',this,true)"><div class="mc-quiz-letter">C</div>USD/CAD bajista — petróleo sube → CAD se fortalece (Canadá exporta petróleo)</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q9',this,false)"><div class="mc-quiz-letter">D</div>GBP/USD alcista — el Reino Unido es importador neto de petróleo</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q9"></div>
+        </div>
+
+        <div class="mc-quiz-box" id="mcq10" style="display:none;">
+            <div class="mc-quiz-q">🧠 10/10 — FED y BCE están ambos bajando tasas al mismo ritmo. Los PMIs de ambas regiones están cerca del 50. El CPI de ambas converge en 2.5%. ¿Cuál es tu acción?</div>
+            <div class="mc-quiz-opts">
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q10',this,false)"><div class="mc-quiz-letter">A</div>Comprás EUR/USD fuertemente — la convergencia favorece al Euro</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q10',this,false)"><div class="mc-quiz-letter">B</div>Vendés EUR/USD fuertemente — cuando todo converge el dólar gana</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q10',this,true)"><div class="mc-quiz-letter">C</div>Buscás otro par — esto es convergencia perfecta, EUR/USD estará lateral y destruirá tu ratio</button>
+                <button type="button" class="mc-quiz-opt" onclick="mcAnswer('q10',this,false)"><div class="mc-quiz-letter">D</div>Operás en scalping porque en laterales hay más oportunidades</button>
+            </div>
+            <div class="mc-quiz-fb" id="mcfb-q10"></div>
+        </div>
+    </div>
+
+    <div id="mc-quiz-result" style="display:none;" class="mc-golden-rule" style="margin-top:18px;">
+        <div class="rule-label">🎓 Resultado Final</div>
+        <div class="rule-text" id="mc-result-title">¡Resultado!</div>
+        <p id="mc-result-desc" style="margin-top:10px;color:#645a78;font-size:0.82rem;line-height:1.7;"></p>
+        <div id="mc-result-score" class="text-display" style="margin-top:14px;font-size:2.5rem;color:var(--gold-bright);"></div>
+        <button class="btn-primary" style="margin-top:16px;" onclick="mcResetQuiz()">↺ Reintentar</button>
+    </div>
+</div>

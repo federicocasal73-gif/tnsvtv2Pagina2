@@ -29,7 +29,7 @@ import { Controller } from '@hotwired/stimulus';
  */
 export default class extends Controller {
     static targets = [
-        'toggle', 'toggleIcon', 'badge', 'panel',
+        'toggle', 'toggleIcon', 'badge', 'panel', 'bubbles',
         'search', 'list',
         'convPanel', 'convAvatar', 'convName', 'convStatus',
         'messages', 'input', 'sendBtn',
@@ -56,6 +56,7 @@ export default class extends Controller {
         this.previousUnreadCount = 0;
         this.soundEnabled = this.getSoundPreference();
         this.searchTimer = null;
+        this.dismissedBubbles = new Set();
 
         // Auto-resize del textarea
         if (this.hasInputTarget) {
@@ -372,6 +373,7 @@ export default class extends Controller {
             this.conversations = conversations;
             this.renderList();
             this.updateUnreadBadge();
+            this.renderBubbles();
         } catch (e) {
             console.error('[chat-widget] load error', e);
         }
@@ -400,7 +402,7 @@ export default class extends Controller {
         const lastMsg = conv.last_message || {};
         const initials = (conv.title || conv.other_user_name || '?').slice(0, 2).toUpperCase();
         const isUnread = (conv.unread_count || 0) > 0;
-        const preview = lastMsg.body ? this.escapeHtml(lastMsg.body.slice(0, 50)) : '<em>Sin mensajes</em>';
+        const preview = lastMsg.content ? this.escapeHtml(lastMsg.content.slice(0, 50)) : '<em>Sin mensajes</em>';
         const time = lastMsg.created_at ? this.relativeTime(lastMsg.created_at) : '';
         const avatarBg = conv.other_user_color || 'var(--violet-elev)';
         return `
@@ -455,8 +457,9 @@ export default class extends Controller {
     async loadMessages(convId) {
         try {
             const r = await window.apiFetch(`/api/chat/conversations/${convId}/messages?user_code=${this.getUserCode()}`);
-            if (r.ok && r.data && r.data.success) {
-                this.renderMessages(r.data.messages || []);
+            if (r.ok && r.data) {
+                const msgs = Array.isArray(r.data) ? r.data : (r.data.messages || []);
+                this.renderMessages(msgs);
                 // Scroll al final
                 setTimeout(() => {
                     if (this.hasMessagesTarget) {
@@ -492,7 +495,7 @@ export default class extends Controller {
                     ${!isMe ? `<div class="chat-widget-msg-avatar" style="background: ${avatarBg};">${this.escapeHtml(initials)}</div>` : ''}
                     <div class="chat-widget-msg-body">
                         ${!isMe ? `<div class="chat-widget-msg-name">${this.escapeHtml(m.sender_name || '')}</div>` : ''}
-                        <div class="chat-widget-msg-text">${this.escapeHtml(m.body || '')}</div>
+                        <div class="chat-widget-msg-text">${this.escapeHtml(m.content || '')}</div>
                         <div class="chat-widget-msg-time">${this.relativeTime(m.created_at)}</div>
                     </div>
                 </div>
@@ -509,18 +512,18 @@ export default class extends Controller {
     // ══════ Enviar mensaje ══════
     async send() {
         if (!this.activeConv) return;
-        const body = this.inputTarget.value.trim();
-        if (!body) return;
+        const content = this.inputTarget.value.trim();
+        if (!content) return;
         this.sendBtnTarget.disabled = true;
         try {
             const r = await window.apiFetch(`/api/chat/conversations/${this.activeConv.id}/messages`, {
                 method: 'POST',
                 body: JSON.stringify({
                     user_code: this.getUserCode(),
-                    body: body,
+                    content: content,
                 }),
             });
-            if (r.ok && r.data && r.data.success) {
+            if (r.ok && r.data) {
                 this.inputTarget.value = '';
                 this.autoResize();
                 this.loadMessages(this.activeConv.id);
@@ -579,8 +582,8 @@ export default class extends Controller {
     async loadUsers(q) {
         try {
             const r = await window.apiFetch('/api/chat/users?user_code=' + this.getUserCode() + (q ? '&q=' + encodeURIComponent(q) : ''));
-            if (r.ok && r.data && r.data.success) {
-                this.users = r.data.users || [];
+            if (r.ok && r.data) {
+                this.users = Array.isArray(r.data) ? r.data : (r.data.users || []);
                 this.renderUsers();
             }
         } catch (e) {
@@ -620,13 +623,14 @@ export default class extends Controller {
                 method: 'POST',
                 body: JSON.stringify({
                     user_code: this.getUserCode(),
-                    other_user_code: userCode,
+                    other_code: userCode,
                 }),
             });
-            if (r.ok && r.data && r.data.success) {
+            if (r.ok && r.data) {
+                const conv = r.data.conversation || r.data;
                 this.closeNewDm();
                 await this.loadConversations();
-                this.openConv(r.data.conversation.id);
+                if (conv && conv.id) this.openConv(conv.id);
             }
         } catch (e) {
             console.error('[chat-widget] start DM error', e);
@@ -690,6 +694,40 @@ export default class extends Controller {
                 this.badgeTarget.classList.add('hidden');
             }
         }
+    }
+
+    // ══════ Bubbles (Messenger-style) ══════
+    renderBubbles() {
+        if (!this.hasBubblesTarget) return;
+        // Show up to 3 most relevant conversations as bubbles: unread first, then recent
+        const sorted = [...this.conversations].sort((a,b) => (b.unread_count||0) - (a.unread_count||0) || new Date(b.last_message?.created_at||0) - new Date(a.last_message?.created_at||0));
+        const toShow = sorted.filter(c => !this.dismissedBubbles.has(String(c.id))).slice(0, 3);
+        if (!toShow.length) { this.bubblesTarget.innerHTML = ''; return; }
+        this.bubblesTarget.innerHTML = toShow.map(c => {
+            const initials = (c.title || c.other_user_name || '?').slice(0,2).toUpperCase();
+            const bg = c.other_user_color || 'var(--violet-elev)';
+            const unread = c.unread_count || 0;
+            return `<div class="chat-bubble" data-id="${c.id}" style="background:${bg};" title="${this.escapeHtml(c.title||c.other_user_name)}">
+                ${this.escapeHtml(initials)}
+                ${unread ? `<span class="chat-bubble-badge">${unread>9?'9+':unread}</span>` : ''}
+                <button class="chat-bubble-close" data-close="${c.id}"><span class="material-symbols-elev" style="font-size:10px;">close</span></button>
+            </div>`;
+        }).join('');
+        this.bubblesTarget.querySelectorAll('.chat-bubble').forEach(el => {
+            const id = parseInt(el.dataset.id,10);
+            el.addEventListener('click', (e) => {
+                if (e.target.closest('[data-close]')) return;
+                this.openPanel();
+                this.openConv(id);
+            });
+        });
+        this.bubblesTarget.querySelectorAll('[data-close]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.dismissedBubbles.add(String(btn.dataset.close));
+                this.renderBubbles();
+            });
+        });
     }
 
     // �═════ Helpers ══════

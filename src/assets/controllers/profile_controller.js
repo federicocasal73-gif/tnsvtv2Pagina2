@@ -123,16 +123,18 @@ export default class extends Controller {
             const r = await fetch('/api/journal/stats');
             const data = await r.json();
 
+            const stats = data.stats || data;
+
             const jsTotal = document.getElementById('js-total');
-            if (jsTotal) jsTotal.textContent = data.total || 0;
+            if (jsTotal) jsTotal.textContent = stats.total || 0;
 
             const jsWins = document.getElementById('js-wins');
-            if (jsWins) jsWins.textContent = data.wins || 0;
+            if (jsWins) jsWins.textContent = stats.wins || 0;
 
             const jsWinrate = document.getElementById('js-winrate');
-            if (jsWinrate) jsWinrate.textContent = (data.win_rate || 0) + '%';
+            if (jsWinrate) jsWinrate.textContent = (stats.win_rate || 0) + '%';
 
-            const pnl = parseFloat(data.total_pnl || 0);
+            const pnl = parseFloat(stats.total_pnl || 0);
             const pnlEl = document.getElementById('js-pnl');
             if (pnlEl) {
                 pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);

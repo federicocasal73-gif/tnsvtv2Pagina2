@@ -108,6 +108,73 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   FOCUS VISIBLE — WCAG 2.4.7 (keyboard focus indicator)
+   Global default. Components can override with their own
+   :focus-visible when they need a different style.
+   ═══════════════════════════════════════════════════════════════ */
+:focus {
+    outline: none;
+}
+:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 2px;
+    border-radius: 4px;
+    transition: outline-offset var(--duration-fast) var(--ease-standard);
+}
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 2px;
+}
+/* Darker gold for light theme via [data-theme="light"] override */
+[data-theme="light"] :focus-visible {
+    outline-color: var(--gold-container-elev);
+}
+
+/* Inset focus for elements that already have heavy outlines */
+.material-symbols-elev:focus-visible,
+.icon-only-btn:focus-visible {
+    outline-offset: 4px;
+}
+
+/* Skip link for keyboard users (target a11y.js-driven feature later) */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: var(--space-3);
+    z-index: var(--z-modal-critical);
+    padding: var(--space-2) var(--space-4);
+    background: var(--gold-elev);
+    color: var(--on-primary-elev);
+    border-radius: var(--radius-md);
+    font-family: var(--font-display-elev);
+    font-weight: 600;
+    text-decoration: none;
+    transition: top var(--duration-fast) var(--ease-standard);
+}
+.skip-link:focus-visible {
+    top: var(--space-3);
+}
+
+/* Forced-colors (Windows High Contrast) fallback */
+@media (forced-colors: active) {
+    :focus-visible {
+        outline: 3px solid CanvasText;
+    }
+    .status-pill,
+    .ui-btn,
+    .ui-card {
+        border: 1px solid CanvasText;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    TOUCH TARGETS — WCAG 2.5.5 (44×44 minimum for touch)
    Only applies on coarse pointers (mobile/tablet), so desktop
    button density is not affected.

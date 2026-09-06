@@ -1,38 +1,104 @@
 {% extends 'shell.html.twig' %}
 
+{% import '_partials/components/_macros.html.twig' as ui %}
+{% import '_partials/components/_progress.html.twig' as progress %}
+
 {% block title %}Campus · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}Campus Académico{% endblock %}
 {% block topbar_subtitle %}Formación, lecciones y asignaciones del Reino.{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto" data-controller="campus">
-    {# ─── Dashboard ─── #}
-    <div class="glass-card-elev p-4 mb-4">
-        <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider">Mi Progreso</h3>
-            <span id="campus-progress-pct" class="text-xs text-[var(--outline-elev)]">—</span>
-        </div>
-        <div class="w-full h-2 rounded-full bg-[var(--glass-bg-strong-elev)] overflow-hidden">
-            <div id="campus-progress-bar" class="h-full rounded-full bg-gradient-to-r from-[var(--gold-elev)] to-[var(--gold-bright-elev)] transition-all duration-500" style="width:0%"></div>
-        </div>
-        <div id="campus-stats" class="grid grid-cols-3 gap-3 mt-3">
-            <div class="text-center"><span id="stat-courses" class="block text-lg font-bold text-[var(--on-surface-elev)]">—</span><span class="text-xs text-[var(--outline-elev)]">Cursos</span></div>
-            <div class="text-center"><span id="stat-lessons" class="block text-lg font-bold text-[var(--on-surface-elev)]">—</span><span class="text-xs text-[var(--outline-elev)]">Lecciones</span></div>
-            <div class="text-center"><span id="stat-assignments" class="block text-lg font-bold text-[var(--on-surface-elev)]">—</span><span class="text-xs text-[var(--outline-elev)]">Tareas</span></div>
-        </div>
-    </div>
+<div class="campus-shell" data-controller="campus"
+     data-campus-user-code-value="{{ app.user ? app.user.code : '' }}">
 
-    {# ─── Courses ─── #}
-    <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Cursos Disponibles</h3>
-    <div id="campus-courses" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <p class="text-center text-[var(--outline-elev)] py-8 col-span-2">Cargando cursos...</p>
-    </div>
+    {# ─── Breadcrumb (shared between course & lesson views) ─── #}
+    <nav class="campus-breadcrumb" data-campus-target="breadcrumb" aria-label="Ruta de navegación"></nav>
 
-    {# ─── Assignments ─── #}
-    <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3">Tareas Pendientes</h3>
-    <div id="campus-assignments" class="space-y-3">
-        <p class="text-center text-[var(--outline-elev)] py-8">Cargando tareas...</p>
-    </div>
+    {# ═══════════════════════════════════════════════════════════════
+         DASHBOARD VIEW
+         ═══════════════════════════════════════════════════════════════ #}
+    <section data-campus-target="dashboard">
+
+        {# ─── Continue where I left off ─── #}
+        <div class="campus-continue-card ui-card ui-card-elevated ui-card-padding-lg"
+             data-campus-target="continueCard">
+            <div class="campus-continue-skeleton">
+                <span class="campus-continue-skeleton-icon material-symbols-elev">play_circle</span>
+                <div class="campus-continue-skeleton-text">
+                    <div class="campus-skeleton-line" style="width: 60%"></div>
+                    <div class="campus-skeleton-line" style="width: 40%"></div>
+                </div>
+            </div>
+        </div>
+
+        {# ─── Personal progress widgets (Fase 5) ─── #}
+        {% if app.user %}
+        <section class="campus-progress-widgets" aria-label="Tu progreso personal">
+            <div class="campus-progress-grid">
+                {{ progress.streak_widget() }}
+                {{ progress.heatmap_widget() }}
+            </div>
+            {{ progress.achievements_widget() }}
+        </section>
+        {% endif %}
+
+        {# ─── Hero progress ─── #}
+        <div class="campus-hero glass-card-elev">
+            <div class="campus-hero-header">
+                <div>
+                    <h1 class="campus-hero-title">Tu Progreso de Aprendizaje</h1>
+                    <p class="campus-hero-subtitle">Cursos, módulos y lecciones del Reino.</p>
+                </div>
+                <div class="campus-hero-icon">
+                    <span class="material-symbols-elev text-5xl text-[var(--gold-elev)]">school</span>
+                </div>
+            </div>
+            <div class="campus-hero-progress">
+                {{ ui.progress_bar(0, 'Progreso general', 'lg', 'gold') }}
+            </div>
+            <div class="campus-hero-stats">
+                <div class="campus-hero-stat">
+                    <span class="campus-hero-stat-value" data-campus-target="statCourses">—</span>
+                    <span class="campus-hero-stat-label">Cursos</span>
+                </div>
+                <div class="campus-hero-stat">
+                    <span class="campus-hero-stat-value" data-campus-target="statLessons">—</span>
+                    <span class="campus-hero-stat-label">Lecciones</span>
+                </div>
+                <div class="campus-hero-stat">
+                    <span class="campus-hero-stat-value" data-campus-target="statAssignments">—</span>
+                    <span class="campus-hero-stat-label">Tareas pendientes</span>
+                </div>
+            </div>
+        </div>
+
+        {# ─── Courses grid ─── #}
+        <section class="campus-section">
+            <header class="campus-section-header">
+                <h2 class="campus-section-title">
+                    <span class="material-symbols-elev text-[var(--gold-elev)]">library_books</span>
+                    Cursos Disponibles
+                </h2>
+            </header>
+            <div class="campus-courses-grid" data-campus-target="coursesGrid">
+                {% include '_partials/loading_state.html.twig' with {
+                    icon: 'progress_activity',
+                    message: 'Cargando cursos...',
+                    size: 'md'
+                } only %}
+            </div>
+        </section>
+    </section>
+
+    {# ═══════════════════════════════════════════════════════════════
+         COURSE DETAIL VIEW
+         ═══════════════════════════════════════════════════════════════ #}
+    <section data-campus-target="courseDetail" hidden></section>
+
+    {# ═══════════════════════════════════════════════════════════════
+         LESSON VIEW
+         ═══════════════════════════════════════════════════════════════ #}
+    <section data-campus-target="lessonView" hidden></section>
 </div>
 {% endblock %}

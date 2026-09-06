@@ -10,6 +10,7 @@ use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Service\ImageValidationService;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -29,6 +30,7 @@ class ChatController extends AbstractController
         private MessageRepository $messageRepository,
         private UserRepository $userRepository,
         private ImageValidationService $imageValidation,
+        private NotificationService $notifier,
     ) {
         $this->avatarDir = dirname(__DIR__, 3) . '/public/uploads/avatars';
     }
@@ -150,8 +152,8 @@ class ChatController extends AbstractController
                     if (str_contains($name, $qLower)) return true;
                 }
                 $lastMsg = $r['lastMessage'];
-                if ($lastMsg && $lastMsg->getBody()) {
-                    if (str_contains(mb_strtolower($lastMsg->getBody()), $qLower)) return true;
+                if ($lastMsg && $lastMsg->getContent()) {
+                    if (str_contains(mb_strtolower($lastMsg->getContent()), $qLower)) return true;
                 }
                 return false;
             });
@@ -249,12 +251,12 @@ class ChatController extends AbstractController
                 if ($other && $other->getId() !== $me->getId()) {
                     $preview = $content !== '' ? mb_substr($content, 0, 80)
                         : (!empty($attachment) ? '📎 ' . ($attachment['name'] ?? 'Archivo') : '📷 Foto');
-                    $this->pushService->notify(
+                    $this->notifier->notify(
                         $other,
                         'dm',
                         sprintf('%s: %s', $me->getName(), $preview),
                         ['conversation_id' => (string) $conv->getId(), 'sender_code' => (string) $me->getCode()],
-                        link: 'chat:' . $conv->getId()
+                        'chat:' . $conv->getId()
                     );
                 }
             }
@@ -369,12 +371,13 @@ class ChatController extends AbstractController
         foreach ($conv->getParticipants() as $p) {
             $other = $p->getUser();
             if ($other && $other->getId() !== $me->getId()) {
-                $this->pushService->notify(
+                $this->notifier->notify(
                     $other,
                     'typing',
                     sprintf('%s está escribiendo…', $me->getName()),
                     ['conversation_id' => (string) $conv->getId(), 'sender_code' => (string) $me->getCode()],
-                    link: 'chat:' . $conv->getId()
+                    'chat:' . $conv->getId(),
+                    false
                 );
             }
         }
@@ -388,7 +391,17 @@ class ChatController extends AbstractController
         $me = $this->resolveUser($request);
         if (!$me) return $this->json(['error' => 'user_code requerido'], 400);
 
+        $q = trim($request->query->get('q', ''));
         $users = $this->userRepository->findBy(['active' => true], ['name' => 'ASC']);
+        if ($q !== '') {
+            $qLower = mb_strtolower($q);
+            $users = array_filter($users, function (User $u) use ($qLower) {
+                $name = mb_strtolower($u->getName() ?? '');
+                $code = mb_strtolower($u->getCode() ?? '');
+                return str_contains($name, $qLower) || str_contains($code, $qLower);
+            });
+            $users = array_values($users);
+        }
         $data = array_map(function (User $u) use ($me) {
             return [
                 'code' => $u->getCode(),

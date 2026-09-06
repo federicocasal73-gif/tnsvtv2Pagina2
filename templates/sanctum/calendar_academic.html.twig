@@ -85,15 +85,15 @@
 
 </div>
 
-<div class="academic-modal-overlay" id="academic-modal" role="dialog" aria-modal="true" aria-labelledby="academic-modal-title">
-    <div class="academic-modal">
-        <div class="academic-modal-header">
-            <h3 id="academic-modal-title" class="academic-modal-title">Solicitar Clase 1:1</h3>
-            <button type="button" class="academic-modal-close" id="academic-modal-close" aria-label="Cerrar">
+<div class="tnsvt-modal-overlay" id="academic-modal" role="dialog" aria-modal="true" aria-labelledby="academic-modal-title" hidden>
+    <div class="tnsvt-modal tnsvt-modal--wide">
+        <div class="tnsvt-modal__header">
+            <h3 id="academic-modal-title" class="tnsvt-modal__title">Solicitar Clase 1:1</h3>
+            <button type="button" class="tnsvt-modal__close" id="academic-modal-close" aria-label="Cerrar">
                 <span class="material-symbols-elev">close</span>
             </button>
         </div>
-        <div class="academic-modal-body">
+        <div class="tnsvt-modal__body">
             <div id="academic-modal-msg" class="academic-modal-msg"></div>
 
             <div class="academic-form-group">
@@ -122,9 +122,9 @@
                 <textarea id="modal-notes" class="academic-form-input academic-form-textarea" placeholder="Puntos a tratar..."></textarea>
             </div>
 
-            <div class="academic-modal-actions">
-                <button type="button" class="academic-modal-btn ghost" id="academic-modal-cancel">Cancelar</button>
-                <button type="button" class="academic-modal-btn primary" id="academic-modal-submit">
+            <div class="tnsvt-modal__footer">
+                <button type="button" class="btn-secondary" id="academic-modal-cancel">Cancelar</button>
+                <button type="button" class="btn-primary" id="academic-modal-submit">
                     <span class="material-symbols-elev" style="font-size:1rem;">send</span>
                     Enviar solicitud
                 </button>

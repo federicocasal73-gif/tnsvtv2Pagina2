@@ -1,0 +1,106 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Macro Academy · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Macro Academy{% endblock %}
+{% block topbar_subtitle %}Macroeconomía Avanzada · Hilos del Mundo{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/components/macro-academy.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+
+    {# ══════ HEADER ══════ #}
+    <header class="mb-6 text-center">
+        <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-2">Academia Macro</p>
+        <h1 class="font-headline-xl text-headline-xl shimmer-text">Macroeconomía Avanzada</h1>
+        <p class="mt-2 text-sm text-[var(--outline-elev)] max-w-2xl mx-auto">
+            12 módulos para entender por qué se mueven las divisas. Bancos centrales, política monetaria,
+            geopolítica, carry trade y el arma secreta: el Dot Plot de la FED.
+        </p>
+    </header>
+
+    {# ══════ NAV BAR ══════ #}
+    <nav class="macro-academy-nav" id="macro-academy-tabs" role="tablist" aria-label="Módulos Macro Academy">
+        <button type="button" class="macro-navbtn active" data-panel="mc-bancos"        role="tab" aria-selected="true">🏛 Bancos</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-datos"        role="tab" aria-selected="false">📊 Soft/Hard</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-ciclo"         role="tab" aria-selected="false">📅 Ciclo</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-gigantes"      role="tab" aria-selected="false">💣 Gigantes</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-dotplot"       role="tab" aria-selected="false">📍 Dot Plot</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-geo"           role="tab" aria-selected="false">🌍 Geopolítica</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-divergencia"   role="tab" aria-selected="false">⚡ Divergencia</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-carry"         role="tab" aria-selected="false">💱 Carry Trade</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-curva"         role="tab" aria-selected="false">📐 Curva Yields</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-cicloeco"      role="tab" aria-selected="false">🔄 Ciclo Económico</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-herramientas"  role="tab" aria-selected="false">🔧 Tools</button>
+        <button type="button" class="macro-navbtn"        data-panel="mc-quiz"          role="tab" aria-selected="false">🎯 Quiz</button>
+    </nav>
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 1: BANCOS CENTRALES + Slider Carlitos
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/bancos.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 2: SOFT/HARD DATA
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/datos.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 3: CICLO MENSUAL (4 capítulos)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/ciclo.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 4: LOS GIGANTES (NFP, CPI, PCE, PMI, FOMC)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/gigantes.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 5: DOT PLOT (FOMC)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/dotplot.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 6: GEOPOLÍTICA (5 triggers + 5 quizzes)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/geo.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 7: DIVERGENCIA & CONVERGENCIA (3 escenarios)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/divergencia.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 8: CARRY TRADE (mecánica + 2 quizzes)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/carry.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 9: CURVA DE RENDIMIENTOS (3 estados + 2 quizzes)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/curva.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 10: CICLO ECONÓMICO (4 fases + 3 quizzes)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/cicloeco.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 11: HERRAMIENTAS (3 tools)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/herramientas.html.twig' %}
+
+    {# ════════════════════════════════════════════════════════════════════════
+       PANEL 12: QUIZ COMPLETO (10 preguntas)
+       ════════════════════════════════════════════════════════════════════════ #}
+    {% include '_partials/macro_academy/quiz.html.twig' %}
+
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ importmap('macro_academy') }}
+{% endblock %}

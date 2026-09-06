@@ -1,0 +1,118 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}Editar lección · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Editar lección{% endblock %}
+{% block topbar_subtitle %}Video, materiales y configuración{% endblock %}
+
+{% block content %}
+<div class="campus-admin-shell" data-controller="campus-admin-lesson"
+     data-campus-admin-lesson-token-value="{{ app.user ? app.user.code : '' }}"
+     data-campus-admin-lesson-course-id-value="{{ course_id }}"
+     data-campus-admin-lesson-lesson-id-value="{{ lesson_id }}">
+
+    <nav class="campus-breadcrumb" aria-label="Ruta">
+        <a href="{{ path('sanctum_campus_admin_course_edit', {id: course_id}) }}" data-action="click->campus-admin-lesson#back">← Volver al curso</a>
+        <span class="campus-breadcrumb-sep">›</span>
+        <span id="lesson-crumb-title">Lección</span>
+    </nav>
+
+    <div class="campus-admin-edit-grid">
+        {# ─── Left column: lesson form + materials ─── #}
+        <div class="campus-admin-edit-main">
+            <div class="ui-card ui-card-elevated ui-card-padding-lg">
+                <header class="ui-card-header">
+                    <h2 class="ui-card-title">Información de la lección</h2>
+                </header>
+                <form class="campus-admin-form" data-action="submit->campus-admin-lesson#saveLesson">
+                    <label class="task-field">
+                        <span class="task-field-label">Título *</span>
+                        <input type="text" name="title" required maxlength="255"
+                               placeholder="Ej: Introducción al Risk Management"
+                               data-campus-admin-lesson-target="lessonTitle"
+                               class="task-field-input" />
+                    </label>
+                    <label class="task-field">
+                        <span class="task-field-label">Descripción</span>
+                        <textarea name="description" rows="2"
+                                  placeholder="Resumen breve del contenido"
+                                  data-campus-admin-lesson-target="lessonDescription"
+                                  class="task-field-textarea"></textarea>
+                    </label>
+                    <label class="task-field">
+                        <span class="task-field-label">URL del video</span>
+                        <input type="url" name="video_url"
+                               placeholder="https://youtube.com/watch?v=… o https://vimeo.com/…"
+                               data-campus-admin-lesson-target="lessonVideo"
+                               data-action="blur->campus-admin-lesson#detectVideo"
+                               class="task-field-input" />
+                        <small class="campus-admin-hint" data-campus-admin-lesson-target="videoHint">
+                            YouTube, Vimeo o archivo .mp4 directo
+                        </small>
+                    </label>
+                    <div class="campus-form-grid">
+                        <label class="task-field">
+                            <span class="task-field-label">Orden</span>
+                            <input type="number" name="orden" min="0" value="0"
+                                   data-campus-admin-lesson-target="lessonOrden"
+                                   class="task-field-input" />
+                        </label>
+                    </div>
+                    <footer class="campus-form-actions">
+                        <button type="button" class="ui-btn ui-btn-danger ui-btn-size-md"
+                                data-action="click->campus-admin-lesson#deleteLesson"
+                                data-campus-admin-lesson-target="deleteBtn">
+                            <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">delete</span>
+                            Eliminar
+                        </button>
+                        <div class="campus-form-actions-right">
+                            <a href="{{ path('sanctum_campus_admin_course_edit', {id: course_id}) }}" class="ui-btn ui-btn-ghost ui-btn-size-md">Cancelar</a>
+                            <button type="submit" class="ui-btn ui-btn-primary ui-btn-size-md">
+                                <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">save</span>
+                                Guardar lección
+                            </button>
+                        </div>
+                    </footer>
+                </form>
+            </div>
+
+            {# Materials #}
+            <div class="ui-card ui-card-elevated ui-card-padding-lg"
+                 data-campus-admin-lesson-target="materialsCard">
+                <header class="ui-card-header">
+                    <h2 class="ui-card-title">Materiales</h2>
+                    <button type="button" class="ui-btn ui-btn-secondary ui-btn-size-sm"
+                            data-action="click->campus-admin-lesson#addMaterial">
+                        <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">attach_file</span>
+                        Añadir material
+                    </button>
+                </header>
+                <div class="campus-admin-materials" data-campus-admin-lesson-target="materialsList">
+                    {% include '_partials/loading_state.html.twig' with {
+                        icon: 'progress_activity',
+                        message: 'Cargando materiales…',
+                        size: 'sm'
+                    } only %}
+                </div>
+            </div>
+        </div>
+
+        {# ─── Right column: video preview ─── #}
+        <aside class="campus-admin-edit-sidebar">
+            <div class="ui-card ui-card-elevated ui-card-padding-md">
+                <header class="ui-card-header">
+                    <h2 class="ui-card-title">Vista previa del video</h2>
+                </header>
+                <div class="campus-admin-video-preview" data-campus-admin-lesson-target="videoPreview">
+                    <div class="campus-admin-video-placeholder">
+                        <span class="material-symbols-elev">play_circle</span>
+                        <p>Pega una URL de video para ver la vista previa</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{# ══════════════════════════════════════════════
+   Macro Academy — Panel 8: Carry Trade
+   ══════════════════════════════════════════════ #}
+<div id="mc-carry" class="mpanel">
+
+    <div class="mp-header">
+        <div class="mp-label">Macroeconomía TNSVT</div>
+        <div class="mp-title">💱 Carry Trade</div>
+        <div class="mp-desc">La estrategia favorita de los bancos. Pedís prestado barato en un país y prestás caro en otro. El diferencial de tasas es tu ganancia — y la causa de tendencias de meses.</div>
+    </div>
+
+    <div class="manuscript-quote">"El Carry Trade no es una estrategia de trading — es una fuerza estructural que mueve billones de dólares durante meses. Cuando se arma, genera tendencias brutales. Cuando se deshace, genera colapsos igual de brutales."</div>
+
+    <div class="mc-golden-rule">
+        <div class="rule-label">⚙️ La Mecánica</div>
+        <div class="rule-text">Pedís prestado en la moneda de <em>tasas bajas</em> → invertís en la moneda de <em>tasas altas</em> → ganás el diferencial todos los días que mantenés la posición</div>
+    </div>
+
+    <div style="background:rgba(9,5,18,0.8);border:1px solid rgba(212,175,55,0.2);border-radius:12px;padding:20px;margin:14px 0;">
+        <div class="mc-card-title" style="margin-bottom:14px;">📖 Ejemplo Real — USD/JPY Carry Trade</div>
+        <div class="mc-protocol-step">
+            <div class="mc-step-num">1</div>
+            <div class="mc-step-text"><strong>Pedís prestado JPY</strong> al 0.1% anual (Japón tiene tasas casi en cero desde hace décadas)</div>
+        </div>
+        <div class="mc-protocol-step">
+            <div class="mc-step-num">2</div>
+            <div class="mc-step-text"><strong>Convertís los JPY a USD</strong> → comprás bonos del Tesoro americano que rinden 5.25% anual</div>
+        </div>
+        <div class="mc-protocol-step">
+            <div class="mc-step-num">3</div>
+            <div class="mc-step-text"><strong>Tu ganancia neta:</strong> 5.25% - 0.1% = <span style="color:#34c759;font-weight:700;">+5.15% anual</span> sin hacer nada, solo mantener la posición</div>
+        </div>
+        <div class="mc-protocol-step">
+            <div class="mc-step-num">4</div>
+            <div class="mc-step-text"><strong>El efecto en Forex:</strong> Millones de traders institucionales hacen esto simultáneamente → compran USD masivamente → USD/JPY sube durante meses</div>
+        </div>
+        <div style="background:rgba(52,199,89,0.08);border:1px solid rgba(52,199,89,0.2);border-radius:8px;padding:12px;margin-top:8px;">
+            <div style="font-family:'Orbitron',sans-serif;font-size:0.6rem;color:#34c759;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Resultado histórico</div>
+            <p style="font-size:0.8rem;line-height:1.6;">Entre 2021 y 2022 el USD/JPY subió de 103 a 152 — 49 figuras en 18 meses — impulsado principalmente por el diferencial de tasas FED vs BoJ. El carry trade más rentable de la última década.</p>
+        </div>
+    </div>
+
+    <div class="mc-grid2" style="margin:14px 0;">
+        <div class="mc-card" style="border-left:3px solid var(--red-impact);">
+            <div class="mc-card-title" style="color:var(--red-impact);">🏦 Monedas de Financiación</div>
+            <p class="mc-card-text" style="margin-bottom:10px;">Las que pedís prestado. Tasas ultra-bajas. Cuando el carry se deshace, <em>estas monedas suben violentamente</em> (los traders devuelven el préstamo comprando de vuelta).</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                <span class="mc-tag mc-tag-gold">JPY 🇯🇵 ~0%</span>
+                <span class="mc-tag mc-tag-gold">CHF 🇨🇭 ~0%</span>
+                <span class="mc-tag mc-tag-violet">EUR 🇪🇺 (históricamente)</span>
+            </div>
+        </div>
+        <div class="mc-card" style="border-left:3px solid #34c759;">
+            <div class="mc-card-title" style="color:#34c759;">🎯 Monedas de Destino</div>
+            <p class="mc-card-text" style="margin-bottom:10px;">Las que comprás. Tasas altas. Cuando el carry se arma, <em>estas monedas suben durante meses</em> por la demanda institucional constante.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;">
+                <span class="mc-tag mc-tag-green">AUD 🇦🇺 ~4%</span>
+                <span class="mc-tag mc-tag-green">NZD 🇳🇿 ~5%</span>
+                <span class="mc-tag mc-tag-green">MXN 🇲🇽 ~11%</span>
+                <span class="mc-tag mc-tag-gold">USD 🇺🇸 (cuando sube tasas)</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="background:rgba(255,59,48,0.06);border:1px solid rgba(255,59,48,0.25);border-radius:12px;padding:18px;margin:14px 0;">
+        <div class="mc-card-title" style="color:var(--red-impact);margin-bottom:10px;">💥 El Carry Unwinding — La Trampa Mortal</div>
+        <p style="font-size:0.8rem;line-height:1.6;color:#a499b8;margin-bottom:12px;">Cuando algo asusta al mercado (crisis, guerra, datos malos), todos quieren cerrar sus carry trades al mismo tiempo. El resultado es catastrófico y rápido.</p>
+        <div class="mc-protocol-step">
+            <div class="mc-step-num" style="background:rgba(255,59,48,0.1);border-color:rgba(255,59,48,0.3);color:var(--red-impact);">!</div>
+            <div class="mc-step-text">Todos cierran posiciones a la vez → venden USD masivamente → compran JPY para devolver el préstamo → <strong style="color:var(--red-impact);">USD/JPY cae 500-1000 pips en días</strong></div>
+        </div>
+        <div class="mc-trick-box" style="background:rgba(255,59,48,0.06);border-color:rgba(255,59,48,0.2);margin-top:10px;">
+            <span class="mc-trick-label" style="color:var(--red-impact);">🌍 Ejemplo Real — Agosto 2024</span>
+            <p>El Banco de Japón subió tasas inesperadamente → el carry trade de JPY se deshizo en 3 días → USD/JPY cayó de 161 a 141 (20 figuras) → el Nikkei (bolsa japonesa) perdió 12% en un día → pánico global. Eso es el carry unwinding.</p>
+        </div>
+    </div>
+
+    <div style="background:rgba(9,5,18,0.7);border:1px solid rgba(212,175,55,0.15);border-radius:12px;padding:18px;margin:14px 0;">
+        <div class="mc-card-title" style="margin-bottom:12px;">🔍 Señales de que el Carry se está Armando</div>
+        <div class="mc-data-row"><span class="mc-data-label">Diferencial de tasas ampliándose</span><span class="mc-data-val up">✅ Carry se ARMA → moneda destino sube</span></div>
+        <div class="mc-data-row"><span class="mc-data-label">VIX (índice de miedo) bajo</span><span class="mc-data-val up">✅ Entorno Risk On → carry funciona</span></div>
+        <div class="mc-data-row"><span class="mc-data-label">Diferencial de tasas reduciéndose</span><span class="mc-data-val down">⚠️ Carry se DESHACE → moneda destino cae</span></div>
+        <div class="mc-data-row"><span class="mc-data-label">VIX disparándose</span><span class="mc-data-val down">🚨 Unwinding inminente — salí de posiciones de riesgo</span></div>
+    </div>
+
+    <div class="mc-task-box">
+        <div class="mc-task-title">✍️ Tarea — Identificá el Carry Trade Activo</div>
+        <div class="mc-task-sub">Esta semana, antes de operar cualquier par, completá estos pasos:</div>
+        <div class="mc-protocol-step"><div class="mc-step-num">1</div><div class="mc-step-text">Buscá en TradingEconomics.com las tasas actuales de JPY, AUD, NZD y USD. Calculá los 2 diferenciales más grandes.</div></div>
+        <div class="mc-protocol-step"><div class="mc-step-num">2</div><div class="mc-step-text">Buscá el VIX en TradingView. ¿Está por debajo de 20 (calma) o por encima de 25 (miedo)? Si está alto, el carry está en riesgo.</div></div>
+        <div class="mc-protocol-step"><div class="mc-step-num">3</div><div class="mc-step-text">Si el diferencial es grande y el VIX está bajo → el carry favorece comprar la moneda de mayor tasa. Usá ese sesgo para filtrar tus entradas técnicas.</div></div>
+    </div>
+
+    <div style="background:rgba(9,5,18,0.8);border:1px solid rgba(197,160,40,0.2);border-radius:12px;padding:18px;margin-top:14px;">
+        <div class="mc-card-title" style="margin-bottom:14px;">🎯 Mini-Quiz — Carry Trade</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
+                <p style="font-size:0.82rem;margin-bottom:10px;"><strong>1.</strong> El BoJ sube tasas de 0% a 1%. Los carry traders tenían posiciones largas en AUD/JPY (comprando AUD, vendiendo JPY). ¿Qué pasa con AUD/JPY?</p>
+                <div style="display:flex;flex-direction:column;gap:6px;" id="ct-q1-opts">
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q1','A',false,'ct-q1-fb')"><div class="mc-quiz-letter">A</div> Sube — Japón subió tasas, el JPY es más atractivo para invertir</button>
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q1','B',true,'ct-q1-fb')"><div class="mc-quiz-letter">B</div> Cae — el carry se deshace, todos venden AUD y compran JPY para cerrar posiciones</button>
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q1','C',false,'ct-q1-fb')"><div class="mc-quiz-letter">C</div> No hay efecto, una subida pequeña no cambia el carry</button>
+                </div>
+                <div class="mc-quiz-fb" id="ct-q1-fb" style="margin-top:8px;"></div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
+                <p style="font-size:0.82rem;margin-bottom:10px;"><strong>2.</strong> El VIX está en 35 (pánico extremo). ¿Qué moneda esperarías que suba con fuerza?</p>
+                <div style="display:flex;flex-direction:column;gap:6px;" id="ct-q2-opts">
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q2','A',false,'ct-q2-fb')"><div class="mc-quiz-letter">A</div> AUD — los inversores buscan rendimiento</button>
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q2','B',false,'ct-q2-fb')"><div class="mc-quiz-letter">B</div> MXN — tasa alta, atractivo</button>
+                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q2','C',true,'ct-q2-fb')"><div class="mc-quiz-letter">C</div> JPY — carry unwinding, todos devuelven el préstamo en JPY</button>
+                </div>
+                <div class="mc-quiz-fb" id="ct-q2-fb" style="margin-top:8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>

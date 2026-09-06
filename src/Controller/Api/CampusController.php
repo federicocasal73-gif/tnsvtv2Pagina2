@@ -20,7 +20,9 @@ use App\Repository\CampusSubmissionRepository;
 use App\Repository\UserRepository;
 use App\Security\AdminAuthTrait;
 use App\Security\RateLimiterTrait;
+use App\Service\AchievementService;
 use App\Service\CampusStorage;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -45,6 +47,8 @@ class CampusController extends AbstractController
         private CampusLessonProgressRepository $progressRepo,
         private UserRepository $userRepository,
         private CampusStorage $storage,
+        private AchievementService $achievementService,
+        private NotificationService $notifier,
     ) {}
 
     /**
@@ -111,9 +115,11 @@ class CampusController extends AbstractController
     public function courses(Request $request): JsonResponse
     {
         $courses = $this->courseRepo->findAllOrdered();
+        $me = $this->getCurrentUser($request);
+        $userCode = $me?->getCode();
 
-        $data = array_map(function (CampusCourse $c) {
-            return [
+        $data = array_map(function (CampusCourse $c) use ($userCode) {
+            $entry = [
                 'id' => $c->getId(),
                 'title' => $c->getTitle(),
                 'emoji' => $c->getEmoji(),
@@ -121,6 +127,29 @@ class CampusController extends AbstractController
                 'thumbnail' => $c->getThumbnail(),
                 'orden' => $c->getOrden(),
             ];
+
+            if ($userCode) {
+                $totalLessons = 0;
+                $completedLessons = 0;
+                $modules = $this->moduleRepo->findByCourse($c->getId());
+                foreach ($modules as $module) {
+                    $lessons = $this->lessonRepo->findByModule($module->getId());
+                    $totalLessons += count($lessons);
+                    foreach ($lessons as $lesson) {
+                        $progress = $this->progressRepo->findByLesson($lesson->getId(), $userCode);
+                        if ($progress && $progress->isCompleted()) $completedLessons++;
+                    }
+                }
+                $entry['total_lessons'] = $totalLessons;
+                $entry['completed_lessons'] = $completedLessons;
+                $entry['progress'] = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
+            } else {
+                $entry['total_lessons'] = 0;
+                $entry['completed_lessons'] = 0;
+                $entry['progress'] = 0;
+            }
+
+            return $entry;
         }, $courses);
 
         return $this->json($data);
@@ -264,8 +293,38 @@ class CampusController extends AbstractController
             $this->em->persist($progress);
         }
 
+        $wasAlreadyCompleted = $progress->isCompleted() && $progress->getCompletedAt() !== null;
         $progress->markCompleted();
         $this->em->flush();
+
+        // Hooks: achievement unlock + feed entry (only on first completion)
+        if (!$wasAlreadyCompleted) {
+            try {
+                $newly = $this->achievementService->evaluateFor($me->getCode());
+                foreach ($newly as $ua) {
+                    $ach = $ua->getAchievement();
+                    $this->notifier->notify(
+                        $me,
+                        'achievement_unlocked',
+                        sprintf('¡Logro desbloqueado: %s (+%d pts)!', $ach->getTitle(), $ach->getPoints()),
+                        ['achievement_slug' => $ach->getSlug(), 'lesson_id' => (string) $lesson->getId()],
+                        '/campus?lesson=' . $lesson->getId(),
+                        true
+                    );
+                }
+            } catch (\Throwable $e) {
+                // best-effort
+            }
+            // Lightweight feed entry for lesson completion
+            try {
+                $feed = new \App\Entity\FeedPost();
+                $feed->setAuthor($me);
+                $feed->setContent(sprintf('Completó la lección "%s" en %s', $lesson->getTitle(), $lesson->getModule()?->getCourse()?->getTitle() ?? 'Campus'));
+                $feed->setCategory('achievement');
+                $this->em->persist($feed);
+                $this->em->flush();
+            } catch (\Throwable) {}
+        }
 
         return $this->json(['success' => true, 'completed' => true]);
     }
@@ -712,6 +771,182 @@ class CampusController extends AbstractController
                 'comment' => $feedback->getComment(),
                 'graded_at' => $feedback->getGradedAt()->format('c'),
             ] : null,
+        ];
+    }
+
+    /**
+     * GET /api/campus/continue — next lesson the user should study.
+     *
+     * Logic:
+     *  1. Find the most recently completed lesson (lastCompleted).
+     *  2. Return the next incomplete lesson in the same course/module,
+     *     OR the first incomplete lesson of the next course if the user
+     *     finished their current one.
+     *  3. If no lesson has been completed yet, return the first lesson of
+     *     the first active course.
+     *  4. If everything is complete, return null and let the UI show a
+     *     celebratory empty state.
+     */
+    #[Route('/continue', name: 'campus_continue', methods: ['GET'])]
+    public function continueLearning(Request $request): JsonResponse
+    {
+        $me = $this->getCurrentUser($request);
+        if (!$me) return $this->json(['error' => 'Unauthorized'], 401);
+        $userCode = $me->getCode();
+
+        $conn = $this->em->getConnection();
+
+        // Find the lesson completed most recently
+        $lastCompletedId = $conn->fetchOne(
+            'SELECT p.lesson_id FROM campus_lesson_progress p
+             WHERE p.user_code = :userCode AND p.completed = 1
+             ORDER BY p.completed_at DESC LIMIT 1',
+            ['userCode' => $userCode]
+        );
+
+        // 1. If nothing completed, start with the first lesson of the first course
+        if (!$lastCompletedId) {
+            $firstLesson = $this->lessonRepo->createQueryBuilder('l')
+                ->join('l.module', 'm')
+                ->join('m.course', 'c')
+                ->where('c.isActive = :active')
+                ->setParameter('active', true)
+                ->orderBy('c.orden', 'ASC')
+                ->addOrderBy('m.orden', 'ASC')
+                ->addOrderBy('l.orden', 'ASC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+            return $this->json($this->serializeContinuePayload($firstLesson));
+        }
+
+        // 2. Try to find the next lesson in the same module after the last completed one
+        $nextInModule = $conn->fetchOne(
+            'SELECT l2.id FROM campus_lessons l2
+             JOIN campus_lessons l1 ON l1.id = :lastId
+             JOIN campus_modules m ON m.id = l2.module_id AND m.id = l1.module_id
+             WHERE l2.orden > l1.orden
+               AND l2.id NOT IN (
+                 SELECT p.lesson_id FROM campus_lesson_progress p
+                 WHERE p.user_code = :userCode AND p.completed = 1
+               )
+             ORDER BY l2.orden ASC LIMIT 1',
+            ['lastId' => (int) $lastCompletedId, 'userCode' => $userCode]
+        );
+
+        if ($nextInModule) {
+            $lesson = $this->lessonRepo->find($nextInModule);
+            return $this->json($this->serializeContinuePayload($lesson, 'next_in_module'));
+        }
+
+        // 3. Try next module in same course
+        $nextModule = $conn->fetchOne(
+            'SELECT m2.id FROM campus_modules m2
+             JOIN campus_lessons l1 ON l1.id = :lastId
+             JOIN campus_modules m1 ON m1.id = l1.module_id AND m1.course_id = m2.course_id
+             WHERE m2.orden > m1.orden
+               AND EXISTS (
+                 SELECT 1 FROM campus_lessons l WHERE l.module_id = m2.id
+                 AND l.id NOT IN (
+                   SELECT p.lesson_id FROM campus_lesson_progress p
+                   WHERE p.user_code = :userCode AND p.completed = 1
+                 )
+               )
+             ORDER BY m2.orden ASC LIMIT 1',
+            ['lastId' => (int) $lastCompletedId, 'userCode' => $userCode]
+        );
+
+        if ($nextModule) {
+            $firstLesson = $conn->fetchOne(
+                'SELECT l.id FROM campus_lessons l
+                 WHERE l.module_id = :moduleId
+                   AND l.id NOT IN (
+                     SELECT p.lesson_id FROM campus_lesson_progress p
+                     WHERE p.user_code = :userCode AND p.completed = 1
+                   )
+                 ORDER BY l.orden ASC LIMIT 1',
+                ['moduleId' => (int) $nextModule, 'userCode' => $userCode]
+            );
+            if ($firstLesson) {
+                $lesson = $this->lessonRepo->find($firstLesson);
+                return $this->json($this->serializeContinuePayload($lesson, 'next_module'));
+            }
+        }
+
+        // 4. Try next course
+        $lastCourseId = $conn->fetchOne(
+            'SELECT m.course_id FROM campus_modules m
+             JOIN campus_lessons l ON l.module_id = m.id
+             WHERE l.id = :lastId',
+            ['lastId' => (int) $lastCompletedId]
+        );
+
+        if ($lastCourseId) {
+            $nextCourse = $conn->fetchOne(
+                'SELECT c2.id FROM campus_courses c2
+                 JOIN campus_courses c1 ON c1.id = :lastCourseId
+                 WHERE c2.is_active = 1
+                   AND c2.orden > c1.orden
+                   AND EXISTS (
+                     SELECT 1 FROM campus_modules m
+                     JOIN campus_lessons l ON l.module_id = m.id
+                     WHERE m.course_id = c2.id
+                     AND l.id NOT IN (
+                       SELECT p.lesson_id FROM campus_lesson_progress p
+                       WHERE p.user_code = :userCode AND p.completed = 1
+                     )
+                   )
+                 ORDER BY c2.orden ASC LIMIT 1',
+                ['lastCourseId' => (int) $lastCourseId, 'userCode' => $userCode]
+            );
+
+            if ($nextCourse) {
+                $firstLesson = $conn->fetchOne(
+                    'SELECT l.id FROM campus_lessons l
+                     JOIN campus_modules m ON m.id = l.module_id
+                     WHERE m.course_id = :courseId
+                       AND l.id NOT IN (
+                         SELECT p.lesson_id FROM campus_lesson_progress p
+                         WHERE p.user_code = :userCode AND p.completed = 1
+                       )
+                     ORDER BY m.orden, l.orden LIMIT 1',
+                    ['courseId' => (int) $nextCourse, 'userCode' => $userCode]
+                );
+                if ($firstLesson) {
+                    $lesson = $this->lessonRepo->find($firstLesson);
+                    return $this->json($this->serializeContinuePayload($lesson, 'next_course'));
+                }
+            }
+        }
+
+        // 5. User has completed everything available
+        return $this->json([
+            'lesson' => null,
+            'reason' => 'all_complete',
+            'message' => 'Has completado todo el contenido disponible. ¡Felicidades!',
+        ]);
+    }
+
+    private function serializeContinuePayload($lesson, string $reason = 'first_lesson'): array
+    {
+        if (!$lesson) {
+            return ['lesson' => null, 'reason' => $reason];
+        }
+        $module = $lesson->getModule();
+        $course = $module?->getCourse();
+        return [
+            'lesson' => [
+                'id' => $lesson->getId(),
+                'title' => $lesson->getTitle(),
+                'description' => $lesson->getDescription(),
+                'video_url' => $lesson->getVideoUrl(),
+                'module_id' => $module?->getId(),
+                'module_title' => $module?->getTitle(),
+                'course_id' => $course?->getId(),
+                'course_title' => $course?->getTitle(),
+                'course_emoji' => $course?->getEmoji(),
+            ],
+            'reason' => $reason,
         ];
     }
 }

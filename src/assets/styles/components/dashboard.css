@@ -53,6 +53,79 @@
     border-color: rgba(242, 202, 80, 0.15);
 }
 
+/* ══════ Quick Access cards (Dashboard / Inicio) ══════ */
+.quick-access-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    text-decoration: none;
+    color: var(--on-surface-elev);
+    transition: all 0.25s ease;
+}
+.quick-access-card:hover {
+    border-color: rgba(242, 202, 80, 0.35);
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(242,202,80,0.06) 0%, rgba(255,255,255,0.01) 100%);
+}
+.quick-access-card .material-symbols-elev {
+    font-size: 1.75rem;
+}
+.quick-access-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+.quick-access-sub {
+    font-size: 0.72rem;
+    color: var(--outline-elev);
+}
+
+/* ══════ Feed embebido en Dashboard ══════ */
+.dashboard-feed-panel {
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+}
+.feed-embedded { display: flex; flex-direction: column; gap: 1rem; }
+.feed-embedded-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.feed-embedded-full-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--gold-elev);
+    font-size: 0.8rem;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.feed-embedded-full-link:hover { text-decoration: underline; }
+.feed-embedded-composer {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    padding: 1rem;
+}
+.feed-embedded-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 800px;
+    overflow-y: auto;
+    padding-right: 0.25rem;
+}
+
 /* ══════ F1.5 — Hero + Sticky Tabs ══════ */
 .dashboard-hero {
     text-align: center;

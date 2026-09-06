@@ -1,8 +1,9 @@
 framework:
     asset_mapper:
         # The paths to make available to the asset mapper.
+        # Re-declared here only to keep missing_import_mode tight in dev.
         paths:
-            - assets/
+            - src/assets
         missing_import_mode: strict
 
 when@prod:

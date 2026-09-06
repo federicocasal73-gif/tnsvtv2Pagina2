@@ -1,0 +1,123 @@
+{# ══════════════════════════════════════════════
+   TNSVT — Onboarding Wizard (first-login)
+   Modal de 4 slides con persistencia en localStorage.
+   Solo se muestra si localStorage.tnsvt_onboarding_v1 !== 'completed'.
+   ══════════════════════════════════════════════ #}
+
+<div id="tnsvt-onboarding"
+     class="onboarding-overlay"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="onboarding-title"
+     hidden>
+
+    <div class="onboarding-card glass-card-elev">
+
+        {# ═══ Skip button (siempre visible) ═══ #}
+        <button type="button"
+                class="onboarding-skip"
+                data-onboarding-action="skip"
+                aria-label="Saltar tour">
+            Saltar tour ✕
+        </button>
+
+        {# ═══ Slides container ═══ #}
+        <div class="onboarding-slides">
+
+            {# ── Slide 1: Bienvenida ── #}
+            <section class="onboarding-slide active" data-slide="1">
+                <div class="onboarding-illustration">
+                    <span class="material-symbols-elev onboarding-icon">shield_person</span>
+                </div>
+                <h2 id="onboarding-title" class="onboarding-title">🎓 Bienvenido al Sanctum</h2>
+                <p class="onboarding-text">
+                    Tu centro de comando <strong style="color:var(--gold-elev);">neuro-espiritual</strong> para trading.
+                    Disciplina, datos y ejecución — todo en un mismo lugar.
+                </p>
+            </section>
+
+            {# ── Slide 2: Command Center ── #}
+            <section class="onboarding-slide" data-slide="2">
+                <div class="onboarding-illustration">
+                    <span class="material-symbols-elev onboarding-icon">dashboard</span>
+                </div>
+                <h2 class="onboarding-title">🛡 Tu Command Center</h2>
+                <p class="onboarding-text">
+                    Desde el <strong>Inicio</strong> monitoreás tu <strong>Guardian</strong> (disciplina),
+                    gestionás tus <strong>Tareas</strong> y revisás las <strong>Señales Recientes</strong>.
+                </p>
+                <ul class="onboarding-list">
+                    <li><span class="material-symbols-elev">shield_person</span><span><strong>Guardian</strong> — score de disciplina 0-100</span></li>
+                    <li><span class="material-symbols-elev">task_alt</span><span><strong>Tasks</strong> — tareas operativas</span></li>
+                    <li><span class="material-symbols-elev">timeline</span><span><strong>Signals</strong> — audit log reciente</span></li>
+                </ul>
+            </section>
+
+            {# ── Slide 3: Trading Journal ── #}
+            <section class="onboarding-slide" data-slide="3">
+                <div class="onboarding-illustration">
+                    <span class="material-symbols-elev onboarding-icon">monitoring</span>
+                </div>
+                <h2 class="onboarding-title">📊 Trading Journal</h2>
+                <p class="onboarding-text">
+                    Registrá cada operación. La <strong>Curva de Equity</strong>, el <strong>Calendario Mensual</strong>,
+                    el <strong>P&L</strong> y todas las <strong>Estadísticas</strong> se calculan automáticamente.
+                </p>
+                <ul class="onboarding-list">
+                    <li><span class="material-symbols-elev">edit_note</span><span><strong>Registrar</strong> trade con foto y notas</span></li>
+                    <li><span class="material-symbols-elev">timeline</span><span><strong>Equity Curve</strong> + drawdown</span></li>
+                    <li><span class="material-symbols-elev">calendar_month</span><span><strong>Calendario</strong> de P&L diario</span></li>
+                </ul>
+            </section>
+
+            {# ── Slide 4: Macro Academy ── #}
+            <section class="onboarding-slide" data-slide="4">
+                <div class="onboarding-illustration">
+                    <span class="material-symbols-elev onboarding-icon">school</span>
+                </div>
+                <h2 class="onboarding-title">📐 Macro Academy</h2>
+                <p class="onboarding-text">
+                    12 módulos interactivos: <strong>Bancos Centrales</strong>, <strong>Slider Carlitos</strong>,
+                    <strong>Dot Plot</strong>, <strong>Geopolítica</strong>, <strong>Carry Trade</strong>,
+                    <strong>Curva de Rendimientos</strong>, <strong>Ciclo Económico</strong> + Quiz final.
+                </p>
+                <div class="onboarding-cta">
+                    <a href="/macro/academy" class="btn-primary" data-onboarding-action="finish-and-go">
+                        <span class="material-symbols-elev">rocket_launch</span>
+                        Ir a Macro Academy
+                    </a>
+                </div>
+            </section>
+
+        </div>
+
+        {# ═══ Dots indicator + nav ═══ #}
+        <footer class="onboarding-footer">
+
+            <div class="onboarding-dots" role="tablist" aria-label="Progreso del tour">
+                <button type="button" class="onboarding-dot active" data-dot="1" role="tab" aria-selected="true"  aria-label="Slide 1"></button>
+                <button type="button" class="onboarding-dot"        data-dot="2" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+                <button type="button" class="onboarding-dot"        data-dot="3" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+                <button type="button" class="onboarding-dot"        data-dot="4" role="tab" aria-selected="false" aria-label="Slide 4"></button>
+            </div>
+
+            <div class="onboarding-nav">
+                <button type="button"
+                        class="onboarding-btn onboarding-btn-secondary"
+                        data-onboarding-action="prev"
+                        disabled>
+                    ← Anterior
+                </button>
+                <span class="onboarding-counter" aria-live="polite">
+                    <span data-onboarding-counter>1</span> / 4
+                </span>
+                <button type="button"
+                        class="onboarding-btn onboarding-btn-primary"
+                        data-onboarding-action="next">
+                    Siguiente →
+                </button>
+            </div>
+
+        </footer>
+    </div>
+</div>

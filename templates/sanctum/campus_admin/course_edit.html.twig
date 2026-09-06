@@ -1,0 +1,138 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}{{ is_edit ? 'Editar curso' : 'Nuevo curso' }} · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}{{ is_edit ? 'Editar curso' : 'Nuevo curso' }}{% endblock %}
+{% block topbar_subtitle %}{{ is_edit ? 'Administra módulos, lecciones y materiales del curso.' : 'Crea un nuevo curso para el Campus Académico.' }}{% endblock %}
+
+{% block content %}
+<div class="campus-admin-shell" data-controller="campus-admin-edit"
+     data-campus-admin-edit-token-value="{{ app.user ? app.user.code : '' }}"
+     data-campus-admin-edit-course-id-value="{{ course_id|default(0) }}">
+
+    <nav class="campus-breadcrumb" aria-label="Ruta">
+        <a href="{{ path('sanctum_campus_admin_courses') }}" data-action="click->campus-admin-edit#back">← Volver a Cursos</a>
+        <span class="campus-breadcrumb-sep">›</span>
+        <span id="course-crumb-title">{{ is_edit ? 'Editar' : 'Nuevo' }}</span>
+    </nav>
+
+    <div class="campus-admin-edit-grid">
+        {# ─── Left column: course form + lessons ─── #}
+        <div class="campus-admin-edit-main">
+            {# Course basic info #}
+            <div class="ui-card ui-card-elevated ui-card-padding-lg">
+                <header class="ui-card-header">
+                    <h2 class="ui-card-title">Información del curso</h2>
+                </header>
+                <form class="campus-admin-form" data-action="submit->campus-admin-edit#saveCourse">
+                    <div class="campus-form-grid">
+                        <label class="task-field">
+                            <span class="task-field-label">Título *</span>
+                            <input type="text" name="title" required maxlength="255"
+                                   placeholder="Ej: Trading Avanzado"
+                                   data-campus-admin-edit-target="courseTitle"
+                                   class="task-field-input" />
+                        </label>
+                        <label class="task-field campus-form-emoji-field">
+                            <span class="task-field-label">Emoji</span>
+                            <input type="text" name="emoji" maxlength="10"
+                                   placeholder="📚"
+                                   data-campus-admin-edit-target="courseEmoji"
+                                   class="task-field-input campus-form-emoji-input" />
+                        </label>
+                    </div>
+                    <label class="task-field">
+                        <span class="task-field-label">Descripción</span>
+                        <textarea name="description" rows="3" maxlength="5000"
+                                  placeholder="Resumen breve del curso"
+                                  data-campus-admin-edit-target="courseDescription"
+                                  class="task-field-textarea"></textarea>
+                    </label>
+                    <label class="task-field">
+                        <span class="task-field-label">URL de thumbnail (opcional)</span>
+                        <input type="url" name="thumbnail"
+                               placeholder="https://…/cover.jpg"
+                               data-campus-admin-edit-target="courseThumbnail"
+                               class="task-field-input" />
+                    </label>
+                    <div class="campus-form-grid">
+                        <label class="task-field-checkbox">
+                            <input type="checkbox" name="is_active" checked
+                                   data-campus-admin-edit-target="courseActive" />
+                            <span>Curso activo y visible para los alumnos</span>
+                        </label>
+                    </div>
+                    <footer class="campus-form-actions">
+                        <a href="{{ path('sanctum_campus_admin_courses') }}" class="ui-btn ui-btn-ghost ui-btn-size-md">Cancelar</a>
+                        <button type="submit" class="ui-btn ui-btn-primary ui-btn-size-md"
+                                data-campus-admin-edit-target="courseSaveBtn">
+                            <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">save</span>
+                            <span class="ui-btn-label">Guardar curso</span>
+                        </button>
+                    </footer>
+                </form>
+            </div>
+
+            {# Modules + lessons (only when editing) #}
+            {% if is_edit %}
+            <div class="ui-card ui-card-elevated ui-card-padding-lg"
+                 data-campus-admin-edit-target="modulesCard">
+                <header class="ui-card-header">
+                    <h2 class="ui-card-title">Módulos y lecciones</h2>
+                    <button type="button" class="ui-btn ui-btn-secondary ui-btn-size-sm"
+                            data-action="click->campus-admin-edit#addModule">
+                        <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">add</span>
+                        Nuevo módulo
+                    </button>
+                </header>
+                <div class="campus-admin-modules" data-campus-admin-edit-target="modulesList">
+                    {% include '_partials/loading_state.html.twig' with {
+                        icon: 'progress_activity',
+                        message: 'Cargando módulos…',
+                        size: 'sm'
+                    } only %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {# ─── Right column: course preview ─── #}
+        <aside class="campus-admin-edit-sidebar">
+            <div class="ui-card ui-card-elevated ui-card-padding-md"
+                 data-campus-admin-edit-target="previewCard">
+                <header class="ui-card-header">
+                    <h2 class="ui-card-title">Vista previa</h2>
+                </header>
+                <div class="campus-admin-preview" data-campus-admin-edit-target="preview">
+                    <div class="campus-admin-preview-emoji" data-preview-target="emoji">📚</div>
+                    <h3 class="campus-admin-preview-title" data-preview-target="title">Nuevo curso</h3>
+                    <p class="campus-admin-preview-desc" data-preview-target="desc">Sin descripción aún.</p>
+                    <div class="campus-admin-preview-stats">
+                        <span><strong data-preview-target="modules">0</strong> módulos</span>
+                        <span><strong data-preview-target="lessons">0</strong> lecciones</span>
+                    </div>
+                    <div class="progress-bar progress-bar-md progress-bar-gold">
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui-card ui-card-elevated ui-card-padding-md">
+                <header class="ui-card-header">
+                    <h2 class="ui-card-title">Ayuda</h2>
+                </header>
+                <ul class="campus-admin-help">
+                    <li><span class="material-symbols-elev">drag_indicator</span> Arrastra las filas de módulos para reordenarlos</li>
+                    <li><span class="material-symbols-elev">edit</span> Edita cada módulo para añadir lecciones</li>
+                    <li><span class="material-symbols-elev">play_circle</span> Las lecciones aceptan YouTube, Vimeo o archivos directos</li>
+                    <li><span class="material-symbols-elev">visibility_off</span> Desactiva un curso para ocultarlo sin eliminarlo</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

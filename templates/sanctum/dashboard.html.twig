@@ -1,6 +1,6 @@
 {% extends 'shell.html.twig' %}
 
-{% block title %}Dashboard · T.N.S.V.T{% endblock %}
+{% block title %}Inicio · T.N.S.V.T{% endblock %}
 
 {% block topbar_title %}T.N.S.V.T Dashboard{% endblock %}
 {% block topbar_subtitle %}Divine synchronization active.{% endblock %}
@@ -8,13 +8,8 @@
 {# ═══ F1.5 — URL ?tab= state ═══ #}
 {% set tab = app.request.query.get('tab', 'dashboard') %}
 {% set tabs = {
-    'dashboard':    {label: 'DASHBOARD',     icon: 'dashboard',       desc: 'Tu centro de control'},
-    'markets':      {label: 'MARKETS',       icon: 'monitoring',      desc: 'Los Hilos del Mundo'},
-    'macro':        {label: 'MACRO EVENTS',  icon: 'event_upcoming',  desc: 'Calendario económico crítico'},
-    'prophecies':   {label: 'PROPHECIES',    icon: 'auto_awesome',    desc: 'Señales y revelaciones'},
-    'registrar':    {label: 'REGISTRAR',     icon: 'edit_note',       desc: 'Asentar una operación cerrada'},
-    'trade_log':    {label: 'TRADE LOG',     icon: 'list_alt',        desc: 'Historial completo de operaciones'},
-    'estadisticas': {label: 'ESTADÍSTICAS',  icon: 'insights',        desc: 'Equity, calendario y métricas'},
+    'dashboard':  {label: 'DASHBOARD',    icon: 'dashboard',    desc: 'Tu centro de control'},
+    'conclave':   {label: 'CÓNCLAVE',     icon: 'forum',        desc: 'Feed del Cónclave'},
 } %}
 {% set valid_tabs = tabs|keys %}
 
@@ -29,198 +24,11 @@
 
     {% include '_partials/dashboard/tabs.html.twig' with { tabs: tabs, tab: tab } %}
 
-    {# ══════ F1.5 — Tab Routing (default: dashboard) ══════ #}
+    {# ══════ Tab Routing ══════ #}
     {% if tab == 'dashboard' %}
 
-    {# ══════ F1.1 — Equity Curve (Fila 1) ══════ #}
-    <section class="glass-card-elev p-6 equity-curve-card">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
-                <span class="material-symbols-elev text-[var(--gold-elev)]">timeline</span>
-                <span class="text-cinzel-display text-base tracking-wider">EQUITY CURVE</span>
-            </h3>
-            <div class="ec-range-tabs" id="ec-range-tabs" role="tablist" aria-label="Range">
-                <button type="button" class="ec-tab active" data-range="all" role="tab" aria-selected="true">Todo</button>
-                <button type="button" class="ec-tab" data-range="30d" role="tab" aria-selected="false">30d</button>
-                <button type="button" class="ec-tab" data-range="7d" role="tab" aria-selected="false">7d</button>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div class="ec-stat">
-                <span class="ec-stat-label">Balance actual</span>
-                <span class="ec-stat-value" id="ec-balance">$0</span>
-                <span class="ec-stat-meta" id="ec-balance-meta">—</span>
-            </div>
-            <div class="ec-stat">
-                <span class="ec-stat-label">Total return</span>
-                <span class="ec-stat-value" id="ec-return">0.00%</span>
-                <span class="ec-stat-meta" id="ec-return-meta">—</span>
-            </div>
-            <div class="ec-stat">
-                <span class="ec-stat-label">Max drawdown</span>
-                <span class="ec-stat-value" id="ec-drawdown">0.00%</span>
-                <span class="ec-stat-meta" id="ec-drawdown-meta">—</span>
-            </div>
-        </div>
-
-        <svg id="ec-chart" viewBox="0 0 1000 280" preserveAspectRatio="none" class="w-full h-72" aria-label="Equity curve">
-            <defs>
-                <linearGradient id="ec-fill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stop-color="rgba(242, 202, 80, 0.35)" />
-                    <stop offset="100%" stop-color="rgba(242, 202, 80, 0)" />
-                </linearGradient>
-            </defs>
-            <text id="ec-loading" x="500" y="140" fill="rgba(255,255,255,0.4)" font-size="14" text-anchor="middle" font-family="Space Grotesk">Cargando curva...</text>
-        </svg>
-
-        <div id="ec-tooltip" class="ec-tooltip" hidden></div>
-
-        <div id="ec-empty" class="text-center text-[var(--outline-elev)] py-8" hidden>
-            <span class="material-symbols-elev text-4xl block mb-2 opacity-50">timeline</span>
-            Aún no hay operaciones registradas.
-            <a href="?tab=registrar" class="text-[var(--gold-elev)] hover:underline ml-1">Asentá la primera →</a>
-        </div>
-
-        <div class="ec-legend mt-3">
-            <span><span class="ec-legend-dot ec-legend-pos"></span>Win</span>
-            <span><span class="ec-legend-dot ec-legend-neg"></span>Loss</span>
-            <span><span class="ec-legend-dot" style="background: rgba(255,255,255,0.4)"></span>BE</span>
-            <span class="ml-auto" id="ec-source">—</span>
-        </div>
-    </section>
-
-    {# ══════ F1.3 — Calendario Mensual (Fila 2, izquierda) ══════ #}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <section class="glass-card-elev p-6 calendar-monthly-card">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
-                <span class="material-symbols-elev text-[var(--gold-elev)]">calendar_month</span>
-                <span class="text-cinzel-display text-base tracking-wider">CALENDARIO</span>
-            </h3>
-            <div class="flex items-center gap-2" id="cal-month-nav" role="group" aria-label="Mes">
-                <button type="button" class="cal-nav-btn" id="cal-prev" aria-label="Mes anterior">
-                    <span class="material-symbols-elev text-base">chevron_left</span>
-                </button>
-                <span id="cal-month-title" class="text-sm font-semibold min-w-[140px] text-center">—</span>
-                <button type="button" class="cal-nav-btn" id="cal-next" aria-label="Mes siguiente">
-                    <span class="material-symbols-elev text-base">chevron_right</span>
-                </button>
-                <button type="button" class="cal-today-btn" id="cal-today">Hoy</button>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4 mb-3 text-xs text-[var(--outline-elev)]">
-            <span>Total mes: <strong id="cal-month-pnl" class="text-[var(--on-surface-elev)]">$0</strong></span>
-            <span><span id="cal-month-trades">0</span> trades</span>
-            <span><span id="cal-month-wr">0</span>% WR</span>
-        </div>
-
-        <div class="cal-month-grid" id="cal-month-grid" aria-label="Calendario de operaciones">
-            <!-- day headers + day cells injected via JS -->
-            <div class="col-span-7 text-center text-[var(--outline-elev)] py-6 text-xs loading-pulse">Cargando calendario...</div>
-        </div>
-
-        <div class="cal-legend mt-3">
-            <span><span class="cal-legend-dot cal-dot-wins"></span>Día ganador</span>
-            <span><span class="cal-legend-dot cal-dot-losses"></span>Día perdedor</span>
-            <span><span class="cal-legend-dot cal-dot-mixed"></span>Mixto</span>
-            <span><span class="cal-legend-dot cal-dot-open"></span>Abierta</span>
-        </div>
-    </section>
-
-    {# ══════ F1.4 — P&L Mensual Bar Chart (Fila 2, derecha — F1.3 insert) ══════ #}
-    <section class="glass-card-elev p-6 monthly-pnl-card" id="monthly-pnl-card">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
-                <span class="material-symbols-elev text-[var(--gold-elev)]">bar_chart</span>
-                <span class="text-cinzel-display text-base tracking-wider">P&L MENSUAL</span>
-            </h3>
-            <span class="text-xs text-[var(--outline-elev)]">últimos 6 meses</span>
-        </div>
-        <div id="monthly-pnl-chart" class="w-full" style="min-height: 240px;">
-            <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse text-xs">Cargando P&L mensual...</p>
-        </div>
-        <div class="cal-legend mt-3">
-            <span><span class="ec-legend-dot ec-legend-pos"></span>Positivo</span>
-            <span><span class="ec-legend-dot ec-legend-neg"></span>Negativo</span>
-            <span class="ml-auto" id="monthly-pnl-source">—</span>
-        </div>
-    </section>
-    </div>
-
-    {# Day detail modal (F1.3) #}
-    <div id="cal-day-modal" class="cal-modal-overlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="cal-day-modal-title">
-        <div class="cal-modal-content">
-            <div class="cal-modal-header">
-                <h2 id="cal-day-modal-title" class="text-lg font-semibold">Detalle</h2>
-                <button type="button" class="modal-close" data-action="close-cal-day" aria-label="Cerrar">
-                    <span class="material-symbols-elev">close</span>
-                </button>
-            </div>
-            <div id="cal-day-modal-body" class="cal-modal-body">
-                <!-- table injected via JS -->
-            </div>
-        </div>
-    </div>
-
-{# Hero Metrics Row - 4 KPI Cards #}
-    {# ══════ F1.2 — Stats (reemplaza 4-KPI placeholder de V1) ══════ #}
-    <section class="glass-card-elev p-6 stats-row" aria-label="Estadísticas de trading">
-        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
-                <span class="material-symbols-elev text-[var(--gold-elev)]">analytics</span>
-                <span class="text-cinzel-display text-base tracking-wider">ESTADÍSTICAS</span>
-            </h3>
-            <span class="text-xs text-[var(--outline-elev)]">
-                <span id="stats-trade-count">0</span> trades en total
-            </span>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="stats-grid">
-            <div class="kpi-card" data-stat="pf">
-                <span class="kpi-label">Profit Factor</span>
-                <p class="kpi-value" id="stats-pf">—</p>
-                <p class="kpi-meta" id="stats-pf-meta">—</p>
-            </div>
-            <div class="kpi-card" data-stat="expect">
-                <span class="kpi-label">Expectativa</span>
-                <p class="kpi-value" id="stats-expect">—</p>
-                <p class="kpi-meta" id="stats-expect-meta">—</p>
-            </div>
-            <div class="kpi-card" data-stat="wr">
-                <span class="kpi-label">Win Rate</span>
-                <p class="kpi-value" id="stats-wr">—</p>
-                <p class="kpi-meta" id="stats-wr-meta">—</p>
-            </div>
-            <div class="kpi-card" data-stat="avg-w">
-                <span class="kpi-label">Avg Win</span>
-                <p class="kpi-value text-green-400" id="stats-avg-w">—</p>
-                <p class="kpi-meta" id="stats-avg-w-meta">—</p>
-            </div>
-            <div class="kpi-card" data-stat="avg-l">
-                <span class="kpi-label">Avg Loss</span>
-                <p class="kpi-value text-red-400" id="stats-avg-l">—</p>
-                <p class="kpi-meta" id="stats-avg-l-meta">—</p>
-            </div>
-        </div>
-        <div class="mt-4 pt-4 border-t border-[var(--outline-variant-elev)] grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-            <div>
-                <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Mejor trade</span>
-                <p class="text-green-400 font-bold text-lg" id="stats-best">—</p>
-            </div>
-            <div>
-                <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Peor trade</span>
-                <p class="text-red-400 font-bold text-lg" id="stats-worst">—</p>
-            </div>
-            <div>
-                <span class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">Total P&L</span>
-                <p class="font-bold text-lg" id="stats-total-pnl">—</p>
-            </div>
-        </div>
-    </section>
-
         {# ─── Guardian Widget (Phase 3) ─── #}
-        <section class="glass-card-elev p-6">
+        <section class="glass-card-elev p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
                     <span class="material-symbols-elev text-[var(--gold-elev)]">shield_person</span>
@@ -255,7 +63,22 @@
             </div>
         </section>
 
-        {# Recent Signals + Task Sovereignty #}
+        {# ─── Today's Tasks (Phase 6) ─── #}
+        <section class="glass-card-elev p-6 mb-6" data-controller="upcoming-tasks">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-3);">
+                <h3 style="display:flex; align-items:center; gap: var(--space-2); font-weight:600; color: var(--on-surface-elev);">
+                    <span class="material-symbols-elev" style="color: var(--gold-elev);">today</span>
+                    Para hoy
+                    <span class="status-pill size-sm" data-upcoming-tasks-target="count">—</span>
+                </h3>
+                <a href="/sanctum/tasks" style="font-size:0.8rem; color: var(--gold-elev);">Ver todas →</a>
+            </div>
+            <div data-upcoming-tasks-target="list" style="display:grid; gap: var(--space-2);">
+                <p style="text-align:center; color: var(--outline-elev); padding: var(--space-4);">Cargando…</p>
+            </div>
+        </section>
+
+        {# ─── Recent Signals + Task Sovereignty ─── #}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" data-controller="dashboard_tasks">
             <div class="glass-card-elev p-6">
                 <div class="flex items-center justify-between mb-4">
@@ -290,92 +113,14 @@
             </div>
         </div>
 
-        {# Educational Mastery - Course Cards #}
-        <section class="mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
-                    <span class="material-symbols-elev text-[var(--gold-elev)]">school</span>
-                    Educational Mastery
-                </h3>
-                <a href="/sanctum/education" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div class="course-card-elev">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="material-symbols-elev text-[var(--gold-elev)] text-2xl">psychology</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--gold-elev)] text-black font-bold">75%</span>
-                    </div>
-                    <h4 class="text-base font-semibold text-[var(--on-surface-elev)] mb-1">Mastering Risk</h4>
-                    <p class="text-xs text-[var(--outline-elev)] mb-3">12 módulos · Position sizing avanzado</p>
-                    <div class="course-progress-bar">
-                        <div class="course-progress-fill" style="width: 75%;"></div>
-                    </div>
-                </div>
-                <div class="course-card-elev">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="material-symbols-elev text-[var(--gold-elev)] text-2xl">candlestick_chart</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--outline-elev)] font-bold">42%</span>
-                    </div>
-                    <h4 class="text-base font-semibold text-[var(--on-surface-elev)] mb-1">Price Action</h4>
-                    <p class="text-xs text-[var(--outline-elev)] mb-3">8 módulos · Estructura de mercado</p>
-                    <div class="course-progress-bar">
-                        <div class="course-progress-fill" style="width: 42%;"></div>
-                    </div>
-                </div>
-                <div class="course-card-elev">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="material-symbols-elev text-[var(--gold-elev)] text-2xl">visibility</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--outline-elev)] font-bold">18%</span>
-                    </div>
-                    <h4 class="text-base font-semibold text-[var(--on-surface-elev)] mb-1">Macro Vision</h4>
-                    <p class="text-xs text-[var(--outline-elev)] mb-3">6 módulos · Contexto fundamental</p>
-                    <div class="course-progress-bar">
-                        <div class="course-progress-fill" style="width: 18%;"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        {# (Accesos Rápidos removidos por decisión de diseño — duplicaban sidebar/bottom-nav) #}
 
-    {# ══════ F1.5 — Stub panels for non-default tabs ══════ #}
-    {% elseif tab == 'registrar' %}
-        <div class="tab-panel-active">
-            {% include '_partials/dashboard/trade_form.html.twig' %}
+    {% elseif tab == 'conclave' %}
+        {# ─── Feed del Cónclave embebido ─── #}
+        <div class="dashboard-feed-panel">
+            {% include '_partials/dashboard/feed_panel.html.twig' %}
         </div>
-    {% elseif tab == 'trade_log' %}
-        <div class="tab-panel-stub">
-            <span class="material-symbols-elev" aria-hidden="true">list_alt</span>
-            <h2>TRADE LOG</h2>
-            <p>Disponible en <strong>Fase 2</strong>. Historial completo filtrable de tus operaciones con búsqueda, ordenamiento y exportación CSV.</p>
-            <a href="/journal" class="btn-elev-primary">Ver Journal completo</a>
-        </div>
-    {% elseif tab == 'estadisticas' %}
-        <div class="tab-panel-stub">
-            <span class="material-symbols-elev" aria-hidden="true">insights</span>
-            <h2>ESTADÍSTICAS</h2>
-            <p>Próximamente en <strong>F1.1 – F1.4</strong>: Equity Curve SVG · Calendario Mensual · P&L Mensual · Profit Factor · Expectativa · Win Rate.</p>
-            <a href="/api/journal/drawdown" class="btn-elev-primary" target="_blank" rel="noopener">Ver preview (JSON)</a>
-        </div>
-    {% elseif tab == 'markets' %}
-        <div class="tab-panel-stub">
-            <span class="material-symbols-elev" aria-hidden="true">monitoring</span>
-            <h2>MARKETS</h2>
-            <p>Datos de mercados en desarrollo. Mientras tanto, podés consultar el calendario macro y las ventanas de no-operación en la sección completa.</p>
-            <a href="/macro" class="btn-elev-primary">Ir a Macro →</a>
-        </div>
-    {% elseif tab == 'macro' %}
-        <div class="tab-panel-stub">
-            <span class="material-symbols-elev" aria-hidden="true">event_upcoming</span>
-            <h2>MACRO EVENTS</h2>
-            <p>Los hilos del mundo y el calendario económico crítico están en la página dedicada de Macroeconomía.</p>
-            <a href="/macro" class="btn-elev-primary">Ver Macro →</a>
-        </div>
-    {% elseif tab == 'prophecies' %}
-        <div class="tab-panel-stub">
-            <span class="material-symbols-elev" aria-hidden="true">auto_awesome</span>
-            <h2>PROPHECIES</h2>
-            <p>Señales, correlación emocional-rentabilidad y el Oráculo completo están en su página dedicada.</p>
-            <a href="/oracle" class="btn-elev-primary">Ver Oráculo →</a>
-        </div>
+
     {% else %}
         <div class="tab-panel-stub">
             <span class="material-symbols-elev" aria-hidden="true">error</span>
@@ -385,19 +130,19 @@
     {% endif %}
     </div>
 
-    {# Create Task Modal #}
-    <div id="create-task-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="create-task-title" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="create-task-title" class="text-xl font-semibold text-[var(--on-surface-elev)] flex items-center gap-2">
+    {# Create Task Modal — unified tnsvt-modal #}
+    <div id="create-task-modal" class="tnsvt-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="create-task-title" hidden>
+        <div class="tnsvt-modal">
+            <div class="tnsvt-modal__header">
+                <h2 id="create-task-title" class="tnsvt-modal__title">
                     <span class="material-symbols-elev text-[var(--gold-elev)]">task_alt</span>
                     Nueva Tarea
                 </h2>
-                <button class="modal-close" data-action="close-create-task">
+                <button type="button" class="tnsvt-modal__close" data-action="close-create-task" aria-label="Cerrar">
                     <span class="material-symbols-elev">close</span>
                 </button>
             </div>
-            <form id="create-task-form" class="modal-body">
+            <form id="create-task-form" class="tnsvt-modal__body">
                 <div class="form-group">
                     <label class="form-label">Título *</label>
                     <input id="task-title" name="title" type="text" required maxlength="255" placeholder="Ej: Auditar journal del usuario X" class="form-input" />
@@ -417,7 +162,7 @@
                     </label>
                 </div>
                 <p id="create-task-error" class="text-red-400 text-sm hidden"></p>
-                <div class="modal-footer">
+                <div class="tnsvt-modal__footer">
                     <button type="button" class="btn-secondary" data-action="close-create-task">Cancelar</button>
                     <button type="submit" class="btn-primary">Crear Tarea</button>
                 </div>
@@ -425,70 +170,18 @@
         </div>
     </div>
 
-    {# Styles moved to assets/styles/components/dashboard.css #}
-
     <script>
-    // Task loading now handled by dashboard_tasks_controller.js
-    // Modal handlers
-    const createTaskModal = apiSetupModal(document.getElementById('create-task-modal'), {
-        close() {
-            document.getElementById('create-task-form').reset();
-            document.getElementById('create-task-error').classList.add('hidden');
-        }
-    });
-    function openCreateTask() {
-        createTaskModal.open();
-    }
-    function closeCreateTask() {
-        createTaskModal.close();
-    }
-    async function submitCreateTask(e) {
-        e.preventDefault();
-        const errEl = document.getElementById('create-task-error');
-        errEl.classList.add('hidden');
-        const title = document.getElementById('task-title').value.trim();
-        const description = document.getElementById('task-description').value.trim();
-        const orden = parseInt(document.getElementById('task-orden').value) || 0;
-        const active = document.getElementById('task-active').checked;
-        if (!title) {
-            errEl.textContent = 'El título es obligatorio';
-            errEl.classList.remove('hidden');
-            return;
-        }
-        const r = await apiFetch('/sanctum/api/tasks', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, description, orden, active })
-        });
-        if (r.ok && r.data && r.data.success) {
-            if (window.apiToast) apiToast('Tarea creada', 'success');
-            closeCreateTask();
-            // Reload tasks via controller
-            const ctrl = window.Stimulus && document.querySelector('[data-controller="dashboard_tasks"]');
-            if (ctrl && ctrl.dataset) {
-                const app = window.Stimulus.application;
-                const instance = app.getControllerForElementAndIdentifier(ctrl, 'dashboard-tasks');
-                if (instance) instance.loadTasks();
-            }
-        } else {
-            const msg = (r.data && (r.data.error || r.data.message)) || (r.timeout ? 'Timeout' : r.networkError ? 'Sin conexión' : 'Error');
-            errEl.textContent = msg;
-            errEl.classList.remove('hidden');
-        }
-    }
-
-        const GW_TIER_COLOR = {
-            elite: 'var(--gold-bright-elev)', strong: 'var(--gold-elev)', steady: 'var(--violet-elev)',
-            caution: 'var(--warning-elev)', risk: 'var(--error-elev)',
-        };
-        const GW_SEVERITY_VISUAL = {
-            danger:  { icon: 'error',   color: 'var(--error-elev)' },
-            warning: { icon: 'warning', color: 'var(--warning-elev)' },
-            info:    { icon: 'info',    color: 'var(--violet-elev)' },
-        };
+    const GW_TIER_COLOR = {
+        elite: 'var(--gold-bright-elev)', strong: 'var(--gold-elev)', steady: 'var(--violet-elev)',
+        caution: 'var(--warning-elev)', risk: 'var(--error-elev)',
+    };
+    const GW_SEVERITY_VISUAL = {
+        danger:  { icon: 'error',   color: 'var(--error-elev)' },
+        warning: { icon: 'warning', color: 'var(--warning-elev)' },
+        info:    { icon: 'info',    color: 'var(--violet-elev)' },
+    };
 
     async function loadGuardianWidget() {
-        // F1.5: only run when the dashboard tab is rendered
         if (!document.getElementById('gw-score')) return;
         const [scoreRes, sigRes] = await Promise.all([
             apiFetch('/api/guardian/score', { silent: true }),
@@ -548,601 +241,62 @@
             .replace(/'/g, '&#039;');
     }
 
-    // Wire up events
+    // Modal handlers
+    const createTaskModal = apiSetupModal(document.getElementById('create-task-modal'), {
+        close() {
+            document.getElementById('create-task-form').reset();
+            document.getElementById('create-task-error').classList.add('hidden');
+        }
+    });
+    function openCreateTask() { createTaskModal.open(); }
+    function closeCreateTask() { createTaskModal.close(); }
+    async function submitCreateTask(e) {
+        e.preventDefault();
+        const errEl = document.getElementById('create-task-error');
+        errEl.classList.add('hidden');
+        const title = document.getElementById('task-title').value.trim();
+        const description = document.getElementById('task-description').value.trim();
+        const orden = parseInt(document.getElementById('task-orden').value) || 0;
+        const active = document.getElementById('task-active').checked;
+        if (!title) {
+            errEl.textContent = 'El título es obligatorio';
+            errEl.classList.remove('hidden');
+            return;
+        }
+        const r = await apiFetch('/sanctum/api/tasks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, orden, active })
+        });
+        if (r.ok && r.data && r.data.success) {
+            if (window.apiToast) apiToast('Tarea creada', 'success');
+            closeCreateTask();
+            const ctrl = window.Stimulus && document.querySelector('[data-controller="dashboard_tasks"]');
+            if (ctrl && ctrl.dataset) {
+                const app = window.Stimulus.application;
+                const instance = app.getControllerForElementAndIdentifier(ctrl, 'dashboard-tasks');
+                if (instance) instance.loadTasks();
+            }
+        } else {
+            const msg = (r.data && (r.data.error || r.data.message)) || (r.timeout ? 'Timeout' : r.networkError ? 'Sin conexión' : 'Error');
+            errEl.textContent = msg;
+            errEl.classList.remove('hidden');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-        loadDashboard();
         loadGuardianWidget();
-        loadStats();
-        loadEquityCurve('all');
-        wireEquityCurveTabs();
-        // F1.3 — calendar
-        const initialCal = _nowYM();
-        loadCalendarMonthly(initialCal.year, initialCal.month);
-        wireCalendarNav();
-        wireCalendarClicks();
-        wireCalDayModal();
-        document.getElementById('quick-add-task').addEventListener('click', openCreateTask);
+
+        // Task-modal wiring — solo si los elementos existen en este tab.
+        const quickAdd = document.getElementById('quick-add-task');
+        if (quickAdd) quickAdd.addEventListener('click', openCreateTask);
         document.querySelectorAll('[data-action="open-create-task"]').forEach(b => b.addEventListener('click', openCreateTask));
         document.querySelectorAll('[data-action="close-create-task"]').forEach(b => b.addEventListener('click', closeCreateTask));
-        document.getElementById('create-task-form').addEventListener('submit', submitCreateTask);
-        // Click-outside close is handled by apiSetupModal; Escape is too.
-        setInterval(loadDashboard, 60000);
+        const createForm = document.getElementById('create-task-form');
+        if (createForm) createForm.addEventListener('submit', submitCreateTask);
+
+        // El modal en sí puede estar siempre en el DOM; apiSetupModal ya tolera null.
         setInterval(loadGuardianWidget, 90000);
     });
-
-    // ══════ F1.1 — Equity Curve ══════
-    function fmtUSD(n) {
-        const v = Math.abs(n);
-        if (v >= 1e6) return `$${(n/1e6).toFixed(2)}M`;
-        if (v >= 1e3) return `$${(n/1e3).toFixed(2)}k`;
-        return `$${n.toFixed(2)}`;
-    }
-    function fmtPct(n) {
-        const s = n >= 0 ? '+' : '';
-        return `${s}${n.toFixed(2)}%`;
-    }
-    async function loadEquityCurve(range) {
-        const svg = document.getElementById('ec-chart');
-        // F1.5/F1.1 guard: solo correr cuando el tab dashboard esté renderizado
-        if (!svg) return;
-
-        const url = `/api/journal/equity-curve?range=${encodeURIComponent(range)}&account_size=10000`;
-        const r = await apiFetch(url, { silent: true });
-        if (!r.ok || !r.data || !r.data.success) return;
-
-        const { summary, points, account_size: accountSize, range: serverRange } = r.data;
-
-        // Toggle active tab + aria-selected
-        document.querySelectorAll('#ec-range-tabs .ec-tab').forEach(btn => {
-            const isActive = btn.dataset.range === serverRange;
-            btn.classList.toggle('active', isActive);
-            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        });
-
-        // Stats
-        const balanceEl = document.getElementById('ec-balance');
-        const balanceMetaEl = document.getElementById('ec-balance-meta');
-        balanceEl.textContent = fmtUSD(summary.current);
-        balanceMetaEl.textContent = `Peak ${fmtUSD(summary.peak)} · Low ${fmtUSD(summary.low)}`;
-
-        const returnEl = document.getElementById('ec-return');
-        returnEl.textContent = fmtPct(summary.total_return_pct);
-        returnEl.classList.remove('pos', 'neg');
-        returnEl.classList.add(summary.total_return_pct >= 0 ? 'pos' : 'neg');
-        document.getElementById('ec-return-meta').textContent =
-            `${summary.trade_count} trades · ${summary.wins}W / ${summary.losses}L · WR ${summary.win_rate}%`;
-
-        const ddEl = document.getElementById('ec-drawdown');
-        ddEl.textContent = `-${(summary.max_drawdown_pct || 0).toFixed(2)}%`;
-        ddEl.classList.remove('pos', 'neg');
-        ddEl.classList.add('neg');
-        document.getElementById('ec-drawdown-meta').textContent =
-            `Peak-to-trough · ${summary.breakeven} BE`;
-
-        // Empty state
-        const emptyEl = document.getElementById('ec-empty');
-        const loadingEl = document.getElementById('ec-loading');
-        if (loadingEl) loadingEl.remove();
-
-        if (points.length === 0) {
-            svg.hidden = true;
-            emptyEl.hidden = false;
-            document.getElementById('ec-source').textContent = serverRange;
-            return;
-        }
-        svg.hidden = false;
-        emptyEl.hidden = true;
-
-        drawEquitySvg(svg, points, accountSize, serverRange);
-    }
-
-    function drawEquitySvg(svg, points, accountSize, rangeLabel) {
-        const W = 1000, H = 280;
-        const padT = 20, padB = 32, padL = 60, padR = 24;
-        const chartW = W - padL - padR;
-        const chartH = H - padT - padB;
-
-        const balances = points.map(p => p.balance);
-        const min = Math.min(accountSize, ...balances);
-        const max = Math.max(accountSize, ...balances);
-        const range = (max - min) || 1;
-
-        const xs = points.map((_, i) =>
-            points.length === 1
-                ? padL + chartW / 2
-                : padL + (i / (points.length - 1)) * chartW
-        );
-        const ys = points.map(p =>
-            padT + chartH - ((p.balance - min) / range) * chartH
-        );
-
-        const linePath = xs.map((x, i) => `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${ys[i].toFixed(1)}`).join(' ');
-        const fillPath = `${linePath} L ${xs[xs.length-1].toFixed(1)} ${padT+chartH} L ${xs[0].toFixed(1)} ${padT+chartH} Z`;
-        const baselineY = padT + chartH - ((accountSize - min) / range) * chartH;
-
-        // y-axis labels (4 niveles)
-        const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => {
-            const value = min + (max - min) * f;
-            const y = padT + chartH - f * chartH;
-            return `<text x="${padL-8}" y="${y+4}" fill="rgba(255,255,255,0.45)" font-size="10" text-anchor="end" font-family="Space Grotesk">${fmtUSD(value)}</text>`;
-        }).join('');
-
-        svg.innerHTML = `
-            <defs>
-                <linearGradient id="ec-fill" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stop-color="rgba(242, 202, 80, 0.35)" />
-                    <stop offset="100%" stop-color="rgba(242, 202, 80, 0)" />
-                </linearGradient>
-            </defs>
-            <g stroke="rgba(255,255,255,0.06)" stroke-width="1">
-                <line x1="${padL}" x2="${W-padR}" y1="${padT}" y2="${padT}" />
-                <line x1="${padL}" x2="${W-padR}" y1="${padT+chartH/2}" y2="${padT+chartH/2}" />
-                <line x1="${padL}" x2="${W-padR}" y1="${padT+chartH}" y2="${padT+chartH}" />
-            </g>
-            ${yTicks}
-            <line x1="${padL}" x2="${W-padR}" y1="${baselineY.toFixed(1)}" y2="${baselineY.toFixed(1)}"
-                  stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4" stroke-width="1" />
-            <text x="${W-padR}" y="${(baselineY-4).toFixed(1)}" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="end" font-family="Space Grotesk">baseline</text>
-            <path d="${fillPath}" fill="url(#ec-fill)" />
-            <path d="${linePath}" stroke="#f2ca50" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-            ${points.map((p, i) => {
-                const color = p.pnl > 0 ? 'var(--success-elev)' : p.pnl < 0 ? 'var(--error-elev)' : 'rgba(255,255,255,0.45)';
-                return `<circle class="ec-point" cx="${xs[i].toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3" fill="${color}" stroke="#0e0a18" stroke-width="1" data-idx="${i}" style="cursor:pointer" />`;
-            }).join('')}
-        `;
-
-        // Hover tooltip
-        const tooltip = document.getElementById('ec-tooltip');
-        const card = svg.closest('.equity-curve-card');
-        svg.querySelectorAll('.ec-point').forEach(circle => {
-            const idx = parseInt(circle.dataset.idx, 10);
-            const p = points[idx];
-            circle.addEventListener('mouseenter', () => {
-                const dateStr = p.date ? new Date(p.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' }) : '—';
-                const pnlSign = p.pnl >= 0 ? '+' : '';
-                const pnlColor = p.pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
-                tooltip.innerHTML = `
-                    <div class="text-xs">
-                        <div class="flex items-center gap-2 mb-1">
-                            <strong class="text-[var(--gold-elev)]">${escapeHtml(p.asset)} ${escapeHtml(p.direction)}</strong>
-                            <span class="text-[10px] px-1.5 rounded ${p.result === 'WIN' ? 'bg-green-500/20 text-green-300' : p.result === 'LOSS' ? 'bg-red-500/20 text-red-300' : 'bg-white/10 text-white/60'}">${escapeHtml(p.result || '—')}</span>
-                        </div>
-                        <div class="text-[var(--outline-elev)]">${dateStr}</div>
-                        <div class="mt-1">Balance <span class="font-bold">$${p.balance.toLocaleString('es-AR', {minimumFractionDigits: 2})}</span></div>
-                        <div style="color: ${pnlColor}">P&L ${pnlSign}$${Math.abs(p.pnl).toFixed(2)}</div>
-                        ${p.drawdown_pct > 0 ? `<div class="text-[var(--outline-elev)] text-[10px]">DD ${p.drawdown_pct.toFixed(2)}%</div>` : ''}
-                    </div>
-                `;
-                if (card) {
-                    const cardRect = card.getBoundingClientRect();
-                    const svgRect  = svg.getBoundingClientRect();
-                    const xRatio = xs[idx] / W;
-                    const yRatio = ys[idx] / H;
-                    const left = (svgRect.left - cardRect.left) + xRatio * svgRect.width;
-                    const top  = (svgRect.top  - cardRect.top)  + yRatio * svgRect.height;
-                    tooltip.style.left = `${left}px`;
-                    tooltip.style.top  = `${top}px`;
-                    tooltip.hidden = false;
-                }
-            });
-            circle.addEventListener('mouseleave', () => {
-                tooltip.hidden = true;
-            });
-        });
-
-        document.getElementById('ec-source').textContent =
-            `${rangeLabel.toUpperCase()} · ${points.length} ops`;
-    }
-
-    function wireEquityCurveTabs() {
-        const wrap = document.getElementById('ec-range-tabs');
-        if (!wrap) return;
-        wrap.addEventListener('click', e => {
-            const btn = e.target.closest('.ec-tab');
-            if (!btn) return;
-            // Update URL state
-            const url = new URL(location.href);
-            url.searchParams.set('range', btn.dataset.range);
-            history.replaceState(null, '', url);
-            loadEquityCurve(btn.dataset.range);
-        });
-        // Restore from URL on load
-        const urlRange = new URLSearchParams(location.search).get('range');
-        if (urlRange && ['all','30d','7d'].includes(urlRange)) {
-            wrap.querySelectorAll('.ec-tab').forEach(b => {
-                const active = b.dataset.range === urlRange;
-                b.classList.toggle('active', active);
-                b.setAttribute('aria-selected', active ? 'true' : 'false');
-            });
-            loadEquityCurve(urlRange);
-        }
-    }
-
-    // ══════ F1.2 — Stats ══════
-    async function loadStats() {
-        // F1.5/F1.2 guard: solo correr cuando el tab dashboard esté renderizado
-        if (!document.getElementById('stats-pf')) return;
-
-        const r = await apiFetch('/api/journal/stats', { silent: true });
-        if (!r.ok || !r.data || !r.data.success) return;
-        const s = r.data.stats;
-        const hasTrades = s.total > 0;
-
-        // Profit Factor
-        const pfEl = document.getElementById('stats-pf');
-        const pfMetaEl = document.getElementById('stats-pf-meta');
-        pfEl.textContent = hasTrades ? (s.profit_factor >= 99.99 ? '∞' : s.profit_factor.toFixed(2)) : '—';
-        pfEl.classList.remove('pos', 'neg', 'muted');
-        if (!hasTrades) pfEl.classList.add('muted');
-        else if (s.profit_factor >= 1.5) pfEl.classList.add('pos');
-        else if (s.profit_factor < 1) pfEl.classList.add('neg');
-        pfMetaEl.textContent = hasTrades
-            ? `Gross +$${s.gross_profit.toFixed(0)} / -$${s.gross_loss.toFixed(0)}`
-            : 'Sin operaciones';
-
-        // Expectativa
-        const expEl = document.getElementById('stats-expect');
-        expEl.textContent = hasTrades
-            ? (s.expectancy >= 0 ? '+$' : '-$') + Math.abs(s.expectancy).toFixed(2)
-            : '—';
-        expEl.classList.remove('pos', 'neg', 'muted');
-        if (!hasTrades) expEl.classList.add('muted');
-        else expEl.classList.add(s.expectancy >= 0 ? 'pos' : 'neg');
-        document.getElementById('stats-expect-meta').textContent = hasTrades
-            ? 'por trade promedio'
-            : '—';
-
-        // Win Rate
-        const wrEl = document.getElementById('stats-wr');
-        wrEl.textContent = hasTrades ? s.win_rate.toFixed(1) + '%' : '—';
-        wrEl.classList.remove('pos', 'neg', 'muted');
-        if (!hasTrades) wrEl.classList.add('muted');
-        else if (s.win_rate >= 50) wrEl.classList.add('pos');
-        else wrEl.classList.add('neg');
-        document.getElementById('stats-wr-meta').textContent = hasTrades
-            ? `${s.wins}W / ${s.losses}L`
-            : '—';
-
-        // Avg Win
-        document.getElementById('stats-avg-w').textContent = hasTrades && s.avg_win > 0
-            ? '+$' + s.avg_win.toFixed(2)
-            : '—';
-        document.getElementById('stats-avg-w-meta').textContent = hasTrades
-            ? `${s.wins} ops ganadoras`
-            : '—';
-
-        // Avg Loss
-        document.getElementById('stats-avg-l').textContent = hasTrades && s.avg_loss > 0
-            ? '-$' + s.avg_loss.toFixed(2)
-            : '—';
-        document.getElementById('stats-avg-l-meta').textContent = hasTrades
-            ? `${s.losses} ops perdedoras`
-            : '—';
-
-        // Best/Worst/Total
-        document.getElementById('stats-best').textContent = s.best_trade !== null
-            ? '+$' + s.best_trade.toFixed(2)
-            : '—';
-        document.getElementById('stats-worst').textContent = s.worst_trade !== null
-            ? '-$' + Math.abs(s.worst_trade).toFixed(2)
-            : '—';
-        const totalEl = document.getElementById('stats-total-pnl');
-        totalEl.textContent = (s.total_pnl >= 0 ? '+' : '-$') + Math.abs(s.total_pnl).toFixed(2);
-        totalEl.style.color = s.total_pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
-
-        document.getElementById('stats-trade-count').textContent = s.total;
-    }
-
-    // ══════ loadDashboard — orquestador principal del dashboard ══════
-    // Refresca las secciones principales del dashboard.
-    // Llamado en DOMContentLoaded y cada 60s para mantener datos frescos.
-    async function loadDashboard() {
-        // F1.5 guard: solo correr cuando el tab dashboard esté renderizado
-        if (!document.getElementById('stats-pf')) return;
-
-        // Stats + Guardian son los más importantes; refresca ambos en paralelo.
-        await Promise.all([
-            loadStats(),
-            loadGuardianWidget(),
-        ]);
-    }
-
-    // ══════ F1.3 — Calendar state ══════
-    let _CALstate = null;  // { year, month }
-    function _nowYM() {
-        const d = new Date();
-        return { year: d.getFullYear(), month: d.getMonth() + 1 };
-    }
-    function _pad(n) { return n < 10 ? '0' + n : '' + n; }
-
-    async function loadCalendarMonthly(year, month) {
-        const grid = document.getElementById('cal-month-grid');
-        if (!grid) return;
-        const url = `/api/journal/calendar-monthly?year=${year}&month=${month}`;
-        const r = await apiFetch(url, { silent: true });
-        if (!r.ok || !r.data || !r.data.success) return;
-
-        _CALstate = { year: r.data.year, month: r.data.month_num };
-
-        document.getElementById('cal-month-title').textContent =
-            `${r.data.month_name} ${r.data.year}`;
-        document.getElementById('cal-month-pnl').textContent = fmtUSD(r.data.summary.total_pnl);
-        document.getElementById('cal-month-pnl').style.color =
-            r.data.summary.total_pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
-        document.getElementById('cal-month-trades').textContent = r.data.summary.trade_count;
-        document.getElementById('cal-month-wr').textContent = r.data.summary.win_rate;
-
-        renderMonthGrid(r.data.year, r.data.month_num, r.data.days);
-        renderMonthlyPnlChart(r.data.monthly_pnl);
-    }
-
-    function renderMonthGrid(year, month, daysByDate) {
-        const grid = document.getElementById('cal-month-grid');
-        const dayMap = Object.fromEntries(daysByDate.map(d => [d.date, d]));
-        const headers = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-        const headerHtml = headers.map(h =>
-            `<div class="cal-month-day-header">${h}</div>`
-        ).join('');
-
-        const firstOfMonth = new Date(year, month - 1, 1);
-        // ISO weekday: Mon=1..Sun=7 → array index: Mon=0..Sun=6
-        const firstIsoWeekday = firstOfMonth.getDay() === 0 ? 7 : firstOfMonth.getDay();
-        const offsetCells = firstIsoWeekday - 1;
-        const daysInMonth = new Date(year, month, 0).getDate();
-        const daysInPrevMonth = new Date(year, month - 1, 0).getDate();
-        const totalCells = Math.ceil((offsetCells + daysInMonth) / 7) * 7;
-
-        const today = new Date();
-        const todayIso = `${today.getFullYear()}-${_pad(today.getMonth() + 1)}-${_pad(today.getDate())}`;
-
-        let bodyHtml = '';
-        for (let i = 0; i < totalCells; i++) {
-            let cellYear = year, cellMonth = month;
-            let cellNum;
-            let outside = false;
-            const dayIndex = i - offsetCells + 1;
-            if (dayIndex < 1) {
-                // previous month
-                cellMonth = month === 1 ? 12 : month - 1;
-                cellYear  = month === 1 ? year - 1 : year;
-                cellNum = daysInPrevMonth + dayIndex;
-                outside = true;
-            } else if (dayIndex > daysInMonth) {
-                // next month
-                cellMonth = month === 12 ? 1 : month + 1;
-                cellYear  = month === 12 ? year + 1 : year;
-                cellNum = dayIndex - daysInMonth;
-                outside = true;
-            } else {
-                cellNum = dayIndex;
-            }
-            const isoDate = `${cellYear}-${_pad(cellMonth)}-${_pad(cellNum)}`;
-            const dayData = !outside ? dayMap[isoDate] : null;
-            const isToday = !outside && isoDate === todayIso;
-
-            const trades = dayData?.trade_count || 0;
-            const pnl = dayData?.pnl || 0;
-            const wins = dayData?.wins || 0;
-            const losses = dayData?.losses || 0;
-            const hasOpen = dayData?.has_open || false;
-
-            let variant = '';
-            if (trades > 0) {
-                if (wins > 0 && losses === 0 && !hasOpen) variant = 'wins';
-                else if (losses > 0 && wins === 0 && !hasOpen) variant = 'losses';
-                else if (hasOpen) variant = 'has-open';
-                else variant = 'mixed';
-            }
-
-            const pnlClass = pnl > 0 ? 'pos' : (pnl < 0 ? 'neg' : 'zero');
-            const pnlSign = pnl > 0 ? '+' : '';
-            const pnlTxt = trades === 0 ? '' : `${pnlSign}$${Math.abs(pnl).toFixed(0)}`;
-            const countTxt = trades === 0 ? '' : `${trades} op${trades>1?'s':''}`;
-
-            bodyHtml += `
-                <div class="cal-month-day ${outside ? 'outside' : ''} ${isToday ? 'today' : ''} ${variant}"
-                     data-date="${isoDate}"
-                     ${outside ? '' : 'role="button" tabindex="0"'}>
-                    <div class="cal-month-day-num">${cellNum}</div>
-                    <div>
-                        <div class="cal-month-day-pnl ${pnlClass}">${pnlTxt}</div>
-                        <div class="cal-month-day-count">${countTxt}</div>
-                    </div>
-                </div>
-            `;
-        }
-        grid.innerHTML = headerHtml + bodyHtml;
-        // TNSVT Sprint I.2 — Animación de entrada al cambiar mes
-        grid.classList.add('cal-month-grid-animate');
-        setTimeout(() => grid.classList.remove('cal-month-grid-animate'), 400);
-    }
-
-    function wireCalendarNav() {
-        const prev = document.getElementById('cal-prev');
-        const next = document.getElementById('cal-next');
-        const today = document.getElementById('cal-today');
-        if (!prev || !next || !today) return;
-        prev.addEventListener('click', () => {
-            const s = _CALstate || _nowYM();
-            let m = s.month - 1, y = s.year;
-            if (m < 1) { m = 12; y--; }
-            loadCalendarMonthly(y, m);
-        });
-        next.addEventListener('click', () => {
-            const s = _CALstate || _nowYM();
-            let m = s.month + 1, y = s.year;
-            if (m > 12) { m = 1; y++; }
-            loadCalendarMonthly(y, m);
-        });
-        today.addEventListener('click', () => {
-            const t = _nowYM();
-            loadCalendarMonthly(t.year, t.month);
-        });
-    }
-
-    function wireCalendarClicks() {
-        const grid = document.getElementById('cal-month-grid');
-        if (!grid) return;
-        grid.addEventListener('click', e => {
-            const cell = e.target.closest('.cal-month-day');
-            if (!cell || cell.classList.contains('outside')) return;
-            openCalDayModal(cell.dataset.date);
-        });
-        grid.addEventListener('keydown', e => {
-            if (e.key !== 'Enter' && e.key !== ' ') return;
-            const cell = e.target.closest('.cal-month-day');
-            if (!cell || cell.classList.contains('outside')) return;
-            e.preventDefault();
-            openCalDayModal(cell.dataset.date);
-        });
-    }
-
-    async function openCalDayModal(isoDate) {
-        // Re-fetch from /api/journal/calendar-monthly for the month, then filter day
-        if (!_CALstate) {
-            const t = _nowYM();
-            _CALstate = t;
-        }
-        const r = await apiFetch(`/api/journal/calendar-monthly?year=${_CALstate.year}&month=${_CALstate.month}`, { silent: true });
-        if (!r.ok || !r.data || !r.data.success) return;
-        const dayData = (r.data.days || []).find(d => d.date === isoDate);
-
-        const titleEl = document.getElementById('cal-day-modal-title');
-        titleEl.textContent = `Detalle · ${formatLongDate(isoDate)}`;
-
-        const body = document.getElementById('cal-day-modal-body');
-        if (!dayData || !dayData.trades || dayData.trades.length === 0) {
-            body.innerHTML = '<p class="cal-trades-empty">No hay trades registrados en este día.</p>';
-        } else {
-            const total = dayData.pnl;
-            const totalClass = total >= 0 ? 'pnl-pos' : 'pnl-neg';
-            const totalSign = total >= 0 ? '+' : '';
-            body.innerHTML = `
-                <div class="flex items-center gap-3 mb-3 text-sm">
-                    <span>Total del día: <strong class="${totalClass}">${totalSign}$${Math.abs(total).toFixed(2)}</strong></span>
-                    <span class="text-[var(--outline-elev)]">·</span>
-                    <span>${dayData.trade_count} operacion${dayData.trade_count>1?'es':''}</span>
-                    <span class="text-[var(--outline-elev)]">·</span>
-                    <span><span class="text-green-400">${dayData.wins}W</span> / <span class="text-red-400">${dayData.losses}L</span>${dayData.breakeven ? ` / <span class="text-[var(--outline-elev)]">${dayData.breakeven}BE</span>` : ''}${dayData.has_open ? ` / <span class="text-violet-400">abiertas</span>` : ''}</span>
-                </div>
-                <table class="cal-trades-table">
-                    <thead>
-                        <tr>
-                            <th>Hora</th>
-                            <th>Activo</th>
-                            <th>Dir</th>
-                            <th>Result</th>
-                            <th class="text-right">P&L</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${dayData.trades.map(t => {
-                            const date = new Date(t.date);
-                            const hora = `${_pad(date.getHours())}:${_pad(date.getMinutes())}`;
-                            const pnlCls = t.pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
-                            const pnlSign = t.pnl >= 0 ? '+' : '';
-                            return `
-                                <tr>
-                                    <td class="font-mono text-xs text-[var(--outline-elev)]">${hora}</td>
-                                    <td class="font-semibold">${escapeHtml(t.asset || '')}</td>
-                                    <td><span class="px-1.5 py-0.5 rounded text-xs ${t.direction === 'BUY' ? 'bg-green-500/15 text-green-300' : 'bg-red-500/15 text-red-300'}">${escapeHtml(t.direction || '')}</span></td>
-                                    <td><span class="px-1.5 py-0.5 rounded text-xs ${t.result === 'WIN' ? 'bg-green-500/20 text-green-300' : t.result === 'LOSS' ? 'bg-red-500/20 text-red-300' : 'bg-white/10 text-white/60'}">${escapeHtml(t.result || '')}</span></td>
-                                    <td class="text-right ${pnlCls}">${pnlSign}$${Math.abs(t.pnl).toFixed(2)}</td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-        const modal = document.getElementById('cal-day-modal');
-        calDayModal.open();
-    }
-
-    const calDayModal = apiSetupModal(document.getElementById('cal-day-modal'));
-
-    function wireCalDayModal() {
-        const modal = document.getElementById('cal-day-modal');
-        if (!modal) return;
-        document.querySelectorAll('[data-action="close-cal-day"]').forEach(b => {
-            b.addEventListener('click', closeCalDayModal);
-        });
-        // Click-outside close + Escape are handled by apiSetupModal.
-    }
-    function closeCalDayModal() {
-        if (typeof calDayModal !== 'undefined' && calDayModal) calDayModal.close();
-    }
-
-    function formatLongDate(isoDate) {
-        const [y, m, d] = isoDate.split('-').map(Number);
-        const date = new Date(y, m - 1, d);
-        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        return `${dias[date.getDay()]} ${d} de ${meses[date.getMonth()]}, ${y}`;
-    }
-
-    // ══════ F1.4 — P&L Mensual Bar Chart (bonus, mismo endpoint) ══════
-    function renderMonthlyPnlChart(rows) {
-        const wrap = document.getElementById('monthly-pnl-chart');
-        if (!wrap) return;
-        if (!rows || rows.length === 0) {
-            wrap.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-xs">Sin datos.</p>';
-            return;
-        }
-        const W = 720, H = 260;
-        const padT = 20, padB = 36, padL = 56, padR = 16;
-        const chartW = W - padL - padR;
-        const chartH = H - padT - padB;
-        const n = rows.length;
-        const barGap = 0.25;
-        const barW = (chartW / n) * (1 - barGap);
-
-        const vals = rows.map(r => r.pnl);
-        const maxAbs = Math.max(...vals.map(Math.abs), 1);
-        const yMax = Math.ceil(maxAbs * 1.1);
-        const yMin = -yMax;
-        const yRange = yMax - yMin;
-        const zeroY = padT + chartH * (yMax / yRange);
-
-        const xFor = (i) => padL + (i + 0.5) * (chartW / n) - barW / 2;
-        const yFor = (v) => padT + chartH * ((yMax - v) / yRange);
-
-        const monthLabels = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-        const bars = rows.map((r, i) => {
-            const x = xFor(i);
-            const y = yFor(r.pnl);
-            const h = Math.abs(zeroY - y);
-            const color = r.pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
-            return `
-                <rect class="monthly-bar" x="${x.toFixed(1)}" y="${Math.min(y, zeroY).toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" fill="${color}" stroke="#0e0a18" stroke-width="1" rx="3" data-month="${r.month}" />
-                <text class="monthly-pnl-axis-text" x="${(x + barW/2).toFixed(1)}" y="${(padT + chartH + 16).toFixed(1)}" text-anchor="middle">${monthLabels[parseInt(r.month.slice(5), 10) - 1]}</text>
-            `;
-        }).join('');
-
-        // Y-axis ticks
-        const ticks = [-yMax, -yMax/2, 0, yMax/2, yMax].map(v => {
-            const y = yFor(v);
-            return `
-                <line x1="${padL}" x2="${W-padR}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
-                <text class="monthly-pnl-axis-text" x="${padL-8}" y="${(y+4).toFixed(1)}" text-anchor="end">${fmtUSD(v)}</text>
-            `;
-        }).join('');
-
-        wrap.innerHTML = `
-            <svg class="monthly-pnl-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="P&L mensual últimos 6 meses">
-                ${ticks}
-                <line x1="${padL}" x2="${W-padR}" y1="${zeroY.toFixed(1)}" y2="${zeroY.toFixed(1)}" stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4" stroke-width="1" />
-                <text class="monthly-pnl-axis-text" x="${W-padR}" y="${(zeroY-4).toFixed(1)}" text-anchor="end">$0</text>
-                ${bars}
-            </svg>
-        `;
-
-        // source line
-        const tot = vals.reduce((a, b) => a + b, 0);
-        const sign = tot >= 0 ? '+' : '';
-        const srcEl = document.getElementById('monthly-pnl-source');
-        if (srcEl) srcEl.textContent = `6m: ${sign}${fmtUSD(tot)} · ${rows.reduce((a, r) => a + r.trade_count, 0)} ops`;
-    }
-
     </script>
 {% endblock %}

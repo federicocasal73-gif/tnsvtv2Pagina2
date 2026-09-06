@@ -1,0 +1,82 @@
+/*
+ * TNSVT — Typography System (unified)
+ * Centraliza Cinzel / Orbitron / Inter que antes estaban inline en 12 partials.
+ * No cambia valores visuales — solo los nombra. Escala fluida con clamp().
+ */
+
+/* ═══ TOKENS (extiende tokens.css) ═══ */
+:root {
+    --font-display: 'Cinzel', serif;          /* títulos hero / section */
+    --font-label:   'Orbitron', sans-serif;   /* labels / Eyebrow / tags */
+    --font-body:    'Inter', sans-serif;      /* párrafos */
+
+    --text-display-xl: clamp(1.25rem, 2.2vw, 1.6rem);
+    --text-title:      0.95rem;
+    --text-body:       0.82rem;
+    --text-caption:    0.72rem;
+    --text-label:      0.58rem;
+    --text-micro:      0.52rem;
+
+    --leading-body:    1.65;
+    --leading-tight:   1.2;
+    --tracking-label:  0.08em;
+    --tracking-display:0.04em;
+}
+
+/* ═══ UTILITIES ═══ */
+.text-display {
+    font-family: var(--font-display);
+    font-size: var(--text-display-xl);
+    letter-spacing: var(--tracking-display);
+    line-height: var(--leading-tight);
+}
+
+.text-title {
+    font-family: var(--font-body);
+    font-size: var(--text-title);
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.text-body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+}
+
+.text-caption {
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    line-height: 1.5;
+}
+
+.text-label {
+    font-family: var(--font-label);
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    line-height: 1.4;
+}
+
+.text-micro {
+    font-family: var(--font-label);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    line-height: 1.4;
+}
+
+/* Variantes de peso para label/micro */
+.text-label--bold,
+.text-micro--bold {
+    font-weight: 700;
+}
+
+/* Helpers para migrar inline sin romper color/margin */
+.text-display--gold {
+    color: var(--gold-bright-elev);
+}
+
+.text-label--muted {
+    color: var(--outline-elev);
+}

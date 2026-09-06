@@ -1,0 +1,75 @@
+{# ─────────────────────────────────────────────────────────────
+   TNSVT V2 · Reusable widget partials (Fase 5)
+   Import in any template with:
+     {% import '_partials/components/_progress.html.twig' as progress %}
+     {{ progress.streak_widget() }}
+     {{ progress.heatmap_widget() }}
+     {{ progress.achievements_widget() }}
+#}
+
+{# ── Streak counter ── #}
+{% macro streak_widget() %}
+<div class="me-progress-streak ui-card ui-card-elevated ui-card-padding-md"
+     data-controller="me-progress">
+    <header class="ui-card-header">
+        <h3 class="ui-card-title">
+            <span class="material-symbols-elev text-[var(--gold-elev)]">local_fire_department</span>
+            Racha
+        </h3>
+        <span class="me-streak-today" data-me-progress-target="streakToday" title="Hoy">●</span>
+    </header>
+    <div class="me-streak-body">
+        <div class="me-streak-main">
+            <span class="me-streak-value" data-me-progress-target="streakValue">—</span>
+            <span class="me-streak-unit">días</span>
+        </div>
+        <div class="me-streak-meta">
+            <span>Mejor racha: <strong data-me-progress-target="streakLongest">—</strong></span>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{# ── Heatmap ── #}
+{% macro heatmap_widget(weeks=12) %}
+<div class="me-progress-heatmap ui-card ui-card-elevated ui-card-padding-md"
+     data-controller="me-progress">
+    <header class="ui-card-header">
+        <h3 class="ui-card-title">
+            <span class="material-symbols-elev text-[var(--gold-elev)]">local_fire_department</span>
+            Actividad reciente
+        </h3>
+        <span class="me-heatmap-legend">
+            <span>Menos</span>
+            <span class="me-heatmap-cell level-0"></span>
+            <span class="me-heatmap-cell level-1"></span>
+            <span class="me-heatmap-cell level-2"></span>
+            <span class="me-heatmap-cell level-3"></span>
+            <span class="me-heatmap-cell level-4"></span>
+            <span>Más</span>
+        </span>
+    </header>
+    <div class="me-heatmap-grid"
+         data-me-progress-target="heatmapGrid"
+         aria-label="Mapa de actividad de las últimas {{ weeks }} semanas">
+        <div class="me-heatmap-skeleton"></div>
+    </div>
+</div>
+{% endmacro %}
+
+{# ── Achievements grid ── #}
+{% macro achievements_widget() %}
+<div class="me-progress-achievements ui-card ui-card-elevated ui-card-padding-md"
+     data-controller="me-progress">
+    <header class="ui-card-header">
+        <h3 class="ui-card-title">
+            <span class="material-symbols-elev text-[var(--gold-elev)]">emoji_events</span>
+            Logros
+        </h3>
+        <span class="me-achievements-total" data-me-progress-target="achievementsTotal">— pts</span>
+    </header>
+    <div class="me-achievements-grid" data-me-progress-target="achievementsGrid">
+        <div class="me-achievements-skeleton"></div>
+    </div>
+</div>
+{% endmacro %}

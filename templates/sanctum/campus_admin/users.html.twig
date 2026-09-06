@@ -1,0 +1,58 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}Progreso de alumnos · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Progreso de alumnos{% endblock %}
+{% block topbar_subtitle %}Vista por estudiante: lecciones completadas, tareas y feedback{% endblock %}
+
+{% block content %}
+<div class="campus-admin-shell">
+    <header class="campus-admin-header">
+        <div>
+            <h1 class="campus-admin-title">Progreso de alumnos</h1>
+            <p class="campus-admin-subtitle">Vista detallada del avance por estudiante.</p>
+        </div>
+        <a href="{{ path('sanctum_campus_admin_courses') }}" class="ui-btn ui-btn-ghost ui-btn-size-md">
+            <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">arrow_back</span>
+            Volver a Cursos
+        </a>
+    </header>
+
+    <section class="campus-admin-users-grid">
+        {% for s in students %}
+            <article class="ui-card ui-card-elevated ui-card-padding-md campus-admin-user-card">
+                <header class="ui-card-header">
+                    <div class="campus-admin-user-avatar">
+                        <span>{{ s.name|default(s.code)|slice(0, 1)|upper }}</span>
+                    </div>
+                    <div>
+                        <h3 class="ui-card-title">{{ s.name|default('—') }}</h3>
+                        <p class="campus-admin-user-code">{{ s.code }}</p>
+                    </div>
+                </header>
+                <div class="campus-admin-user-meta">
+                    {{ ui.status_pill(s.tier|default('INITIATE'), s.tier|default('INITIATE')) }}
+                    <span class="text-xs">{{ s.email|default('') }}</span>
+                </div>
+                <p class="campus-admin-user-empty">Haz clic en "Ver detalle" para inspeccionar el avance de este alumno en cada curso.</p>
+                <footer class="campus-admin-user-actions">
+                    <a href="#" class="ui-btn ui-btn-secondary ui-btn-size-sm campus-admin-user-detail-btn"
+                       data-user-code="{{ s.code }}">
+                        <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">visibility</span>
+                        Ver detalle
+                    </a>
+                </footer>
+            </article>
+        {% else %}
+            {% include '_partials/empty_state.html.twig' with {
+                icon: 'group_off',
+                message: 'Sin alumnos activos',
+                description: 'Cuando los alumnos se registren y activen su cuenta aparecerán aquí.',
+                size: 'md'
+            } only %}
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

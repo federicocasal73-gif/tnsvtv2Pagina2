@@ -32,17 +32,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: JournalSetting::class)]
     private ?JournalSetting $journalSetting = null;
 
+    #[ORM\OneToMany(mappedBy: 'assignedTo', targetEntity: Task::class)]
+    private Collection $tasksAssigned;
+
+    #[ORM\OneToMany(mappedBy: 'assignedBy', targetEntity: Task::class)]
+    private Collection $tasksCreated;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: TaskSubmission::class)]
+    private Collection $taskSubmissions;
+
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: TaskComment::class)]
+    private Collection $taskComments;
+
+    #[ORM\OneToMany(mappedBy: 'grader', targetEntity: TaskFeedback::class)]
+    private Collection $taskFeedbacksGiven;
+
     public function __construct()
     {
         $this->walletTransactions = new ArrayCollection();
         $this->diaryEntries = new ArrayCollection();
         $this->connections = new ArrayCollection();
+        $this->tasksAssigned = new ArrayCollection();
+        $this->tasksCreated = new ArrayCollection();
+        $this->taskSubmissions = new ArrayCollection();
+        $this->taskComments = new ArrayCollection();
+        $this->taskFeedbacksGiven = new ArrayCollection();
     }
 
     public function getWalletTransactions(): Collection { return $this->walletTransactions; }
     public function getDiaryEntries(): Collection { return $this->diaryEntries; }
     public function getConnections(): Collection { return $this->connections; }
     public function getJournalSetting(): ?JournalSetting { return $this->journalSetting; }
+    public function getTasksAssigned(): Collection { return $this->tasksAssigned; }
+    public function getTasksCreated(): Collection { return $this->tasksCreated; }
+    public function getTaskSubmissions(): Collection { return $this->taskSubmissions; }
+    public function getTaskComments(): Collection { return $this->taskComments; }
+    public function getTaskFeedbacksGiven(): Collection { return $this->taskFeedbacksGiven; }
 
     public function getAvatarUrl(): ?string
     {

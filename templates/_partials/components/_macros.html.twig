@@ -1,0 +1,174 @@
+{#
+   _macros.html.twig — Reusable Twig macros for TNSVT V2
+   ───────────────────────────────────────────────────────────────
+   Import in any template with:
+     {% import '_partials/components/_macros.html.twig' as ui %}
+
+   Available macros:
+     • {{ ui.status_pill(status, label, size) }}    — single source-of-truth pill
+     • {{ ui.progress_bar(percent, label, size, color) }} — accessible progress
+     • {{ ui.card(title, body, footer, attrs) }}    — glassmorphic card
+     • {{ ui.empty_state(icon, message, description, cta_url, cta_label, size) }}
+     • {{ ui.loading_state(icon, message, size) }}
+     • {{ ui.button(label, url, variant, icon, attrs) }} — primary/secondary/ghost/danger
+     • {{ ui.icon(name, size, class) }}              — Material symbol helper
+     • {{ ui.badge(count, variant) }}                — count badge (notification bell)
+#}
+
+{# ─────────────────────────────────────────────────────────────
+   STATUS PILL — single source of truth, 7 canonical states
+   ───────────────────────────────────────────────────────────── #}
+{% macro status_pill(status, label, size) %}
+    {% set _status = status|default('pending') %}
+    {% set _label = label|default(_status|replace({'_': ' '})|title) %}
+    {% set _size = size|default('md') %}
+    <span class="status-pill status-pill-{{ _status }} size-{{ _size }}"
+          role="status"
+          aria-label="Estado: {{ _label }}">
+        {{ _label }}
+    </span>
+{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────
+   PROGRESS BAR — accessible with role + aria-valuenow
+   ───────────────────────────────────────────────────────────── #}
+{% macro progress_bar(percent, label, size, color) %}
+    {% set _pct = percent|default(0) %}
+    {% set _label = label|default('Progreso') %}
+    {% set _size = size|default('md') %}
+    {% set _color = color|default('gold') %}
+    <div class="progress-bar progress-bar-{{ _size }} progress-bar-{{ _color }}"
+         role="progressbar"
+         aria-valuenow="{{ _pct }}"
+         aria-valuemin="0"
+         aria-valuemax="100"
+         aria-label="{{ _label }}: {{ _pct }}%">
+        {% if label is defined and label %}
+            <div class="progress-bar-label">
+                <span>{{ _label }}</span>
+                <span class="progress-bar-value">{{ _pct }}%</span>
+            </div>
+        {% endif %}
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width: {{ _pct }}%"></div>
+        </div>
+    </div>
+{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────
+   CARD — glassmorphic container with optional header/footer
+   ───────────────────────────────────────────────────────────── #}
+{% macro card(title, body, footer, attrs) %}
+    {% set _attrs = attrs|default({}) %}
+    {% set _class = _attrs.class|default('') %}
+    {% set _variant = _attrs.variant|default('default') %}
+    {% set _padding = _attrs.padding|default('md') %}
+    <article class="ui-card ui-card-{{ _variant }} ui-card-padding-{{ _padding }} {{ _class }}">
+        {% if title %}
+            <header class="ui-card-header">
+                <h3 class="ui-card-title">{{ title }}</h3>
+                {% if _attrs.header_action is defined and _attrs.header_action %}
+                    <div class="ui-card-header-action">{{ _attrs.header_action|raw }}</div>
+                {% endif %}
+            </header>
+        {% endif %}
+        <div class="ui-card-body">
+            {{ body|default('')|raw }}
+        </div>
+        {% if footer %}
+            <footer class="ui-card-footer">
+                {{ footer|raw }}
+            </footer>
+        {% endif %}
+    </article>
+{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────
+   EMPTY STATE
+   ───────────────────────────────────────────────────────────── #}
+{% macro empty_state(icon, message, description, cta_url, cta_label, size) %}
+    {% set _icon = icon|default('inbox') %}
+    {% set _message = message|default('Sin datos') %}
+    {% set _description = description|default('') %}
+    {% set _size = size|default('md') %}
+    <div class="empty-state empty-state-{{ _size }}" role="status">
+        <span class="material-symbols-elev empty-state-icon" aria-hidden="true">{{ _icon }}</span>
+        <p class="empty-state-message">{{ _message }}</p>
+        {% if _description %}
+            <p class="empty-state-description">{{ _description }}</p>
+        {% endif %}
+        {% if cta_url is defined and cta_url and cta_label is defined and cta_label %}
+            <a href="{{ cta_url }}" class="empty-state-cta">
+                {{ cta_label }}
+                <span class="material-symbols-elev" aria-hidden="true">arrow_forward</span>
+            </a>
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────
+   LOADING STATE
+   ───────────────────────────────────────────────────────────── #}
+{% macro loading_state(icon, message, size) %}
+    {% set _icon = icon|default('progress_activity') %}
+    {% set _message = message|default('Cargando...') %}
+    {% set _size = size|default('md') %}
+    <div class="loading-state loading-state-{{ _size }}" role="status" aria-live="polite">
+        <span class="material-symbols-elev loading-state-icon" aria-hidden="true">{{ _icon }}</span>
+        <p class="loading-state-message">{{ _message }}</p>
+    </div>
+{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────
+   BUTTON — primary/secondary/ghost/danger variants
+   ───────────────────────────────────────────────────────────── #}
+{% macro button(label, url, variant, icon, attrs) %}
+    {% set _variant = variant|default('primary') %}
+    {% set _attrs = attrs|default({}) %}
+    {% set _class = _attrs.class|default('') %}
+    {% set _size = _attrs.size|default('md') %}
+    {% set _type = _attrs.type|default('button') %}
+    {% set _disabled = _attrs.disabled|default(false) %}
+    {% set _tag = url is defined and url ? 'a' : 'button' %}
+    {% set _icon_pos = _attrs.icon_position|default('left') %}
+    <{{ _tag }}
+        {% if _tag == 'a' %}
+            href="{{ url }}"
+        {% else %}
+            type="{{ _type }}"
+            {% if _disabled %}disabled{% endif %}
+        {% endif %}
+        class="ui-btn ui-btn-{{ _variant }} ui-btn-size-{{ _size }} {{ _class }}"
+        {% if _attrs.title is defined and _attrs.title %}title="{{ _attrs.title }}"{% endif %}
+        {% if _attrs.aria_label is defined and _attrs.aria_label %}aria-label="{{ _attrs.aria_label }}"{% endif %}>
+        {% if icon is defined and icon and _icon_pos == 'left' %}
+            <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">{{ icon }}</span>
+        {% endif %}
+        <span class="ui-btn-label">{{ label }}</span>
+        {% if icon is defined and icon and _icon_pos == 'right' %}
+            <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">{{ icon }}</span>
+        {% endif %}
+    </{{ _tag }}>
+{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────
+   ICON — Material Symbols helper
+   ───────────────────────────────────────────────────────────── #}
+{% macro icon(name, size, class) %}
+    {% set _size = size|default('md') %}
+    {% set _class = class|default('') %}
+    <span class="material-symbols-elev icon-size-{{ _size }} {{ _class }}" aria-hidden="true">{{ name }}</span>
+{% endmacro %}
+
+{# ─────────────────────────────────────────────────────────────
+   BADGE — count badge for notification bell, etc.
+   ───────────────────────────────────────────────────────────── #}
+{% macro badge(count, variant) %}
+    {% set _count = count|default(0) %}
+    {% set _variant = variant|default('gold') %}
+    {% if _count > 0 %}
+        <span class="ui-badge ui-badge-{{ _variant }}" aria-label="{{ _count }} notificaciones">
+            {{ _count > 99 ? '99+' : _count }}
+        </span>
+    {% endif %}
+{% endmacro %}

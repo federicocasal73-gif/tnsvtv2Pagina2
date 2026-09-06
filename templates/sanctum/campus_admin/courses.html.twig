@@ -1,0 +1,74 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}Administrar Campus · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}Campus · Contenido{% endblock %}
+{% block topbar_subtitle %}Cursos, módulos y lecciones{% endblock %}
+
+{% block content %}
+<div class="campus-admin-shell" data-controller="campus-admin"
+     data-campus-admin-token-value="{{ app.user ? app.user.code : '' }}">
+
+    {# ─── Header bar ─── #}
+    <header class="campus-admin-header">
+        <div>
+            <h1 class="campus-admin-title">Gestor de Contenido</h1>
+            <p class="campus-admin-subtitle">Cursos, módulos y lecciones del Campus Académico.</p>
+        </div>
+        <div class="campus-admin-actions">
+            <a href="{{ path('sanctum_campus_admin_submissions') }}" class="ui-btn ui-btn-ghost ui-btn-size-md">
+                <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">inbox</span>
+                Bandeja de entregas
+            </a>
+            <a href="{{ path('sanctum_campus_admin_users') }}" class="ui-btn ui-btn-ghost ui-btn-size-md">
+                <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">group</span>
+                Progreso de alumnos
+            </a>
+            <a href="{{ path('sanctum_campus_admin_course_new') }}" class="ui-btn ui-btn-primary ui-btn-size-md">
+                <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">add</span>
+                Nuevo curso
+            </a>
+        </div>
+    </header>
+
+    {# ─── Tabs ─── #}
+    <nav class="campus-admin-tabs" aria-label="Vistas">
+        <button type="button" class="campus-admin-tab is-active" data-campus-admin-target="tabAll" data-action="click->campus-admin#loadList">
+            <span class="material-symbols-elev">view_list</span>
+            Todos
+        </button>
+        <button type="button" class="campus-admin-tab" data-campus-admin-target="tabActive" data-action="click->campus-admin#loadActive">
+            <span class="material-symbols-elev">check_circle</span>
+            Activos
+        </button>
+        <button type="button" class="campus-admin-tab" data-campus-admin-target="tabDraft" data-action="click->campus-admin#loadDrafts">
+            <span class="material-symbols-elev">draft</span>
+            Borradores
+        </button>
+    </nav>
+
+    {# ─── Toolbar (search + create) ─── #}
+    <section class="campus-admin-toolbar">
+        <label class="campus-admin-search">
+            <span class="material-symbols-elev">search</span>
+            <input type="search" placeholder="Buscar curso…"
+                   data-campus-admin-target="searchInput"
+                   data-action="input->campus-admin#onSearch"
+                   class="campus-admin-search-input" />
+        </label>
+        <span class="campus-admin-count" data-campus-admin-target="count">—</span>
+    </section>
+
+    {# ─── Courses list (drag & drop) ─── #}
+    <section class="campus-admin-list" data-campus-admin-target="list"
+                              aria-label="Lista de cursos">
+        {% include '_partials/loading_state.html.twig' with {
+            icon: 'progress_activity',
+            message: 'Cargando cursos…',
+            size: 'md'
+        } only %}
+    </section>
+</div>
+{% endblock %}

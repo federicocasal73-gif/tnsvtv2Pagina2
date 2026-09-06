@@ -25,6 +25,7 @@
 
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/components.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/chat-widget.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/v2-sparklines.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/animations.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/glow.css') }}" />
@@ -35,13 +36,17 @@
 </head>
 
 <body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased relative"
-      data-controller="pwa">
+      data-controller="pwa"
+      {% if app.user %}data-user-code="{{ app.user.code }}" data-user-tier="{{ app.user.tier|default('INITIATE') }}"{% endif %}>
+
+<a href="#main-content" class="skip-link">Saltar al contenido principal</a>
 
 {# ═══ FASE 0 — Fondo estrellado global (V2 identidad visual) ═══ #}
 {# https://tnsvt.com necesita esta identidad en TODAS las páginas. #}
 {% block background %}{% endblock %}
 <script src="{{ asset('js/modules/theme.js') }}" defer></script>
 <script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
+{{ importmap('divine_overlay') }}
 
 {# api_helper MUST be included BEFORE any {% block content %} to ensure window.apiFetch is defined #}
 {% include '_partials/api_helper.html.twig' with {} %}
@@ -161,6 +166,10 @@
                 <span class="material-symbols-elev">task_alt</span>
                 <span class="sanctum-link-label">Tareas</span>
             </a>
+            <a href="{{ path('sanctum_campus_admin_courses') }}" class="sanctum-link" data-page="campus-admin">
+                <span class="material-symbols-elev">school</span>
+                <span class="sanctum-link-label">Campus · Contenido</span>
+            </a>
             <a href="{{ path('sanctum_audit') }}" class="sanctum-link" data-page="audit">
                 <span class="material-symbols-elev">shield</span>
                 <span class="sanctum-link-label">Audit</span>
@@ -194,7 +203,7 @@
         </div>
     </aside>
 
-    <main class="sanctum-main">
+    <main class="sanctum-main" id="main-content" tabindex="-1">
         <header class="sanctum-topbar">
         <div>
             <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Inicio{% endblock %}</h2>
@@ -465,6 +474,12 @@
 })();
 </script>
 
-{% block javascripts %}{% endblock %}
+{# ═══ Onboarding wizard (first-login) — hidden por default ═══ #}
+{% include '_partials/_onboarding/wizard.html.twig' %}
+
+{% block javascripts %}
+    {{ importmap('divine_overlay') }}
+    {{ importmap('onboarding') }}
+{% endblock %}
 </body>
 </html>

@@ -250,7 +250,7 @@
             const r = await apiFetch(`/api/chat/conversations/${state.activeConvId}/messages`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text })
+                body: JSON.stringify({ content: text })
             });
             if (r.ok && r.data) {
                 $input.value = '';

@@ -16,6 +16,18 @@ return [
         'path' => './src/assets/app.js',
         'entrypoint' => true,
     ],
+    'macro_academy' => [
+        'path' => './src/assets/js/modules/macro_academy.js',
+        'entrypoint' => true,
+    ],
+    'divine_overlay' => [
+        'path' => './src/assets/js/modules/divine-overlay.js',
+        'entrypoint' => true,
+    ],
+    'onboarding' => [
+        'path' => './src/assets/js/modules/onboarding.js',
+        'entrypoint' => true,
+    ],
     '@hotwired/stimulus' => [
         'path' => './src/assets/third_party/stimulus.module.js',
     ],

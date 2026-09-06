@@ -1,0 +1,39 @@
+/*
+ * TNSVT — Divine Overlay Styles
+ * Cielo estrellado enriquecido (300 stars + 80 particles + shooting meteors)
+ * Se monta encima del WebGL shader (webgl-background.js).
+ */
+
+#divine-canvas-overlay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 600ms ease;
+}
+
+#divine-canvas-overlay[aria-hidden="true"] {
+    /* aria-hidden por defecto — es decorativo */
+}
+
+/* Reducir peso en mobile — solo stars */
+@media (max-width: 768px) {
+    #divine-canvas-overlay {
+        /* El JS ya detecta mobile y dibuja menos elementos */
+    }
+}
+
+/* Reduced motion — solo 1 frame estático */
+@media (prefers-reduced-motion: reduce) {
+    #divine-canvas-overlay {
+        /* El JS pausa después del primer frame */
+    }
+}
+
+/* APK mode — deshabilitar por completo (battery saver extremo) */
+body.is-apk #divine-canvas-overlay {
+    display: none;
+}
