@@ -11,6 +11,21 @@
 <div class="max-w-7xl mx-auto"
      data-controller="calendar_events"
      data-calendar-events-url-value="{{ path('app_calendar_widget') }}">
+    {# ─── Tareas próximas (Fase 6) ─── #}
+    <section class="glass-card-elev p-4 mb-4" data-controller="upcoming-tasks">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-3);">
+            <h3 style="display:flex; align-items:center; gap: var(--space-2); font-weight:600; color: var(--on-surface-elev);">
+                <span class="material-symbols-elev" style="color: var(--gold-elev);">task_alt</span>
+                Tareas próximas en el calendario
+                <span class="status-pill size-sm" data-upcoming-tasks-target="count" style="background: var(--glass-bg-elev);">—</span>
+            </h3>
+            <a href="/sanctum/tasks" style="font-size:0.8rem; color: var(--gold-elev);">Ver todas →</a>
+        </div>
+        <div data-upcoming-tasks-target="list" style="display:grid; gap: var(--space-2);">
+            <p style="text-align:center; color: var(--outline-elev); padding: var(--space-3);">Cargando…</p>
+        </div>
+    </section>
+
     {# ─── Filters ─── #}
     <div class="glass-card-elev p-4 mb-4 flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-2">

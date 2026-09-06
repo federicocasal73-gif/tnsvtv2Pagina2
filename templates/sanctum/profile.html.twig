@@ -118,6 +118,14 @@
         </div>
     </div>
 
+    {# ─── Progreso Personal (Fase 5) ─── #}
+    {% import '_partials/components/_progress.html.twig' as progress %}
+    <div class="space-y-4">
+        {{ progress.streak_widget() }}
+        {{ progress.heatmap_widget() }}
+        {{ progress.achievements_widget() }}
+    </div>
+
     {# ─── Security Settings ─── #}
     <div class="glass-card-elev">
         <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
