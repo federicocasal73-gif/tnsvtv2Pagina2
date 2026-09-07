@@ -1044,6 +1044,32 @@
 .empty-state-sm .empty-state-description { font-size: 0.75rem; }
 .empty-state-lg .empty-state-icon { font-size: 4rem; }
 .empty-state-lg .empty-state-message { font-size: 1.25rem; }
+/* Compact: inline row inside cards/lists (Fase B) */
+.empty-state-compact {
+    flex-direction: row;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+.empty-state-compact .empty-state-icon { font-size: 1.5rem; margin-bottom: 0; }
+.empty-state-compact .empty-state-message { font-size: 0.8rem; margin: 0; }
+.empty-state-compact .empty-state-description { font-size: 0.75rem; margin: 0; }
+/* Illustrated: decorative glow ring behind the icon (no new assets) */
+.empty-state-illustrated .empty-state-icon {
+    position: relative;
+    font-size: 3.5rem;
+    opacity: 1;
+    color: var(--gold-elev);
+    filter: drop-shadow(0 0 12px rgba(242, 202, 80, 0.35));
+}
+.empty-state-illustrated .empty-state-icon::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+    border-radius: 999px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    pointer-events: none;
+}
 
 /* ══════ Loading State (reusable) ══════ */
 .loading-state {

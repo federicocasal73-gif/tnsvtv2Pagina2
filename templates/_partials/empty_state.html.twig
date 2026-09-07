@@ -2,14 +2,15 @@
    empty_state.html.twig — Reusable empty state component
    ───────────────────────────────────────────────────────────────
    Usage:
-     {% include '_partials/empty_state.html.twig' with {
-       icon: 'inbox',
-       message: 'Sin mensajes',
-       description: 'Cuando recibas mensajes aparecerán aquí',
-       cta_url: '/chat/new',
-       cta_label: 'Iniciar conversación',
-       size: 'lg'    ← optional: 'sm' | 'md' (default) | 'lg'
-     } %}
+      {% include '_partials/empty_state.html.twig' with {
+        icon: 'inbox',
+        message: 'Sin mensajes',
+        description: 'Cuando recibas mensajes aparecerán aquí',
+        cta_url: '/chat/new',
+        cta_label: 'Iniciar conversación',
+        size: 'lg'    ← optional: 'sm' | 'md' (default) | 'lg'
+                         | 'compact' (inline row) | 'illustrated' (glow icon)
+      } %}
 #}
 {% set _icon = icon|default('inbox') %}
 {% set _message = message|default('Sin datos') %}

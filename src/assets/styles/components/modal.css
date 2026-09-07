@@ -57,6 +57,69 @@
     to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* ═══ Exit animations (Fase B — mirrors entry, faster) ═══ */
+.tnsvt-modal-overlay.is-closing {
+    animation: tnsvtOverlayOut 180ms ease forwards;
+}
+.tnsvt-modal-overlay.is-closing .tnsvt-modal {
+    animation: tnsvtCardOut 180ms ease forwards;
+}
+@keyframes tnsvtOverlayOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+@keyframes tnsvtCardOut {
+    from { opacity: 1; transform: scale(1) translateY(0); }
+    to   { opacity: 0; transform: scale(0.96) translateY(8px); }
+}
+
+/* ═══ Variants (Fase B) ═══ */
+.tnsvt-modal--centered {
+    max-width: 420px;
+    text-align: center;
+}
+.tnsvt-modal--centered .tnsvt-modal__header {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+.tnsvt-modal--danger {
+    border-color: rgba(248, 113, 113, 0.45);
+    box-shadow:
+        0 24px 64px rgba(0,0,0,0.6),
+        0 0 80px rgba(248, 113, 113, 0.18),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.tnsvt-modal--danger .tnsvt-modal__title .material-symbols-elev {
+    color: #fca5a5;
+}
+.tnsvt-modal--drawer-right {
+    margin-left: auto;
+    margin-right: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 16px 0 0 16px;
+    max-width: 420px;
+}
+.tnsvt-modal-overlay:has(.tnsvt-modal--drawer-right) {
+    justify-content: flex-end;
+    padding: 0;
+}
+.tnsvt-modal--drawer-right {
+    animation-name: tnsvtDrawerIn;
+}
+@keyframes tnsvtDrawerIn {
+    from { opacity: 0; transform: translateX(48px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.tnsvt-modal--fullscreen {
+    max-width: none;
+    width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+}
+
 /* Variante ancha (calendario day detail, academic) */
 .tnsvt-modal--wide {
     max-width: 640px;

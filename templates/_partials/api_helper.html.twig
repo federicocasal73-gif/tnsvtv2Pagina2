@@ -206,10 +206,32 @@
             return Array.from(modalEl.querySelectorAll(FOCUSABLE)).filter(el => el.offsetParent !== null);
         }
 
+        let backdropHandler = null;
+        let closingTimer = null;
+        const REDUCED_MOTION = typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function doHide() {
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('hidden', '');
+            document.body.style.overflow = '';
+            if (trapHandler) modalEl.removeEventListener('keydown', trapHandler);
+            escHandler = null;
+            trapHandler = null;
+            if (backdropHandler) {
+                modalEl.removeEventListener('click', backdropHandler);
+                backdropHandler = null;
+            }
+            (opts.close || function () {})();
+            if (prevFocus && typeof prevFocus.focus === 'function') {
+                prevFocus.focus();
+            }
+        }
+
         function onKeydown(e) {
             if (e.key === 'Escape') {
                 e.stopPropagation();
-                (opts.close || apiCloseModal)(modalEl);
+                closeAnimated();
                 return;
             }
             if (e.key !== 'Tab') return;
@@ -229,8 +251,22 @@
             }
         }
 
+        function closeAnimated() {
+            if (modalEl.classList.contains('is-closing')) return;
+            if (closingTimer) { clearTimeout(closingTimer); closingTimer = null; }
+            if (REDUCED_MOTION) { doHide(); return; }
+            modalEl.classList.add('is-closing');
+            closingTimer = setTimeout(() => {
+                closingTimer = null;
+                modalEl.classList.remove('is-closing');
+                doHide();
+            }, 180);
+        }
+
         return {
             open() {
+                if (closingTimer) { clearTimeout(closingTimer); closingTimer = null; }
+                modalEl.classList.remove('is-closing');
                 prevFocus = document.activeElement;
                 document.body.style.overflow = 'hidden';
                 modalEl.removeAttribute('hidden');
@@ -242,18 +278,15 @@
                 escHandler = onKeydown;
                 trapHandler = onKeydown;
                 modalEl.addEventListener('keydown', trapHandler);
+                if (opts.dismissBackdrop !== false && !backdropHandler) {
+                    backdropHandler = (e) => {
+                        if (e.target === modalEl) closeAnimated();
+                    };
+                    modalEl.addEventListener('click', backdropHandler);
+                }
             },
             close() {
-                modalEl.style.display = 'none';
-                modalEl.setAttribute('hidden', '');
-                document.body.style.overflow = '';
-                if (trapHandler) modalEl.removeEventListener('keydown', trapHandler);
-                escHandler = null;
-                trapHandler = null;
-                (opts.close || function () {})();
-                if (prevFocus && typeof prevFocus.focus === 'function') {
-                    prevFocus.focus();
-                }
+                closeAnimated();
             },
             isOpen() {
                 return modalEl.style.display !== 'none' && !modalEl.hasAttribute('hidden');
@@ -269,9 +302,22 @@
 
     function apiCloseModal(modalEl) {
         if (!modalEl) return;
-        modalEl.style.display = 'none';
-        modalEl.setAttribute('hidden', '');
-        document.body.style.overflow = '';
+        const reduced = typeof window.matchMedia === 'function' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduced || modalEl.classList.contains('is-closing')) {
+            modalEl.classList.remove('is-closing');
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('hidden', '');
+            document.body.style.overflow = '';
+            return;
+        }
+        modalEl.classList.add('is-closing');
+        setTimeout(() => {
+            modalEl.classList.remove('is-closing');
+            modalEl.style.display = 'none';
+            modalEl.setAttribute('hidden', '');
+            document.body.style.overflow = '';
+        }, 180);
     }
 
     window.apiSetupModal = apiSetupModal;
