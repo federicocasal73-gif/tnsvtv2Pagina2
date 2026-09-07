@@ -16,11 +16,11 @@
         <p class="mc-card-text" style="margin-bottom:12px;">Ocurre cuando dos bancos centrales tienen <strong style="color:var(--gold-bright);">políticas monetarias opuestas</strong>. Una economía crece y sube tasas mientras la otra se debilita y las baja. Esto crea una tendencia estructural clara en el par de divisas.</p>
         <div class="mc-grid2">
             <div style="background:rgba(52,199,89,0.06);border:1px solid rgba(52,199,89,0.2);border-radius:8px;padding:12px;">
-                <div style="font-family:'Orbitron',sans-serif;font-size:0.6rem;color:#34c759;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Economía Fuerte (Hawkish)</div>
+                <div class="text-label" style="font-size:0.6rem;color:#34c759;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Economía Fuerte (Hawkish)</div>
                 <p style="font-size:0.78rem;line-height:1.5;">✅ PIB creciendo<br>✅ Inflación controlada<br>✅ Tasas subiendo o altas<br>✅ Empleo fuerte<br><strong style="color:#34c759;">→ Su moneda SUBE</strong></p>
             </div>
             <div style="background:rgba(255,59,48,0.06);border:1px solid rgba(255,59,48,0.2);border-radius:8px;padding:12px;">
-                <div style="font-family:'Orbitron',sans-serif;font-size:0.6rem;color:var(--red-impact);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Economía Débil (Dovish)</div>
+                <div class="text-label" style="font-size:0.6rem;color:var(--red-impact);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Economía Débil (Dovish)</div>
                 <p style="font-size:0.78rem;line-height:1.5;">❌ PIB estancado o negativo<br>❌ Inflación desbordada o muy baja<br>❌ Tasas bajando o bajas<br>❌ Desempleo subiendo<br><strong style="color:var(--red-impact);">→ Su moneda BAJA</strong></p>
             </div>
         </div>
@@ -47,7 +47,7 @@
                 </p>
             </div>
             <div style="background:rgba(9,5,18,0.8);border:1px dashed rgba(212,175,55,0.2);border-radius:10px;padding:16px;margin-top:14px;">
-                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
+                <div class="text-label" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
                 <p style="font-size:0.82rem;margin-bottom:12px;">La FED sube tasas al 5% mientras el Banco de Japón las mantiene en 0%. ¿Qué sesgo macro tenés en USD/JPY?</p>
                 <div style="display:flex;flex-direction:column;gap:8px;" id="div-q1-opts">
                     <button type="button" class="mc-quiz-opt" onclick="geoQ('div-q1','A',true,'div-q1-fb')"><div class="mc-quiz-letter">A</div> Sesgo alcista en USD/JPY — el dólar es más atractivo por las tasas altas</button>
@@ -79,7 +79,7 @@
         <div class="mc-card-title" style="margin-bottom:16px;">🎯 Quiz — Identificá la Divergencia</div>
         <div style="display:flex;flex-direction:column;gap:14px;">
             <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
-                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 1</div>
+                <div class="text-label" style="font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 1</div>
                 <p style="font-size:0.82rem;margin-bottom:10px;">FED: Tasas al 5.25%, hawkish. BCE: Tasas al 2%, dovish. GDP USA +3%, GDP Europa -0.5%. ¿Sesgo en EUR/USD?</p>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;" id="div-esc1-opts">
                     <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc1','A',false,'div-esc1-fb')"><div class="mc-quiz-letter">A</div> Alcista EUR/USD</button>
@@ -89,7 +89,7 @@
                 <div class="mc-quiz-fb" id="div-esc1-fb" style="margin-top:8px;"></div>
             </div>
             <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
-                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 2</div>
+                <div class="text-label" style="font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 2</div>
                 <p style="font-size:0.82rem;margin-bottom:10px;">FED: Tasas al 4.5%, empezando a bajar. RBA (Australia): Tasas al 4.35%, hawkish, aún subiendo. ¿Sesgo en AUD/USD?</p>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;" id="div-esc2-opts">
                     <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc2','A',true,'div-esc2-fb')"><div class="mc-quiz-letter">A</div> Alcista AUD/USD</button>
@@ -99,7 +99,7 @@
                 <div class="mc-quiz-fb" id="div-esc2-fb" style="margin-top:8px;"></div>
             </div>
             <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
-                <div style="font-family:'Orbitron',sans-serif;font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 3</div>
+                <div class="text-label" style="font-size:0.65rem;color:var(--gold-bright);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Escenario 3</div>
                 <p style="font-size:0.82rem;margin-bottom:10px;">FED: Tasas al 4%, bajando lentamente. BCE: Tasas al 4%, bajando al mismo ritmo. ¿Qué harías con EUR/USD?</p>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;" id="div-esc3-opts">
                     <button type="button" class="mc-quiz-opt" style="flex:1;" onclick="geoQ('div-esc3','A',false,'div-esc3-fb')"><div class="mc-quiz-letter">A</div> Comprarlo con fuerza</button>
@@ -112,7 +112,7 @@
     </div>
 
     <div style="background:rgba(138,60,255,0.06);border:1px solid rgba(138,60,255,0.25);border-radius:14px;padding:22px;">
-        <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--violet);margin-bottom:6px;">✍️ Tarea Práctica — Mapa de Divergencias</div>
+        <div class="text-display" style="font-size:1.1rem;color:var(--violet);margin-bottom:6px;">✍️ Tarea Práctica — Mapa de Divergencias</div>
         <p style="font-size:0.82rem;color:#a499b8;line-height:1.6;margin-bottom:14px;">Cada domingo antes de abrir el mercado, completá esta tabla mentalmente (o anotala en papel):</p>
         <div style="display:flex;flex-direction:column;gap:8px;">
             <div class="mc-data-row" style="border-color:rgba(138,60,255,0.15);">
