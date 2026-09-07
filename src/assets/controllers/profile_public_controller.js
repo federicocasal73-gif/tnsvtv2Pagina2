@@ -62,7 +62,7 @@ export default class extends Controller {
                     </div>
                 </div>
             </div>
-            ${isOwner ? '<div class="text-center mt-4"><a href="/profile" class="btn-primary">Editar Mi Perfil</a></div>' : ''}
+            ${isOwner ? '<div class="text-center mt-4"><a href="/profile" class="ui-btn ui-btn-primary">Editar Mi Perfil</a></div>' : ''}
         `;
     }
 

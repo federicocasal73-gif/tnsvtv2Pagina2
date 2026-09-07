@@ -86,17 +86,17 @@ export default class extends Controller {
                 ${s.comments ? `<p class="campus-admin-submission-comments">${this.escape(s.comments)}</p>` : ''}
                 ${s.files && s.files.length > 0 ? `
                     <div class="campus-admin-submission-files">
-                        ${s.files.map(f => `<a href="${this.escape(f.url)}" target="_blank" rel="noopener" class="ui-btn ui-btn-ghost ui-btn-size-sm"><span class="material-symbols-elev ui-btn-icon">attach_file</span> ${this.escape(f.name || 'archivo')}</a>`).join('')}
+                        ${s.files.map(f => `<a href="${this.escape(f.url)}" target="_blank" rel="noopener" class="ui-btn ui-btn ghost ui-btn-size-sm"><span class="material-symbols-elev ui-btn-icon">attach_file</span> ${this.escape(f.name || 'archivo')}</a>`).join('')}
                     </div>
                 ` : ''}
                 <footer class="campus-admin-submission-actions">
-                    <button type="button" class="ui-btn ui-btn-primary ui-btn-size-sm"
+                    <button type="button" class="ui-btn ui-btn primary ui-btn-size-sm"
                             data-action="click->campus-admin-submissions#approve"
                             data-submission-id="${s.id}">
                         <span class="material-symbols-elev ui-btn-icon">check_circle</span>
                         Aprobar
                     </button>
-                    <button type="button" class="ui-btn ui-btn-secondary ui-btn-size-sm"
+                    <button type="button" class="ui-btn ui-btn secondary ui-btn-size-sm"
                             data-action="click->campus-admin-submissions#returnForRevision"
                             data-submission-id="${s.id}">
                         <span class="material-symbols-elev ui-btn-icon">undo</span>

@@ -131,11 +131,11 @@ export default class extends Controller {
 
         const html = [];
         if (p.page > 1) {
-            html.push(`<button class="btn-elev-ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page - 1}">← Anterior</button>`);
+            html.push(`<button class="ui-btn ui-btn ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page - 1}">← Anterior</button>`);
         }
         html.push(`<span class="px-3 text-[var(--var(--on-surface-elev))]">Página ${p.page} de ${p.pages} · ${p.total} total</span>`);
         if (p.page < p.pages) {
-            html.push(`<button class="btn-elev-ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page + 1}">Siguiente →</button>`);
+            html.push(`<button class="ui-btn ui-btn ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page + 1}">Siguiente →</button>`);
         }
         elPag.innerHTML = html.join('');
     }

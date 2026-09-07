@@ -397,7 +397,7 @@ export default class extends Controller {
 
         return buttons.map(b => `
             <button type="button"
-                    class="ui-btn ${b.primary ? 'ui-btn-primary' : 'ui-btn-secondary'} ui-btn-size-md"
+                    class="ui-btn ${b.primary ? 'ui-btn primary' : 'ui-btn secondary'} ui-btn-size-md"
                     data-action="click->tasks#changeStatus"
                     data-new-status="${b.status}">
                 <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">${b.icon}</span>

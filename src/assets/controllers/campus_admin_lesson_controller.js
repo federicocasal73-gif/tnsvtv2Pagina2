@@ -204,7 +204,7 @@ export default class extends Controller {
                     <span class="material-symbols-elev">${this.materialIcon(m.type)}</span>
                     <span class="campus-admin-material-title">${this.escape(m.title)}</span>
                     <span class="campus-admin-material-type">${this.escape(m.type)}</span>
-                    <button type="button" class="ui-btn ui-btn-ghost ui-btn-size-sm" data-action="click->campus-admin-lesson#deleteMaterial" data-material-id="${m.id}">
+                    <button type="button" class="ui-btn ui-btn ghost ui-btn-size-sm" data-action="click->campus-admin-lesson#deleteMaterial" data-material-id="${m.id}">
                         <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">delete</span>
                     </button>
                 </div>

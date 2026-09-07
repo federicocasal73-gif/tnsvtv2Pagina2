@@ -101,7 +101,7 @@ export default class extends Controller {
                 </div>
                 <div class="campus-admin-card-actions">
                     <a href="/sanctum/campus/admin/courses/${c.id}"
-                       class="ui-btn ui-btn-ghost ui-btn-size-sm">
+                       class="ui-btn ui-btn ghost ui-btn-size-sm">
                         <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">edit</span>
                         Editar
                     </a>

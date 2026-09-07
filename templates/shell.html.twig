@@ -208,13 +208,13 @@
             <p class="text-xs text-[var(--outline-elev)] italic">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
         </div>
         <div class="flex items-center gap-3" data-controller="protocol notification-bell">
-            <button type="button" class="btn-elev-primary group" title="Invocar Protocolo" aria-label="Invocar Protocolo" aria-haspopup="dialog" data-action="protocol#onButtonClick">
+            <button type="button" class="ui-btn ui-btn primary group" title="Invocar Protocolo" aria-label="Invocar Protocolo" aria-haspopup="dialog" data-action="protocol#onButtonClick">
                 <span class="material-symbols-elev text-base" aria-hidden="true">bolt</span>
                 <span>Invocar Protocolo</span>
             </button>
 
             <div class="notif-wrap" data-notification-bell-target="wrap">
-                <button type="button" class="btn-elev-ghost relative" title="Notificaciones" aria-label="Notificaciones" aria-haspopup="menu" aria-expanded="false" data-notification-bell-target="button" data-action="notification-bell#toggle">
+                <button type="button" class="ui-btn ui-btn ghost relative" title="Notificaciones" aria-label="Notificaciones" aria-haspopup="menu" aria-expanded="false" data-notification-bell-target="button" data-action="notification-bell#toggle">
                     <span class="material-symbols-elev relative" aria-hidden="true">notifications</span>
                     <span id="header-notif-badge" class="hidden" data-notification-bell-target="count">0</span>
                 </button>

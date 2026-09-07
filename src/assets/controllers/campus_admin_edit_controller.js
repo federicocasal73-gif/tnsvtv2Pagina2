@@ -123,11 +123,11 @@ export default class extends Controller {
                     <span class="campus-admin-module-meta">
                         <span data-lessons-count="${m.id}">0 lecciones</span>
                     </span>
-                    <button type="button" class="ui-btn ui-btn-secondary ui-btn-size-sm" data-action="click->campus-admin-edit#addLesson" data-module-id="${m.id}">
+                    <button type="button" class="ui-btn ui-btn secondary ui-btn-size-sm" data-action="click->campus-admin-edit#addLesson" data-module-id="${m.id}">
                         <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">add</span>
                         Lección
                     </button>
-                    <button type="button" class="ui-btn ui-btn-ghost ui-btn-size-sm" data-action="click->campus-admin-edit#deleteModule" data-module-id="${m.id}">
+                    <button type="button" class="ui-btn ui-btn ghost ui-btn-size-sm" data-action="click->campus-admin-edit#deleteModule" data-module-id="${m.id}">
                         <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">delete</span>
                     </button>
                 </header>

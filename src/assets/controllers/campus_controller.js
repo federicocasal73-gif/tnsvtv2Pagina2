@@ -158,7 +158,7 @@ export default class extends Controller {
                     <span>${this.escapeHtml(l.module_title || '')}</span>
                 </p>
                 <a href="/campus?lesson=${l.id}"
-                   class="ui-btn ui-btn-primary ui-btn-size-md campus-continue-cta"
+                   class="ui-btn ui-btn primary ui-btn-size-md campus-continue-cta"
                    data-action="click->campus#navigateToLesson">
                     Continuar lección
                     <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">arrow_forward</span>
@@ -428,7 +428,7 @@ export default class extends Controller {
 
                 <footer class="campus-lesson-footer">
                     <button type="button"
-                            class="ui-btn ui-btn-primary ui-btn-size-lg campus-mark-complete"
+                            class="ui-btn ui-btn primary ui-btn-size-lg campus-mark-complete"
                             data-action="click->campus#markComplete"
                             data-lesson-id="${lesson.id}"
                             ${completed ? 'disabled' : ''}>

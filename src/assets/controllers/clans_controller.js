@@ -68,7 +68,7 @@ export default class extends Controller {
                     <div class="clan-name">${c.name}</div>
                     <div class="clan-meta">${c.memberCount || 0} miembros</div>
                 </div>
-                <button class="btn-primary text-xs" data-action="click->clans#join" data-id="${c.id}">Unirse</button>
+                <button class="ui-btn ui-btn-primary text-xs" data-action="click->clans#join" data-id="${c.id}">Unirse</button>
             </div>
         `).join('');
     }
