@@ -49,9 +49,15 @@ class ChatController extends AbstractController
 
     private function resolveUser(Request $request): ?User
     {
-        $code = $request->query->get('user_code') ?? ($request->request->get('user_code'));
+        // Order: X-Game-Code header > ?user_code= query > POST user_code > JSON user_code
+        // The apiFetch JS helper auto-attaches the header, so this is the
+        // primary path. The query/body fallbacks remain for callers that
+        // don't go through apiFetch (raw fetch, curl, etc.).
+        $code = $request->headers->get('X-Game-Code', '');
         if (!$code) {
-            // Try JSON body
+            $code = $request->query->get('user_code') ?? ($request->request->get('user_code'));
+        }
+        if (!$code) {
             $data = json_decode($request->getContent(), true);
             $code = $data['user_code'] ?? null;
         }
