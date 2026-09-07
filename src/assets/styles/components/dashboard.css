@@ -341,6 +341,32 @@
 .stats-row .kpi-value.neg { color: var(--error-elev); }
 .stats-row .kpi-value.muted { color: var(--outline-elev); }
 
+/* ══════ Journal KPI Cards — responsive sizing ══════ */
+#journal-stats .glass-card-elev {
+    padding: 0.75rem;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+#journal-stats .kpi-value {
+    font-size: 1.5rem;
+    line-height: 1.1;
+}
+@media (max-width: 640px) {
+    #journal-stats .glass-card-elev {
+        padding: 0.5rem;
+        min-height: 72px;
+    }
+    #journal-stats .kpi-value {
+        font-size: 1.25rem;
+    }
+    #journal-stats .kpi-label {
+        font-size: 0.6rem;
+    }
+}
+
 /* ══════ F1.3 — Calendario Mensual ══════ */
 .cal-nav-btn {
     display: inline-flex;
