@@ -420,10 +420,18 @@
 
     // Theme toggle (Fase E): cycles dark → light → auto, persists via
     // window.tnsvtTheme (localStorage) and server-side theme_preference.
-    (function initThemeToggle() {
+    // NOTE: theme.js loads with `defer`, so window.tnsvtTheme may not exist
+    // yet when this inline script runs — retry until ready (max ~3s).
+    (function initThemeToggle(attempts) {
         const btn = document.getElementById('theme-toggle-btn');
         const icon = document.getElementById('theme-toggle-icon');
-        if (!btn || !window.tnsvtTheme) return;
+        if (!btn) return;
+        if (!window.tnsvtTheme) {
+            if ((attempts || 0) < 30) {
+                setTimeout(() => initThemeToggle((attempts || 0) + 1), 100);
+            }
+            return;
+        }
         function paint() {
             const cur = window.tnsvtTheme.get();
             const dark = window.tnsvtTheme.isDark();
