@@ -513,6 +513,19 @@
     color: var(--on-surface-elev);
     background: rgba(255, 255, 255, 0.03);
 }
+.sanctum-link:hover .material-symbols-elev {
+    transform: scale(1.12);
+    color: var(--gold-elev);
+}
+.sanctum-link .material-symbols-elev {
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+@media (hover: none) {
+    .sanctum-link:hover .material-symbols-elev { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sanctum-link .material-symbols-elev { transition: none; }
+}
 .sanctum-link.active {
     color: var(--gold-elev);
     background: rgba(242, 202, 80, 0.08);

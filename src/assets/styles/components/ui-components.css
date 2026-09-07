@@ -20,6 +20,39 @@
 }
 .ui-card:hover {
     border-color: var(--glass-border-strong-elev);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md-elev);
+}
+@media (hover: none) {
+    .ui-card:hover { transform: none; }
+}
+/* Button loading state (Fase C — opt-in via .is-loading + aria-busy) */
+.ui-btn.is-loading,
+.ui-btn[aria-busy="true"] {
+    pointer-events: none;
+    opacity: 0.85;
+    position: relative;
+}
+.ui-btn.is-loading::after,
+.ui-btn[aria-busy="true"]::after {
+    content: '';
+    width: 0.9em;
+    height: 0.9em;
+    margin-left: 0.5rem;
+    border-radius: 999px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    animation: ui-btn-spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+@keyframes ui-btn-spin {
+    to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ui-btn.is-loading::after,
+    .ui-btn[aria-busy="true"]::after {
+        animation-duration: 1.4s;
+    }
 }
 .ui-card-elevated {
     background: var(--glass-bg-strong-elev);

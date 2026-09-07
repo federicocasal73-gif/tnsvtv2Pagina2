@@ -188,6 +188,28 @@
     window.apiHideBanner = hideBanner;
 
     /* ═══════════════════════════════════════════════════════════════
+       BUTTON LOADING (Fase C — opt-in)
+       Use: const done = apiButtonLoading(btn); try { await save(); } finally { done(); }
+       Adds .is-loading + aria-busy, disables the button to prevent
+       double-submit, restores previous state on done().
+       ─────────────────────────────────────────────────────────────── */
+    function apiButtonLoading(btn) {
+        if (!btn) return function () {};
+        const prevDisabled = btn.disabled;
+        const prevBusy = btn.getAttribute('aria-busy');
+        btn.classList.add('is-loading');
+        btn.setAttribute('aria-busy', 'true');
+        btn.disabled = true;
+        return function done() {
+            btn.classList.remove('is-loading');
+            if (prevBusy === null) btn.removeAttribute('aria-busy');
+            else btn.setAttribute('aria-busy', prevBusy);
+            btn.disabled = prevDisabled;
+        };
+    }
+    window.apiButtonLoading = apiButtonLoading;
+
+    /* ═══════════════════════════════════════════════════════════════
        FOCUS TRAP + MODAL A11Y
        Use: apiSetupModal(modalEl, { open: () => {}, close: () => {} })
        ─────────────────────────────────────────────────────────────── */
