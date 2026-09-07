@@ -4,6 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#050308" />
+    {# Theme flash prevention (Fase E) — see shell.html.twig for rationale. #}
+    <script>
+    (function () {
+        try {
+            var t = localStorage.getItem('tnsvt_theme') || 'auto';
+            var light = t === 'light' ||
+                (t === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+            var html = document.documentElement;
+            html.setAttribute('data-theme', t);
+            html.classList.toggle('light', !light ? false : true);
+            html.classList.toggle('dark', light ? false : true);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', light ? '#f5f1e8' : '#050308');
+        } catch (_) {}
+    })();
+    </script>
     <title>{% block title %}T.N.S.V.T{% endblock %}</title>
 
     {% include '_partials/og_meta.html.twig' with {

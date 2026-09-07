@@ -4,6 +4,24 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#050308" />
+    {# Theme flash prevention (Fase E): apply stored theme before CSS paints.
+       theme.js (deferred) re-applies + syncs on load; this inline snippet
+       only prevents the white/dark flash. #}
+    <script>
+    (function () {
+        try {
+            var t = localStorage.getItem('tnsvt_theme') || 'auto';
+            var light = t === 'light' ||
+                (t === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+            var html = document.documentElement;
+            html.setAttribute('data-theme', t);
+            html.classList.toggle('light', !light ? false : true);
+            html.classList.toggle('dark', light ? false : true);
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', light ? '#f5f1e8' : '#050308');
+        } catch (_) {}
+    })();
+    </script>
 <link rel="manifest" href="/manifest.json" />
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}" />
     <link rel="alternate icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
@@ -227,6 +245,10 @@
                 </div>
             </div>
 
+            <button type="button" id="theme-toggle-btn" class="ui-btn ui-btn ghost relative" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema claro/oscuro" aria-live="polite">
+                <span class="material-symbols-elev" id="theme-toggle-icon" aria-hidden="true">dark_mode</span>
+            </button>
+
             <div class="protocol-overlay" data-protocol-target="overlay" role="dialog" aria-modal="true" aria-labelledby="protocol-title" tabindex="-1" hidden>
                 <div class="protocol-modal">
                     <div class="protocol-modal-header">
@@ -395,6 +417,31 @@
             apiFetch('/api/auth/logout', { method: 'POST', silent: true }).then(() => location.href = '/');
         }
     });
+
+    // Theme toggle (Fase E): cycles dark → light → auto, persists via
+    // window.tnsvtTheme (localStorage) and server-side theme_preference.
+    (function initThemeToggle() {
+        const btn = document.getElementById('theme-toggle-btn');
+        const icon = document.getElementById('theme-toggle-icon');
+        if (!btn || !window.tnsvtTheme) return;
+        function paint() {
+            const cur = window.tnsvtTheme.get();
+            const dark = window.tnsvtTheme.isDark();
+            if (icon) icon.textContent = dark ? 'dark_mode' : 'light_mode';
+            btn.setAttribute('aria-label', 'Tema actual: ' + cur + '. Activar para cambiar.');
+            btn.title = 'Tema: ' + cur + ' (click para cambiar)';
+        }
+        btn.addEventListener('click', () => {
+            const cur = window.tnsvtTheme.get();
+            const next = cur === 'dark' ? 'light' : cur === 'light' ? 'auto' : 'dark';
+            window.tnsvtTheme.set(next);
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', window.tnsvtTheme.isDark() ? '#050308' : '#f5f1e8');
+            paint();
+        });
+        document.documentElement.addEventListener('theme:change', paint);
+        paint();
+    })();
 
     // Notification badge in sidebar + topbar (poll every 60s)
     function refreshNotifBadge() {

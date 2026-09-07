@@ -153,6 +153,18 @@
     overflow: hidden;
 }
 
+/* Page-enter transition (Fase E — CSS-only, no JS behavior change) */
+@keyframes sanctum-page-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.sanctum-main > .sanctum-content {
+    animation: sanctum-page-in 220ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+    .sanctum-main > .sanctum-content { animation: none; }
+}
+
 .sanctum-topbar {
     height: 64px;
     flex-shrink: 0;
