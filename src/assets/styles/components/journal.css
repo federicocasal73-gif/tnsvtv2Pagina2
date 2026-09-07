@@ -37,6 +37,13 @@
 .journal-nav-btn:hover:not(.active) {
     color: var(--on-surface-elev, #e9def6);
 }
+@media (max-width: 480px) {
+    .journal-nav-btn {
+        flex: 0 0 auto;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.65rem;
+    }
+}
 .trade-row {
     display: flex;
     align-items: center;

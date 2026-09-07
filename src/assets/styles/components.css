@@ -559,6 +559,15 @@
     animation: v2-pulse-gold 2s ease-in-out infinite;
 }
 
+/* Scrollbar hide utility */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    UNIFIED BUTTON SYSTEM
    ═══════════════════════════════════════════════════════════════ */
