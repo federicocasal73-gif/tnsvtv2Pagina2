@@ -560,6 +560,60 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   UNIFIED BUTTON SYSTEM
+   ═══════════════════════════════════════════════════════════════ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-family: var(--font-body-elev);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.btn-primary {
+    background: var(--gold-elev);
+    color: var(--on-primary-elev);
+    border-color: var(--gold-elev);
+}
+.btn-primary:hover {
+    background: var(--gold-bright-elev);
+    box-shadow: 0 4px 16px rgba(242, 202, 80, 0.3);
+}
+.btn-ghost {
+    background: transparent;
+    color: var(--on-surface-variant-elev);
+    border-color: var(--glass-border-elev);
+}
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--on-surface-variant-elev);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    KPI CARDS — from v2-components.css (no suffix)
    ═══════════════════════════════════════════════════════════════ */
 
