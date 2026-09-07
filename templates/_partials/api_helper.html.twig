@@ -67,6 +67,8 @@
         if (!_activeToasts.has(node)) return;
         clearTimeout(_activeToasts.get(node));
         node.dataset.paused = '1';
+        const bar = node.querySelector('.api-toast-progress');
+        if (bar) bar.style.animationPlayState = 'paused';
     }
 
     function _toastResume(node) {
@@ -76,6 +78,8 @@
         const t = setTimeout(() => _toastExpire(node), TOAST_TTL[kind] || 4000);
         _activeToasts.set(node, t);
         node.dataset.paused = '0';
+        const bar = node.querySelector('.api-toast-progress');
+        if (bar) bar.style.animationPlayState = 'running';
     }
 
     function apiToast(message, kind) {
@@ -95,15 +99,20 @@
         node.setAttribute('role', kind === 'error' ? 'alert' : 'status');
         node.setAttribute('aria-live', kind === 'error' ? 'assertive' : 'polite');
         const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
-        node.innerHTML = '<span class="material-symbols-elev" aria-hidden="true"></span><span class="api-toast-msg"></span>';
-        node.firstElementChild.textContent = icons[kind] || 'info';
-        node.lastElementChild.textContent = message;
+        const ttl = TOAST_TTL[kind] || 4000;
+        node.innerHTML = '<span class="material-symbols-elev" aria-hidden="true"></span><span class="api-toast-msg"></span><button type="button" class="api-toast-close" aria-label="Descartar notificación"><span class="material-symbols-elev" aria-hidden="true">close</span></button><span class="api-toast-progress" aria-hidden="true"></span>';
+        node.children[0].textContent = icons[kind] || 'info';
+        node.children[1].textContent = message;
+        const bar = node.querySelector('.api-toast-progress');
+        if (bar) bar.style.animationDuration = ttl + 'ms';
+        const closeBtn = node.querySelector('.api-toast-close');
+        if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); _toastExpire(node); });
         node.addEventListener('mouseenter', () => _toastPause(node));
         node.addEventListener('mouseleave', () => _toastResume(node));
         node.addEventListener('click', () => _toastExpire(node));
         node.style.cursor = 'pointer';
         stack.appendChild(node);
-        const t = setTimeout(() => _toastExpire(node), TOAST_TTL[kind] || 4000);
+        const t = setTimeout(() => _toastExpire(node), ttl);
         _activeToasts.set(node, t);
     }
 

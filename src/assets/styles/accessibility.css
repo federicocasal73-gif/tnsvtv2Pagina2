@@ -204,3 +204,33 @@ summary:focus-visible {
         justify-content: center;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FOCUS RINGS — WCAG 2.4.7 (Focus Visible) — Tier 1.A
+   Keyboard-only. Hidden on mouse/touch via :focus:not(:focus-visible).
+   Gold accent matches brand, offset 2px. */
+*:focus {
+    outline: none;
+}
+*:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 2px;
+    border-radius: inherit;
+}
+.form-input:focus-visible,
+.form-select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 0;
+    border-color: var(--gold-elev);
+    box-shadow: 0 0 0 3px rgba(242, 202, 80, 0.15);
+}
+.sanctum-link:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: -2px;
+    background: rgba(242, 202, 80, 0.08);
+}
+button[aria-label]:focus-visible {
+    outline: 2px dashed var(--gold-bright-elev);
+    outline-offset: 3px;
+}
