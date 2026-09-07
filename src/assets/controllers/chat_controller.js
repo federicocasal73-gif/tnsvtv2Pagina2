@@ -35,7 +35,7 @@ export default class extends Controller {
     }
 
     async loadConversations() {
-        const r = await window.apiFetch('/api/chat/conversations', { headers: { 'X-Game-Code': this.me() } });
+        const r = await window.apiFetch('/api/chat/conversations');
         if (!r.ok || !r.data) {
             this.listTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-sm">Sin datos disponibles</p>';
             return;
@@ -87,7 +87,7 @@ export default class extends Controller {
         if (!silent) {
             this.messagesTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12 text-sm">Cargando mensajes...</p>';
         }
-        const r = await window.apiFetch(`/api/chat/conversations/${this.currentConvId}/messages`, { headers: { 'X-Game-Code': this.me() } });
+        const r = await window.apiFetch(`/api/chat/conversations/${this.currentConvId}/messages`);
         if (!r.ok || !r.data) {
             if (!silent) {
                 this.messagesTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-12 text-sm">Sin mensajes</p>';
@@ -178,7 +178,7 @@ export default class extends Controller {
             this.dmResultsTarget.innerHTML = '';
             return;
         }
-        const r = await window.apiFetch(`/api/chat/users?q=${encodeURIComponent(query)}`, { headers: { 'X-Game-Code': this.me() } });
+        const r = await window.apiFetch(`/api/chat/users?q=${encodeURIComponent(query)}`);
         if (!r.ok || !r.data) {
             this.dmResultsTarget.innerHTML = '<p class="text-[var(--outline-elev)] text-sm">Sin resultados</p>';
             return;
@@ -210,7 +210,7 @@ export default class extends Controller {
     async startDM(otherCode) {
         const r = await window.apiFetch('/api/chat/conversations', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Game-Code': this.me() },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_code: this.me(), other_code: otherCode }),
         });
         if (r.ok && r.data) {

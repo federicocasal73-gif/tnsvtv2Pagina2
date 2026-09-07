@@ -122,6 +122,18 @@
         const silent = !!opts.silent;
         const redirectOn401 = opts.redirectOn401 !== false;
 
+        // Auto-attach X-Game-Code header for any URL that needs the user-code auth.
+        // Centralises what used to be a per-controller chore (chat_controller
+        // et al. used to attach it manually, often forgetting it for new
+        // endpoints — every backend controller reads it from the
+        // `X-Game-Code` request header).
+        if (!opts.headers || !('X-Game-Code' in opts.headers)) {
+            const code = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+            if (code) {
+                opts.headers = Object.assign({}, opts.headers || {}, { 'X-Game-Code': code });
+            }
+        }
+
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
 
