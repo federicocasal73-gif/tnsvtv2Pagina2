@@ -98,16 +98,61 @@ php vendor/bin/phpstan analyse
 
 ## Deploy to Hostinger
 
-This repo is deployed to Hostinger via **hPanel Auto Deployment**
-(Option A). The hPanel UI polls the GitHub repo and runs `git pull`
-on every push to `main`. There is no GitHub Actions SSH workflow
-involved — `.github/workflows/deploy.yml` only fires when the
-`SSH_HOST` secret is set, which is currently unused.
+This repo is deployed to Hostinger via **direct SSH** from this agent's
+machine. The hPanel Auto Deployment was disabled because it always
+ran `composer install` post-pull, which fails on shared hosting (see
+"Hostinger proc_open limitation" below).
 
-To verify a push has deployed: open Hostinger hPanel → Files → File
-Manager → navigate to `public_html/` → check `git log -1` output via
-Hostinger's terminal (if available) or just hit a known endpoint
-(e.g. `/api/health`) and confirm the response.
+### Connection
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Host     | `185.173.111.201`           |
+| Port     | `65002` (not default 22)    |
+| User     | `u310596868`                |
+| Docroot  | `~/domains/tnsvt.com/public_html` |
+| Key      | `~/.ssh/id_tnsvt_deploy_oc` (ed25519, no passphrase) |
+| Comment  | `tnsvt-v2-deploy-2026`      |
+
+Fingerprint: `SHA256:tLE73RqSVDp7BEtGom7Ge6zjY0B8WIp2WFqFsjVynEs`
+
+### Deploy command
+
+After every push to `main`, the agent runs this SSH command:
+
+```bash
+ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 -o StrictHostKeyChecking=accept-new \
+    u310596868@185.173.111.201 \
+    "cd ~/domains/tnsvt.com/public_html && \
+     git fetch origin main && \
+     git reset --hard origin/main && \
+     rm -rf var/cache/prod var/cache/dev && \
+     php bin/console cache:warmup --env=prod --no-debug"
+```
+
+`composer install` is **intentionally omitted** because of the
+`proc_open` limitation below.
+
+To verify a deploy succeeded from your machine:
+
+```bash
+ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 u310596868@185.173.111.201 \
+    "cd ~/domains/tnsvt.com/public_html && git rev-parse --short HEAD"
+```
+
+Then curl `https://tnsvt.com/api/auth/check` and confirm 200.
+
+### GitHub Actions CI workflow
+
+`.github/workflows/deploy.yml` was deleted (commit `0cc357d`). It used
+to use `appleboy/ssh-action@v1.0.3` to deploy, but the current SSH
+deploy is run by the agent directly (not via GitHub Actions) so we
+have full control over what happens.
+
+`.github/workflows/ci.yml` runs the 6 CI jobs (PHPStan, PHPUnit,
+twig lint, JS lint, composer audit, messenger smoke test) on every
+push to `main` or PR. **Deploy does NOT happen from CI** — only from
+the agent. CI is green when all 6 jobs pass.
 
 ### Hostinger proc_open limitation ⚠️
 
@@ -125,39 +170,23 @@ This `disable_functions` is INI_SYSTEM and **cannot** be overridden from
 `.user.ini`, `.htaccess`, `php.ini`, or `ini_set()`. Only Hostinger staff
 can change it, and they typically refuse on shared plans.
 
-**Net effect:** hPanel's git auto-deploy runs `composer install` after
-each `git pull`. That step always fails. The "Falló la compilación"
-status in hPanel is **cosmetic** — the runtime app is fine because
-`vendor/` was populated by a previous deploy when Composer could still
-run (or was pre-shipped manually).
+**Why we don't care:** the SSH deploy workflow above does NOT run
+`composer install`. `vendor/` is already populated from a previous
+successful Composer run (or pre-shipped manually). As long as no new
+composer dependencies are added, the existing `vendor/` works fine.
+The deploy just pulls new source code, clears cache, and rebuilds.
 
-**Workaround options** (in order of preference):
+**If you need to add a new composer dep:**
 
-1. **Disable the build step** in hPanel → Advanced → Git → your
-   repository → there is (depending on hostinger version) either a
-   checkbox / toggle / drop-down that selects the project type. Pick
-   "PHP/HTML" (which per Hostinger docs does not run a build step)
-   instead of any "Node.js" / "with build" preset. If you cannot find
-   this, ask Hostinger support to remove the `composer install`
-   post-deploy hook on your account.
-2. **Keep the existing `vendor/` working.** Since `public_html/vendor/`
-   is already populated, the app boots fine as long as you don't add
-   new composer dependencies that aren't already installed.
-3. **Upgrade to Hostinger VPS or Business shared plan** if you need
-   to add new composer packages later. VPS gives you full PHP control
-   (incl. enabling `proc_open`); Business shared loosens the
-   `disable_functions` list.
+1. `composer install` locally to populate your local `vendor/`
+2. Tar `vendor/your-new-package/` + updated `vendor/composer/` (autoload changes)
+3. Upload via Hostinger File Manager or `scp` to `public_html/vendor/`
+4. Or upgrade to Hostinger VPS or Business shared plan where `proc_open`
+  is enabled.
 
 **Do NOT** commit `vendor/` to the repo as a workaround unless all
 other options fail — it bloats the repo by ~100 MB and forces every
 git operation to scan 12 000+ files.
-
-**If you must add a new composer dep**:
-
-- Either do it locally and ship a tarball via Hostinger File Manager
-  → upload to `public_html/vendor/your-package/` → regenerate the
-  autoloader locally and upload `vendor/composer/autoload_*.php` too.
-- Or upgrade the host.
 
 ## Conventions
 

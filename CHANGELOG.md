@@ -4,33 +4,59 @@ All notable changes to the **T.N.S.V.T Sanctum** project.
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased] - CI green & Sanctum admin fix
+## [Unreleased] - Design system unification + SSH deploy
 
-### Fixed
+### Added
 
-- **`App\Controller\Sanctum\UsersController`** (active route `sanctum_api_users_list`):
-  - `requireAdmin()` called `User::isAdmin()` which doesn't exist. The real method is `getIsAdmin()` (from `UserAuthTrait`). This was causing 500 instead of 403 for every regular user touching `/sanctum/api/users`.
-  - `list()` referenced undefined `getCreatedAt()` and `getLastLoginAt()` getters. Replaced with the only one that exists: `getLastLogin()`.
-  - `updateTier()` skipped `User::TIERS` validation, so an unknown tier was silently persisted with 200 OK. Now returns 400 with `error: "Invalid tier"` matching the test contract.
-  - `updateTier()` response extended to include `oldTier` and `newTier` (was just `tier`) so admin audit clients can persist a tier-change history without re-querying the user.
+- **F1 — Tipografía: Orbitron cargado + fonts loader consolidado** (commit `ce960f0`)
+  - `_partials/fonts.html.twig` ahora es el único loader de Google Fonts (Cinzel + Orbitron + Space Grotesk + Inter + Material Symbols). `shell.html.twig` y `public/shell.html.twig` lo incluyen vía `{% include %}` en lugar de duplicar `<link>` tags.
+- **F2 — Modales unificados** (commit `0830c98` + `0830c98` migrated chat + macro/dashboard)
+  - `templates/sanctum/chat.html.twig`, `templates/_partials/chat_widget.html.twig`, `templates/macro/dashboard.html.twig` migrados de `chat-modal-*` / `chat-widget-modal-*` al sistema `tnsvt-modal-*` (Phase 9+).
+  - `src/assets/styles/components/chat.css`: borradas 28 líneas de CSS obsoleto.
+- **F3 — Botones migrados a `ui-btn-*`** (commit `36f4f06`, 36 archivos)
+  - Eliminados tres sistemas paralelos: `btn-*` (v2), `btn-elev-*` (Phase 1), `ui-btn-*` (Phase 9-10).
+  - 22 `btn-primary` + 11 `btn-secondary` + 9 `btn-ghost` + 3 `btn-elev-primary` + 8 `btn-elev-secondary` + 2 `btn-elev-ghost` → `ui-btn ui-btn-{primary,secondary,ghost}`.
+  - 2 archivos JS controllers actualizados (audit, campus_admin_*, campus, clans, profile_public, tasks).
+  - `components.css`: 108 líneas de aliases legacy eliminadas.
+  - Semantic-specific (`.btn-icon`, `.btn-label`, `.btn-text`, `.btn-size-{sm,md,lg}`, `.btn-danger` → `.ui-btn-danger`, `.btn-start-questionnaire`, `.btn-new-trade`, `.btn-back`) preservados.
+- **F4 — Tokens tipográficos arreglados** (commit `cd07ac1`)
+  - **Bug pre-existente crítico**: `tokens.css` declaraba `--font-display-elev: 'Space Grotesk'` y `--font-label-elev: 'Space Grotesk'` cuando deberían ser `'Cinzel'` y `'Orbitron'`. 48 referencias a esos tokens resolvían a Space Grotesk, haciendo que los labels de macro academia / cf-widget no se vieran como estaban diseñados.
+  - Fix: `--font-display-elev: 'Cinzel', serif`; `--font-label-elev: 'Orbitron', sans-serif`; agregado `--font-mono-elev: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace`.
+  - Migración bulk: 31 CSS files, 80+ referencias de font-family literal → `var(--font-*-elev)`.
+- **F5 — Empty states cleanup** (commit `0c07dc4`)
+  - Borrado `templates/_partials/loading_state.html.twig` (0 usages, dead code).
+  - `empty_state.html.twig` consolidado como source of truth (12 includes + 8 `apiEmpty()` JS calls, visual idéntico).
+- **F6 — Polish** (commit `4ebf91a`)
+  - `templates/shell.html.twig`: consolidados 3 importmap scripts en uno solo dentro de `{% block importmap %}`.
 
-### CI
+### Changed
 
-- **Fixed `JWTEncodeFailureException` on every PHPUnit run**: `config/jwt/private.pem` is gitignored. The `lint-php`, `tests` and `messenger-consumer` jobs now generate an unencrypted RSA keypair at the start and override `JWT_PASSPHRASE=''`. (Prior passphrase-encrypted attempt mismatched the placeholder in `.env` and surfaced as `bad decrypt`.)
-- **Fixed `App_KernelDevDebugContainer.xml does not exist` blocking PHPStan**: the `dev` cache is now warmed **with debug=true** (no `--no-debug`) so the file PHPStan needs actually exists. The `test` cache still uses `--no-debug`.
-- **Regenerated `phpstan-baseline.neon`** to absorb 208 findings introduced by Phases 3-6 (rich entities `Task`/`Achievement`/`CampusQuiz`, services `StreakService`/`HeatmapService`/`CampusQuizGrader`, etc.). Local PHPStan: `[OK] No errors` against the new baseline.
-- **`continue-on-error: true` on PHPUnit step removed**. Final pipeline: 92/92 tests, PHPStan clean, Twig/JS/Composer Audit/Messenger all green.
+- **Deploy architecture switched to SSH** (commit `0cc357d`)
+  - `templates/shell.html.twig`: removida duplicación de font loader.
+  - `src/Controller/Sanctum/UsersController.php` (Phase 0): fix del bug que causaba 500 en `/sanctum/api/users` (3 bugs identificados — ver entrada previa de este Unreleased).
+
+### Removed
+
+- `.github/workflows/deploy.yml` (GitHub Actions SSH workflow) — ahora deploy es manual vía SSH desde este agente.
+- `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-elev-*` aliases de `components.css` (108 líneas).
+- `templates/_partials/loading_state.html.twig` (dead code).
+
+### Migration path (operador)
+
+- **Antes**: hPanel auto-deploy (rompía porque corría `composer install` que falla por `proc_open` en `disable_functions`).
+- **Ahora**: SSH directo desde esta sesión. Key `~/.ssh/id_tnsvt_deploy_oc` (ed25519, sin passphrase). Comando completo en `docs/SSH-DEPLOY.md`.
+- **hPanel auto-deploy**: desactivado por el operador.
 
 ### Verification
 
-- Branch: `main`, head `dea99b7`
-- CI run: `34070610586` (success) — 6/6 jobs
-- Local: `php vendor/bin/phpunit` → `Tests: 92, Assertions: 197, PHPUnit Deprecations: 1`
-- Local: `php vendor/bin/phpstan analyse` → `[OK] No errors`
-
-
+- Branch: `main`, head `f0b6247` al inicio de la sesión → `4ebf91a` al final de las 6 fases.
+- CI: 6/6 jobs verdes (último run exitoso después de remover `continue-on-error`).
+- Local: `php vendor/bin/phpunit` → `Tests: 92, Assertions: 197, PHPUnit Deprecations: 1`.
+- Production: `https://tnsvt.com/api/auth/check` → 200; `https://tnsvt.com/sanctum/api/users` → 401 con `{"success":false,"error":"Se requiere autenticación"}`.
 
 ---
+
+## [v2.0.0] — 2026-08-17 — **RELEASE CANDIDATE**
 
 ## [v2.0.0] — 2026-08-17 — **RELEASE CANDIDATE**
 
