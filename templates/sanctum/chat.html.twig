@@ -56,17 +56,20 @@
 
 </div>
 
-{# ─── Modal: Nuevo DM ─── #}
-<div class="chat-modal-overlay" id="chat-new-dm-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title">
-    <div class="chat-modal">
-        <div class="chat-modal-header">
-            <h2 id="chat-modal-title" class="chat-modal-title">Nuevo mensaje directo</h2>
-            <button type="button" class="chat-modal-close" id="chat-modal-close" aria-label="Cerrar">
-                <span class="material-symbols-elev">close</span>
+{# ─── Modal: Nuevo DM — unified tnsvt-modal (Phase 12, F2) ─── #}
+<div class="tnsvt-modal-overlay" id="chat-new-dm-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title" hidden>
+    <div class="tnsvt-modal">
+        <div class="tnsvt-modal__header">
+            <h2 id="chat-modal-title" class="tnsvt-modal__title">
+                <span class="material-symbols-elev">person_add</span>
+                <span>Nuevo mensaje directo</span>
+            </h2>
+            <button type="button" class="tnsvt-modal__close" id="chat-modal-close" aria-label="Cerrar">
+                <span class="material-symbols-elev" aria-hidden="true">close</span>
             </button>
         </div>
-        <div class="chat-modal-body">
-            <input type="text" id="chat-dm-search" class="chat-search" style="width:100%;margin-bottom:0.75rem;"
+        <div class="tnsvt-modal__body">
+            <input type="text" id="chat-dm-search" class="form-input" style="width:100%;margin-bottom:0.75rem;"
                    placeholder="Buscar por código o nombre..." autocomplete="off" />
             <div id="chat-dm-results">
                 <p class="chat-list-empty">Escribí un código o nombre para buscar...</p>

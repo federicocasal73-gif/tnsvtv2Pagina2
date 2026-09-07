@@ -143,28 +143,35 @@
             </div>
         </div>
 
-        {# ─── Modal Nuevo DM ─── #}
-        <div class="chat-widget-modal-overlay hidden"
+        {# ─── Modal Nuevo DM — unified tnsvt-modal (Phase 12, F2) ─── #}
+        {# 'hidden' class kept because chat_widget_controller.js toggles it via classList (line 121). #}
+        <div class="tnsvt-modal-overlay hidden"
              data-chat-widget-target="newDmModal"
              role="dialog"
              aria-modal="true"
              aria-label="Nuevo DM">
-            <div class="chat-widget-modal">
-                <header class="chat-widget-modal-header">
-                    <h3>Nuevo mensaje directo</h3>
+            <div class="tnsvt-modal">
+                <header class="tnsvt-modal__header">
+                    <h2 class="tnsvt-modal__title">
+                        <span class="material-symbols-elev">person_add</span>
+                        <span>Nuevo mensaje directo</span>
+                    </h2>
                     <button type="button"
-                            class="chat-widget-header-btn"
+                            class="tnsvt-modal__close"
                             data-action="chat-widget#closeNewDm"
                             aria-label="Cerrar">
-                        <span class="material-symbols-elev">close</span>
+                        <span class="material-symbols-elev" aria-hidden="true">close</span>
                     </button>
                 </header>
-                <input type="text"
-                       class="chat-widget-modal-search"
-                       placeholder="Buscar usuario..."
-                       data-chat-widget-target="userSearch">
-                <div class="chat-widget-users" data-chat-widget-target="users">
-                    <p class="chat-widget-empty-mini">Busca un usuario para iniciar...</p>
+                <div class="tnsvt-modal__body">
+                    <input type="text"
+                           class="form-input"
+                           style="width:100%;margin-bottom:0.75rem;"
+                           placeholder="Buscar usuario..."
+                           data-chat-widget-target="userSearch">
+                    <div data-chat-widget-target="users">
+                        <p class="chat-widget-empty-mini">Busca un usuario para iniciar...</p>
+                    </div>
                 </div>
             </div>
         </div>

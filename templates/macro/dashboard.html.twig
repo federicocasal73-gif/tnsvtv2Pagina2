@@ -347,21 +347,25 @@
         </article>
     </section>
 
-    {# ── Modal genérico para cuestionarios ── #}
-    <div class="chat-modal-overlay hidden" id="macro-questionnaire-modal" role="dialog" aria-modal="true" aria-labelledby="macro-questionnaire-modal-title" aria-hidden="true" tabindex="-1">
-        <div class="chat-modal" style="max-width: 700px; width: 90%;">
-            <header class="chat-modal-header">
-                <h3 id="macro-questionnaire-modal-title">Cuestionario</h3>
-                <button type="button" class="chat-widget-header-btn" data-action="closeMacroQuestionnaire" aria-label="Cerrar">
-                    <span class="material-symbols-elev">close</span>
+    {# ── Modal genérico para cuestionarios — unified tnsvt-modal (Phase 12, F2) ── #}
+    {# 'hidden' class kept because openMacroQuestionnaireModal/closeMacroQuestionnaireModal toggle it via classList. #}
+    <div class="tnsvt-modal-overlay hidden" id="macro-questionnaire-modal" role="dialog" aria-modal="true" aria-labelledby="macro-questionnaire-modal-title" aria-hidden="true" tabindex="-1">
+        <div class="tnsvt-modal tnsvt-modal--wide" style="max-width: 700px; width: 90%;">
+            <header class="tnsvt-modal__header">
+                <h2 id="macro-questionnaire-modal-title" class="tnsvt-modal__title">
+                    <span class="material-symbols-elev">quiz</span>
+                    <span>Cuestionario</span>
+                </h2>
+                <button type="button" class="tnsvt-modal__close" data-action="closeMacroQuestionnaire" aria-label="Cerrar">
+                    <span class="material-symbols-elev" aria-hidden="true">close</span>
                 </button>
             </header>
-            <div id="macro-questionnaire-modal-body" class="chat-modal-body" style="max-height: 60vh; overflow-y: auto;">
+            <div id="macro-questionnaire-modal-body" class="tnsvt-modal__body" style="max-height: 60vh; overflow-y: auto;">
                 <p>Cargando...</p>
             </div>
-            <footer class="flex justify-end gap-2 p-3 border-t border-[var(--glass-border-gold-elev)]">
-                <button type="button" class="diary-btn-secondary" data-action="closeMacroQuestionnaire">Cancelar</button>
-                <button type="button" class="diary-btn-primary" id="macro-questionnaire-submit-btn" disabled>Enviar respuestas</button>
+            <footer class="tnsvt-modal__footer">
+                <button type="button" class="ui-btn ui-btn-ghost" data-action="closeMacroQuestionnaire">Cancelar</button>
+                <button type="button" class="ui-btn ui-btn-primary" id="macro-questionnaire-submit-btn" disabled>Enviar respuestas</button>
             </footer>
         </div>
     </div>

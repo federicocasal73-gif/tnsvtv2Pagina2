@@ -237,35 +237,8 @@
 }
 .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* New DM modal */
-.chat-modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center;
-    z-index: 100;
-}
-.chat-modal-overlay.open { display: flex; }
-.chat-modal {
-    background: var(--void-black);
-    border: 1px solid var(--glass-border-elev);
-    border-radius: 0.75rem;
-    width: 100%; max-width: 460px;
-    max-height: 90vh; overflow-y: auto;
-}
-.chat-modal-header {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--glass-border-elev);
-    display: flex; align-items: center; justify-content: space-between;
-}
-.chat-modal-title { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold-elev); margin: 0; }
-.chat-modal-close {
-    background: transparent; border: none;
-    color: var(--outline-elev);
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-}
-.chat-modal-body { padding: 1rem 1.25rem; }
+/* New DM modal — moved to unified .tnsvt-modal-overlay system (see components/modal.css).
+   Kept only the result list styles below which are specific to chat search results. */
 .chat-user-result {
     display: flex; gap: 0.6rem; align-items: center;
     padding: 0.6rem;
