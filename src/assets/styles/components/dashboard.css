@@ -377,6 +377,19 @@
     }
 }
 
+/* Stats row — responsive refinements */
+@media (max-width: 640px) {
+    .stats-row .kpi-card {
+        padding: 0.5rem 0.75rem;
+    }
+    .stats-row .kpi-value {
+        font-size: 1.2rem;
+    }
+    .stats-row .kpi-label {
+        font-size: 0.65rem;
+    }
+}
+
 /* ══════ F1.3 — Calendario Mensual ══════ */
 .cal-nav-btn {
     display: inline-flex;
