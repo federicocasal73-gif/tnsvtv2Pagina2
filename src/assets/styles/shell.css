@@ -416,6 +416,13 @@
 
     .sanctum-topbar {
         padding: 0 1rem;
+        height: 56px;
+    }
+    .sanctum-topbar .topbar-title {
+        font-size: 0.9rem;
+    }
+    .sanctum-topbar .topbar-subtitle {
+        display: none;
     }
     .sanctum-content {
         padding: 1rem;
