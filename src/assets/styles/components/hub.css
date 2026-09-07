@@ -39,7 +39,7 @@
 .freq-ring-4 { width: 20%; height: 20%; animation-delay: 1.5s; border-color: rgba(242, 202, 80, 0.5); }
 .freq-center { text-align: center; z-index: 10; }
 .freq-value {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 3.5rem;
     font-weight: 700;
     color: var(--gold-elev, #f2ca50);
@@ -74,7 +74,7 @@
     box-shadow: 0 0 15px rgba(242, 202, 80, 0.2);
 }
 .freq-btn-value {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--on-surface-elev);

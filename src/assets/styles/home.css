@@ -39,7 +39,7 @@ body {
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body-elev);
     position: relative;
     overflow-x: hidden;
 }
@@ -61,7 +61,7 @@ body {
     text-shadow: 0 0 24px rgba(242, 202, 80, 0.4);
 }
 .logo {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 4rem;
     font-weight: 700;
     letter-spacing: 0.15em;
@@ -135,7 +135,7 @@ body {
     border-radius: 2px;
 }
 .login-card h2 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.5rem;
     font-weight: 600;
     text-align: center;
@@ -227,7 +227,7 @@ body {
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     color: #f2ca50;
-    font-family: 'Space Grotesk', monospace;
+    font-family: var(--font-body-elev);, monospace;
 }
 .toggle-mode {
     text-align: center;
@@ -376,7 +376,7 @@ body {
     filter: drop-shadow(0 0 8px rgba(242, 202, 80, 0.6));
 }
 .gw-brand-name {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 20px;
     font-weight: 700;
     letter-spacing: 0.2em;
@@ -418,7 +418,7 @@ body {
     box-shadow: 0 0 12px rgba(242, 202, 80, 0.3);
 }
 .gw-avatar-initial {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 14px;
     font-weight: 700;
     color: var(--gold);
@@ -432,7 +432,7 @@ body {
     background: linear-gradient(135deg, rgba(242, 202, 80, 0.16), rgba(138, 60, 255, 0.1));
     border: 1px solid rgba(242, 202, 80, 0.35);
     color: var(--gold);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -513,7 +513,7 @@ body {
     50% { transform: translateY(-10px); }
 }
 .gw-kicker {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.4em;
@@ -522,7 +522,7 @@ body {
     margin-bottom: 10px;
 }
 .gw-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: clamp(28px, 7vw, 40px);
     font-weight: 700;
     line-height: 1.1;
@@ -538,7 +538,7 @@ body {
 }
 @keyframes gw-shimmer { to { background-position: 200% center; } }
 .gw-sub {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body-elev);
     font-size: 15px;
     color: #d0c5af;
     opacity: 0.85;
@@ -575,7 +575,7 @@ body {
 .gw-cta-main {
     position: relative;
     z-index: 2;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: clamp(22px, 6vw, 28px);
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -586,7 +586,7 @@ body {
     position: relative;
     z-index: 2;
     margin-top: 4px;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.3em;
@@ -622,14 +622,14 @@ body {
     padding: 0 8px 14px;
 }
 .gw-modules-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 20px;
     font-weight: 600;
     letter-spacing: 0.02em;
     color: #e9def6;
 }
 .gw-modules-phase {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.2em;
@@ -676,7 +676,7 @@ body {
 .gw-bento-icon .material-symbols-elev { font-size: 28px; }
 .gw-bento-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .gw-bento-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -684,7 +684,7 @@ body {
     color: #e9def6;
 }
 .gw-bento-desc {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body-elev);
     font-size: 12px;
     color: #d0c5af;
     opacity: 0.7;
@@ -703,7 +703,7 @@ body {
 .gw-bento-tile .material-symbols-elev { font-size: 30px; color: var(--gold); }
 .gw-tile-title {
     display: block;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -713,7 +713,7 @@ body {
 }
 .gw-tile-sub {
     display: block;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 10px;
     letter-spacing: -0.02em;
     text-transform: uppercase;
@@ -756,7 +756,7 @@ body {
 .gw-quote p {
     position: relative;
     z-index: 1;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body-elev);
     font-style: italic;
     font-size: 17px;
     line-height: 1.7;
@@ -799,7 +799,7 @@ body {
     text-decoration: none;
     color: #d0c5af;
     opacity: 0.6;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 10px;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -857,7 +857,7 @@ body {
 }
 .gw-audio-text { display: flex; flex-direction: column; line-height: 1.2; }
 .gw-audio-title {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 9px;
     font-weight: 700;
     letter-spacing: 0.02em;
@@ -865,7 +865,7 @@ body {
     color: var(--gold);
 }
 .gw-audio-sub {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body-elev);
     font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -946,7 +946,7 @@ body {
     padding: 12px 24px;
     background: var(--gold);
     color: #1a1200;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-weight: 700;
     font-size: 14px;
     text-decoration: none;
@@ -1074,7 +1074,7 @@ body {
 
 /* Verse — Proverbios 8:15 */
 .login-body .verse {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body-elev);
     font-style: italic;
     color: #d0c5af;
     max-width: 600px;

@@ -19,7 +19,7 @@
     margin-bottom: 1.25rem;
 }
 .academic-header h1 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.55rem;
     margin: 0;
 }
@@ -42,7 +42,7 @@
 .academic-view-tab {
     flex: 1;
     padding: 0.5rem 0.75rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -69,13 +69,13 @@
     color: var(--outline-elev);
     padding: 0.4rem 0.7rem;
     border-radius: 0.4rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.85rem;
     cursor: pointer;
 }
 .academic-nav-btn:hover { color: var(--gold-elev); border-color: var(--gold-elev); }
 .academic-month-title {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.1rem;
     color: var(--gold-elev);
     margin: 0;
@@ -193,7 +193,7 @@
     padding: 1rem;
 }
 .academic-side-card-header {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 0.92rem;
     color: var(--gold-elev);
     margin: 0 0 0.6rem 0;
@@ -254,7 +254,7 @@
     display: flex; align-items: center; justify-content: space-between;
 }
 .academic-modal-title {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1rem;
     color: var(--gold-elev);
     margin: 0;
@@ -288,14 +288,14 @@
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.4rem;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.95rem;
 }
 .academic-form-input:focus { outline: none; border-color: var(--gold-elev); }
 .academic-form-textarea {
     min-height: 80px;
     resize: vertical;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
 }
 
 .academic-modal-actions {
@@ -307,7 +307,7 @@
 .academic-modal-btn {
     display: inline-flex; align-items: center; gap: 0.35rem;
     padding: 0.55rem 1.1rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-weight: 600;
     font-size: 0.85rem;
     border-radius: 0.4rem;

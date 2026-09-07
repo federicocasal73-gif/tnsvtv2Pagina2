@@ -577,7 +577,7 @@
     color: var(--on-surface-elev);
     white-space: pre-wrap;
     overflow-x: auto;
-    font-family: 'Space Grotesk', monospace;
+    font-family: var(--font-body-elev);, monospace;
 }
 .campus-assignment-footer {
     display: flex;

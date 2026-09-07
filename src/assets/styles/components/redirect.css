@@ -11,7 +11,7 @@ body.redirect-page {
     align-items: center;
     justify-content: center;
     padding: 2rem;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body-elev);
     margin: 0;
 }
 
@@ -33,7 +33,7 @@ body.redirect-page {
 }
 
 .redirect-container h1 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 2.5rem;
     background: linear-gradient(135deg, #f2ca50 0%, #ffe088 100%);
     -webkit-background-clip: text;

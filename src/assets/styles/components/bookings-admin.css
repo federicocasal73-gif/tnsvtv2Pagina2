@@ -21,7 +21,7 @@
 .bookings-tab {
     flex: 1;
     padding: 0.5rem 1rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -42,7 +42,7 @@
     margin-bottom: 1.25rem;
 }
 .bookings-header h1 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.55rem;
     margin: 0;
 }
@@ -73,7 +73,7 @@
     flex-wrap: wrap;
 }
 .booking-card-topic {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.05rem;
     color: var(--gold-elev);
 }
@@ -113,7 +113,7 @@
 .booking-btn {
     display: inline-flex; align-items: center; gap: 0.3rem;
     padding: 0.45rem 0.85rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.78rem;
     font-weight: 600;
     border-radius: 0.4rem;
@@ -152,7 +152,7 @@
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.4rem;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.85rem;
     padding: 0.5rem 0.7rem;
     resize: vertical;

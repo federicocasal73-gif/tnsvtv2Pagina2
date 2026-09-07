@@ -191,7 +191,7 @@
     background: linear-gradient(135deg, rgba(242, 202, 80, 0.2) 0%, rgba(242, 202, 80, 0) 100%);
     border-left: 2px solid var(--gold-elev);
     border-radius: 0.25rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -241,7 +241,7 @@
     background: var(--glass-bg-strong-elev);
 }
 .stat-label-elev {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -250,7 +250,7 @@
     margin: 0;
 }
 .stat-value-elev {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 2rem;
     font-weight: 700;
     color: var(--gold-elev);
@@ -258,7 +258,7 @@
     line-height: 1.1;
 }
 .stat-meta-elev {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.75rem;
     color: var(--on-surface-variant-elev);
 }
@@ -426,7 +426,7 @@
    ═══════════════════════════════════════════════════════════════ */
 
 .material-symbols-elev {
-    font-family: 'Material Symbols Outlined';
+    font-family: 'Material Symbols Outlined'; /* icon, no token needed */;
     font-weight: normal;
     font-style: normal;
     font-size: 24px;
@@ -913,7 +913,7 @@ header {
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
 }
 
 
@@ -1006,7 +1006,7 @@ header {
 }
 .chat-widget-header-title {
     margin: 0;
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 0.95rem;
     color: var(--on-surface-elev);
 }
@@ -1454,7 +1454,7 @@ header {
 }
 .chat-widget-modal-header h3 {
     margin: 0;
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1rem;
     color: var(--on-surface-elev);
 }
@@ -2101,7 +2101,7 @@ header {
     color: var(--on-surface-elev);
     white-space: pre-wrap;
     overflow-x: auto;
-    font-family: 'Space Grotesk', monospace;
+    font-family: var(--font-body-elev);, monospace;
 }
 .task-links-list {
     list-style: none;

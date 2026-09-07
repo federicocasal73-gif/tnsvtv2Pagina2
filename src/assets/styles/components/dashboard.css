@@ -151,7 +151,7 @@
     margin: 0 0 0.5rem;
 }
 .hero-sub {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.85rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -191,7 +191,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 1rem 1.25rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.14em;
@@ -226,7 +226,7 @@
     background: var(--glass-bg-elev);
 }
 .tab-panel-stub h2 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.4rem;
     color: var(--gold-bright-elev, #ffe088);
     margin: 0 0 0.5rem;
@@ -254,7 +254,7 @@
     padding: 0.2rem;
 }
 .ec-tab {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -278,7 +278,7 @@
     gap: 0.25rem;
 }
 .ec-stat-label {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -286,7 +286,7 @@
     color: var(--outline-elev);
 }
 .ec-stat-value {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 1.6rem;
     font-weight: 700;
     color: var(--gold-elev);
@@ -360,7 +360,7 @@
     border-color: var(--gold-elev);
 }
 .cal-today-btn {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -586,7 +586,7 @@
 .monthly-pnl-svg { width: 100%; height: 260px; }
 .monthly-bar { transition: opacity 0.15s; cursor: pointer; }
 .monthly-bar:hover { opacity: 0.85; }
-.monthly-pnl-axis-text { font-size: 10px; fill: rgba(255,255,255,0.45); font-family: 'Space Grotesk'; }
+.monthly-pnl-axis-text { font-size: 10px; fill: rgba(255,255,255,0.45); font-family: var(--font-body-elev);; }
 
 /* ══════ Dashboard modal helpers ══════ */
 .modal-close {

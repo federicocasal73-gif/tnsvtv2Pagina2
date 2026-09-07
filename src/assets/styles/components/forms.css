@@ -12,7 +12,7 @@
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.375rem;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.875rem;
     transition: all 0.2s ease;
     box-sizing: border-box;
@@ -35,7 +35,7 @@
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.375rem;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.875rem;
     cursor: pointer;
     appearance: none;

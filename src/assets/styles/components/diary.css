@@ -10,7 +10,7 @@
     padding: 1.5rem 1rem 2rem;
 }
 .diary-header h1 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.7rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -47,7 +47,7 @@
     background: transparent;
     border: 1px solid var(--glass-border-elev);
     color: var(--outline-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -65,7 +65,7 @@
     padding: 0.7rem 1.4rem;
     background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
     color: var(--void-black, #050308);
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-weight: 600;
     font-size: 0.92rem;
     letter-spacing: 0.05em;
@@ -89,7 +89,7 @@
     color: var(--on-surface-elev);
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.4rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
@@ -116,7 +116,7 @@
 }
 .diary-lock-icon small { font-size: 1rem; opacity: 0.5; }
 .diary-lock-title {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.4rem;
     color: var(--gold-elev);
     margin: 0 0 0.5rem;
@@ -136,7 +136,7 @@
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.5rem;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 1rem;
     text-align: center;
     letter-spacing: 0.05em;
@@ -192,7 +192,7 @@
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
 }
 .diary-entry-card-date {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.4rem;
     color: var(--gold-elev);
     font-weight: 600;
@@ -254,7 +254,7 @@
     background: transparent;
     border: 1px solid var(--glass-border-elev);
     color: var(--on-surface-elev);
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1rem;
     padding: 0.65rem 0.85rem;
     border-radius: 0.4rem;
@@ -267,7 +267,7 @@
     background: transparent;
     border: none;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.95rem;
     line-height: 1.6;
     resize: none;
@@ -278,7 +278,7 @@
     flex-grow: 1;
     overflow-y: auto;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.95rem;
     line-height: 1.6;
     white-space: pre-wrap;
@@ -286,7 +286,7 @@
 }
 .diary-editor-preview p { margin: 0 0 0.75rem; }
 .diary-editor-preview h3 {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.1rem;
     color: var(--gold-elev);
     margin: 0 0 0.75rem;
@@ -313,7 +313,7 @@
     border: 1px solid rgba(138, 60, 255, 0.4);
     color: #c4a0ff;
     cursor: pointer;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     transition: background 0.15s;
 }
 .diary-prompt-chip:hover { background: rgba(138, 60, 255, 0.25); }

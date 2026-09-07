@@ -46,7 +46,7 @@
     border-color: rgba(242, 202, 80, 0.2);
 }
 .stat-mini-value {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--gold-elev, #f2ca50);

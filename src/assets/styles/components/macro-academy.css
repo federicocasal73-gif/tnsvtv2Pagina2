@@ -22,7 +22,7 @@
   min-width: 80px;
   padding: 10px 6px;
   cursor: pointer;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.56rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -72,7 +72,7 @@
 }
 
 .mp-label {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 9px;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -81,7 +81,7 @@
 }
 
 .mp-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1.4rem;
   background: linear-gradient(to right, #fff, var(--gold-bright));
   -webkit-background-clip: text;
@@ -140,7 +140,7 @@
 }
 
 .mc-card-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 0.95rem;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
@@ -178,7 +178,7 @@
 }
 
 .mc-golden-rule .rule-label {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -217,7 +217,7 @@
 }
 
 .mc-flow-node-title {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.58rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -248,7 +248,7 @@
 }
 
 .mc-info-box-label {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -265,7 +265,7 @@
 }
 
 .mc-slider-row label {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -328,14 +328,14 @@
 }
 
 .mc-cheat-sym {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1.5rem;
   margin-bottom: 3px;
   display: block;
 }
 
 .mc-cheat-name {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.52rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -367,7 +367,7 @@
 }
 
 .mc-trick-label {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -412,7 +412,7 @@
 }
 
 .mc-cycle-tab .c-num {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1.4rem;
   color: #645a78;
   transition: color 0.3s;
@@ -424,7 +424,7 @@
 }
 
 .mc-cycle-tab .c-label {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.52rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -454,7 +454,7 @@
 .mc-event-pill {
   padding: 2px 7px;
   border-radius: 5px;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.52rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -508,7 +508,7 @@
 }
 
 .mc-acc-num {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1.8rem;
   color: rgba(212, 175, 55, 0.2);
   line-height: 1;
@@ -527,7 +527,7 @@
 }
 
 .mc-acc-name {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1rem;
   letter-spacing: 1px;
   margin-bottom: 2px;
@@ -536,7 +536,7 @@
 .mc-acc-sub {
   font-size: 0.68rem;
   color: #645a78;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -581,7 +581,7 @@
   padding: 2px 7px;
   border-radius: 100px;
   font-size: 0.58rem;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   letter-spacing: 1px;
   text-transform: uppercase;
   border: 1px solid;
@@ -625,7 +625,7 @@
   flex: 1;
   padding: 8px 6px;
   cursor: pointer;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.58rem;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -669,7 +669,7 @@
 }
 
 .mc-impact-asset {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -753,7 +753,7 @@
 .mc-dot-label {
   position: absolute;
   bottom: -20px;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.52rem;
   color: #645a78;
   white-space: nowrap;
@@ -777,7 +777,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.58rem;
   font-weight: 700;
   color: var(--gold);
@@ -805,7 +805,7 @@
 }
 
 .mc-task-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1.1rem;
   color: var(--violet);
   margin-bottom: 6px;
@@ -836,7 +836,7 @@
 }
 
 .mc-tool-name {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1rem;
   color: var(--gold-bright);
   margin-bottom: 4px;
@@ -935,7 +935,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.58rem;
   font-weight: 700;
   flex-shrink: 0;
@@ -968,7 +968,7 @@
 
 /* ═══ MANUSCRIPT QUOTE ═══ */
 .manuscript-quote {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1rem;
   font-style: italic;
   text-align: center;

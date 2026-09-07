@@ -901,7 +901,7 @@ body:not(.is-apk) .mpb-bar:hover .mpb-bar-fill {
 }
 body:not(.is-apk) .mpb-time {
     color: rgba(164, 153, 184, 0.6) !important;
-    font-family: 'JetBrains Mono', 'SF Mono', monospace !important;
+    font-family: var(--font-mono-elev);, 'SF Mono', monospace !important;
     font-size: 0.65rem !important;
 }
 body:not(.is-apk) .mpb-vol input[type="range"] {
@@ -1556,7 +1556,7 @@ body.is-apk .mpb-bar-fill {
 }
 body.is-apk .mpb-time {
     color: rgba(164, 153, 184, 0.5) !important;
-    font-family: 'JetBrains Mono', 'SF Mono', monospace !important;
+    font-family: var(--font-mono-elev);, 'SF Mono', monospace !important;
     font-size: 0.58rem !important;
 }
 body.is-apk #musicQueuePanel {

@@ -39,7 +39,7 @@
   border:2.5px solid rgba(212,175,55,0.55);
   box-shadow:0 4px 16px rgba(0,0,0,0.45), 0 0 22px rgba(138,60,255,0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
   display:flex; align-items:center; justify-content:center;
-  font-family:'Orbitron',sans-serif; font-weight:700; color:#fff;
+  font-family:var(--font-label-elev);; font-weight:700; color:#fff;
   font-size:0.78rem; cursor:pointer;
   transition:transform .3s cubic-bezier(0.16,1,0.3,1), box-shadow .3s ease;
   animation: cfBubbleFloat 4s ease-in-out infinite;
@@ -68,7 +68,7 @@
   padding:2px 6px; border-radius:100px;
   box-shadow:0 0 8px rgba(255,59,48,0.5);
   animation: cfUnreadPulse 1.5s infinite;
-  font-family:'Orbitron',sans-serif; font-weight:700;
+  font-family:var(--font-label-elev);; font-weight:700;
 }
 @keyframes cfUnreadPulse {
   0%,100% { transform:scale(1); }
@@ -76,7 +76,7 @@
 }
 .cf-bubble.gold {
   background:linear-gradient(135deg, #f0d97e, #b8860b);
-  color:#000; font-family:'Cinzel',serif;
+  color:#000; font-family:var(--font-display-elev);
   box-shadow:0 4px 14px rgba(0,0,0,0.4), 0 0 22px rgba(212,175,55,0.5);
 }
 .cf-bubble .cf-tip {
@@ -84,7 +84,7 @@
   background:rgba(10,5,22,0.92); backdrop-filter:blur(8px);
   border:1px solid rgba(212,175,55,0.3); border-radius:8px;
   padding:6px 12px; white-space:nowrap;
-  font-family:'Orbitron',sans-serif; font-size:0.68rem;
+  font-family:var(--font-label-elev);; font-size:0.68rem;
   letter-spacing:1px; color:#f0d97e;
   opacity:0; pointer-events:none; transition:opacity .2s;
 }
@@ -120,7 +120,7 @@
 .cf-fab .cf-badge {
   position:absolute; top:0; right:0;
   background:#ff3b30; color:#fff;
-  font-family:'Orbitron',sans-serif; font-size:0.6rem; font-weight:700;
+  font-family:var(--font-label-elev);; font-size:0.6rem; font-weight:700;
   padding:3px 7px; border-radius:100px;
   box-shadow:0 0 12px rgba(255,59,48,0.7);
   animation: cfUnreadPulse 1.2s infinite;
@@ -176,12 +176,12 @@
 
 .cf-panel-title { flex:1; display:flex; flex-direction:column; gap:1px; min-width:0; }
 .cf-panel-title .cf-name {
-  font-family:'Cinzel',serif; font-size:0.95rem; color:#f0d97e;
+  font-family:var(--font-display-elev); font-size:0.95rem; color:#f0d97e;
   font-weight:600; letter-spacing:.5px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .cf-panel-title .cf-sub {
-  font-family:'Orbitron',sans-serif; font-size:0.58rem; letter-spacing:1.5px;
+  font-family:var(--font-label-elev);; font-size:0.58rem; letter-spacing:1.5px;
   color:#a499b8; display:flex; align-items:center; gap:5px;
 }
 .cf-panel-title .cf-sub::before {
@@ -205,7 +205,7 @@
 }
 .cf-tab {
   padding:8px 12px; background:transparent; border:none;
-  font-family:'Orbitron',sans-serif; font-size:0.6rem; letter-spacing:1.5px;
+  font-family:var(--font-label-elev);; font-size:0.6rem; letter-spacing:1.5px;
   color:#645a78; font-weight:600; cursor:pointer;
   border-bottom:2px solid transparent;
   transition:all .2s;
@@ -218,7 +218,7 @@
   width:100%; padding:8px 12px;
   background:rgba(0,0,0,0.4); border:1px solid rgba(138,60,255,0.22);
   border-radius:8px; color:#fff;
-  font-family:'Space Grotesk',sans-serif; font-size:0.82rem;
+  font-family:var(--font-body-elev);; font-size:0.82rem;
   outline:none; box-sizing:border-box;
   transition:border-color .2s;
 }
@@ -242,7 +242,7 @@
   width:40px; height:40px; border-radius:50%;
   background:linear-gradient(135deg, #8a3cff, #4a1a8a);
   display:flex; align-items:center; justify-content:center;
-  font-family:'Orbitron',sans-serif; font-weight:700; color:#fff;
+  font-family:var(--font-label-elev);; font-weight:700; color:#fff;
   font-size:0.78rem; flex-shrink:0; position:relative;
   background-size:cover; background-position:center;
   border:1.5px solid rgba(212,175,55,0.3);
@@ -250,7 +250,7 @@
 }
 .cf-conv-avatar.cf-gold {
   background:linear-gradient(135deg, #f0d97e, #b8860b);
-  color:#000; font-family:'Cinzel',serif;
+  color:#000; font-family:var(--font-display-elev);
   border-color:rgba(212,175,55,0.5);
 }
 .cf-conv-avatar.cf-online::after {
@@ -264,7 +264,7 @@
   display:flex; justify-content:space-between; align-items:baseline; gap:6px;
 }
 .cf-conv-name strong {
-  font-family:'Orbitron',sans-serif; font-size:0.74rem;
+  font-family:var(--font-label-elev);; font-size:0.74rem;
   color:#e2dcf0; font-weight:700; letter-spacing:.3px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
@@ -281,7 +281,7 @@
 }
 .cf-conv-preview .cf-unread {
   background:#d4af37; color:#000;
-  font-family:'Orbitron',sans-serif; font-size:0.55rem; font-weight:700;
+  font-family:var(--font-label-elev);; font-size:0.55rem; font-weight:700;
   padding:2px 7px; border-radius:100px; flex-shrink:0;
 }
 
@@ -293,7 +293,7 @@
 }
 .cf-date-sep {
   text-align:center;
-  font-family:'Orbitron',sans-serif; font-size:0.55rem;
+  font-family:var(--font-label-elev);; font-size:0.55rem;
   letter-spacing:2.5px; color:#645a78; padding:4px 0;
 }
 .cf-msg { display:flex; gap:8px; max-width:85%; }
@@ -301,7 +301,7 @@
   width:26px; height:26px; border-radius:50%;
   background:linear-gradient(135deg, #8a3cff, #4a1a8a);
   display:flex; align-items:center; justify-content:center;
-  font-family:'Orbitron',sans-serif; font-weight:700; color:#fff;
+  font-family:var(--font-label-elev);; font-weight:700; color:#fff;
   font-size:0.6rem; flex-shrink:0;
   background-size:cover; background-position:center;
   border:1.5px solid rgba(212,175,55,0.3);
@@ -316,7 +316,7 @@
   box-shadow:0 2px 8px rgba(0,0,0,0.25), inset 0 0 20px rgba(138,60,255,0.04);
 }
 .cf-msg-meta {
-  font-family:'Orbitron',sans-serif; font-size:0.55rem; color:#645a78;
+  font-family:var(--font-label-elev);; font-size:0.55rem; color:#645a78;
   margin-top:4px; letter-spacing:1px;
 }
 .cf-msg.cf-me { align-self:flex-end; flex-direction:row-reverse; }
@@ -333,7 +333,7 @@
 
 .cf-typing {
   display:flex; align-items:center; gap:8px; padding:4px 14px;
-  font-family:'Orbitron',sans-serif; font-size:0.6rem; color:#a499b8;
+  font-family:var(--font-label-elev);; font-size:0.6rem; color:#a499b8;
   min-height:18px;
 }
 .cf-typing-dots { display:flex; gap:3px; }
@@ -368,7 +368,7 @@
   flex:1; padding:9px 12px;
   background:rgba(0,0,0,0.4); border:1px solid rgba(138,60,255,0.25);
   border-radius:8px; color:#fff;
-  font-family:'Space Grotesk',sans-serif; font-size:0.85rem;
+  font-family:var(--font-body-elev);; font-size:0.85rem;
   outline:none; transition:border-color .2s, box-shadow .2s;
 }
 .cf-input-text:focus {
@@ -378,7 +378,7 @@
 .cf-send {
   padding:9px 18px; background:linear-gradient(180deg, #f0d97e, #b8860b);
   border:none; border-radius:8px; color:#000;
-  font-family:'Orbitron',sans-serif; font-size:0.7rem; font-weight:700;
+  font-family:var(--font-label-elev);; font-size:0.7rem; font-weight:700;
   letter-spacing:1.5px; cursor:pointer;
   box-shadow:0 2px 10px rgba(212,175,55,0.3);
   transition:all .2s;
@@ -415,12 +415,12 @@
   width:32px; height:32px; border-radius:50%;
   background:linear-gradient(135deg, #8a3cff, #4a1a8a);
   display:flex; align-items:center; justify-content:center;
-  font-family:'Orbitron',sans-serif; font-weight:700; color:#fff; font-size:0.68rem;
+  font-family:var(--font-label-elev);; font-weight:700; color:#fff; font-size:0.68rem;
   flex-shrink:0; background-size:cover; background-position:center;
 }
 .cf-toast .cf-toast-content { flex:1; min-width:0; }
 .cf-toast .cf-toast-name {
-  font-family:'Orbitron',sans-serif; font-size:0.62rem; color:#f0d97e;
+  font-family:var(--font-label-elev);; font-size:0.62rem; color:#f0d97e;
   letter-spacing:.5px; font-weight:700;
 }
 .cf-toast .cf-toast-text {

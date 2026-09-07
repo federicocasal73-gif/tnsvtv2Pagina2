@@ -41,7 +41,7 @@
     background: linear-gradient(90deg, transparent, var(--error, #f87171), transparent);
 }
 .countdown-display {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 3rem;
     font-weight: 700;
     color: var(--gold-elev, #f2ca50);
@@ -65,7 +65,7 @@
     border-color: rgba(248, 113, 113, 0.3);
 }
 .countdown-block-value {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 1.75rem;
     font-weight: 700;
     color: var(--gold-elev, #f2ca50);
@@ -142,7 +142,7 @@
 
 /* F7 â€” Timezone selector + freshness indicator */
 .bento-tz {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.7rem;
     padding: 0.25rem 0.5rem;
     background: var(--glass-bg-elev);
@@ -154,7 +154,7 @@
 }
 .bento-tz:hover, .bento-tz:focus { border-color: var(--gold-elev); outline: none; }
 #bento-last-update {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.7rem;
     opacity: 0.7;
     transition: opacity 0.2s;
@@ -191,7 +191,7 @@
 }
 .bento-eyebrow .material-symbols-outlined { font-size: 1rem; }
 .bento-card-title {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--gold-elev);
@@ -236,7 +236,7 @@
     50% { transform: scale(1.05); opacity: 0.85; }
 }
 .bento-countdown {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.8rem;
     font-weight: 700;
     color: var(--on-surface-elev);
@@ -262,7 +262,7 @@
     margin-bottom: 0.15rem;
 }
 .bento-kv dd {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--on-surface-elev);
@@ -287,7 +287,7 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.5rem 0.85rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -347,7 +347,7 @@
     border-radius: 0.4rem;
 }
 .bento-pair-name {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-weight: 600;
     font-size: 0.85rem;
     color: var(--on-surface-elev);
@@ -366,7 +366,7 @@
     transition: width 0.4s ease;
 }
 .bento-pair-conf {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.75rem;
     font-weight: 700;
     color: var(--gold-elev);
@@ -400,7 +400,7 @@
     .bento-kv { grid-template-columns: 1fr; }
 }
 
-/* ------ TNSVT Sprint C.6 — Cuestionarios Macro ------ */
+/* ------ TNSVT Sprint C.6 ï¿½ Cuestionarios Macro ------ */
 .macro-questionnaire-card {
     padding: 1.25rem;
 }
@@ -496,7 +496,7 @@
     transform: translateY(-1px);
 }
 
-/* ===== TNSVT Sprint F.1/F.2 — Progress bar + Result UI ===== */
+/* ===== TNSVT Sprint F.1/F.2 ï¿½ Progress bar + Result UI ===== */
 .macro-q-header {
     padding: 0 1rem 0.85rem;
     border-bottom: 1px solid var(--glass-border-elev);
@@ -556,7 +556,7 @@
     text-align: center;
 }
 .macro-q-result-title {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.3rem;
     color: var(--gold-elev);
     margin: 0 0 0.3rem;
@@ -617,7 +617,7 @@
     border-radius: 0.6rem;
 }
 .macro-q-tier-label {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -647,7 +647,7 @@
     background: rgba(242, 202, 80, 0.1);
 }
 
-/* ===== TNSVT Sprint G.2 — Mini-dashboard de completion ===== */
+/* ===== TNSVT Sprint G.2 ï¿½ Mini-dashboard de completion ===== */
 .macro-q-summary {
     padding: 1rem 1.25rem;
     background: rgba(255, 255, 255, 0.025);
@@ -670,7 +670,7 @@
     margin: 0;
     font-size: 0.95rem;
     color: var(--on-surface-elev);
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     letter-spacing: 0.05em;
 }
 .macro-q-summary-pct {

@@ -5,7 +5,7 @@
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
 }
 
 /* ─── Toggle Button (Floating Bubble) ─── */
@@ -98,7 +98,7 @@
 }
 .chat-widget-header-title {
     margin: 0;
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 0.95rem;
     color: var(--on-surface-elev);
 }
@@ -546,7 +546,7 @@
 }
 .chat-widget-modal-header h3 {
     margin: 0;
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1rem;
     color: var(--on-surface-elev);
 }

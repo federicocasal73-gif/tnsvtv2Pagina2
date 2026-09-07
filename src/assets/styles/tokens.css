@@ -105,10 +105,15 @@
     --tier-3-zenith-elev: #f2ca50;      /* gold-bright */
     --tier-master-elev: #fbbf24;        /* amber-400 */
 
-    /* === Typography (consolidated from tokens-elev.css) === */
-    --font-display-elev: 'Space Grotesk', sans-serif;
-    --font-body-elev: 'Inter', sans-serif;
-    --font-label-elev: 'Space Grotesk', sans-serif;
+    /* === Typography (F4: fixed display/label tokens to canonical fonts) ===
+       display = Cinzel   : hero titles, section headings (designed in stitch UI)
+       label   = Orbitron  : uppercase eyebrows, tags, KPI labels (Phase 9-10)
+       body    = Inter     : paragraphs, body text
+       mono    = JetBrains : monospace numerics, code snippets */
+    --font-display-elev: 'Cinzel', serif;
+    --font-body-elev:    'Inter', sans-serif;
+    --font-label-elev:   'Orbitron', sans-serif;
+    --font-mono-elev:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
 
     /* === Spacing (consolidated from tokens-elev.css) === */
     --space-xs-elev: 4px;
@@ -233,7 +238,7 @@ body.gateway-emblem #bg-shader-canvas {
 
 /* === FASE 0 — Cinematic lettering (Cinzel serif, gold + violet) === */
 .text-cinzel-display {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-weight: 600;
     letter-spacing: 0.06em;
     background: linear-gradient(135deg, #f2ca50 0%, #ffe088 50%, #f2ca50 100%);
@@ -245,7 +250,7 @@ body.gateway-emblem #bg-shader-canvas {
     filter: drop-shadow(0 0 6px rgba(242, 202, 80, 0.35));
 }
 .text-cinzel-violet {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-weight: 500;
     letter-spacing: 0.05em;
     background: linear-gradient(135deg, #d4bbff 0%, #8a3cff 100%);
@@ -255,7 +260,7 @@ body.gateway-emblem #bg-shader-canvas {
     color: var(--secondary-elev);
 }
 .text-cinzel-starlight {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-weight: 600;
     letter-spacing: 0.06em;
     background: linear-gradient(135deg, #FDFCF8 0%, #ffe088 100%);

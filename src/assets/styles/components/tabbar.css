@@ -47,7 +47,7 @@
     font-variation-settings: 'FILL' 1;
 }
 .tabbar-label {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.625rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;

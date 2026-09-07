@@ -50,7 +50,7 @@
   flex: 1;
 }
 .tnsvt-brand h1 {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 1.55rem; font-weight: 700;
   color: #f0d97e; margin: 0;
   letter-spacing: 3px; line-height: 1;
@@ -59,7 +59,7 @@
   padding-left: 2px;
 }
 .tnsvt-brand-sub {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.58rem;
   color: #a499b8; letter-spacing: 3px;
 }
@@ -91,7 +91,7 @@
 .tnsvt-notif-badge {
   position: absolute; top: -3px; right: -3px;
   background: #ff3b30; color: #fff;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.55rem; font-weight: 700;
   padding: 2px 6px;
   border-radius: 100px;
@@ -121,12 +121,12 @@
   text-align: right;
 }
 .tnsvt-admin-tag {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-size: 0.8rem; font-weight: 700;
   color: #8a3cff; line-height: 1;
 }
 .tnsvt-admin-sub {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.6rem;
   color: #a499b8; letter-spacing: 1px;
 }
@@ -136,7 +136,7 @@
   background: linear-gradient(135deg, #f0d97e, #b8860b);
   display: flex; align-items: center; justify-content: center;
   color: #000;
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-display-elev);
   font-weight: 700; font-size: 1.1rem;
   box-shadow: 0 0 16px rgba(212,175,55,0.4);
   flex-shrink: 0; overflow: hidden;
@@ -147,7 +147,7 @@
   padding: 9px 18px;
   background: linear-gradient(180deg, #f0d97e, #b8860b);
   color: #000;
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-label-elev);
   font-size: 0.7rem; font-weight: 700;
   letter-spacing: 1.5px;
   border-radius: 10px;

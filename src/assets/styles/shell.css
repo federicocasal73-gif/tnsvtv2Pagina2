@@ -386,7 +386,7 @@
     }
     .sidebar-user-card #logout-btn::after {
         content: 'logout';
-        font-family: 'Material Symbols Outlined';
+        font-family: 'Material Symbols Outlined'; /* icon, no token needed */;
         font-size: 20px;
         line-height: 1;
         color: var(--on-surface-variant-elev);
@@ -676,7 +676,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1.125rem;
     letter-spacing: 0.04em;
     color: var(--on-surface-elev);
@@ -836,7 +836,7 @@
 
 .protocol-breakdown-delta {
     flex-shrink: 0;
-    font-family: 'Space Grotesk', monospace;
+    font-family: var(--font-body-elev);, monospace;
     font-size: 0.8125rem;
     color: #f87171;
 }

@@ -38,7 +38,7 @@
 }
 .chat-tab {
     padding: 0.3rem 0.7rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -61,7 +61,7 @@
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.4rem;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.85rem;
 }
 .chat-search:focus { outline: none; border-color: var(--gold-elev); }
@@ -74,7 +74,7 @@
     border: 1px solid rgba(242, 202, 80, 0.5);
     color: var(--gold-elev);
     border-radius: 0.4rem;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
@@ -135,7 +135,7 @@
     gap: 0.7rem;
 }
 .chat-conv-header-name {
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 1rem;
     color: var(--gold-elev);
 }
@@ -216,7 +216,7 @@
     border: 1px solid var(--glass-border-elev);
     border-radius: 0.5rem;
     color: var(--on-surface-elev);
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-body-elev);, sans-serif;
     font-size: 0.9rem;
     resize: none;
 }
@@ -228,7 +228,7 @@
     padding: 0.55rem 1rem;
     background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev, #ffe088));
     color: var(--void-black);
-    font-family: 'Cinzel', serif;
+    font-family: var(--font-display-elev);
     font-size: 0.85rem;
     font-weight: 600;
     border: none;
