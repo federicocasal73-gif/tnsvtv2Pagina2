@@ -1,0 +1,10 @@
+{# ── Reusable loading state partial ──
+   Usage: {% include '_partials/loading_state.html.twig' with { icon: 'progress_activity', message: 'Cargando...', size: 'md' } only %}
+#}
+{% set _icon = icon|default('progress_activity') %}
+{% set _message = message|default('Cargando...') %}
+{% set _size = size|default('md') %}
+<div class="loading-state loading-state-{{ _size }}" role="status" aria-live="polite">
+    <span class="material-symbols-elev loading-state-icon" aria-hidden="true">{{ _icon }}</span>
+    <p class="loading-state-message">{{ _message }}</p>
+</div>
