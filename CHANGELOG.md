@@ -28,6 +28,28 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
   - `empty_state.html.twig` consolidado como source of truth (12 includes + 8 `apiEmpty()` JS calls, visual idéntico).
 - **F6 — Polish** (commit `4ebf91a`)
   - `templates/shell.html.twig`: consolidados 3 importmap scripts en uno solo dentro de `{% block importmap %}`.
+- **Fase A — Focus rings + toasts** (commit `19ac894`)
+  - `accessibility.css`: anillos de foco dorados solo con teclado (`:focus-visible`), invisibles con mouse.
+  - `api-helper.css` + `api_helper.html.twig`: variante `warning` que faltaba, barra de progreso que se pausa en hover, botón X para cerrar.
+  - T1.B (aria-current) y T1.D (sidebar agrupado) ya existían — verificado, sin duplicar.
+- **Fase B — Modal UX** (commit `d7597a7`)
+  - `modal.css`: animación de salida (fade+scale reverso 180ms), variantes `centered`/`danger`/`drawer-right`/`fullscreen`.
+  - `api_helper.html.twig`: `close()` animado con `is-closing`, click en backdrop cierra (opt-out con `dismissBackdrop: false`), respeta `prefers-reduced-motion`.
+  - `shell.css`: empty states `compact` (fila) e `illustrated` (glow sin assets nuevos); doc del partial actualizado.
+- **Fase C — Forms + hover micro** (commit `769ca87`)
+  - `ui-components.css`: `.ui-btn.is-loading`/`[aria-busy]` con spinner + helper `apiButtonLoading(btn)` opt-in.
+  - `forms.css`: `.is-invalid`/`[aria-invalid]` borde rojo + `.form-error`/`.form-hint`; `.is-valid` borde verde.
+  - `ui-components.css`: `.ui-card:hover` lift + sombra (off en touch); `components.css`: icono sidebar crece + dora en hover.
+  - T3.B skip-links ya existían — verificado.
+- **Fase D — Inline fonts → utilities** (commit `d17f23f`)
+  - 53 `style="font-family:..."` en `macro_academy/*` → clases `.text-label`/`.text-display` (colores/tamaños inline por valor preservados).
+- **Fase E — Tema + transiciones** (commits `e86bb1f`, `70721c0`)
+  - Toggle sol/luna en topbar Sanctum (cicla dark→light→auto, persiste en `tnsvtTheme` + `theme_preference` servidor).
+  - Anti-flash inline en `<head>` de ambos shells + `meta theme-color` dinámico.
+  - Fix: el init esperaba `window.tnsvtTheme` (deferred) — ahora reintenta hasta 3s.
+  - `shell.css`: fade-in sutil en `.sanctum-content` (respeta reduced-motion).
+- **Sesión mobile/responsive** (commits `3a05f1b`→`807610b`, otra sesión, ya en prod)
+  - Padding responsive del shell, grid KPIs/calendario/equity adaptativos, tab nav con scroll, topbar compacta, botones `ui-*` unificados, modales fullscreen en pantallas chicas, layout chat mobile.
 
 ### Changed
 
