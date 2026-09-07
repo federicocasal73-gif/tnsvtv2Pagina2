@@ -115,7 +115,6 @@ jobs:
                   php bin/setup-messenger-db.php
 
             - name: Run tests
-              continue-on-error: true
               env:
                   JWT_PASSPHRASE: ''
               run: php vendor/bin/phpunit --coverage-text --colors=never

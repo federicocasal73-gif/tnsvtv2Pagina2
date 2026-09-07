@@ -33,7 +33,7 @@ class UsersController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
         }
         if (!in_array('ROLE_ADMIN', $user->getRoles(), true)
-            && !$user->isAdmin()) {
+            && !$user->getIsAdmin()) {
             return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
         return null;
@@ -58,8 +58,7 @@ class UsersController extends AbstractController
                 'roles'       => $u->getRoles(),
                 'active'      => $u->isActive(),
                 'email'       => $u->getEmail(),
-                'created_at'  => $u->getCreatedAt()?->format('c'),
-                'last_login'  => $u->getLastLoginAt()?->format('c'),
+                'last_login'  => $u->getLastLogin()?->format('c'),
             ];
         }, $users);
 
@@ -76,13 +75,25 @@ class UsersController extends AbstractController
             return $this->json(['success' => false, 'error' => 'tier required'], 400);
         }
 
+        $newTier = (string) $data['tier'];
+        if (!in_array($newTier, User::TIERS, true)) {
+            return $this->json(['success' => false, 'error' => 'Invalid tier'], 400);
+        }
+
         $user = $this->userRepository->findOneBy(['code' => $code]);
         if (!$user) return $this->json(['success' => false, 'error' => 'Not found'], 404);
 
-        $user->setTier((string) $data['tier']);
+        $oldTier = $user->getTier();
+        $user->setTier($newTier);
         $this->em->flush();
 
-        return $this->json(['success' => true, 'tier' => $user->getTier()]);
+        return $this->json([
+            'success' => true,
+            'user' => $code,
+            'oldTier' => $oldTier,
+            'newTier' => $user->getTier(),
+            'tier' => $user->getTier(),
+        ]);
     }
 
     #[Route('/{code}/active', name: 'sanctum_api_users_toggle_active', methods: ['PATCH'])]
