@@ -44,7 +44,6 @@
 {% block background %}{% endblock %}
 <script src="{{ asset('js/modules/theme.js') }}" defer></script>
 <script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
-{{ importmap('divine_overlay') }}
 
 {# api_helper MUST be included BEFORE any {% block content %} to ensure window.apiFetch is defined #}
 {% include '_partials/api_helper.html.twig' with {} %}
@@ -316,7 +315,11 @@
     {% block floats %}{% endblock %}
 </div>
 
-{% block importmap %}{{ importmap('app') }}{% endblock %}
+{% block importmap %}
+    {{ importmap('app') }}
+    {{ importmap('divine_overlay') }}
+    {{ importmap('onboarding') }}
+{% endblock %}
 
 <script>
 (function() {
@@ -475,9 +478,6 @@
 {# ═══ Onboarding wizard (first-login) — hidden por default ═══ #}
 {% include '_partials/_onboarding/wizard.html.twig' %}
 
-{% block javascripts %}
-    {{ importmap('divine_overlay') }}
-    {{ importmap('onboarding') }}
-{% endblock %}
+{% block javascripts %}{% endblock %}
 </body>
 </html>
