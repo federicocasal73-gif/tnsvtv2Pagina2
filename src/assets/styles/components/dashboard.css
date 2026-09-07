@@ -334,6 +334,16 @@
 .ec-legend-dot.ec-legend-neg { background: var(--error-elev); }
 .ec-legend-dot.ec-legend-mix { background: var(--warning-elev); }
 
+/* Equity curve — responsive height */
+@media (max-width: 640px) {
+    .equity-curve-card svg {
+        height: 180px;
+    }
+    .equity-curve-card .ec-stat-value {
+        font-size: 1.2rem;
+    }
+}
+
 /* ══════ F1.2 — Stats Row ══════ */
 .stats-row .kpi-card { padding: 1rem 1.1rem; }
 .stats-row .kpi-value { font-size: 1.55rem; }
