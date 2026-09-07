@@ -263,11 +263,16 @@
             errEl.classList.remove('hidden');
             return;
         }
+        const submitBtn = e.target ? e.target.querySelector('button[type="submit"]') : null;
+        const doneLoading = (typeof window.apiButtonLoading === 'function' && submitBtn)
+            ? window.apiButtonLoading(submitBtn)
+            : null;
         const r = await apiFetch('/sanctum/api/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, description, orden, active })
         });
+        if (doneLoading) doneLoading();
         if (r.ok && r.data && r.data.success) {
             if (window.apiToast) apiToast('Tarea creada', 'success');
             closeCreateTask();

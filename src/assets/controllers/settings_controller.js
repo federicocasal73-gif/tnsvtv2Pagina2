@@ -117,6 +117,9 @@ export default class extends Controller {
 
     async persistPreference(value) {
         const originalText = this.savePrefsBtnTarget?.textContent;
+        const doneLoading = (typeof window.apiButtonLoading === 'function' && this.hasSavePrefsBtnTarget)
+            ? window.apiButtonLoading(this.savePrefsBtnTarget)
+            : null;
         if (this.hasSavePrefsBtnTarget) {
             this.savePrefsBtnTarget.textContent = 'Guardando...';
         }
@@ -143,6 +146,8 @@ export default class extends Controller {
             if (this.hasSavePrefsBtnTarget) {
                 this.savePrefsBtnTarget.textContent = originalText || 'Guardar Preferencias';
             }
+        } finally {
+            if (doneLoading) doneLoading();
         }
     }
 

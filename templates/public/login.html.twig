@@ -281,7 +281,9 @@
                 payload.name = name;
             }
 
-            submitBtn.disabled = true;
+            var doneLoading = (typeof window.apiButtonLoading === 'function')
+                ? window.apiButtonLoading(submitBtn)
+                : (submitBtn.disabled = true, null);
             btnText.textContent = 'Conectando…';
             errorEl.style.display = 'none';
 
@@ -302,13 +304,13 @@
                 } else {
                     var msg = (resp.data && resp.data.error) || 'Error ' + resp.status;
                     showError(msg);
-                    submitBtn.disabled = false;
+                    if (doneLoading) doneLoading(); else submitBtn.disabled = false;
                     btnText.textContent = 'Entrar';
                 }
             })
             .catch(function (err) {
                 showError('Sin conexión con el servidor: ' + (err.message || err));
-                submitBtn.disabled = false;
+                if (doneLoading) doneLoading(); else submitBtn.disabled = false;
                 btnText.textContent = 'Entrar';
             });
         });

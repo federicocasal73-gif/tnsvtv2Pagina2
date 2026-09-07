@@ -28,13 +28,17 @@
 }
 /* Button loading state (Fase C — opt-in via .is-loading + aria-busy) */
 .ui-btn.is-loading,
-.ui-btn[aria-busy="true"] {
+.ui-btn[aria-busy="true"],
+button.is-loading,
+button[aria-busy="true"] {
     pointer-events: none;
     opacity: 0.85;
     position: relative;
 }
 .ui-btn.is-loading::after,
-.ui-btn[aria-busy="true"]::after {
+.ui-btn[aria-busy="true"]::after,
+button.is-loading::after,
+button[aria-busy="true"]::after {
     content: '';
     width: 0.9em;
     height: 0.9em;

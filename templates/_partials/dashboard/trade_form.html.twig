@@ -413,7 +413,9 @@
         if (photos.length > 0) payload.photos = photos;
         if (notes) payload.notes = notes;
 
-        $submit.disabled = true;
+        const doneLoading = (typeof window.apiButtonLoading === 'function')
+            ? window.apiButtonLoading($submit)
+            : ($submit.disabled = true, null);
         $submit.innerHTML = '<span class="material-symbols-elev">progress_activity</span> Guardando...';
 
         try {
@@ -431,12 +433,12 @@
                      r.networkError ? 'Sin conexión con el servidor' :
                      `HTTP ${r.status || '?'}: error desconocido`);
                 showError(msg);
-                $submit.disabled = false;
+                if (doneLoading) doneLoading(); else $submit.disabled = false;
                 $submit.innerHTML = '<span class="material-symbols-elev">save</span> Registrar trade';
             }
         } catch (err) {
             showError('Error de red: ' + (err.message || 'sin detalle'));
-            $submit.disabled = false;
+            if (doneLoading) doneLoading(); else $submit.disabled = false;
             $submit.innerHTML = '<span class="material-symbols-elev">save</span> Registrar trade';
         }
     });
