@@ -109,6 +109,56 @@ Manager → navigate to `public_html/` → check `git log -1` output via
 Hostinger's terminal (if available) or just hit a known endpoint
 (e.g. `/api/health`) and confirm the response.
 
+### Hostinger proc_open limitation ⚠️
+
+Hostinger **shared hosting** disables `proc_open` in `disable_functions`
+for security. This breaks `composer install` because Composer's runtime
+requires `proc_open` (Symfony Process class), regardless of any flags.
+Even `composer install --no-scripts` fails immediately:
+
+```
+ERROR: The Process class relies on proc_open, which is not available
+on your PHP installation.
+```
+
+This `disable_functions` is INI_SYSTEM and **cannot** be overridden from
+`.user.ini`, `.htaccess`, `php.ini`, or `ini_set()`. Only Hostinger staff
+can change it, and they typically refuse on shared plans.
+
+**Net effect:** hPanel's git auto-deploy runs `composer install` after
+each `git pull`. That step always fails. The "Falló la compilación"
+status in hPanel is **cosmetic** — the runtime app is fine because
+`vendor/` was populated by a previous deploy when Composer could still
+run (or was pre-shipped manually).
+
+**Workaround options** (in order of preference):
+
+1. **Disable the build step** in hPanel → Advanced → Git → your
+   repository → there is (depending on hostinger version) either a
+   checkbox / toggle / drop-down that selects the project type. Pick
+   "PHP/HTML" (which per Hostinger docs does not run a build step)
+   instead of any "Node.js" / "with build" preset. If you cannot find
+   this, ask Hostinger support to remove the `composer install`
+   post-deploy hook on your account.
+2. **Keep the existing `vendor/` working.** Since `public_html/vendor/`
+   is already populated, the app boots fine as long as you don't add
+   new composer dependencies that aren't already installed.
+3. **Upgrade to Hostinger VPS or Business shared plan** if you need
+   to add new composer packages later. VPS gives you full PHP control
+   (incl. enabling `proc_open`); Business shared loosens the
+   `disable_functions` list.
+
+**Do NOT** commit `vendor/` to the repo as a workaround unless all
+other options fail — it bloats the repo by ~100 MB and forces every
+git operation to scan 12 000+ files.
+
+**If you must add a new composer dep**:
+
+- Either do it locally and ship a tarball via Hostinger File Manager
+  → upload to `public_html/vendor/your-package/` → regenerate the
+  autoloader locally and upload `vendor/composer/autoload_*.php` too.
+- Or upgrade the host.
+
 ## Conventions
 
 - Commits use Conventional Commits (`feat:`, `fix:`, `ci:`, `refactor:`).
