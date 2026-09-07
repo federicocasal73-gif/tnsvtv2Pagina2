@@ -399,7 +399,7 @@
     // Notification badge in sidebar + topbar (poll every 60s)
     function refreshNotifBadge() {
         if (!window.TNSVT_USER) return;
-        fetch('/sanctum/notifications/unread-count')
+        fetch('/notifications/unread-count')
             .then(function(r) { return r.ok ? r.json() : { count: 0 }; })
             .then(function(data) {
                 var n = (data && data.count) || 0;

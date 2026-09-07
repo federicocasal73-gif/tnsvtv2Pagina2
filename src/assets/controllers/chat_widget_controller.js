@@ -561,7 +561,7 @@ export default class extends Controller {
     }
 
     // �═════ Nuevo DM ══════
-    openNewDm() {
+    newDm() {
         // Remember which control opened the modal so we can restore focus.
         this._modalTrigger = document.activeElement;
         this.newDmModalTarget.classList.remove('hidden');

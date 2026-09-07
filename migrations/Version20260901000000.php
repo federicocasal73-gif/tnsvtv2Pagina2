@@ -60,7 +60,7 @@ final class Version20260901000000 extends AbstractMigration
                 ADD COLUMN attachments JSON DEFAULT NULL
                     AFTER links,
                 ADD COLUMN completed_at DATETIME DEFAULT NULL
-                    AFTER updated_at
+                    AFTER created_at
             SQL);
 
             $this->addSql(<<<'SQL'
@@ -73,8 +73,12 @@ final class Version20260901000000 extends AbstractMigration
                 CREATE INDEX idx_task_course ON tasks (course_id)
             SQL);
 
-            // FK constraints — MySQL only (skipped on sqlite)
-            if ($this->connection->getDatabasePlatform()->getName() === 'mysql') {
+            // FK constraints — MySQL only (skipped on sqlite).
+            // DBAL 4 renamed getDatabasePlatform()->getName() (which returned
+            // a string) into ::getDatabasePlatformName() on the connection
+            // and the platform class. Use class-name sniffing instead so
+            // this works across DBAL 3.x and 4.x.
+            if (str_contains($this->connection->getDatabasePlatform()::class, 'MySQL')) {
                 $this->addSql(<<<'SQL'
                     ALTER TABLE tasks
                     ADD CONSTRAINT FK_TASKS_ASSIGNED_TO FOREIGN KEY (assigned_to_id)
