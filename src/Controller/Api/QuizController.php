@@ -60,6 +60,9 @@ class QuizController extends AbstractController
     public function submit(int $lessonId, Request $request): JsonResponse
     {
         $user = $this->resolveUser($request);
+        if (!$user) {
+            return $this->json(['error' => 'Autenticación requerida'], 401);
+        }
         $quiz = $this->getQuizByLesson($lessonId);
         if (!$quiz) return $this->json(['error' => 'Quiz no encontrado'], 404);
 
@@ -67,15 +70,32 @@ class QuizController extends AbstractController
         $answers = $data['answers'] ?? [];
         $duration = (int) ($data['duration_seconds'] ?? 0);
 
+        // Enforce max attempts (S3): count prior submissions by this user.
+        $submissionRepo = $this->em->getRepository(CampusQuizSubmission::class);
+        $priorCount = $submissionRepo->count(['quiz' => $quiz, 'userCode' => $user->getCode()]);
+        if ($priorCount >= $quiz->getMaxAttempts()) {
+            return $this->json([
+                'error' => 'Límite de intentos alcanzado',
+                'attempts_used' => $priorCount,
+                'max_attempts' => $quiz->getMaxAttempts(),
+            ], 403);
+        }
+
         $submission = new CampusQuizSubmission();
         $submission->setQuiz($quiz);
-        $submission->setUserCode($user?->getCode() ?? ($data['user_code'] ?? null));
+        $submission->setUserCode($user->getCode());
         $submission->setDurationSeconds($duration);
 
         $this->em->persist($submission);
         $this->em->flush();
 
         $this->grader->grade($submission, $answers);
+
+        $attemptsUsed = $priorCount + 1;
+        $attemptsLeft = max(0, $quiz->getMaxAttempts() - $attemptsUsed);
+        // Only reveal canonical answers once the student passed or has no
+        // attempts left — otherwise an empty first submit would leak the key.
+        $showCorrect = $submission->isPassed() || $attemptsLeft === 0;
 
         return $this->json([
             'success' => true,
@@ -84,7 +104,9 @@ class QuizController extends AbstractController
             'max_score' => $submission->getMaxScore(),
             'percent' => $submission->getPercent(),
             'passed' => $submission->isPassed(),
-            'correct_per_question' => $this->buildFeedback($quiz, $answers),
+            'attempts_used' => $attemptsUsed,
+            'attempts_left' => $attemptsLeft,
+            'correct_per_question' => $this->buildFeedback($quiz, $answers, $showCorrect),
         ]);
     }
 
@@ -272,7 +294,7 @@ class QuizController extends AbstractController
         ];
     }
 
-    private function buildFeedback(CampusQuiz $quiz, array $answers): array
+    private function buildFeedback(CampusQuiz $quiz, array $answers, bool $showCorrect = true): array
     {
         $feedback = [];
         foreach ($quiz->getQuestions() as $q) {
@@ -284,7 +306,7 @@ class QuizController extends AbstractController
             };
             $feedback[$q->getId()] = [
                 'given' => $given,
-                'correct' => $correct,
+                'correct' => $showCorrect ? $correct : null,
                 'is_correct' => $given !== null && $this->matchAnswer($q, $given),
                 'explanation' => $q->getExplanation(),
             ];

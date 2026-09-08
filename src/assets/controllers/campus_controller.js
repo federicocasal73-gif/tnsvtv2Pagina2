@@ -94,9 +94,9 @@ export default class extends Controller {
 
     async loadProgress() {
         try {
-            const r = await fetch('/api/campus/progress');
-            if (!r.ok) return;
-            const data = await r.json();
+            const r = await window.apiFetch('/api/campus/progress', { silent: true });
+            if (!r.ok || !r.data) return;
+            const data = r.data;
             const global = data.global || {};
             const assignments = data.assignments || {};
             const pct = global.progress_percent ?? 0;
@@ -123,9 +123,9 @@ export default class extends Controller {
     async loadContinue() {
         if (!this.hasContinueCardTarget) return;
         try {
-            const r = await fetch('/api/campus/continue');
-            if (!r.ok) return;
-            const data = await r.json();
+            const r = await window.apiFetch('/api/campus/continue', { silent: true });
+            if (!r.ok || !r.data) return;
+            const data = r.data;
 
             if (!data.lesson) {
                 this.continueCardTarget.innerHTML = `
@@ -185,12 +185,12 @@ export default class extends Controller {
     async loadCourses() {
         if (!this.hasCoursesGridTarget) return;
         try {
-            const r = await fetch('/api/campus/courses');
-            if (!r.ok) {
+            const r = await window.apiFetch('/api/campus/courses', { silent: true });
+            if (!r.ok || !r.data) {
                 this.coursesGridTarget.innerHTML = this.emptyStateHtml('Sin cursos disponibles aún.');
                 return;
             }
-            const courses = await r.json();
+            const courses = r.data;
             if (!Array.isArray(courses) || courses.length === 0) {
                 this.coursesGridTarget.innerHTML = this.emptyStateHtml('No hay cursos disponibles.');
                 return;
@@ -248,14 +248,14 @@ export default class extends Controller {
     // ── Course detail ──
     async loadCourse(courseId) {
         try {
-            const r = await fetch(`/api/campus/courses/${courseId}`);
-            if (!r.ok) {
+            const r = await window.apiFetch(`/api/campus/courses/${courseId}`, { silent: true });
+            if (!r.ok || !r.data) {
                 if (this.hasCourseDetailTarget) {
                     this.courseDetailTarget.innerHTML = `<p class="campus-error">Curso no encontrado.</p>`;
                 }
                 return;
             }
-            const course = await r.json();
+            const course = r.data;
             this.renderCourseDetail(course);
         } catch (e) {
             console.error('[campus] course load error', e);
@@ -356,15 +356,16 @@ export default class extends Controller {
 
     // ── Lesson view ──
     async loadLesson(lessonId) {
+        this.currentLessonId = lessonId;
         try {
-            const r = await fetch(`/api/campus/lessons/${lessonId}`);
-            if (!r.ok) {
+            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}`, { silent: true });
+            if (!r.ok || !r.data) {
                 if (this.hasLessonViewTarget) {
                     this.lessonViewTarget.innerHTML = `<p class="campus-error">Lección no encontrada.</p>`;
                 }
                 return;
             }
-            const lesson = await r.json();
+            const lesson = r.data;
             this.renderLesson(lesson);
         } catch (e) {
             console.error('[campus] lesson load error', e);
@@ -444,6 +445,133 @@ export default class extends Controller {
         this.lessonViewTarget.querySelectorAll('[data-action="click->campus#markComplete"]').forEach(btn => {
             btn.addEventListener('click', () => this.markComplete(btn));
         });
+        this.loadQuizBadge(lesson.id);
+    }
+
+    async loadQuizBadge(lessonId) {
+        try {
+            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz`, { silent: true });
+            if (!r.ok || !r.data) return;
+            const quiz = r.data;
+            const footer = this.lessonViewTarget.querySelector('.campus-lesson-footer');
+            if (!footer || footer.querySelector('[data-action="click->campus#openQuiz"]')) return;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ui-btn ui-btn secondary ui-btn-size-lg';
+            btn.dataset.action = 'click->campus#openQuiz';
+            btn.dataset.lessonId = lessonId;
+            btn.innerHTML = '<span class="material-symbols-elev ui-btn-icon" aria-hidden="true">quiz</span> Rendir quiz';
+            btn.addEventListener('click', () => this.openQuiz(lessonId));
+            footer.prepend(btn);
+        } catch (e) {}
+    }
+
+    async openQuiz(lessonId) {
+        let quiz = null;
+        try {
+            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz`, { silent: true });
+            if (!r.ok || !r.data) {
+                if (window.apiToast) window.apiToast('No hay quiz para esta lección', 'warning');
+                return;
+            }
+            quiz = r.data;
+        } catch (e) {
+            return;
+        }
+        const questions = quiz.questions || [];
+        if (!questions.length) {
+            if (window.apiToast) window.apiToast('El quiz no tiene preguntas', 'warning');
+            return;
+        }
+        const overlay = document.createElement('div');
+        overlay.className = 'tnsvt-modal-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        const qHtml = questions.map((q, i) => this.quizQuestionHtml(q, i)).join('');
+        overlay.innerHTML = `
+            <div class="tnsvt-modal tnsvt-modal--wide" role="document">
+                <div class="tnsvt-modal__header">
+                    <h2 class="tnsvt-modal__title">
+                        <span class="material-symbols-elev">quiz</span>
+                        <span>${this.escapeHtml(quiz.title || 'Quiz')}</span>
+                    </h2>
+                    <button type="button" class="tnsvt-modal__close" data-quiz-close aria-label="Cerrar">
+                        <span class="material-symbols-elev" aria-hidden="true">close</span>
+                    </button>
+                </div>
+                <div class="tnsvt-modal__body">
+                    <p class="text-sm" style="color:var(--outline-elev)">Aprobás con ${quiz.passing_score ?? 70}% · ${quiz.max_attempts ?? 1} intento(s)</p>
+                    <div class="campus-quiz-questions">${qHtml}</div>
+                    <div class="campus-quiz-result" data-quiz-result hidden></div>
+                </div>
+                <div class="tnsvt-modal__footer">
+                    <button type="button" class="ui-btn ui-btn ghost" data-quiz-close>Cancelar</button>
+                    <button type="button" class="ui-btn ui-btn primary" data-quiz-submit>Enviar respuestas</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        document.body.style.overflow = 'hidden';
+        const close = () => { overlay.remove(); document.body.style.overflow = ''; };
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+        overlay.querySelectorAll('[data-quiz-close]').forEach(b => b.addEventListener('click', close));
+        overlay.querySelector('[data-quiz-submit]').addEventListener('click', async (e) => {
+            await this.submitQuiz(lessonId, overlay, e.currentTarget);
+        });
+    }
+
+    quizQuestionHtml(q, i) {
+        const qid = q.id;
+        const head = `<p class="campus-quiz-q"><strong>Q${i + 1}.</strong> ${this.escapeHtml(q.prompt || '')} <span class="campus-quiz-points">(${q.points ?? 1} pts)</span></p>`;
+        if (q.kind === 'true_false') {
+            return `<div class="campus-quiz-item" data-qid="${qid}">${head}
+                <label><input type="radio" name="q_${qid}" value="1"> Verdadero</label>
+                <label><input type="radio" name="q_${qid}" value="0"> Falso</label></div>`;
+        }
+        if (q.kind === 'short_answer') {
+            return `<div class="campus-quiz-item" data-qid="${qid}">${head}
+                <input type="text" class="form-input" name="q_${qid}" autocomplete="off"></div>`;
+        }
+        const opts = Array.isArray(q.options) ? q.options : [];
+        return `<div class="campus-quiz-item" data-qid="${qid}">${head}` +
+            opts.map((o, oi) => `<label><input type="radio" name="q_${qid}" value="${oi}"> ${this.escapeHtml(String(o))}</label>`).join('') + `</div>`;
+    }
+
+    async submitQuiz(lessonId, overlay, submitBtn) {
+        const answers = {};
+        overlay.querySelectorAll('.campus-quiz-item[data-qid]').forEach(item => {
+            const qid = item.dataset.qid;
+            const checked = item.querySelector(`input[name="q_${qid}"]:checked`);
+            const text = item.querySelector(`input[name="q_${qid}"][type="text"]`);
+            if (checked) answers[qid] = checked.value;
+            else if (text && text.value.trim() !== '') answers[qid] = text.value.trim();
+        });
+        const doneLoading = (typeof window.apiButtonLoading === 'function')
+            ? window.apiButtonLoading(submitBtn) : null;
+        try {
+            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ answers }),
+            });
+            if (doneLoading) doneLoading();
+            const box = overlay.querySelector('[data-quiz-result]');
+            if (!r.ok) {
+                const msg = (r.data && r.data.error) || 'No se pudo enviar';
+                if (window.apiToast) window.apiToast(msg, 'error');
+                return;
+            }
+            const d = r.data || {};
+            const pct = d.percent ?? 0;
+            if (box) {
+                box.hidden = false;
+                box.innerHTML = `<p><strong>${d.passed ? '✓ Aprobado' : '✗ No aprobado'} — ${pct}%</strong>`
+                    + ` (intento ${d.attempts_used ?? '?'} de ${d.attempts_left != null ? (d.attempts_used ?? 0) + d.attempts_left : '?'})</p>`;
+            }
+            if (window.apiToast) window.apiToast(d.passed ? `Aprobado con ${pct}%` : `Resultado: ${pct}%`, d.passed ? 'success' : 'warning');
+        } catch (e) {
+            if (doneLoading) doneLoading();
+            console.error('[campus] submit quiz error', e);
+        }
     }
 
     videoEmbedHtml(url) {
@@ -521,10 +649,35 @@ export default class extends Controller {
                 <div class="campus-assignment-footer">
                     ${a.due_date ? `<span class="campus-assignment-due"><span class="material-symbols-elev">schedule</span> Vence: ${this.escapeHtml(new Date(a.due_date).toLocaleDateString())}</span>` : ''}
                     ${a.estimated_minutes ? `<span class="campus-assignment-time"><span class="material-symbols-elev">timer</span> ~${a.estimated_minutes} min</span>` : ''}
+                    ${(!sub || sub.status === 'revision') ? `<button type="button" class="ui-btn ui-btn-primary ui-btn-size-sm" data-action="click->campus#openSubmitAssignment" data-assignment-id="${a.id}"><span class="material-symbols-elev ui-btn-icon">upload</span> ${sub ? 'Reentregar' : 'Entregar'}</button>` : ''}
                 </div>
                 ${sub && sub.comments ? `<p class="campus-assignment-my-comments">Tu entrega: ${this.escapeHtml(sub.comments)}</p>` : ''}
             </article>
         `;
+    }
+
+    async openSubmitAssignment(event) {
+        const assignmentId = parseInt(event.currentTarget?.dataset?.assignmentId, 10);
+        if (!assignmentId) return;
+        const comments = prompt('Comentarios de tu entrega (opcional):', '') ?? null;
+        if (comments === null) return;
+        try {
+            const r = await window.apiFetch(`/api/campus/assignments/${assignmentId}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ comments, files: [] }),
+            });
+            if (r.ok) {
+                if (window.apiToast) window.apiToast('Entrega enviada', 'success');
+                const lessonId = this.currentLessonId;
+                if (lessonId) await this.loadLesson(lessonId);
+            } else {
+                const msg = (r.data && (r.data.error || r.data.message)) || 'No se pudo enviar';
+                if (window.apiToast) window.apiToast(msg, 'error');
+            }
+        } catch (e) {
+            console.error('[campus] submit assignment error', e);
+        }
     }
 
     async markComplete(btn) {
@@ -538,7 +691,7 @@ export default class extends Controller {
         btn.dataset.origLabel = origLabel;
 
         try {
-            const r = await fetch(`/api/campus/lessons/${lessonId}/complete`, {
+            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/complete`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_code: this.userCode }),
