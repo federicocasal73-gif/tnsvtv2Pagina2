@@ -6,7 +6,7 @@
 <div class="trade-form-wrap" id="dashboard-trade-form-wrap">
 
     <div class="trade-form-header">
-        <span class="material-symbols-elev" style="color: var(--gold-elev); font-size: 1.8rem;">edit_note</span>
+        <span class="material-symbols-elev icon-size-lg" style="color: var(--gold-elev);">edit_note</span>
         <h1 class="text-cinzel-display" style="font-size: 1.7rem; margin: 0.5rem 0 0.25rem;">ASENTAR OPERACIÓN CERRADA</h1>
         <p>Registrá cada trade · Mantené tu bitácora de ejecutor</p>
     </div>
@@ -182,7 +182,7 @@
             <div class="photo-thumb">
                 <img src="${p.dataUrl}" alt="captura ${i + 1}" loading="lazy" decoding="async" style="max-width:100%;height:auto;border-radius:0.5rem;" />
                 <button type="button" class="photo-remove" data-idx="${i}" aria-label="Eliminar captura ${i + 1}">
-                    <span class="material-symbols-elev" style="font-size:1.1rem;">close</span>
+                    <span class="material-symbols-elev icon-size-sm">close</span>
                 </button>
                 <span class="photo-thumb-label">${p.kind === 'file' ? (p.name.length > 16 ? p.name.slice(0, 14) + '…' : p.name) : 'URL'}</span>
             </div>

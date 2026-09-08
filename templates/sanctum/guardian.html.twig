@@ -15,7 +15,7 @@
                 <p class="text-xs text-[var(--outline-elev)]">Refresh: <span id="last-refresh">--</span></p>
             </div>
             <button id="refresh-btn" class="ui-btn ui-btn secondary text-xs">
-                <span class="material-symbols-elev align-middle text-sm">refresh</span>
+                <span class="material-symbols-elev align-middle icon-size-xs">refresh</span>
                 Refrescar
             </button>
         </div>
@@ -155,7 +155,7 @@
                     const sign = item.delta > 0 ? '+' : '';
                     return `
                         <li class="flex items-start gap-2 py-1.5 border-b border-[var(--outline-variant-elev)] border-opacity-30 last:border-0">
-                            <span class="material-symbols-elev text-sm flex-shrink-0" style="color: #f87171;">trending_down</span>
+                            <span class="material-symbols-elev icon-size-xs flex-shrink-0" style="color: #f87171;">trending_down</span>
                             <div class="flex-1 min-w-0">
                                 <p class="text-[var(--on-surface-elev)] text-sm leading-snug">${escapeHtml(item.label)}</p>
                                 <p class="text-xs text-[var(--outline-elev)] mt-0.5">${escapeHtml(item.source)}</p>
@@ -202,7 +202,7 @@
                 const actionHtml = sig.action_label && sig.action_route
                     ? `<a href="${escapeHtml(sig.action_route)}" class="text-xs text-[var(--gold-elev)] hover:underline mt-2 inline-flex items-center gap-1">
                          ${escapeHtml(sig.action_label)}
-                         <span class="material-symbols-elev" style="font-size: 0.875rem;">arrow_forward</span>
+                         <span class="material-symbols-elev icon-size-xs">arrow_forward</span>
                        </a>`
                     : '';
 

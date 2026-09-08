@@ -37,7 +37,7 @@
                 </h3>
                 <a href="/sanctum/guardian" class="text-xs text-[var(--gold-elev)] hover:underline flex items-center gap-1">
                     Ver completo
-                    <span class="material-symbols-elev" style="font-size: 0.875rem;">arrow_forward</span>
+                    <span class="material-symbols-elev icon-size-xs">arrow_forward</span>
                 </a>
             </div>
 
@@ -88,7 +88,7 @@
                     </h3>
                     <div class="flex gap-2">
                         <button id="quick-add-task" class="ui-btn ui-btn secondary text-xs">
-                            <span class="material-symbols-elev align-middle text-sm">add</span>
+                            <span class="material-symbols-elev align-middle icon-size-xs">add</span>
                             Nueva
                         </button>
                         <a href="/sanctum/tasks" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
@@ -206,7 +206,7 @@
             if (signals.length === 0) {
                 listEl.innerHTML = `
                     <div class="flex items-center gap-2 p-2 rounded text-sm text-green-400">
-                        <span class="material-symbols-elev" style="font-size: 1.1rem;">check_circle</span>
+                        <span class="material-symbols-elev icon-size-sm">check_circle</span>
                         <span>Todo en orden · tu disciplina está bajo control</span>
                     </div>`;
                 return;
@@ -219,7 +219,7 @@
                     : '';
                 return `
                     <div class="flex items-center gap-2 p-2 rounded hover:bg-[var(--glass-bg-elev)] transition-colors">
-                        <span class="material-symbols-elev flex-shrink-0" style="color: ${v.color}; font-size: 1.1rem;">${v.icon}</span>
+                        <span class="material-symbols-elev flex-shrink-0 icon-size-sm" style="color: ${v.color}">${v.icon}</span>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm text-[var(--on-surface-elev)] truncate">${escapeHtml(s.title)}</p>
                             <p class="text-xs text-[var(--outline-elev)] truncate">${escapeHtml(s.message)}</p>

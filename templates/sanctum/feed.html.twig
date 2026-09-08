@@ -134,7 +134,7 @@
             if (!r.ok || !r.data || !Array.isArray(r.data)) {
                 if (!append) {
                     $list.innerHTML = '';
-                    apiEmpty($list, { icon: 'cloud_off', message: 'Sin datos disponibles' });
+                    apiEmpty($list, { icon: 'cloud_off', message: 'Sin datos disponibles', size: 'illustrated' });
                 }
                 feedHasMore = false;
                 return;
@@ -179,9 +179,9 @@
         const myPost = meCode && p.author_code === meCode;
         const liked = _likedIds.has(p.id);
         return `<article class="feed-post cat-${esc(cat)}" data-id="${p.id}">
-            <header class="feed-post-head"><div class="feed-avatar">${esc(initials(p.author_name))}</div><div class="feed-author-block"><div class="feed-author-name">${esc(p.author_name||'Anónimo')}</div><div class="feed-author-meta"><span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span><span>· ${esc(relTime(p.created_at))}</span></div></div>${myPost?`<button type="button" class="feed-action feed-post-delete" data-id="${p.id}"><span class="material-symbols-elev" style="font-size:1rem;">delete</span></button>`:''}</header>
+            <header class="feed-post-head"><div class="feed-avatar">${esc(initials(p.author_name))}</div><div class="feed-author-block"><div class="feed-author-name">${esc(p.author_name||'Anónimo')}</div><div class="feed-author-meta"><span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span><span>· ${esc(relTime(p.created_at))}</span></div></div>${myPost?`<button type="button" class="feed-action feed-post-delete" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">delete</span></button>`:''}</header>
             <div class="feed-post-body">${esc(p.text||'')}</div>${sigHtml}${photoHtml}
-            <div class="feed-post-actions"><button type="button" class="feed-action feed-like-btn ${liked?'liked':''}" data-id="${p.id}"><span class="material-symbols-elev" style="font-size:1.05rem;">favorite</span><span data-likes-count>${p.likes||0}</span></button><button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}"><span class="material-symbols-elev" style="font-size:1.05rem;">chat_bubble</span><span data-comments-count>${comments.length}</span></button></div>
+            <div class="feed-post-actions"><button type="button" class="feed-action feed-like-btn ${liked?'liked':''}" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">favorite</span><span data-likes-count>${p.likes||0}</span></button><button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">chat_bubble</span><span data-comments-count>${comments.length}</span></button></div>
             <div class="feed-comments" data-id="${p.id}" data-collapsed="true">${comments.map(c=>`<div class="feed-comment"><div class="feed-comment-avatar">${esc(initials(c.author))}</div><div class="feed-comment-body"><span class="feed-comment-author">${esc(c.author||'')}</span><span class="feed-comment-text">${esc(c.text||'')}</span><span class="feed-comment-time">${esc(relTime(c.date))}</span></div></div>`).join('')}<form class="feed-comment-form" data-id="${p.id}"><input type="text" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" /><button type="submit" class="feed-comment-submit">Comentar</button></form></div>
         </article>`;
     }
@@ -230,7 +230,7 @@
                         </div>
                         ${myPost ? `
                             <button type="button" class="feed-action feed-post-delete" data-id="${p.id}" aria-label="Eliminar publicación">
-                                <span class="material-symbols-elev" style="font-size:1rem;">delete</span>
+                                <span class="material-symbols-elev icon-size-sm">delete</span>
                             </button>
                         ` : ''}
                     </header>
@@ -239,11 +239,11 @@
                     ${photoHtml}
                     <div class="feed-post-actions">
                         <button type="button" class="feed-action feed-like-btn ${liked ? 'liked' : ''}" data-id="${p.id}">
-                            <span class="material-symbols-elev" style="font-size:1.05rem;">favorite</span>
+                            <span class="material-symbols-elev icon-size-sm">favorite</span>
                             <span data-likes-count>${p.likes || 0}</span>
                         </button>
                         <button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}">
-                            <span class="material-symbols-elev" style="font-size:1.05rem;">chat_bubble</span>
+                            <span class="material-symbols-elev icon-size-sm">chat_bubble</span>
                             <span data-comments-count>${comments.length}</span>
                         </button>
                     </div>

@@ -139,11 +139,11 @@
                     </h3>
                     <div class="flex flex-wrap items-center gap-2" id="cal-month-nav" role="group" aria-label="Mes">
                         <button type="button" class="cal-nav-btn" id="cal-prev" aria-label="Mes anterior">
-                            <span class="material-symbols-elev text-base">chevron_left</span>
+                            <span class="material-symbols-elev icon-size-sm">chevron_left</span>
                         </button>
                         <span id="cal-month-title" class="text-sm font-semibold min-w-[140px] text-center">—</span>
                         <button type="button" class="cal-nav-btn" id="cal-next" aria-label="Mes siguiente">
-                            <span class="material-symbols-elev text-base">chevron_right</span>
+                            <span class="material-symbols-elev icon-size-sm">chevron_right</span>
                         </button>
                         <button type="button" class="cal-today-btn" id="cal-today">Hoy</button>
                     </div>
@@ -273,7 +273,7 @@
         {# ─── Toolbar ─── #}
         <div class="glass-card-elev mb-4 flex flex-wrap items-center gap-3">
             <button id="btn-new-trade" class="ui-btn ui-btn-primary flex items-center gap-2">
-                <span class="material-symbols-elev align-middle text-sm">add</span>
+                <span class="material-symbols-elev align-middle icon-size-xs">add</span>
                 Nuevo Trade
             </button>
             <div class="flex-1"></div>
@@ -345,7 +345,7 @@
 
             <div class="mt-6 pt-6 border-t border-[var(--outline-variant-elev)]">
                 <h4 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <span class="material-symbols-elev text-base">rule</span>
+                    <span class="material-symbols-elev icon-size-sm">rule</span>
                     Distribución de resultados
                 </h4>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -370,7 +370,7 @@
 
             <div class="mt-6 pt-6 border-t border-[var(--outline-variant-elev)] text-sm text-[var(--outline-elev)]">
                 <p class="flex items-start gap-2">
-                    <span class="material-symbols-elev text-[var(--gold-elev)] text-base">info</span>
+                    <span class="material-symbols-elev text-[var(--gold-elev)] icon-size-sm">info</span>
                     <span>
                         Las métricas se calculan sobre todas las operaciones cerradas (WIN, LOSS, BE). Las posiciones abiertas no afectan Profit Factor ni Expectativa.
                         Para análisis más profundo, consultá el calendario y la curva de equity en el panel "Dashboard".
@@ -711,7 +711,7 @@
                 : '';
             return `
                 <div class="flex items-center gap-2 text-sm py-1">
-                    <span class="material-symbols-elev flex-shrink-0" style="color: ${v.color}; font-size: 1.1rem;">${v.icon}</span>
+                    <span class="material-symbols-elev flex-shrink-0 icon-size-sm" style="color: ${v.color}">${v.icon}</span>
                     <span class="text-[var(--on-surface-elev)]">${s.title}</span>
                     <span class="text-xs text-[var(--outline-elev)] truncate">· ${s.message}</span>
                     ${action}

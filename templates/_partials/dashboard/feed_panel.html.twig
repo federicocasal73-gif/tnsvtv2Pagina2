@@ -17,7 +17,7 @@
         </div>
         <a href="/feed" class="feed-embedded-full-link">
             Ver completo
-            <span class="material-symbols-elev" style="font-size: 0.875rem;">arrow_forward</span>
+            <span class="material-symbols-elev icon-size-xs">arrow_forward</span>
         </a>
     </header>
 
@@ -155,11 +155,11 @@
                     ${photoHtml}
                     <div class="feed-post-actions">
                         <button type="button" class="feed-action feed-like-btn ${liked ? 'liked' : ''}" data-id="${p.id}">
-                            <span class="material-symbols-elev" style="font-size:1.05rem;">favorite</span>
+                            <span class="material-symbols-elev icon-size-sm">favorite</span>
                             <span data-likes-count>${p.likes || 0}</span>
                         </button>
                         <button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}">
-                            <span class="material-symbols-elev" style="font-size:1.05rem;">chat_bubble</span>
+                            <span class="material-symbols-elev icon-size-sm">chat_bubble</span>
                             <span data-comments-count>${comments.length}</span>
                         </button>
                     </div>

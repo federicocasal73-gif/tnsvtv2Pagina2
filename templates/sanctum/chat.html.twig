@@ -20,7 +20,7 @@
             </div>
             <input type="text" class="chat-search" id="chat-search" placeholder="Buscar..." />
             <button type="button" class="chat-new-dm-btn" id="chat-new-dm-btn">
-                <span class="material-symbols-elev" style="font-size:1rem;">add_comment</span>
+                <span class="material-symbols-elev icon-size-sm">add_comment</span>
                 Nuevo DM
             </button>
         </div>
@@ -48,7 +48,7 @@
             <textarea id="chat-input" class="chat-composer-textarea"
                       placeholder="Escribe un mensaje..." rows="1"></textarea>
             <button id="chat-send" class="chat-send-btn" disabled>
-                <span class="material-symbols-elev" style="font-size:1rem;">send</span>
+                <span class="material-symbols-elev icon-size-sm">send</span>
                 Enviar
             </button>
         </div>
@@ -121,7 +121,7 @@
             const r = await apiFetch('/api/chat/conversations', { silent: true });
             if (!r.ok || !r.data) {
                 $list.innerHTML = '';
-                apiEmpty($list, { icon: 'forum', message: 'Sin conversaciones' });
+                apiEmpty($list, { icon: 'forum', message: 'Sin conversaciones', size: 'compact' });
                 return;
             }
             const items = Array.isArray(r.data) ? r.data : (r.data.conversations || []);
@@ -147,7 +147,7 @@
 
         if (items.length === 0) {
             $list.innerHTML = '';
-            apiEmpty($list, { icon: 'search_off', message: `No hay conversaciones${state.search ? ' que coincidan con la búsqueda' : ''}.` });
+            apiEmpty($list, { icon: 'search_off', message: `No hay conversaciones${state.search ? ' que coincidan con la búsqueda' : ''}.`, size: 'compact' });
             return;
         }
 
