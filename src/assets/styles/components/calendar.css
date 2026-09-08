@@ -1,24 +1,400 @@
-/* ─── Calendar — page-specific styles ─── */
+/* ═══════════════════════════════════════════════════════════════
+   Calendar V1-style — mystic header + timeline + critical banner
+   ═══════════════════════════════════════════════════════════════ */
 
-.cal-impact-3 {
-    color: var(--error-elev);
-    font-weight: 600;
+.cal-mystic-header {
+    text-align: center;
+    padding: 1.5rem 1rem 2.5rem;
+    position: relative;
 }
 
-.cal-impact-2 {
-    color: var(--warning-elev);
-    font-weight: 600;
+.cal-mystic-eyebrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
 }
 
-.cal-impact-1 {
+.cal-mystic-line {
+    flex: 0 0 80px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(242, 202, 80, 0.5), transparent);
+}
+
+.cal-mystic-mark {
+    font-family: var(--font-body-elev, "Inter", sans-serif);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-elev);
+    white-space: nowrap;
+}
+
+.cal-mystic-title {
+    font-family: var(--font-display-elev, 'Cinzel', serif);
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #fff 20%, var(--gold-elev) 50%, #fff 80%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    margin: 0.5rem 0;
+    animation: cal-mystic-shimmer 6s ease-in-out infinite;
+}
+
+@keyframes cal-mystic-shimmer {
+    0%, 100% { background-position: 0% center; }
+    50%      { background-position: 200% center; }
+}
+
+.cal-mystic-quote {
+    font-style: italic;
+    font-size: 0.85rem;
     color: var(--outline-elev);
-    font-weight: 500;
+    margin: 0.5rem auto 0;
+    max-width: 540px;
+    line-height: 1.5;
 }
 
-.cal-critical {
-    background: rgba(255, 180, 171, 0.08);
+@media (prefers-reduced-motion: reduce) {
+    .cal-mystic-title { animation: none; background-size: 100% auto; }
 }
 
-.cal-critical td {
-    border-color: rgba(255, 180, 171, 0.2);
+/* ─── Impact Legend ─── */
+.cal-impacts-legend {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--outline-elev);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    flex-wrap: wrap;
+}
+
+.cal-impact-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.4rem;
+    box-shadow: 0 0 6px currentColor;
+}
+.cal-impact-dot.dot-3 { background: #ff3b30; color: #ff3b30; }
+.cal-impact-dot.dot-2 { background: #ff9500; color: #ff9500; }
+.cal-impact-dot.dot-1 { background: #ffd60a; color: #ffd60a; }
+
+.cal-now-marker {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--error-elev);
+    font-weight: 700;
+}
+
+.cal-now-pulse {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--error-elev);
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.6);
+    animation: cal-now-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes cal-now-pulse {
+    0%   { box-shadow: 0 0 0 0   rgba(255, 59, 48, 0.7); }
+    70%  { box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); }
+    100% { box-shadow: 0 0 0 0   rgba(255, 59, 48, 0); }
+}
+
+/* ─── Timeline (vertical line + events) ─── */
+.cal-thread {
+    position: relative;
+    padding-left: 2.5rem;
+    margin-top: 1rem;
+}
+
+.cal-thread-line {
+    position: absolute;
+    left: 12px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(242, 202, 80, 0.5) 5%,
+        rgba(242, 202, 80, 0.5) 95%,
+        transparent 100%);
+}
+
+.cal-thread-line::before,
+.cal-thread-line::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold-elev);
+    box-shadow: 0 0 10px rgba(242, 202, 80, 0.6);
+}
+.cal-thread-line::before { top: 0; }
+.cal-thread-line::after  { bottom: 0; }
+
+/* ─── Critical Banner ─── */
+.cal-critical-banner {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.15) 0%, rgba(138, 60, 255, 0.10) 100%);
+    border: 1.5px solid rgba(255, 59, 48, 0.5);
+    border-radius: 0.75rem;
+    box-shadow: 0 0 28px rgba(255, 59, 48, 0.25), inset 0 0 16px rgba(255, 59, 48, 0.08);
+    position: relative;
+    overflow: hidden;
+    animation: cal-critical-banner-pulse 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes cal-critical-banner-pulse {
+    from { box-shadow: 0 0 24px rgba(255, 59, 48, 0.25), inset 0 0 16px rgba(255, 59, 48, 0.08); }
+    to   { box-shadow: 0 0 36px rgba(255, 59, 48, 0.45), inset 0 0 22px rgba(255, 59, 48, 0.14); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .cal-critical-banner { animation: none; }
+}
+
+.cal-critical-banner-title {
+    font-family: var(--font-display-elev, 'Cinzel', serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--error-elev);
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cal-critical-banner-title .material-symbols-elev {
+    animation: cal-critical-icon-blink 1s ease-in-out infinite;
+}
+
+@keyframes cal-critical-icon-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+}
+
+.cal-critical-row {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+.cal-critical-row:last-of-type { margin-bottom: 0; }
+.cal-critical-row:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 59, 48, 0.6);
+    transform: translateX(4px);
+}
+
+.cal-critical-time {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.cal-critical-clock {
+    font-family: var(--font-body-elev, "Inter", sans-serif);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gold-elev);
+}
+
+.cal-critical-countdown {
+    font-size: 0.65rem;
+    color: var(--error-elev);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(255, 59, 48, 0.15);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.cal-critical-content { min-width: 0; }
+.cal-critical-flag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--gold-elev);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.15rem;
+}
+.cal-critical-title {
+    font-size: 0.85rem;
+    color: var(--on-surface-elev);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cal-critical-impact {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+}
+.cal-critical-impact.dot-3 { background: #ff3b30; color: #ff3b30; }
+.cal-critical-impact.dot-2 { background: #ff9500; color: #ff9500; }
+.cal-critical-impact.dot-1 { background: #ffd60a; color: #ffd60a; }
+
+.cal-critical-no-trade {
+    margin-top: 1rem;
+    padding: 0.6rem;
+    text-align: center;
+    background: rgba(255, 59, 48, 0.25);
+    border: 1px dashed rgba(255, 59, 48, 0.6);
+    border-radius: 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+/* ─── Timeline Row (event individual) ─── */
+.cal-row {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.cal-row-dot-col {
+    position: relative;
+    width: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cal-row-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--surface-elev);
+    box-shadow: 0 0 0 2px var(--void-elev), 0 0 8px currentColor;
+    position: relative;
+    z-index: 1;
+}
+.cal-row-dot.dot-3 { background: #ff3b30; color: #ff3b30; }
+.cal-row-dot.dot-2 { background: #ff9500; color: #ff9500; }
+.cal-row-dot.dot-1 { background: #ffd60a; color: #ffd60a; }
+
+.cal-row-card {
+    flex: 1;
+    min-width: 0;
+    padding: 0.85rem 1rem;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.cal-row:hover .cal-row-card {
+    border-color: var(--gold-elev);
+    transform: translateX(4px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(242, 202, 80, 0.4);
+}
+
+.cal-row-critical .cal-row-card {
+    border-color: rgba(255, 59, 48, 0.4);
+    background: linear-gradient(90deg, rgba(255, 59, 48, 0.08) 0%, var(--glass-bg-elev) 60%);
+}
+
+.cal-row-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.cal-row-time {
+    font-family: var(--font-body-elev, "Inter", sans-serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gold-elev);
+    min-width: 50px;
+}
+
+.cal-row-flag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--gold-elev);
+    background: rgba(242, 202, 80, 0.12);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+}
+
+.cal-row-tag {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--on-surface-elev);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cal-row-countdown {
+    font-size: 0.7rem;
+    color: var(--success-elev);
+    background: rgba(52, 199, 89, 0.12);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.cal-row-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.7rem;
+    color: var(--outline-elev);
+    flex-wrap: wrap;
+}
+
+.cal-row-meta strong { color: var(--on-surface-elev); margin-left: 0.2rem; font-weight: 600; }
+
+/* ─── Mobile tweaks ─── */
+@media (max-width: 640px) {
+    .cal-thread { padding-left: 2rem; }
+    .cal-thread-line { left: 8px; }
+    .cal-critical-row { grid-template-columns: 60px 1fr auto; }
+    .cal-row-head { font-size: 0.75rem; }
+    .cal-row-meta { font-size: 0.65rem; gap: 0.5rem; }
 }

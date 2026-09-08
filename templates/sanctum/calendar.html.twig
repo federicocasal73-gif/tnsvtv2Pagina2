@@ -8,9 +8,21 @@
 {% block stylesheets %}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto"
-     data-controller="calendar_events"
-     data-calendar-events-url-value="{{ path('app_calendar_widget') }}">
+<div class="max-w-7xl mx-auto" data-controller="calendar_events">
+
+    {# ─── Mystic Header (V1-style) ─── #}
+    <div class="cal-mystic-header">
+        <div class="cal-mystic-eyebrow">
+            <span class="cal-mystic-line"></span>
+            <span class="cal-mystic-mark">⛧ EL PULSO DEL MUNDO ⛧</span>
+            <span class="cal-mystic-line"></span>
+        </div>
+        <h1 class="cal-mystic-title">Calendario Económico</h1>
+        <p class="cal-mystic-quote">
+            "El mercado no te avisa. El calendario sí. Aprende a leerlo antes de ejecutar."
+        </p>
+    </div>
+
     {# ─── Tareas próximas (Fase 6) ─── #}
     <section class="glass-card-elev p-4 mb-4" data-controller="upcoming-tasks">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-3);">
@@ -63,8 +75,22 @@
         </div>
     </div>
 
-    {# ─── Events Table ─── #}
-    <div class="glass-card-elev p-0 overflow-hidden">
+    {# ─── Impact Legend (V1-style) ─── #}
+    <div class="cal-impacts-legend">
+        <span><span class="cal-impact-dot dot-3"></span>Alto impacto</span>
+        <span><span class="cal-impact-dot dot-2"></span>Medio</span>
+        <span><span class="cal-impact-dot dot-1"></span>Bajo</span>
+        <span class="cal-now-marker"><span class="cal-now-pulse"></span>AHORA</span>
+    </div>
+
+    {# ─── Timeline Vertical (V1-style) ─── #}
+    <div class="cal-thread" id="cal-thread">
+        <div class="cal-thread-line"></div>
+        <p class="text-center text-[var(--outline-elev)] py-12 loading-pulse">Cargando eventos del día...</p>
+    </div>
+
+    {# ─── Hidden data for backward compat (cal-list still referenced by old scripts) ─── #}
+    <div class="glass-card-elev p-0 overflow-hidden mt-6" id="cal-table-legacy" style="display:none;">
         <div class="overflow-x-auto">
             <table class="data-table">
                 <thead>
@@ -78,9 +104,7 @@
                         <th scope="col">Anterior</th>
                     </tr>
                 </thead>
-                <tbody id="cal-list">
-                    <tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>
-                </tbody>
+                <tbody id="cal-list"></tbody>
             </table>
         </div>
     </div>
@@ -89,6 +113,7 @@
 <script>
 (function() {
     'use strict';
+    const threadEl = document.getElementById('cal-thread');
     const listEl = document.getElementById('cal-list');
     const countEl = document.getElementById('cal-count');
     const dateInput = document.getElementById('cal-date');
@@ -125,8 +150,26 @@
         if (params.has('impact') && impactSel) impactSel.value = params.get('impact');
     }
 
+    function timeUntil(eventIso) {
+        if (!eventIso) return null;
+        const now = new Date();
+        const target = new Date(eventIso);
+        const diffMs = target - now;
+        if (diffMs < 0) return { past: true, text: 'pasado' };
+        const m = Math.floor(diffMs / 60000);
+        const h = Math.floor(m / 60);
+        const d = Math.floor(h / 24);
+        if (d > 0) return { past: false, text: `en ${d}d ${h % 24}h` };
+        if (h > 0) return { past: false, text: `en ${h}h ${m % 60}m` };
+        return { past: false, text: `en ${m}m` };
+    }
+
+    function isCriticalEvent(e) {
+        return e.is_critical || (e.importance || 1) === 3;
+    }
+
     async function loadEvents() {
-        listEl.innerHTML = '<tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Cargando eventos...</td></tr>';
+        threadEl.innerHTML = '<div class="cal-thread-line"></div><p class="text-center text-[var(--outline-elev)] py-12 loading-pulse">Cargando eventos del día...</p>';
         const params = new URLSearchParams();
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Argentina/Buenos_Aires';
         params.set('tz', tz);
@@ -136,7 +179,7 @@
 
         const r = await apiFetch('/api/calendar/events?' + params.toString());
         if (!r.ok || !r.data || !r.data.events) {
-            listEl.innerHTML = '<tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">Sin datos disponibles</td></tr>';
+            threadEl.innerHTML = '<div class="cal-thread-line"></div><p class="text-center text-[var(--outline-elev)] py-12">Sin datos disponibles</p>';
             countEl.textContent = '0 eventos';
             return;
         }
@@ -144,25 +187,87 @@
         countEl.textContent = events.length + ' eventos';
 
         if (events.length === 0) {
-            listEl.innerHTML = '<tr><td colspan="7" class="text-center text-[var(--outline-elev)] py-12">No hay eventos para los filtros seleccionados</td></tr>';
+            threadEl.innerHTML = '<div class="cal-thread-line"></div><p class="text-center text-[var(--outline-elev)] py-12">No hay eventos para los filtros seleccionados</p>';
             return;
         }
 
-        listEl.innerHTML = events.map(e => {
+        // Separate critical (next-3) from rest
+        const critical = events.filter(isCriticalEvent).slice(0, 3);
+        const rest = events.filter(e => !critical.includes(e));
+
+        let html = '<div class="cal-thread-line"></div>';
+
+        // Critical events banner
+        if (critical.length > 0) {
+            html += '<div class="cal-critical-banner">';
+            html += '<div class="cal-critical-banner-title"><span class="material-symbols-elev">priority_high</span>PRÓXIMOS CRÍTICOS</div>';
+            for (const e of critical) {
+                const t = timeUntil(e.datetime || e.time);
+                const impact = e.importance || 1;
+                html += `
+                    <div class="cal-critical-row">
+                        <div class="cal-critical-time">
+                            <span class="cal-critical-clock">${escapeHtml(e.time || '')}</span>
+                            ${t && !t.past ? `<span class="cal-critical-countdown">${escapeHtml(t.text)}</span>` : ''}
+                        </div>
+                        <div class="cal-critical-content">
+                            <div class="cal-critical-flag">${escapeHtml(e.currency || e.country_code || '')}</div>
+                            <div class="cal-critical-title">${escapeHtml(e.title || '')}</div>
+                        </div>
+                        <div class="cal-critical-impact dot-${impact}"></div>
+                    </div>`;
+            }
+            html += '<div class="cal-critical-no-trade">⚠️ NO OPERAR durante la ventana crítica ±15 min</div>';
+            html += '</div>';
+        }
+
+        // Rest as timeline
+        for (const e of rest) {
             const impact = e.importance || 1;
-            const critical = e.is_critical ? 'cal-critical' : '';
-            return `
-                <tr class="${critical}">
-                    <td class="font-mono">${escapeHtml(e.time || '')}</td>
-                    <td>${escapeHtml(e.currency || e.country_code || '')}</td>
-                    <td>${escapeHtml(e.title || '')}</td>
-                    <td class="cal-impact-${impact}">${'●'.repeat(impact)}${'○'.repeat(3 - impact)}</td>
-                    <td>${escapeHtml(e.actual || '—')}</td>
-                    <td>${escapeHtml(e.forecast || '—')}</td>
-                    <td>${escapeHtml(e.previous || '—')}</td>
-                </tr>
-            `;
-        }).join('');
+            const t = timeUntil(e.datetime || e.time);
+            const isNow = t && !t.past && t.text.includes('m') && !t.text.includes('h') && !t.text.includes('d');
+            html += `
+                <div class="cal-row ${isCriticalEvent(e) ? 'cal-row-critical' : ''}">
+                    <div class="cal-row-dot-col">
+                        <div class="cal-row-dot dot-${impact}"></div>
+                    </div>
+                    <div class="cal-row-card">
+                        <div class="cal-row-head">
+                            <span class="cal-row-time">${escapeHtml(e.time || '')}</span>
+                            <span class="cal-row-flag">${escapeHtml(e.currency || e.country_code || '')}</span>
+                            <span class="cal-row-tag">${escapeHtml(e.title || '')}</span>
+                            ${t && !t.past ? `<span class="cal-row-countdown">${escapeHtml(t.text)}</span>` : ''}
+                        </div>
+                        <div class="cal-row-meta">
+                            <span>Actual: <strong>${escapeHtml(e.actual || '—')}</strong></span>
+                            <span>Previsión: <strong>${escapeHtml(e.forecast || '—')}</strong></span>
+                            <span>Anterior: <strong>${escapeHtml(e.previous || '—')}</strong></span>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        threadEl.innerHTML = html;
+
+        // Also populate legacy table for backward compat (e.g., exports)
+        if (listEl) {
+            listEl.innerHTML = events.map(e => {
+                const impact = e.importance || 1;
+                const critical = e.is_critical ? 'cal-critical' : '';
+                const t = timeUntil(e.datetime || e.time);
+                return `
+                    <tr class="${critical}">
+                        <td class="font-mono">${escapeHtml(e.time || '')}${t && !t.past ? ` <small>(${escapeHtml(t.text)})</small>` : ''}</td>
+                        <td>${escapeHtml(e.currency || e.country_code || '')}</td>
+                        <td>${escapeHtml(e.title || '')}</td>
+                        <td class="cal-impact-${impact}">${'●'.repeat(impact)}${'○'.repeat(3 - impact)}</td>
+                        <td>${escapeHtml(e.actual || '—')}</td>
+                        <td>${escapeHtml(e.forecast || '—')}</td>
+                        <td>${escapeHtml(e.previous || '—')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
     }
 
     function onFilterChange() {
@@ -172,7 +277,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         restoreState();
-        // Default date = today if not restored
         if (!dateInput.value) {
             const now = new Date();
             dateInput.value = now.toISOString().slice(0, 10);
@@ -183,6 +287,8 @@
         impactSel.addEventListener('change', onFilterChange);
 
         loadEvents();
+        // Refresh every 5 minutes for countdowns
+        setInterval(loadEvents, 5 * 60 * 1000);
     });
 })();
 </script>

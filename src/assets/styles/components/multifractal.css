@@ -1,0 +1,39 @@
+/* ═══════════════════════════════════════════════════════════════
+   Multifractal / 2 Steps Checklist — resultado dinámico
+   ═══════════════════════════════════════════════════════════════ */
+
+#mf-result.mf-valid {
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.18) 0%, rgba(242, 202, 80, 0.10) 100%);
+    border-color: var(--success-elev);
+    box-shadow: 0 0 24px rgba(52, 199, 89, 0.35), inset 0 0 20px rgba(52, 199, 89, 0.08);
+    animation: mf-valid-pulse 1.8s ease-in-out infinite alternate;
+}
+
+#mf-result.mf-partial {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(242, 202, 80, 0.05) 100%);
+    border-color: rgba(251, 191, 36, 0.45);
+}
+
+@keyframes mf-valid-pulse {
+    from { box-shadow: 0 0 24px rgba(52, 199, 89, 0.35), inset 0 0 20px rgba(52, 199, 89, 0.08); }
+    to   { box-shadow: 0 0 36px rgba(52, 199, 89, 0.55), inset 0 0 24px rgba(52, 199, 89, 0.14); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #mf-result.mf-valid { animation: none; }
+}
+
+/* Checklist items hover state */
+#multifractal-checklist label {
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.02);
+}
+#multifractal-checklist label:has(input:checked) {
+    background: linear-gradient(90deg, rgba(242, 202, 80, 0.12) 0%, transparent 80%);
+    border-color: var(--gold-elev);
+    box-shadow: inset 3px 0 0 var(--gold-elev);
+}
+#multifractal-checklist label:has(input:checked) span {
+    color: var(--on-surface-elev);
+    font-weight: 500;
+}
