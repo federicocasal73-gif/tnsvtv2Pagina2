@@ -202,39 +202,47 @@ class V1ImportCommand extends Command
     private function importConversations(\PDO $v1, SymfonyStyle $io, array &$stats): void
     {
         try {
-            $rows = $v1->query("SELECT id, type, name, created_at, updated_at FROM conversations")->fetchAll(\PDO::FETCH_ASSOC);
+            $rows = $v1->query("SELECT id, type, name, created_at FROM conversations")->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($rows as $row) {
                 $this->connection->executeStatement(
-                    'INSERT INTO conversations (id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-                    [$row['id'], $row['type'], $row['name'], $row['created_at'], $row['updated_at']]
+                    'INSERT INTO conversations (id, type, title, created_at) VALUES (?, ?, ?, ?)',
+                    [$row['id'], $row['type'] ?? 'dm', $row['name'] ?? '', $row['created_at']]
                 );
                 $stats['conversations']++;
             }
             $io->writeln("  ✓ {$stats['conversations']} conversations");
 
-            // Participants
-            $prows = $v1->query("SELECT conversation_id, user_id, joined_at FROM conversation_participants")->fetchAll(\PDO::FETCH_ASSOC);
-            foreach ($prows as $row) {
-                $user = $this->userRepo->find($row['user_id']);
-                if (!$user) continue;
-                $this->connection->executeStatement(
-                    'INSERT INTO conversation_participants (conversation_id, user_id, joined_at) VALUES (?, ?, ?)',
-                    [$row['conversation_id'], $user->getId(), $row['joined_at']]
-                );
+            // Participants (V2 uses conversation_participants too)
+            try {
+                $prows = $v1->query("SELECT conversation_id, user_id, joined_at FROM conversation_participants")->fetchAll(\PDO::FETCH_ASSOC);
+                foreach ($prows as $row) {
+                    $user = $this->userRepo->find($row['user_id']);
+                    if (!$user) continue;
+                    $this->connection->executeStatement(
+                        'INSERT INTO conversation_participants (conversation_id, user_id, joined_at) VALUES (?, ?, ?)',
+                        [$row['conversation_id'], $user->getId(), $row['joined_at']]
+                    );
+                }
+            } catch (\Exception $e) {
+                $io->writeln('  (participants skipped: ' . $e->getMessage() . ')');
             }
 
-            // Messages
-            $mrows = $v1->query("SELECT id, conversation_id, sender_id, content, created_at FROM messages")->fetchAll(\PDO::FETCH_ASSOC);
-            foreach ($mrows as $row) {
-                $user = $this->userRepo->find($row['sender_id']);
-                if (!$user) continue;
-                $this->connection->executeStatement(
-                    'INSERT INTO messages (conversation_id, sender_id, content, created_at) VALUES (?, ?, ?, ?)',
-                    [$row['conversation_id'], $user->getId(), $row['content'], $row['created_at']]
-                );
-                $stats['messages']++;
+            // Messages (if table exists)
+            try {
+                $mrows = $v1->query("SELECT id, conversation_id, sender_id, content, created_at FROM messages")->fetchAll(\PDO::FETCH_ASSOC);
+                foreach ($mrows as $row) {
+                    $user = $this->userRepo->find($row['sender_id']);
+                    if (!$user) continue;
+                    $this->connection->executeStatement(
+                        'INSERT INTO messages (conversation_id, sender_id, content, created_at) VALUES (?, ?, ?, ?)',
+                        [$row['conversation_id'], $user->getId(), $row['content'], $row['created_at']]
+                    );
+                    $stats['messages']++;
+                }
+                $io->writeln("  ✓ {$stats['messages']} messages");
+            } catch (\Exception $e) {
+                $io->writeln('  (messages table skipped: ' . $e->getMessage() . ')');
             }
-            $io->writeln("  ✓ {$stats['messages']} messages");
         } catch (\Exception $e) {
             $io->warning('  conversations: ' . $e->getMessage());
         }
@@ -243,13 +251,20 @@ class V1ImportCommand extends Command
     private function importTradingAccounts(\PDO $v1, SymfonyStyle $io, array &$stats): void
     {
         try {
-            $rows = $v1->query("SELECT id, user_id, name, broker, initial_balance, current_balance, currency, is_active, deleted_at, created_at, updated_at, emoji FROM trading_accounts WHERE deleted_at IS NULL")->fetchAll(\PDO::FETCH_ASSOC);
+            $rows = $v1->query("SELECT id, user_id, name, broker, initial_balance, current_balance, currency, is_active, created_at, emoji FROM trading_accounts WHERE deleted_at IS NULL")->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($rows as $row) {
                 $user = $this->userRepo->find($row['user_id']);
                 if (!$user) continue;
                 $this->connection->executeStatement(
-                    'INSERT INTO trading_accounts (user_id, name, broker, initial_balance, current_balance, currency, is_active, created_at, updated_at, emoji) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [$user->getId(), $row['name'], $row['broker'], $row['initial_balance'], $row['current_balance'], $row['currency'], $row['is_active'], $row['created_at'], $row['updated_at'], $row['emoji']]
+                    'INSERT INTO trading_accounts (user_id, name, account_size, is_active, icon, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+                    [
+                        $user->getId(),
+                        $row['name'],
+                        $row['initial_balance'] ?? 10000,
+                        $row['is_active'] ?? 1,
+                        $row['emoji'] ?? '💰',
+                        $row['created_at'],
+                    ]
                 );
                 $stats['trading_accounts']++;
             }
@@ -268,8 +283,8 @@ class V1ImportCommand extends Command
                 $a = $this->userRepo->find($row['addressee_id']);
                 if (!$r || !$a) continue;
                 $this->connection->executeStatement(
-                    'INSERT INTO connections (requester_id, addressee_id, status, created_at, accepted_at) VALUES (?, ?, ?, ?, ?)',
-                    [$r->getId(), $a->getId(), $row['status'], $row['created_at'], $row['accepted_at']]
+                    'INSERT INTO connections (user_id, connected_user_id, created_at) VALUES (?, ?, ?)',
+                    [$r->getId(), $a->getId(), $row['created_at']]
                 );
                 $stats['connections']++;
             }
@@ -281,8 +296,8 @@ class V1ImportCommand extends Command
                 $a = $this->userRepo->find($row['addressee_id']);
                 if (!$r || !$a) continue;
                 $this->connection->executeStatement(
-                    'INSERT INTO access_requests (requester_id, addressee_id, status, message, created_at, responded_at) VALUES (?, ?, ?, ?, ?, ?)',
-                    [$r->getId(), $a->getId(), $row['status'], $row['message'], $row['created_at'], $row['responded_at']]
+                    'INSERT INTO access_requests (requester_id, target_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+                    [$r->getId(), $a->getId(), $row['status'] ?? 'pending', $row['created_at'], $row['responded_at'] ?? $row['created_at']]
                 );
                 $stats['access_requests']++;
             }
@@ -295,13 +310,13 @@ class V1ImportCommand extends Command
     private function importFeedPosts(\PDO $v1, SymfonyStyle $io, array &$stats): void
     {
         try {
-            $rows = $v1->query("SELECT id, author_id, content, attachment_url, signal_type, asset_symbol, direction, entry_price, stop_loss, take_profit_1, take_profit_2, like_count, comment_count, status, created_at FROM feed_posts")->fetchAll(\PDO::FETCH_ASSOC);
+            $rows = $v1->query("SELECT id, author_id, content, like_count, created_at FROM feed_posts")->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($rows as $row) {
                 $author = $this->userRepo->find($row['author_id']);
                 if (!$author) continue;
                 $this->connection->executeStatement(
-                    'INSERT INTO feed_posts (author_id, content, attachment_url, signal_type, asset_symbol, direction, entry_price, stop_loss, take_profit_1, take_profit_2, like_count, comment_count, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [$author->getId(), $row['content'], $row['attachment_url'], $row['signal_type'], $row['asset_symbol'], $row['direction'], $row['entry_price'], $row['stop_loss'], $row['take_profit_1'], $row['take_profit_2'], $row['like_count'], $row['comment_count'], $row['status'], $row['created_at']]
+                    'INSERT INTO feed_posts (author_id, content, likes, created_at) VALUES (?, ?, ?, ?)',
+                    [$author->getId(), $row['content'], $row['like_count'] ?? 0, $row['created_at']]
                 );
                 $stats['feed_posts']++;
             }
@@ -314,17 +329,13 @@ class V1ImportCommand extends Command
     private function importNotifications(\PDO $v1, SymfonyStyle $io, array &$stats): void
     {
         try {
-            $rows = $v1->query("SELECT id, recipient_id, actor_id, type, message, link, is_read, created_at FROM notifications")->fetchAll(\PDO::FETCH_ASSOC);
+            $rows = $v1->query("SELECT id, recipient_id, type, message, link, is_read, created_at FROM notifications")->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($rows as $row) {
                 $recipient = $this->userRepo->find($row['recipient_id']);
                 if (!$recipient) continue;
-                $actor = null;
-                if (!empty($row['actor_id'])) {
-                    $actor = $this->userRepo->find($row['actor_id']);
-                }
                 $this->connection->executeStatement(
-                    'INSERT INTO notifications (recipient_id, actor_id, type, message, link, is_read, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    [$recipient->getId(), $actor?->getId(), $row['type'], $row['message'], $row['link'], $row['is_read'], $row['created_at']]
+                    'INSERT INTO notifications (user_id, type, content, link, is_read, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+                    [$recipient->getId(), $row['type'], $row['message'], $row['link'], $row['is_read'] ?? 0, $row['created_at']]
                 );
                 $stats['notifications']++;
             }
