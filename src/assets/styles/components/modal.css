@@ -125,6 +125,15 @@
     max-width: 640px;
 }
 
+/* V1-style dramatic slide-up for calendar day-detail modal */
+.tnsvt-modal--slide-up {
+    animation-name: tnsvtSlideUp;
+}
+@keyframes tnsvtSlideUp {
+    from { opacity: 0; transform: translateY(100px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ═══ Header / Body / Footer ═══ */
 .tnsvt-modal__header {
     display: flex;
