@@ -10,6 +10,7 @@
     --font-label:   'Orbitron', sans-serif;   /* labels / Eyebrow / tags */
     --font-body:    'Inter', sans-serif;      /* párrafos */
 
+    --text-display-2xl: clamp(2rem, 6vw, 3rem);
     --text-display-xl: clamp(1.25rem, 2.2vw, 1.6rem);
     --text-title:      0.95rem;
     --text-body:       0.82rem;
