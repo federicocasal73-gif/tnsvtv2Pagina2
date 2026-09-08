@@ -887,7 +887,7 @@
 
 .protocol-breakdown-delta {
     flex-shrink: 0;
-    font-family: var(--font-body-elev);, monospace;
+    font-family: var(--font-body-elev, monospace);
     font-size: 0.8125rem;
     color: #f87171;
 }

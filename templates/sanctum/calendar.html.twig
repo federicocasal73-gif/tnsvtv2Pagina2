@@ -8,7 +8,7 @@
 {% block stylesheets %}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto" data-controller="calendar_events">
+<div class="max-w-7xl mx-auto" data-controller="calendar-events">
 
     {# ─── Mystic Header (V1-style) ─── #}
     <div class="cal-mystic-header">
@@ -152,16 +152,18 @@
 
     function timeUntil(eventIso) {
         if (!eventIso) return null;
-        const now = new Date();
         const target = new Date(eventIso);
+        if (isNaN(target.getTime())) return null;
+        const now = new Date();
         const diffMs = target - now;
-        if (diffMs < 0) return { past: true, text: 'pasado' };
+        if (!isFinite(diffMs) || diffMs < 0) return { past: true, text: '—' };
         const m = Math.floor(diffMs / 60000);
         const h = Math.floor(m / 60);
         const d = Math.floor(h / 24);
         if (d > 0) return { past: false, text: `en ${d}d ${h % 24}h` };
         if (h > 0) return { past: false, text: `en ${h}h ${m % 60}m` };
-        return { past: false, text: `en ${m}m` };
+        if (m > 0) return { past: false, text: `en ${m}m` };
+        return { past: false, text: 'ahora' };
     }
 
     function isCriticalEvent(e) {
@@ -202,7 +204,7 @@
             html += '<div class="cal-critical-banner">';
             html += '<div class="cal-critical-banner-title"><span class="material-symbols-elev">priority_high</span>PRÓXIMOS CRÍTICOS</div>';
             for (const e of critical) {
-                const t = timeUntil(e.datetime || e.time);
+                const t = timeUntil(e.datetime_utc || e.datetime_local);
                 const impact = e.importance || 1;
                 html += `
                     <div class="cal-critical-row">
@@ -224,7 +226,7 @@
         // Rest as timeline
         for (const e of rest) {
             const impact = e.importance || 1;
-            const t = timeUntil(e.datetime || e.time);
+            const t = timeUntil(e.datetime_utc || e.datetime_local);
             const isNow = t && !t.past && t.text.includes('m') && !t.text.includes('h') && !t.text.includes('d');
             html += `
                 <div class="cal-row ${isCriticalEvent(e) ? 'cal-row-critical' : ''}">
@@ -254,7 +256,7 @@
             listEl.innerHTML = events.map(e => {
                 const impact = e.importance || 1;
                 const critical = e.is_critical ? 'cal-critical' : '';
-                const t = timeUntil(e.datetime || e.time);
+                const t = timeUntil(e.datetime_utc || e.datetime_local);
                 return `
                     <tr class="${critical}">
                         <td class="font-mono">${escapeHtml(e.time || '')}${t && !t.past ? ` <small>(${escapeHtml(t.text)})</small>` : ''}</td>

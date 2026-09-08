@@ -3106,3 +3106,127 @@ header {
 .chat-bubble .chat-bubble-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--error-elev); color: #fff; font-size: 0.65rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid var(--void-elev, #050308); }
 .chat-bubble .chat-bubble-close { position: absolute; top: -6px; left: -6px; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,0.6); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; opacity: 0; transition: opacity 0.15s; }
 .chat-bubble:hover .chat-bubble-close { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Utility classes — Tailwind-compatible polyfills
+   TNSVT does not use Tailwind. These utility classes are used
+   in templates that previously relied on Tailwind defaults.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Layout */
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.grid { display: grid; }
+.hidden { display: none; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-1 { flex: 1 1 0%; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.gap-3 { gap: 0.75rem; }
+.gap-4 { gap: 1rem; }
+
+/* Container widths */
+.max-w-7xl { max-width: 80rem; }
+.max-w-3xl { max-width: 48rem; }
+.max-w-2xl { max-width: 42rem; }
+.max-w-md  { max-width: 28rem; }
+.mx-auto   { margin-left: auto; margin-right: auto; }
+
+/* Padding */
+.p-0  { padding: 0; }
+.p-2  { padding: 0.5rem; }
+.p-3  { padding: 0.75rem; }
+.p-4  { padding: 1rem; }
+.p-5  { padding: 1.25rem; }
+.p-6  { padding: 1.5rem; }
+.py-2 { padding-top: 0.5rem;    padding-bottom: 0.5rem; }
+.py-4 { padding-top: 1rem;      padding-bottom: 1rem; }
+.py-6 { padding-top: 1.5rem;    padding-bottom: 1.5rem; }
+.py-8 { padding-top: 2rem;      padding-bottom: 2rem; }
+.py-12 { padding-top: 3rem;     padding-bottom: 3rem; }
+.px-2 { padding-left: 0.5rem;   padding-right: 0.5rem; }
+.px-3 { padding-left: 0.75rem;  padding-right: 0.75rem; }
+.px-4 { padding-left: 1rem;     padding-right: 1rem; }
+
+/* Margin */
+.m-0  { margin: 0; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+.mt-6 { margin-top: 1.5rem; }
+.ml-2 { margin-left: 0.5rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* Position */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed    { position: fixed; }
+
+/* Display helpers */
+.overflow-hidden { overflow: hidden; }
+.overflow-x-auto { overflow-x: auto; }
+.overflow-y-auto { overflow-y: auto; }
+
+/* Width / height */
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.min-h-screen { min-height: 100vh; }
+
+/* Text alignment */
+.text-center { text-align: center; }
+.text-left   { text-align: left; }
+.text-right  { text-align: right; }
+
+/* Text size (small subset — add as needed) */
+.text-xs  { font-size: 0.75rem; line-height: 1rem; }
+.text-sm  { font-size: 0.875rem; line-height: 1.25rem; }
+.text-lg  { font-size: 1.125rem; line-height: 1.75rem; }
+.text-xl  { font-size: 1.25rem; line-height: 1.75rem; }
+.text-2xl { font-size: 1.5rem; line-height: 2rem; }
+
+/* Font weight */
+.font-bold   { font-weight: 700; }
+.font-semibold { font-weight: 600; }
+.font-medium { font-weight: 500; }
+.font-normal { font-weight: 400; }
+
+/* Font family */
+.font-mono { font-family: var(--font-body-elev), monospace; }
+
+/* Misc */
+.rounded     { border-radius: 0.25rem; }
+.rounded-lg  { border-radius: 0.5rem; }
+.rounded-full { border-radius: 9999px; }
+.shadow      { box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.antialiased { -webkit-font-smoothing: antialiased; }
+.truncate    { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Token-bound colors (Tailwind arbitrary value polyfills) */
+.text-\[var\(--outline-elev\)\]    { color: var(--outline-elev); }
+.text-\[var\(--on-surface-elev\)\] { color: var(--on-surface-elev); }
+.text-\[var\(--gold-elev\)\]       { color: var(--gold-elev); }
+.bg-\[var\(--void-elev\)\]         { background-color: var(--void-elev); }
+.bg-\[var\(--glass-bg-elev\)\]     { background-color: var(--glass-bg-elev); }
+
+/* Responsive: sm=640px, md=768px, lg=1024px (using canonical tokens from tokens.css) */
+@media (min-width: 640px) {
+    .sm\:gap-3 { gap: 0.75rem; }
+    .sm\:p-6 { padding: 1.5rem; }
+}
+@media (min-width: 768px) {
+    .md\:gap-4 { gap: 1rem; }
+    .md\:p-6 { padding: 1.5rem; }
+    .md\:flex-row { flex-direction: row; }
+}
+@media (min-width: 1024px) {
+    .lg\:gap-4 { gap: 1rem; }
+}
