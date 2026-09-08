@@ -160,7 +160,7 @@ HTML,
         $course->setTitle(self::COURSE_TITLE);
         $course->setDescription('Método Multifractal / 2 Steps — la estrategia icónica de TNSVT para ejecutar con precisión. 6 lecciones que cubren Teoría, BOS, Liquidity Grab, Entrada, Timeframes y Checklist de validación.');
         $course->setEmoji('⛧');
-        $course->setIsActive(true);
+        $course->setActive(true);
         $course->setOrden(999);
         $this->em->persist($course);
 
