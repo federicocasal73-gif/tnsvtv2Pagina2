@@ -50,6 +50,19 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
   - `shell.css`: fade-in sutil en `.sanctum-content` (respeta reduced-motion).
 - **Sesión mobile/responsive** (commits `3a05f1b`→`807610b`, otra sesión, ya en prod)
   - Padding responsive del shell, grid KPIs/calendario/equity adaptativos, tab nav con scroll, topbar compacta, botones `ui-*` unificados, modales fullscreen en pantallas chicas, layout chat mobile.
+- **Fase G1 — Activar lo construido** (commits `21c86b2`, `29c2340`)
+  - `apiButtonLoading()` wireado en login, trade form, task-create y settings save (anti doble-submit + spinner + `aria-busy`).
+  - `empty-state-compact` en listas de chat + `illustrated` en feed vacío (vía `size:` en `apiEmpty()`).
+  - Estilos `api-confirm-*` que faltaban: el diálogo de confirmar salía sin CSS — ahora con lenguaje `tnsvt-modal` + variante danger.
+  - `icon-size-*` en 46 iconos con `font-size` ad-hoc.
+- **Fase G2 — Contraste + escala** (commit `26e5c53`)
+  - Audit WCAG real con matemática: los 8 pares principales pasan AA (mínimo 5.84:1) — sin cambios necesarios.
+  - Token `--text-display-2xl` con clamp; `.logo` fijo `4rem` → fluido; fix sintaxis `;,` en `.gw-title`.
+- **Fase G4 — Skeletons + transición public** (commit `c0e631b`)
+  - Sistema `.skeleton` reutilizable (shimmer, avatar, líneas, cards) con `prefers-reduced-motion`.
+  - Placeholders de chat/feed ahora son skeletons en vez de texto "Cargando...".
+  - `.gw-main` fade-in como su contraparte `.sanctum-content`.
+  - (G3 breadcrumbs salteado por decisión del operador.)
 
 ### Changed
 
