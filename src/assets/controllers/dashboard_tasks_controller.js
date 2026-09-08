@@ -11,21 +11,14 @@ export default class extends Controller {
         if (!this.hasTaskListTarget) return;
 
         try {
-            // Try new unified API first (supports X-Game-Code), fallback to legacy
+            // Unified API (X-Game-Code auto-attached by apiFetch).
             let data = null;
             try {
-                const r = await fetch('/api/tasks/mine?sort=due_date&order=asc', {
-                    headers: { 'X-Game-Code': document.body?.dataset?.userCode || '' },
-                });
-                if (r.ok) {
-                    const j = await r.json();
-                    if (j.tasks) data = { success: true, tasks: j.tasks.slice(0,5), activeCount: j.count };
+                const r = await window.apiFetch('/api/tasks/mine?sort=due_date&order=asc', { silent: true });
+                if (r.ok && r.data && r.data.tasks) {
+                    data = { success: true, tasks: r.data.tasks.slice(0, 5), activeCount: r.data.count };
                 }
             } catch {}
-            if (!data) {
-                const res = await fetch('/sanctum/api/tasks');
-                data = await res.json();
-            }
 
             if (data && data.success) {
                 this.renderTasks(data.tasks || []);
@@ -53,9 +46,9 @@ export default class extends Controller {
 
         this.taskListTarget.innerHTML = tasks.slice(0, 5).map(t => `
             <div class="task-row-elev">
-                <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Activa' : 'Inactiva'}</span>
+                <span class="status-pill status-pill-${this.escapeHtml(t.status || 'pending')} text-xs">${this.escapeHtml(t.status_label || t.status || '')}</span>
                 <span class="text-sm flex-1 truncate">${this.escapeHtml(t.title || '')}</span>
-                <span class="text-xs text-[var(--outline-elev)] font-mono">#${t.orden}</span>
+                <span class="text-xs text-[var(--outline-elev)] font-mono">${t.due_date ? this.escapeHtml(String(t.due_date).slice(0, 10)) : ''}</span>
             </div>
         `).join('');
     }
@@ -71,7 +64,7 @@ export default class extends Controller {
         this.signalListTarget.innerHTML = tasks.slice(0, 5).map(t => `
             <div class="flex items-center justify-between p-2 rounded glass-card-elev text-sm">
                 <span class="truncate">${this.escapeHtml(t.title)}</span>
-                <span class="status-pill ${t.active ? 'status-active' : 'status-inactive'} text-xs">${t.active ? 'Activa' : 'Inactiva'}</span>
+                <span class="status-pill status-pill-${this.escapeHtml(t.status || 'pending')} text-xs">${this.escapeHtml(t.status_label || t.status || '')}</span>
             </div>
         `).join('');
     }

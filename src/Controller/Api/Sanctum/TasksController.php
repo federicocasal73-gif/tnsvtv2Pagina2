@@ -118,6 +118,7 @@ class TasksController extends AbstractController
     public function counts(Request $request): JsonResponse
     {
         $user = $this->resolveCurrentUser($request);
+        if (!$user) return $this->json(['error' => 'Unauthorized'], 401);
         $counts = $this->taskRepository->countByStatusForUser($user);
 
         return $this->json([
@@ -129,10 +130,19 @@ class TasksController extends AbstractController
 
     /** Task detail with nested submissions / comments / feedback. */
     #[Route('/{id}', name: 'show', methods: ['GET'])]
-    public function show(int $id): JsonResponse
+    public function show(int $id, Request $request): JsonResponse
     {
         $task = $this->taskRepository->find($id);
         if (!$task) return $this->json(['success' => false, 'error' => 'Tarea no encontrada'], 404);
+
+        $user = $this->resolveCurrentUser($request);
+        if (!$user) return $this->json(['error' => 'Unauthorized'], 401);
+        if (!$this->isAdmin($user)
+            && $task->getAssignedTo()?->getId() !== $user->getId()
+            && $task->getAssignedBy()?->getId() !== $user->getId()
+        ) {
+            return $this->json(['success' => false, 'error' => 'Sin permisos'], 403);
+        }
 
         $submissions = array_map(fn(TaskSubmission $s) => $s->toArray(), $this->submissionRepository->findByTask($id));
         $comments = array_map(fn(TaskComment $c) => $c->toArray(), $this->commentRepository->findByTask($id));
@@ -254,9 +264,15 @@ class TasksController extends AbstractController
             $changed[] = 'due_date';
         }
         if (array_key_exists('assigned_to', $data)) {
-            $task->setAssignedTo($data['assigned_to']
-                ? $this->userRepository->findByCode($data['assigned_to'])
-                : null);
+            if ($data['assigned_to']) {
+                $assignee = $this->userRepository->findByCode($data['assigned_to']);
+                if (!$assignee) {
+                    return $this->json(['success' => false, 'error' => 'assigned_to user no encontrado'], 400);
+                }
+                $task->setAssignedTo($assignee);
+            } else {
+                $task->setAssignedTo(null);
+            }
             $changed[] = 'assigned_to';
         }
         if (isset($data['orden']) && $isAdmin) {
@@ -335,7 +351,21 @@ class TasksController extends AbstractController
             return $this->json(['success' => false, 'error' => 'estado inválido'], 400);
         }
 
+        // State machine: assignees may only move forward along
+        // pending/in_progress/needs_revision/overdue → in_progress/submitted.
+        // Grading transitions (in_review/approved/needs_revision from review,
+        // reopen to pending) are creator/admin-only.
         $oldStatus = $task->getStatus();
+        if (!$isAdmin && !$isCreator && $isAssignee) {
+            $allowedNew = [Task::STATUS_IN_PROGRESS, Task::STATUS_SUBMITTED];
+            $allowedFrom = [
+                Task::STATUS_PENDING, Task::STATUS_IN_PROGRESS,
+                Task::STATUS_NEEDS_REVISION, Task::STATUS_OVERDUE,
+            ];
+            if (!in_array($newStatus, $allowedNew, true) || !in_array($oldStatus, $allowedFrom, true)) {
+                return $this->json(['success' => false, 'error' => 'Transición no permitida para el asignado'], 403);
+            }
+        }
         $task->setStatus($newStatus);
         if ($newStatus === Task::STATUS_APPROVED && !$task->getCompletedAt()) {
             $task->setCompletedAt(new \DateTimeImmutable());
@@ -377,6 +407,9 @@ class TasksController extends AbstractController
 
         $user = $this->resolveCurrentUser($request);
         if (!$user) return $this->json(['error' => 'Unauthorized'], 401);
+        if (!$this->isAdmin($user) && $task->getAssignedTo()?->getId() !== $user->getId()) {
+            return $this->json(['success' => false, 'error' => 'Solo el asignado puede entregar'], 403);
+        }
 
         // Rate limit: max 10 submissions per minute per user
         try {
@@ -398,8 +431,9 @@ class TasksController extends AbstractController
 
         $this->em->persist($sub);
 
-        // Auto-transition: in_progress → submitted
-        if (in_array($task->getStatus(), [Task::STATUS_IN_PROGRESS, Task::STATUS_PENDING, Task::STATUS_NEEDS_REVISION], true)) {
+        // Auto-transition: in_progress → submitted (overdue included so
+        // overdue tasks don't get stuck — submitting reopens the flow).
+        if (in_array($task->getStatus(), [Task::STATUS_IN_PROGRESS, Task::STATUS_PENDING, Task::STATUS_NEEDS_REVISION, Task::STATUS_OVERDUE], true)) {
             $task->setStatus(Task::STATUS_SUBMITTED);
         }
         $task->touch();
@@ -429,6 +463,12 @@ class TasksController extends AbstractController
 
         $user = $this->resolveCurrentUser($request);
         if (!$user) return $this->json(['error' => 'Unauthorized'], 401);
+        if (!$this->isAdmin($user)
+            && $task->getAssignedTo()?->getId() !== $user->getId()
+            && $task->getAssignedBy()?->getId() !== $user->getId()
+        ) {
+            return $this->json(['success' => false, 'error' => 'Sin permisos para comentar'], 403);
+        }
 
         $data = $this->decodeJson($request);
         $body = trim($data['body'] ?? '');
@@ -482,15 +522,18 @@ class TasksController extends AbstractController
         }
 
         $data = $this->decodeJson($request);
-        $decision = $data['decision'] ?? 'approved'; // approved | needs_revision
-        if (!in_array($decision, [Task::STATUS_APPROVED, Task::STATUS_NEEDS_REVISION], true)) {
+        if (!isset($data['decision']) || !in_array($data['decision'], [Task::STATUS_APPROVED, Task::STATUS_NEEDS_REVISION], true)) {
             return $this->json(['success' => false, 'error' => 'decision debe ser approved o needs_revision'], 400);
         }
+        $decision = $data['decision'];
 
         $feedback = $this->feedbackRepository->findByTask($id) ?? new TaskFeedback();
         $feedback->setTask($task);
         $feedback->setGrader($user);
         if (isset($data['grade']) && $data['grade'] !== null && $data['grade'] !== '') {
+            if (!is_numeric($data['grade']) || (float) $data['grade'] < 0 || (float) $data['grade'] > 10) {
+                return $this->json(['success' => false, 'error' => 'grade debe ser numérico entre 0 y 10'], 400);
+            }
             $feedback->setGrade((string) $data['grade']);
         }
         if (isset($data['comment'])) {

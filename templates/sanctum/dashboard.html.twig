@@ -267,7 +267,7 @@
         const doneLoading = (typeof window.apiButtonLoading === 'function' && submitBtn)
             ? window.apiButtonLoading(submitBtn)
             : null;
-        const r = await apiFetch('/sanctum/api/tasks', {
+        const r = await apiFetch('/api/tasks', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, description, orden, active })

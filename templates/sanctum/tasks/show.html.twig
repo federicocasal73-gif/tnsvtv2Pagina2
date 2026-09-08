@@ -112,7 +112,7 @@
 
                     {# Mentor grade form #}
                     {% if is_granted('ROLE_ADMIN') %}
-                        <form data-action="submit->tasks#onGrade" class="task-grade-form" data-tasks-target="gradeForm">
+                        <form class="task-grade-form" data-tasks-target="gradeForm">
                             <label class="task-field">
                                 <span class="task-field-label">Nota (0–10)</span>
                                 <input type="number" min="0" max="10" step="0.1" name="grade" placeholder="9.5" class="task-field-input" />
@@ -122,12 +122,12 @@
                                 <textarea name="comment" rows="2" placeholder="Feedback para el alumno…" class="task-field-textarea"></textarea>
                             </label>
                             <div class="task-grade-actions">
-                                <button type="submit" data-action="tasks#onGradeApprove" data-grade="approved"
+                                <button type="submit" data-grade="approved"
                                         class="ui-btn ui-btn primary ui-btn-size-sm">
                                     <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">check_circle</span>
                                     Aprobar
                                 </button>
-                                <button type="submit" data-action="tasks#onGradeRevision" data-grade="needs_revision"
+                                <button type="submit" data-grade="needs_revision"
                                         class="ui-btn ui-btn secondary ui-btn-size-sm">
                                     <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">undo</span>
                                     Devolver

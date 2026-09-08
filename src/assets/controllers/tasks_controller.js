@@ -518,16 +518,13 @@ export default class extends Controller {
             decision,
         };
         try {
-            const r = await fetch(`/api/tasks/${this.taskIdValue}/grade`, {
+            const r = await window.apiFetch(`/api/tasks/${this.taskIdValue}/grade`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Game-Code': this.userCodeValue || '',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(body),
             });
             if (!r.ok) {
-                const err = await r.json().catch(() => ({}));
+                const err = r.data || {};
                 if (window.apiToast) window.apiToast(err.error || 'Error al calificar', 'error');
                 return;
             }
