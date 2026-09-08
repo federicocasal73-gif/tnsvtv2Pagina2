@@ -51,6 +51,29 @@
     align-items: stretch;
 }
 
+/* TNSVT V1-style — nebula overlay on top of the WebGL background.
+   Adds depth with two soft radial gradients (violet + gold) drifting
+   behind the content. Pure visual ambience, pointer-events: none. */
+.sanctum-layout::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 60% 50% at 18% 22%, rgba(138, 60, 255, 0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 45% at 82% 78%, rgba(242, 202, 80, 0.06) 0%, transparent 65%),
+        radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.25) 100%);
+    animation: sanctum-nebula-drift 60s ease-in-out infinite alternate;
+}
+@keyframes sanctum-nebula-drift {
+    0%   { transform: scale(1)    translate(0,    0); }
+    100% { transform: scale(1.05) translate(2%,  -1.5%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .sanctum-layout::before { animation: none; }
+}
+
 #sanctum-sidebar {
     width: 256px;
     flex-shrink: 0;
