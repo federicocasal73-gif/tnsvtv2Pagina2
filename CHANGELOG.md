@@ -50,6 +50,57 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
   - `shell.css`: fade-in sutil en `.sanctum-content` (respeta reduced-motion).
 - **Sesión mobile/responsive** (commits `3a05f1b`→`807610b`, otra sesión, ya en prod)
   - Padding responsive del shell, grid KPIs/calendario/equity adaptativos, tab nav con scroll, topbar compacta, botones `ui-*` unificados, modales fullscreen en pantallas chicas, layout chat mobile.
+- **Auditoría campus admin + alumno + tasks** (commits `0493cc5`→`8de11e0`)
+
+  **P-A — Admin auth + guards + fatal fix** (`0493cc5`)
+  - `AdminAuthTrait::requireAdmin()` ahora acepta sesión admin (`getUser()->getIsAdmin()`) además del secreto `X-Admin-Password`.
+  - `CampusAdminPageController` con `#[IsGranted('ROLE_ADMIN')]` a nivel clase (B2).
+  - Bug fatal: `isAdmin()` → `getIsAdmin()` en `CampusAdminController.php:754,794`.
+  - Verificado: `admin courses anon: 403`; con sesión admin carga.
+
+  **P-B — Admin CRUD funcional** (`56d899c`)
+  - Nuevos `POST /api/campus/admin/courses/reorder` y `.../modules/reorder` (B3).
+  - `findAllFiltered()`/`countFiltered()` mapean `status=approved` → `IN (corrected, completed)` (B4).
+  - `grade()` acepta `decision` además de `action`, normaliza `approved`→`completed`, valida `status` y `grade` 0–10 (B5).
+  - `listLessons()` acepta `lesson_id` y `course_id` además de `module_id` (B6).
+
+  **P-C — Alumno quiz + headers + UI** (`e85dfb6`)
+  - `QuizController::submit` exige usuario (401), valida `maxAttempts` (403), oculta `correct` hasta aprobar/sin intentos (S1/S2/S3).
+  - 6 `fetch()` en `campus_controller.js` migrados a `apiFetch()` (auto-header S4/S5).
+  - Botón Entregar + modal quiz + feedback de resultado (S7).
+
+  **P-D — Tasks authZ + state machine + validación** (`c39585a`)
+  - `counts` ya no leak anónimo (T3).
+  - `show` exige participante (T4).
+  - `submit` solo assignee/admin; `comment` solo participante; `update` solo admin/creator con validación 400 de `assigned_to` (T9).
+  - `updateStatus` máquina de estados: assignee solo `in_progress`/`submitted` desde estados válidos; grading solo creator/admin (T6).
+  - `submit` auto-promueve `overdue` a `submitted` (T7).
+  - `grade` exige `decision` (default removido), valida `grade` 0–10 (T8).
+  - Dashboard URLs + grade buttons reescritos, render usa `status/status_label/due_date` (T11/T12).
+  - Bug encontrado: `task_feedback.grade`/`graded_at` faltantes en DB (columnas añadidas).
+
+  **P-E — N+1, calendar sync, dashboard stale** (`45cac77`)
+  - `TaskSubmissionRepository::findByTask` añade `leftJoin user` (N+1 fix).
+  - `TaskCalendarSyncService`: `onTaskStatusChanged` se invoca también desde el handler cron (overdue → calendar sync).
+  - `update()` sincroniza calendario cuando cambia cualquier campo calendar-visible (no solo `due_date`).
+  - `markOverdue()` filtra `active=true` (consistente con el handler).
+  - DashboardController usa `status` post-migration (no `active` flag).
+
+  **P-F — Migración portable + download stream** (`8de11e0`)
+  - `migrations/Version20260901000000.php` portable MySQL/SQLite:
+    - `tasks.ADD COLUMN`: usa `AFTER` solo si MySQL; SQLite agrega sin `AFTER`.
+    - `CREATE TABLE`: `AUTOINCREMENT` solo SQLite, `AUTO_INCREMENT` solo MySQL.
+    - `ON CONFLICT DO NOTHING` solo SQLite; `INSERT IGNORE` solo MySQL.
+    - `down()`: `DROP FOREIGN KEY ...` solo MySQL; SQLite dropea columnas una por una.
+  - `CampusController::downloadFile` usa `BinaryFileResponse` (streaming) en vez de `file_get_contents()` + `Response` (OOM con 20MB).
+
+  **Verificado en vivo** (server en `8de11e0`, 92/92 tests locales + PHPStan limpio):
+  - P-A: `/api/campus/admin/courses` anon → 403; con sesión admin → carga
+  - P-B: `/api/campus/admin/submissions?...status=approved` → JSON con submissions (antes siempre vacío)
+  - P-C: `/api/me/streak?days=14` con DEMO → 200; `/api/campus/lessons/{id}/quiz/submit` anon → 401
+  - P-D: `/api/tasks/999999` → 404; `/api/tasks/1` anon → 401; con DEMO → 403 (no participante)
+  - P-E: `/api/me/upcoming-tasks?days=7` con DEMO → 200
+  - P-F: binario de migration sintaxis OK (php -l)
 - **Fase G1 — Activar lo construido** (commits `21c86b2`, `29c2340`)
   - `apiButtonLoading()` wireado en login, trade form, task-create y settings save (anti doble-submit + spinner + `aria-busy`).
   - `empty-state-compact` en listas de chat + `illustrated` en feed vacío (vía `size:` en `apiEmpty()`).
