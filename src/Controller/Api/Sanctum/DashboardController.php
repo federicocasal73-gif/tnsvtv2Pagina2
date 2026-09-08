@@ -66,9 +66,9 @@ class DashboardController extends AbstractController
             "SELECT COUNT(*) FROM economic_reminders WHERE remind_at BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 1 DAY) AND event_importance >= 3"
         );
 
-        // Task Sovereignty (tasks table — uses 'active' column not 'status')
-        $tasksActive = (int)$conn->fetchOne("SELECT COUNT(*) FROM tasks WHERE active = 1");
-        $tasksInactive = (int)$conn->fetchOne("SELECT COUNT(*) FROM tasks WHERE active = 0");
+        // Task Sovereignty (post-migration: status-driven, active flag as filter)
+        $tasksActive = (int)$conn->fetchOne("SELECT COUNT(*) FROM tasks WHERE active = 1 AND status != 'approved'");
+        $tasksInactive = (int)$conn->fetchOne("SELECT COUNT(*) FROM tasks WHERE active = 0 OR status = 'approved'");
 
         // Recent Signals (last 5 admin_audit_log entries)
         $recentSignals = $conn->fetchAllAssociative(

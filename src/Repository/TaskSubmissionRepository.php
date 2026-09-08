@@ -20,6 +20,7 @@ class TaskSubmissionRepository extends ServiceEntityRepository
     public function findByTask(int $taskId): array
     {
         return $this->createQueryBuilder('s')
+            ->leftJoin('s.user', 'u')->addSelect('u')
             ->where('s.task = :taskId')
             ->setParameter('taskId', $taskId)
             ->orderBy('s.submittedAt', 'DESC')
@@ -30,6 +31,7 @@ class TaskSubmissionRepository extends ServiceEntityRepository
     public function findLatestForTask(int $taskId): ?TaskSubmission
     {
         return $this->createQueryBuilder('s')
+            ->leftJoin('s.user', 'u')->addSelect('u')
             ->where('s.task = :taskId')
             ->setParameter('taskId', $taskId)
             ->orderBy('s.submittedAt', 'DESC')

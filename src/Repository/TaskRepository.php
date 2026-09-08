@@ -193,10 +193,12 @@ class TaskRepository extends ServiceEntityRepository
             ->where('t.dueDate IS NOT NULL')
             ->andWhere('t.dueDate < :dueBefore')
             ->andWhere('t.status NOT IN (:excluded)')
+            ->andWhere('t.active = :active')
             ->setParameter('status', Task::STATUS_OVERDUE)
             ->setParameter('now', $now)
             ->setParameter('dueBefore', $now)
             ->setParameter('excluded', [Task::STATUS_APPROVED, Task::STATUS_OVERDUE])
+            ->setParameter('active', true)
             ->getQuery()
             ->execute();
     }

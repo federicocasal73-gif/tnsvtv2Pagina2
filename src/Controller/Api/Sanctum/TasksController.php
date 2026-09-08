@@ -287,8 +287,9 @@ class TasksController extends AbstractController
 
         $this->logAdminAction($request, 'task.update', 'success', ['task_id' => $id, 'fields' => $changed]);
 
-        // Sync with calendar if due_date changed
-        if (in_array('due_date', $changed, true)) {
+        // Sync with calendar when any calendar-visible field changed
+        // (onTaskSaved refreshes title/desc/dates/color/status in one pass).
+        if (array_intersect($changed, ['due_date', 'title', 'priority', 'status', 'assigned_to'])) {
             try { $this->calendarSync->onTaskSaved($task); } catch (\Throwable) {}
         }
 
@@ -603,6 +604,14 @@ class TasksController extends AbstractController
         if (!$this->isAdmin($user)) return $this->json(['error' => 'Se requiere ROLE_ADMIN'], 403);
 
         $count = $this->taskRepository->markOverdue();
+        // Sync linked calendar events for newly-overdue tasks (bounded).
+        $overdue = $this->taskRepository->findFiltered([
+            'status' => Task::STATUS_OVERDUE, 'active' => true,
+            'sort' => 'due_date', 'order' => 'asc',
+        ]);
+        foreach (array_slice($overdue, 0, 200) as $task) {
+            try { $this->calendarSync->onTaskStatusChanged($task); } catch (\Throwable) {}
+        }
         return $this->json(['success' => true, 'marked' => $count]);
     }
 

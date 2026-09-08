@@ -7,6 +7,7 @@ namespace App\MessageHandler;
 use App\Entity\Task;
 use App\Message\MarkTasksOverdueMessage;
 use App\Service\NotificationService;
+use App\Service\TaskCalendarSyncService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -25,6 +26,7 @@ final class MarkTasksOverdueHandler
         private EntityManagerInterface $em,
         private NotificationService $notifier,
         private LoggerInterface $logger,
+        private TaskCalendarSyncService $calendarSync,
     ) {}
 
     public function __invoke(MarkTasksOverdueMessage $message): void
@@ -49,6 +51,7 @@ final class MarkTasksOverdueHandler
             $task->setStatus(Task::STATUS_OVERDUE);
             $task->touch();
             $count++;
+            try { $this->calendarSync->onTaskStatusChanged($task); } catch (\Throwable) {}
 
             if ($task->getAssignedTo() && $task->getAssignedTo()->isActive()) {
                 $this->notifier->notify(
