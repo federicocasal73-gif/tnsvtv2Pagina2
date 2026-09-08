@@ -86,8 +86,15 @@ class CampusSubmissionRepository extends ServiceEntityRepository
                ->setParameter('userCode', $userCode);
         }
         if ($status !== null && $status !== '') {
-            $qb->andWhere('s.status = :status')
-               ->setParameter('status', $status);
+            // UI alias: the "Aprobadas" tab sends status=approved, which maps
+            // to the canonical corrected+completed statuses.
+            if ($status === 'approved') {
+                $qb->andWhere('s.status IN (:statuses)')
+                   ->setParameter('statuses', ['corrected', 'completed']);
+            } else {
+                $qb->andWhere('s.status = :status')
+                   ->setParameter('status', $status);
+            }
         }
 
         return $qb->getQuery()->getResult();
@@ -107,8 +114,14 @@ class CampusSubmissionRepository extends ServiceEntityRepository
                ->setParameter('userCode', $userCode);
         }
         if ($status !== null && $status !== '') {
-            $qb->andWhere('s.status = :status')
-               ->setParameter('status', $status);
+            // Same UI alias as findAllFiltered: approved → corrected+completed.
+            if ($status === 'approved') {
+                $qb->andWhere('s.status IN (:statuses)')
+                   ->setParameter('statuses', ['corrected', 'completed']);
+            } else {
+                $qb->andWhere('s.status = :status')
+                   ->setParameter('status', $status);
+            }
         }
 
         return (int) $qb->getQuery()->getSingleScalarResult();

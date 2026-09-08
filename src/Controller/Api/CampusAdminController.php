@@ -168,6 +168,26 @@ class CampusAdminController extends AbstractController
         return $this->json(['success' => true]);
     }
 
+    #[Route('/courses/reorder', name: 'campus_admin_reorder_courses', methods: ['POST'])]
+    public function reorderCourses(Request $request): JsonResponse
+    {
+        $this->requireAdmin($request);
+        $data = json_decode($request->getContent(), true);
+        $order = $data['order'] ?? null;
+        if (!is_array($order)) {
+            return $this->json(['error' => 'order debe ser un array de ids'], 400);
+        }
+        foreach (array_values($order) as $pos => $id) {
+            $course = $this->getCourseRepo()->find((int) $id);
+            if ($course) {
+                $course->setOrden($pos);
+            }
+        }
+        $this->em->flush();
+
+        return $this->json(['success' => true]);
+    }
+
     // === MODULES ===
 
     #[Route('/modules', name: 'campus_admin_modules', methods: ['GET'])]
@@ -265,6 +285,26 @@ class CampusAdminController extends AbstractController
         return $this->json(['success' => true]);
     }
 
+    #[Route('/modules/reorder', name: 'campus_admin_reorder_modules', methods: ['POST'])]
+    public function reorderModules(Request $request): JsonResponse
+    {
+        $this->requireAdmin($request);
+        $data = json_decode($request->getContent(), true);
+        $order = $data['order'] ?? null;
+        if (!is_array($order)) {
+            return $this->json(['error' => 'order debe ser un array de ids'], 400);
+        }
+        foreach (array_values($order) as $pos => $id) {
+            $module = $this->getModuleRepo()->find((int) $id);
+            if ($module) {
+                $module->setOrden($pos);
+            }
+        }
+        $this->em->flush();
+
+        return $this->json(['success' => true]);
+    }
+
     // === LESSONS ===
 
     #[Route('/lessons', name: 'campus_admin_lessons', methods: ['GET'])]
@@ -272,9 +312,20 @@ class CampusAdminController extends AbstractController
     {
         $this->requireAdmin($request);
         $moduleId = $request->query->get('module_id');
+        $lessonId = $request->query->get('lesson_id');
+        $courseId = $request->query->get('course_id');
 
-        if ($moduleId) {
+        if ($lessonId) {
+            $lesson = $this->getLessonRepo()->find((int) $lessonId);
+            $lessons = $lesson ? [$lesson] : [];
+        } elseif ($moduleId) {
             $lessons = $this->getLessonRepo()->findByModule((int) $moduleId);
+        } elseif ($courseId) {
+            $modules = $this->getModuleRepo()->findByCourse((int) $courseId);
+            $lessons = [];
+            foreach ($modules as $module) {
+                $lessons = array_merge($lessons, $this->getLessonRepo()->findByModule($module->getId()));
+            }
         } else {
             $courses = $this->getCourseRepo()->findAllForAdmin();
             $lessons = [];
@@ -623,7 +674,20 @@ class CampusAdminController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $grade = $data['grade'] ?? null;
         $comment = $data['comment'] ?? null;
-        $action = $data['action'] ?? 'corrected';
+        // The admin UI sends `decision` ('approved'|'revision'); older callers
+        // send `action`. Accept both, normalize UI vocabulary to canonical
+        // entity statuses (CampusSubmission::STATUS_*).
+        $action = $data['action'] ?? $data['decision'] ?? 'corrected';
+        if ($action === 'approved') {
+            $action = 'completed';
+        }
+        $allowed = ['pending', 'submitted', 'corrected', 'revision', 'completed'];
+        if (!in_array($action, $allowed, true)) {
+            return $this->json(['error' => 'Estado inválido'], 400);
+        }
+        if ($grade !== null && $grade !== '' && (!is_numeric($grade) || (float) $grade < 0 || (float) $grade > 10)) {
+            return $this->json(['error' => 'Nota inválida (0–10)'], 400);
+        }
 
         $feedback = $submission->getFeedback();
         if (!$feedback) {

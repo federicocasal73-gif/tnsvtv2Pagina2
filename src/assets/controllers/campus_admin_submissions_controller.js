@@ -39,7 +39,10 @@ export default class extends Controller {
                 this.listTarget.innerHTML = `<p class="empty-state empty-state-md"><span class="material-symbols-elev empty-state-icon">error</span><p class="empty-state-message">Error ${r.status}</p></p>`;
                 return;
             }
-            const submissions = await r.json();
+            const json = await r.json();
+            // API returns {data, total, page, limit} — accept a raw array too
+            // for backward compatibility with older responses.
+            const submissions = Array.isArray(json) ? json : (json.data || []);
             if (!Array.isArray(submissions) || submissions.length === 0) {
                 this.listTarget.innerHTML = `
                     <div class="empty-state empty-state-md">
