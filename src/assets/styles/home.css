@@ -455,6 +455,14 @@ body {
     margin: 0 auto;
     padding: 96px 20px 176px;
     text-align: center;
+    animation: gw-page-in 220ms ease-out;
+}
+@keyframes gw-page-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gw-main { animation: none; }
 }
 
 /* ─── Hero ─── */

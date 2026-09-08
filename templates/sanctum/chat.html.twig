@@ -25,7 +25,11 @@
             </button>
         </div>
         <div class="chat-list" id="chat-list">
-            <p class="chat-list-empty">Cargando conversaciones...</p>
+            <div class="skeleton-stack" aria-hidden="true">
+                <div class="skeleton skeleton-row"><span class="skeleton skeleton-avatar"></span><span class="skeleton-lines"><span class="skeleton skeleton-line w-3-4"></span><span class="skeleton skeleton-line w-1-2"></span></span></div>
+                <div class="skeleton skeleton-row"><span class="skeleton skeleton-avatar"></span><span class="skeleton-lines"><span class="skeleton skeleton-line w-3-4"></span><span class="skeleton skeleton-line w-1-2"></span></span></div>
+                <div class="skeleton skeleton-row"><span class="skeleton skeleton-avatar"></span><span class="skeleton-lines"><span class="skeleton skeleton-line w-3-4"></span><span class="skeleton skeleton-line w-1-2"></span></span></div>
+            </div>
         </div>
     </aside>
 
@@ -189,7 +193,7 @@
         $convHeader.style.display = 'flex';
         $composer.style.display = 'flex';
         $empty.style.display = 'none';
-        $messages.innerHTML = '<p class="chat-list-empty">Cargando mensajes...</p>';
+        $messages.innerHTML = '<div class="skeleton-stack" aria-hidden="true"><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div></div>';
         try {
             const r = await apiFetch(`/api/chat/conversations/${id}/messages`, { silent: true });
             if (!r.ok || !r.data) {

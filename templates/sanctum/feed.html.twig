@@ -46,7 +46,12 @@
     </article>
 
     <div class="feed-list" id="feed-list">
-        <div class="feed-loading" id="feed-loading">Cargando publicaciones...</div>
+        <div class="feed-loading" id="feed-loading">
+            <div class="skeleton-stack" aria-hidden="true">
+                <div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div>
+                <div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div>
+            </div>
+        </div>
     </div>
     <div id="feed-sentinel" style="height:1px;"></div>
     <button id="feed-load-more" class="ui-btn ui-btn ghost ui-btn-size-sm" style="display:none; margin: 1rem auto;">Cargar más</button>
@@ -121,7 +126,7 @@
         if (!append) {
             feedNextBeforeId = null;
             feedHasMore = true;
-            $list.innerHTML = '<div class="feed-loading">Cargando publicaciones...</div>';
+            $list.innerHTML = '<div class="feed-loading"><div class="skeleton-stack" aria-hidden="true"><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div></div></div>';
             document.getElementById('feed-load-more')?.style.setProperty('display','none');
         } else {
             if (!feedHasMore || !feedNextBeforeId) return;
