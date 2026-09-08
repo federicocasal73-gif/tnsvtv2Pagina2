@@ -25,6 +25,7 @@ use App\Service\CampusStorage;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -615,15 +616,20 @@ class CampusController extends AbstractController
         $path = $this->storage->getAbsolutePath($info['storage_name']);
         if (!is_file($path)) return new Response('Archivo no encontrado', 404);
 
-        return new Response(
-            file_get_contents($path),
+        // Stream from disk instead of file_get_contents() — the latter loads
+        // the whole file in memory (OOM risk on 20MB uploads).
+        return new BinaryFileResponse(
+            $path,
             200,
             [
                 'Content-Type' => $info['mime'] ?: 'application/octet-stream',
                 'Content-Disposition' => 'attachment; filename="' . rawurlencode($info['original_name'] ?: $info['storage_name']) . '"',
-                'Content-Length' => (string) filesize($path),
                 'Cache-Control' => 'private, no-store',
-            ]
+            ],
+            true,
+            null,
+            true,
+            true
         );
     }
 
