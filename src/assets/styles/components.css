@@ -511,26 +511,37 @@
 }
 .sanctum-link:hover {
     color: var(--on-surface-elev);
-    background: rgba(255, 255, 255, 0.03);
+    background: linear-gradient(90deg, rgba(242, 202, 80, 0.08) 0%, rgba(138, 60, 255, 0.05) 100%);
+    border-left-color: rgba(242, 202, 80, 0.7);
+    transform: translateX(2px);
+    box-shadow: inset 0 0 12px rgba(242, 202, 80, 0.06);
 }
 .sanctum-link:hover .material-symbols-elev {
-    transform: scale(1.12);
+    transform: scale(1.18);
     color: var(--gold-elev);
+    filter: drop-shadow(0 0 4px rgba(242, 202, 80, 0.6));
 }
 .sanctum-link .material-symbols-elev {
-    transition: transform 0.18s ease, color 0.18s ease;
+    transition: transform 0.22s ease, color 0.18s ease, filter 0.18s ease;
 }
 @media (hover: none) {
-    .sanctum-link:hover .material-symbols-elev { transform: none; }
+    .sanctum-link:hover .material-symbols-elev { transform: none; filter: none; }
 }
 @media (prefers-reduced-motion: reduce) {
+    .sanctum-link,
     .sanctum-link .material-symbols-elev { transition: none; }
+    .sanctum-link:hover { transform: none; }
 }
 .sanctum-link.active {
     color: var(--gold-elev);
-    background: rgba(242, 202, 80, 0.08);
+    background: linear-gradient(90deg, rgba(242, 202, 80, 0.12) 0%, rgba(138, 60, 255, 0.06) 100%);
     border-left-color: var(--gold-elev);
     font-weight: 600;
+    box-shadow: inset 0 0 16px rgba(242, 202, 80, 0.10), 0 0 12px rgba(242, 202, 80, 0.12);
+}
+.sanctum-link.active .material-symbols-elev {
+    color: var(--gold-elev);
+    filter: drop-shadow(0 0 6px rgba(242, 202, 80, 0.7));
 }
 .sanctum-link.active .material-symbols-elev {
     color: var(--gold-elev);
@@ -666,6 +677,63 @@
 }
 .kpi-card:hover::after {
     background: radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, transparent 70%);
+}
+
+/* TNSVT V1-style color variants — each KPI gets its own gradient identity */
+.kpi-card.kpi-violet {
+    background: linear-gradient(135deg, rgba(138, 60, 255, 0.18) 0%, rgba(138, 60, 255, 0.05) 100%);
+    border-color: rgba(138, 60, 255, 0.35);
+}
+.kpi-card.kpi-violet::before {
+    background: linear-gradient(135deg, #8a3cff 0%, #c327fb 50%, #8a3cff 100%);
+}
+.kpi-card.kpi-violet:hover {
+    border-color: rgba(138, 60, 255, 0.6);
+    box-shadow: var(--shadow-lg-elev), 0 0 24px rgba(138, 60, 255, 0.35);
+}
+.kpi-card.kpi-gold {
+    background: linear-gradient(135deg, rgba(242, 202, 80, 0.20) 0%, rgba(242, 202, 80, 0.05) 100%);
+    border-color: rgba(242, 202, 80, 0.4);
+}
+.kpi-card.kpi-gold::before {
+    background: linear-gradient(135deg, #f2ca50 0%, #ffd700 50%, #f2ca50 100%);
+}
+.kpi-card.kpi-gold:hover {
+    border-color: rgba(242, 202, 80, 0.7);
+    box-shadow: var(--shadow-lg-elev), 0 0 24px rgba(242, 202, 80, 0.45);
+}
+.kpi-card.kpi-green {
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.18) 0%, rgba(52, 199, 89, 0.05) 100%);
+    border-color: rgba(52, 199, 89, 0.35);
+}
+.kpi-card.kpi-green::before {
+    background: linear-gradient(135deg, #34c759 0%, #69f0ae 50%, #34c759 100%);
+}
+.kpi-card.kpi-green:hover {
+    border-color: rgba(52, 199, 89, 0.6);
+    box-shadow: var(--shadow-lg-elev), 0 0 24px rgba(52, 199, 89, 0.35);
+}
+.kpi-card.kpi-red {
+    background: linear-gradient(135deg, rgba(255, 59, 48, 0.18) 0%, rgba(255, 59, 48, 0.05) 100%);
+    border-color: rgba(255, 59, 48, 0.35);
+}
+.kpi-card.kpi-red::before {
+    background: linear-gradient(135deg, #ff3b30 0%, #ff6b6b 50%, #ff3b30 100%);
+}
+.kpi-card.kpi-red:hover {
+    border-color: rgba(255, 59, 48, 0.6);
+    box-shadow: var(--shadow-lg-elev), 0 0 24px rgba(255, 59, 48, 0.35);
+}
+.kpi-card.kpi-blue {
+    background: linear-gradient(135deg, rgba(59, 158, 255, 0.18) 0%, rgba(59, 158, 255, 0.05) 100%);
+    border-color: rgba(59, 158, 255, 0.35);
+}
+.kpi-card.kpi-blue::before {
+    background: linear-gradient(135deg, #3b9eff 0%, #34c759 50%, #3b9eff 100%);
+}
+.kpi-card.kpi-blue:hover {
+    border-color: rgba(59, 158, 255, 0.6);
+    box-shadow: var(--shadow-lg-elev), 0 0 24px rgba(59, 158, 255, 0.35);
 }
 
 /* KPI Header — flex layout for label + badge row (moved from glow.css) */
