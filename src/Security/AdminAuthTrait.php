@@ -2,6 +2,7 @@
 
 namespace App\Security;
 
+use App\Entity\User;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
@@ -33,13 +34,25 @@ trait AdminAuthTrait
     }
 
     /**
-     * Verifica el header X-Admin-Password.
-     * Lanza 401 si no coincide.
+     * Verifica acceso admin por dos vías (OR):
+     *   1. Sesión/JWT autenticada de un usuario con getIsAdmin() true
+     *      (el admin ya logueó con password vía /api/auth/login; el
+     *      navegador manda la cookie de sesión en same-origin fetch).
+     *   2. Header X-Admin-Password igual al secreto ADMIN_PASSWORD
+     *      (para scripts, jobs y clientes sin sesión).
+     *
+     * Lanza 403 si ninguna vía valida.
      *
      * Para tener rate limit + audit log, usar AdminAuthService::verify() en su lugar.
      */
     protected function requireAdmin(Request $request): void
     {
+        // $this is always an AbstractController subclass (all 6 users of
+        // this trait extend it), so getUser() exists.
+        $user = $this->getUser();
+        if ($user instanceof User && $user->getIsAdmin()) {
+            return;
+        }
         $provided = $request->headers->get('X-Admin-Password', '');
         if (empty($provided) || !hash_equals($this->getAdminPassword(), $provided)) {
             throw new AccessDeniedHttpException('Acceso denegado');

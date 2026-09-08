@@ -110,13 +110,10 @@ class ProfileController extends AbstractController
             mkdir($uploadDir, 0755, true);
         }
 
-        $filename = 'avatar_' . $user->getCode() . '_' . time() . '.' . $file->guessExtension();
+        $filename = $user->getCode() . '.' . $file->guessExtension();
         $file->move($uploadDir, $filename);
 
-        $user->setAvatarUrl('/uploads/avatars/' . $filename);
-        $this->em->flush();
-
-        return $this->json(['success' => true, 'avatar_url' => $user->getAvatarUrl()]);
+        return $this->json(['success' => true, 'avatar_url' => '/uploads/avatars/' . $filename]);
     }
 
     #[Route('/avatar', name: 'api_profile_avatar_delete', methods: ['DELETE'])]
@@ -128,8 +125,14 @@ class ProfileController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
         }
 
-        $user->setAvatarUrl(null);
-        $this->em->flush();
+        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/avatars';
+        foreach (['jpg', 'jpeg', 'png', 'gif', 'webp'] as $ext) {
+            $path = "$uploadDir/{$user->getCode()}.$ext";
+            if (is_file($path)) {
+                unlink($path);
+                break;
+            }
+        }
 
         return $this->json(['success' => true]);
     }

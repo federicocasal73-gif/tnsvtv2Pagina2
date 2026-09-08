@@ -1270,15 +1270,21 @@
         `;
     }
 
-    // Event listeners
-    document.querySelectorAll('[data-macro-start]').forEach(btn => {
-        btn.addEventListener('click', () => openMacroQuestionnaireModal(btn.dataset.macroStart));
-    });
-    document.querySelectorAll('[data-macro-retake]').forEach(btn => {
-        btn.addEventListener('click', () => openMacroQuestionnaireModal(btn.dataset.macroRetake));
-    });
-    document.querySelectorAll('[data-action="closeMacroQuestionnaire"]').forEach(btn => {
-        btn.addEventListener('click', closeMacroQuestionnaireModal);
+    // Event listeners (delegated for dynamically created buttons)
+    document.addEventListener('click', (e) => {
+        const startBtn = e.target.closest('[data-macro-start]');
+        if (startBtn) {
+            openMacroQuestionnaireModal(startBtn.dataset.macroStart);
+            return;
+        }
+        const retakeBtn = e.target.closest('[data-macro-retake]');
+        if (retakeBtn) {
+            openMacroQuestionnaireModal(retakeBtn.dataset.macroRetake);
+            return;
+        }
+        if (e.target.closest('[data-action="closeMacroQuestionnaire"]')) {
+            closeMacroQuestionnaireModal();
+        }
     });
     document.getElementById('macro-questionnaire-submit-btn')?.addEventListener('click', submitMacroQuestionnaire);
 

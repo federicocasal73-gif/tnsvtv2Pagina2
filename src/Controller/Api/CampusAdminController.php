@@ -751,7 +751,7 @@ class CampusAdminController extends AbstractController
             'user' => [
                 'code' => $user->getCode(),
                 'name' => $user->getName(),
-                'is_admin' => $user->isAdmin(),
+                'is_admin' => $user->getIsAdmin(),
                 'avatar_url' => $user->getAvatarUrl(),
                 'avatar_color' => $user->getAvatarColor(),
             ],
@@ -791,7 +791,7 @@ class CampusAdminController extends AbstractController
             $users[] = [
                 'code' => $user->getCode(),
                 'name' => $user->getName(),
-                'is_admin' => $user->isAdmin(),
+                'is_admin' => $user->getIsAdmin(),
                 'avatar_url' => $user->getAvatarUrl(),
                 'avatar_color' => $user->getAvatarColor(),
                 'submissions_count' => $subCount,

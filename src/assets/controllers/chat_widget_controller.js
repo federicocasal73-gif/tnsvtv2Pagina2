@@ -646,11 +646,6 @@ export default class extends Controller {
         this.renderList();
     }
 
-    // ══════ Búsqueda ══════
-    search(event) {
-        this.renderList();
-    }
-
     // ══════ Refrescar ══════
     refresh() {
         this.loadConversations();

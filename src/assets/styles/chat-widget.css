@@ -5,7 +5,7 @@
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev, sans-serif);
 }
 
 /* ─── Toggle Button (Floating Bubble) ─── */
