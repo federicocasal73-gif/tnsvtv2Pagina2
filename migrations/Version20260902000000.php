@@ -85,7 +85,7 @@ final class Version20260902000000 extends AbstractMigration
 
         // ── Backfill via raw SQL (DB-agnostic) ──
         // For each user, create "Mi Cuenta" $10,000 if they have no accounts.
-        // Then link any orphan journal_entries to that account.
+        // Then link any orphan journal_entries to that account via user_code.
         $this->addSql(<<<'SQL'
             INSERT INTO trading_accounts (user_id, name, account_size, color, icon, is_active, sort_order, created_at)
             SELECT u.id, 'Mi Cuenta', 10000.00, '#d4af37', '💰', 1, 0, NOW()
@@ -98,7 +98,7 @@ final class Version20260902000000 extends AbstractMigration
 
         $this->addSql(<<<'SQL'
             UPDATE journal_entries je
-            INNER JOIN trading_accounts ta ON ta.user_id = je.user_id AND ta.sort_order = 0
+            INNER JOIN trading_accounts ta ON ta.user_id = (SELECT id FROM users WHERE code = je.user_code) AND ta.sort_order = 0
             SET je.account_id = ta.id
             WHERE je.account_id IS NULL
         SQL);
