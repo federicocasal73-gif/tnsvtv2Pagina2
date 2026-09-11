@@ -124,3 +124,33 @@
 .trade-actions button:hover {
     background: var(--glass-bg-elev);
 }
+
+/* ─── Account chip en trade-row ─── */
+.trade-account-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--gold-elev);
+    background: rgba(242, 202, 80, 0.10);
+    border: 1px solid rgba(242, 202, 80, 0.3);
+    border-radius: 4px;
+    white-space: nowrap;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.trade-account-chip::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold-elev);
+    box-shadow: 0 0 4px rgba(242, 202, 80, 0.6);
+    flex-shrink: 0;
+}
+@media (max-width: 480px) {
+    .trade-account-chip { display: none; }
+}

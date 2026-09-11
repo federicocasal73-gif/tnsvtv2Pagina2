@@ -8,7 +8,7 @@
 {% block stylesheets %}{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto" data-controller="journal_root">
+<div class="max-w-7xl mx-auto" data-controller="journal_root account-switcher">
 
     {# ─── Header ─── #}
     <div class="text-center mb-6">
@@ -412,6 +412,16 @@
                 </div>
             </div>
 
+            <div>
+                <label class="kpi-label block mb-1">
+                    Cuenta
+                    <span class="text-[10px] text-[var(--outline-elev)] ml-1" id="trade-account-cap-hint"></span>
+                </label>
+                <select id="trade-account-id" class="form-input" data-action="change->account-switcher#onTradeFormChange">
+                    <option value="">— Cargando cuentas... —</option>
+                </select>
+            </div>
+
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="kpi-label block mb-1">Fecha</label>
@@ -557,6 +567,12 @@
         form.reset();
         errEl.classList.add('hidden');
         document.getElementById('trade-id').value = '';
+        // Pre-select account: from trade (edit) or active account (new)
+        const accountSelect = document.getElementById('trade-account-id');
+        if (accountSelect) {
+            const wanted = trade?.account_id || window.TNSVT_ACTIVE_ACCOUNT_ID || '';
+            accountSelect.value = wanted ? String(wanted) : '';
+        }
         if (trade) {
             modalTitle.textContent = 'Editar Trade';
             document.getElementById('trade-id').value = trade.id || '';
@@ -612,6 +628,7 @@
             return `
                 <div class="trade-row" data-id="${t.id}">
                     <span class="trade-asset">${escapeHtml(t.asset)}</span>
+                    ${t.account_name ? `<span class="trade-account-chip" title="Cuenta">${escapeHtml(t.account_name)}</span>` : ''}
                     <span class="trade-dir-${escapeHtml(t.dir)} text-sm">${escapeHtml(t.dir)}</span>
                     <span class="text-xs text-[var(--outline-elev)] flex-1 truncate">${escapeHtml(dateStr)}</span>
                     <span class="${pnlClass} text-sm">${pnlStr}</span>
@@ -640,6 +657,7 @@
             result: document.getElementById('trade-result').value,
             pnl: document.getElementById('trade-pnl').value,
             notes: document.getElementById('trade-notes').value,
+            account_id: parseInt(document.getElementById('trade-account-id')?.value) || window.TNSVT_ACTIVE_ACCOUNT_ID || null,
         };
         const url = id ? '/api/journal/' + id : '/api/journal';
         const method = id ? 'PATCH' : 'POST';
@@ -757,7 +775,9 @@
         const svg = document.getElementById('ec-chart');
         if (!svg) return;
 
-        const url = `/api/journal/equity-curve?range=${encodeURIComponent(range)}&account_size=10000`;
+        const accSize = (window.TNSVT_ACTIVE_ACCOUNT && Number(window.TNSVT_ACTIVE_ACCOUNT.account_size)) || 10000;
+        const accParam = window.TNSVT_ACTIVE_ACCOUNT_ID ? `&account_id=${window.TNSVT_ACTIVE_ACCOUNT_ID}` : '';
+        const url = `/api/journal/equity-curve?range=${encodeURIComponent(range)}&account_size=${accSize}${accParam}`;
         const r = await apiFetch(url, { silent: true });
         if (!r.ok || !r.data || !r.data.success) return;
 

@@ -84,6 +84,14 @@
             </div>
         </div>
 
+        {# ─── 4b. Cuenta ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">account_balance</span>Cuenta</h3>
+            <select id="trade-account-id" name="account_id" class="form-input" required>
+                <option value="">— Cargando cuentas... —</option>
+            </select>
+        </div>
+
         {# ─── 5. Resultado + P&L ─── #}
         <div class="form-section">
             <h3 class="form-section-title"><span class="material-symbols-elev">emoji_events</span>Resultado</h3>
@@ -391,6 +399,7 @@
             date: `${dateStr}T${timeStr}:00`,
             result: state.result,
             pnl: pnl,
+            account_id: parseInt(document.getElementById('trade-account-id')?.value) || window.TNSVT_ACTIVE_ACCOUNT_ID || null,
         };
 
         const entry = num($entry); if (entry !== null) payload.entry = String(entry);

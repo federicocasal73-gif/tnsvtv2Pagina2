@@ -8,7 +8,7 @@
 {% block stylesheets %}{% endblock %}
 
 {% block content %}
-<div class="trade-form-wrap">
+<div class="trade-form-wrap" data-controller="account-switcher">
 
     <div class="trade-form-header">
         <span class="material-symbols-elev icon-size-lg" style="color: var(--gold-elev);">edit_note</span>
@@ -68,6 +68,15 @@
                     SELL · Short
                 </button>
             </div>
+        </div>
+
+        {# ─── 3b. Cuenta ─── #}
+        <div class="form-section">
+            <h3 class="form-section-title"><span class="material-symbols-elev">account_balance</span>Cuenta</h3>
+            <select id="trade-account-id" name="account_id" class="form-input" required>
+                <option value="">— Cargando cuentas... —</option>
+            </select>
+            <p class="text-xs text-[var(--outline-elev)] mt-1" id="trade-account-hint"></p>
         </div>
 
         {# ─── 4. Precios ─── #}
@@ -399,6 +408,7 @@
             date: `${dateStr}T${timeStr}:00`,
             result: state.result,
             pnl: pnl,
+            account_id: parseInt(document.getElementById('trade-account-id')?.value) || window.TNSVT_ACTIVE_ACCOUNT_ID || null,
         };
 
         const entry = num($entry); if (entry !== null) payload.entry = String(entry);
