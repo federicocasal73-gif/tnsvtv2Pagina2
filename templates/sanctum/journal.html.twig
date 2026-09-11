@@ -53,6 +53,24 @@
         <button class="journal-nav-btn"        data-panel="stats"    role="tab" aria-selected="false">Stats</button>
     </nav>
 
+    {# ─── Account Selector Strip ─── #}
+    <section class="glass-card-elev p-3 mb-4" id="account-selector-strip" aria-label="Cuentas de trading">
+        <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs uppercase tracking-widest text-[var(--outline-elev)] flex items-center gap-1.5 mr-1">
+                <span class="material-symbols-elev text-[var(--gold-elev)] icon-size-sm">account_balance</span>
+                Cuentas
+            </span>
+            <div id="account-chips" class="flex items-center gap-2 flex-wrap flex-1">
+                <span class="text-xs text-[var(--outline-elev)] loading-pulse">Cargando cuentas…</span>
+            </div>
+            <button type="button" class="account-chip account-chip-add" id="open-accounts-manager" title="Crear nueva cuenta"
+                    aria-label="Crear nueva cuenta">
+                <span class="material-symbols-elev icon-size-sm">add</span>
+                <span class="hidden sm:inline text-xs">Nueva</span>
+            </button>
+        </div>
+    </section>
+
     {# ─── Guardian Pre-Trade Banner ─── #}
     <div id="guardian-banner" class="hidden mb-4 p-4 rounded-lg border" style="border-color: var(--outline-variant-elev); background: var(--glass-bg-elev);">
         <div class="flex items-center justify-between mb-2">
@@ -476,6 +494,78 @@
                 <button type="submit" id="trade-submit" class="ui-btn ui-btn-primary">Guardar</button>
             </div>
         </form>
+    </div>
+</div>
+
+{# ─── Accounts Manager Modal ─── #}
+<div id="accounts-manager-modal" class="tnsvt-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="accounts-manager-title" hidden>
+    <div class="tnsvt-modal tnsvt-modal--wide" style="max-width: 720px; width: 90%;">
+        <header class="tnsvt-modal__header">
+            <h2 id="accounts-manager-title" class="tnsvt-modal__title">
+                <span class="material-symbols-elev">account_balance</span>
+                <span>Mis Cuentas</span>
+            </h2>
+            <button type="button" class="tnsvt-modal__close" data-action="close-accounts-manager" aria-label="Cerrar">
+                <span class="material-symbols-elev">close</span>
+            </button>
+        </header>
+        <div class="tnsvt-modal__body" style="padding-top: 0;">
+            <p class="text-xs text-[var(--outline-elev)] mb-3">
+                Máximo <strong id="accounts-manager-cap">3</strong> cuentas. Las cuentas con trades no se borran físicamente — solo se ocultan (soft-delete).
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {# ─── List (left column) ─── #}
+                <div>
+                    <h4 class="text-xs uppercase tracking-widest text-[var(--outline-elev)] mb-2">Existentes</h4>
+                    <div id="accounts-manager-list" class="space-y-2 max-h-72 overflow-y-auto">
+                        <p class="text-xs text-[var(--outline-elev)] py-2">Cargando…</p>
+                    </div>
+                </div>
+
+                {# ─── Form (right column) ─── #}
+                <div>
+                    <h4 class="text-xs uppercase tracking-widest text-[var(--outline-elev)] mb-2">Crear / Editar</h4>
+                    <form id="accounts-manager-form" class="space-y-3">
+                        <input type="hidden" name="id" value="">
+
+                        <div>
+                            <label class="kpi-label block mb-1">Nombre *</label>
+                            <input type="text" name="name" required maxlength="50" placeholder="Mi Cuenta, Swing, Spot…"
+                                   class="form-input">
+                        </div>
+
+                        <div>
+                            <label class="kpi-label block mb-1">Tamaño (USD) *</label>
+                            <input type="number" name="account_size" required min="100" step="0.01" value="10000"
+                                   class="form-input">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="kpi-label block mb-1">Color</label>
+                                <input type="color" name="color" value="#d4af37" class="form-input" style="height: 38px; padding: 2px;">
+                            </div>
+                            <div>
+                                <label class="kpi-label block mb-1">Icono</label>
+                                <input type="text" name="icon" maxlength="4" value="💰"
+                                       class="form-input" style="text-align: center; font-size: 1.1rem;">
+                            </div>
+                        </div>
+
+                        <p class="form-error text-xs text-[var(--error-elev)] hidden"></p>
+
+                        <div class="flex gap-2 pt-2">
+                            <button type="submit" class="btn btn-primary flex-1">Guardar</button>
+                            <button type="button" class="btn btn-secondary" data-action="reset-account-form">Limpiar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <footer class="tnsvt-modal__footer">
+            <button type="button" class="btn btn-secondary" data-action="close-accounts-manager">Cerrar</button>
+        </footer>
     </div>
 </div>
 
@@ -1366,6 +1456,32 @@
             }
         });
 
+        // ─── Accounts Manager modal close + reset ───
+        const accountsManagerModal = document.getElementById('accounts-manager-modal');
+        let accountsManagerApiModal = null;
+        if (accountsManagerModal) {
+            accountsManagerApiModal = apiSetupModal(accountsManagerModal);
+            document.querySelectorAll('[data-action="close-accounts-manager"]').forEach(b => {
+                b.addEventListener('click', () => accountsManagerApiModal.close());
+            });
+            document.querySelectorAll('[data-action="reset-account-form"]').forEach(b => {
+                b.addEventListener('click', () => {
+                    const form = document.getElementById('accounts-manager-form');
+                    if (form) form.reset();
+                    document.getElementById('accounts-manager-cap')?.dispatchEvent(new Event('refresh-cap'));
+                    const editIdInput = form.querySelector('input[name="id"]');
+                    if (editIdInput) editIdInput.value = '';
+                });
+            });
+        }
+        window.openAccountsManager = (editId) => {
+            if (window._accountSwitcher && typeof window._accountSwitcher.openManager === 'function') {
+                window._accountSwitcher.openManager(editId);
+            } else if (accountsManagerApiModal) {
+                accountsManagerApiModal.open();
+            }
+        };
+
         // Initial data load: KPI cards + guardian banner (always visible)
         function boot() {
             if (currentUserCode()) {
@@ -1388,6 +1504,13 @@
             window.addEventListener('tnsvt:user-loaded', boot, { once: true });
             setTimeout(boot, 2000);
         }
+
+        // Expose key functions globally so account-switcher controller can refresh data
+        window.loadTrades = loadTrades;
+        window.loadEquityCurve = loadEquityCurve;
+        window.loadStats = loadStats;
+        window.loadCalendarMonthly = loadCalendarMonthly;
+        window.refreshOverviewPanel = typeof refreshOverviewPanel === 'function' ? refreshOverviewPanel : function() {};
     });
 })();
 </script>
