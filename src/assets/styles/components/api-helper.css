@@ -209,3 +209,47 @@
     from { opacity: 0; transform: translateX(20px); }
     to   { opacity: 1; transform: translateX(0); }
 }
+
+
+/* ─── Undo toast (H14) ─── */
+.api-undo-toast {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 260px;
+    max-width: 360px;
+}
+.api-undo-btn {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.16);
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.api-undo-btn:hover { background: rgba(255, 255, 255, 0.26); }
+.api-undo-btn:disabled { opacity: 0.6; cursor: progress; }
+.api-undo-progress {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.api-undo-progress-bar {
+    height: 100%;
+    background: currentColor;
+    width: 100%;
+    transform-origin: left;
+    animation: api-undo-progress-shrink linear forwards;
+}
+@keyframes api-undo-progress-shrink {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .api-undo-progress-bar { animation: none; transform: scaleX(0); }
+}

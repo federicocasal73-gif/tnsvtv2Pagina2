@@ -532,6 +532,89 @@
     window.apiA11yLoading = apiA11yLoading;
 
     /* ═══════════════════════════════════════════════════════════════
+       UNDO TOAST (H14)
+       apiUndoToast({ message, undoLabel='Deshacer', ttl=5000, undo, onExpire })
+       Renders a success toast with a clickable "Deshacer" button that
+       calls undo() when clicked within ttl ms. Visual countdown bar
+       shrinks over time. undo() can return a Promise (e.g., to POST
+       a restore request); the toast stays until the Promise settles.
+       ─────────────────────────────────────────────────────────────── */
+    function apiUndoToast(opts) {
+        if (!opts || typeof opts.undo !== 'function') {
+            return typeof apiToast === 'function' ? apiToast(opts.message, 'info') : null;
+        }
+        const ttl = opts.ttl || 5000;
+        const undoLabel = opts.undoLabel || 'Deshacer';
+        const msg = opts.message || 'Acción completada';
+        const kind = opts.kind || 'success';
+
+        // Custom DOM: toast with undo button + countdown bar.
+        const root = document.createElement('div');
+        root.className = 'api-toast api-toast-' + kind + ' api-undo-toast';
+        root.setAttribute('role', 'status');
+        root.setAttribute('aria-live', 'polite');
+        root.innerHTML = `
+            <span class="api-toast-message"></span>
+            <button type="button" class="api-undo-btn"></button>
+            <div class="api-undo-progress"><div class="api-undo-progress-bar"></div></div>`;
+        root.querySelector('.api-toast-message').textContent = msg;
+        const btn = root.querySelector('.api-undo-btn');
+        btn.textContent = undoLabel;
+        const bar = root.querySelector('.api-undo-progress-bar');
+        const container = document.getElementById('api-toast-container') || document.body;
+        container.appendChild(root);
+        // Animate entrance.
+        requestAnimationFrame(() => root.classList.add('is-visible'));
+
+        let done = false;
+        let timer = null;
+        const close = () => {
+            if (done) return;
+            done = true;
+            clearTimeout(timer);
+            root.classList.remove('is-visible');
+            setTimeout(() => root.remove(), 220);
+        };
+        const finish = (promise) => {
+            if (promise && typeof promise.then === 'function') {
+                btn.disabled = true;
+                bar.style.animationPlayState = 'paused';
+                promise.then(function () {
+                    if (typeof apiToast === 'function') {
+                        apiToast('Restaurado', 'success');
+                    }
+                }).catch(function (e) {
+                    if (typeof apiToast === 'function') {
+                        apiToast('No se pudo restaurar: ' + (e.message || 'error'), 'error');
+                    }
+                }).finally(close);
+            } else {
+                close();
+            }
+        };
+        btn.addEventListener('click', () => {
+            try {
+                finish(opts.undo());
+            } catch (e) {
+                close();
+                if (typeof apiToast === 'function') {
+                    apiToast('No se pudo restaurar: ' + (e.message || 'error'), 'error');
+                }
+            }
+        });
+        timer = setTimeout(() => {
+            if (!done && typeof opts.onExpire === 'function') {
+                try { opts.onExpire(); } catch (e) {}
+            }
+            close();
+        }, ttl);
+        // Set CSS animation duration so the progress bar matches ttl.
+        bar.style.animationDuration = ttl + 'ms';
+        return { dismiss: close };
+    }
+    window.apiUndoToast = apiUndoToast;
+
+    /* ═══════════════════════════════════════════════════════════════
        FOCUS TRAP + MODAL A11Y
        Use: apiSetupModal(modalEl, { open: () => {}, close: () => {} })
        ─────────────────────────────────────────────────────────────── */

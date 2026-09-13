@@ -291,3 +291,22 @@
     .account-chip-edit { display: none; }
     .account-chip { font-size: 0.7rem; padding: 0.3rem 0.5rem; }
 }
+
+
+/* ─── F11: Journal insights card ─── */
+.journal-insights[hidden] { display: none; }
+.journal-insight {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.6rem;
+}
+.journal-insight-icon {
+    color: var(--gold-elev);
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}

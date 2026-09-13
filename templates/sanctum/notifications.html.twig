@@ -33,6 +33,27 @@
         </button>
     </div>
 
+    {# ─── F5: Filter + bulk actions bar ─── #}
+    <div class="glass-card-elev p-3 flex flex-wrap items-center gap-2 mb-3">
+        <div class="flex items-center gap-1 notif-filters" role="tablist" aria-label="Filtrar notificaciones">
+            <button type="button" class="notif-filter is-active" data-filter="all"     role="tab" aria-pressed="true">Todas</button>
+            <button type="button" class="notif-filter"        data-filter="unread"  role="tab" aria-pressed="false">Sin leer</button>
+            <button type="button" class="notif-filter"        data-filter="comment" role="tab" aria-pressed="false">Comentarios</button>
+            <button type="button" class="notif-filter"        data-filter="like"    role="tab" aria-pressed="false">Likes</button>
+            <button type="button" class="notif-filter"        data-filter="post"    role="tab" aria-pressed="false">Posts</button>
+            <button type="button" class="notif-filter"        data-filter="task"    role="tab" aria-pressed="false">Tareas</button>
+        </div>
+        <div class="flex-1"></div>
+        <button type="button" class="notif-bulk-btn" data-action="notifications#toggleBulk" hidden>
+            <span class="material-symbols-elev icon-size-sm" aria-hidden="true">checklist</span>
+            <span class="notif-bulk-label">Seleccionar</span>
+        </button>
+        <button type="button" class="notif-bulk-apply" data-action="notifications#bulkMarkRead" hidden disabled>
+            <span class="material-symbols-elev icon-size-sm" aria-hidden="true">done_all</span>
+            Marcar leídas <span class="notif-bulk-count" data-notifications-target="bulkCount">(0)</span>
+        </button>
+    </div>
+
     {# ─── List ─── #}
     <div class="space-y-2"
          data-notifications-target="list"

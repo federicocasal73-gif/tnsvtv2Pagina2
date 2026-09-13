@@ -99,3 +99,58 @@
     background: rgba(255, 255, 255, 0.05);
     border-color: var(--primary, #f2ca50);
 }
+
+
+/* ─── F5: Filter chips + bulk actions ─── */
+.notif-filters {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+.notif-filter {
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: transparent;
+    border: 1px solid var(--glass-border-elev);
+    color: var(--outline-elev);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.notif-filter:hover { color: var(--on-surface-elev); }
+.notif-filter.is-active {
+    background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+    color: var(--on-primary-elev);
+    border-color: var(--gold-elev);
+}
+.notif-bulk-btn, .notif-bulk-apply {
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    color: var(--on-surface-elev);
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.notif-bulk-apply {
+    background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+    color: var(--on-primary-elev);
+    border-color: var(--gold-elev);
+}
+.notif-bulk-apply:disabled { opacity: 0.5; cursor: not-allowed; }
+.notif-bulk-btn[hidden], .notif-bulk-apply[hidden] { display: none; }
+.notif-bulk-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-right: 0.35rem;
+    accent-color: var(--gold-elev);
+    cursor: pointer;
+}
+.notif-list-card.is-selected,
+[data-id].is-selected {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: -2px;
+}
