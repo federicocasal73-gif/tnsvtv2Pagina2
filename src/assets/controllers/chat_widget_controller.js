@@ -440,7 +440,8 @@ export default class extends Controller {
         const initials = (this.activeConv.title || this.activeConv.other_user_name || '?').slice(0, 2).toUpperCase();
         this.convAvatarTarget.textContent = initials;
         this.convNameTarget.textContent = this.activeConv.title || this.activeConv.other_user_name || 'Conversación';
-        this.convStatusTarget.textContent = this.activeConv.is_group ? 'Grupo' : 'en línea';
+        // L85: derive status from real data instead of hardcoding "en línea".
+        this.convStatusTarget.textContent = this.convStatus(this.activeConv);
         await this.loadMessages(convId);
         this.markRead(convId);
     }
@@ -750,5 +751,18 @@ export default class extends Controller {
         } catch (e) {
             return '';
         }
+    }
+
+    convStatus(conv) {
+        if (!conv) return '';
+        if (conv.is_group) {
+            const n = conv.member_count || conv.members?.length;
+            return n ? 'Grupo · ' + n : 'Grupo';
+        }
+        const last = conv.last_message?.created_at;
+        if (!last) return 'Sin mensajes';
+        const diff = (Date.now() - new Date(last).getTime()) / 1000;
+        if (diff < 300) return 'activo ahora';
+        return 'últ. actividad ' + this.relativeTime(last);
     }
 }

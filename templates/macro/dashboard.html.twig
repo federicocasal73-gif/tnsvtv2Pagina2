@@ -298,6 +298,11 @@
             </div>
         </div>
 
+        {# P9: ticker-tape with live questionnaire status (real data only) #}
+        <div class="macro-ticker" aria-hidden="true">
+            <div class="macro-ticker-track" id="macro-ticker-track"></div>
+        </div>
+
         {# ─── Cuestionario de Perfil de Riesgo ─── #}
         <article class="macro-card macro-questionnaire-card mt-4 macro-questionnaire-card--clickable" id="risk-profile-card" data-questionnaire-card="risk" role="button" tabindex="0" aria-label="Abrir cuestionario de Perfil de Riesgo">
             <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -1306,6 +1311,19 @@
         if (fill) {
             if (pct === 100) fill.classList.add('complete');
             else fill.classList.remove('complete');
+        }
+        // P9: refresh the ticker items from the same statuses.
+        const track = document.getElementById('macro-ticker-track');
+        if (track) {
+            const rp = document.getElementById('macro-q-summary-rp')?.textContent?.trim() || 'Pendiente';
+            const mk = document.getElementById('macro-q-summary-mk')?.textContent?.trim() || 'Pendiente';
+            const items = [
+                'Perfil de Riesgo: ' + rp,
+                'Conocimiento del Mercado: ' + mk,
+                'Progreso: ' + pct + '%',
+            ];
+            const seq = items.map(t => '<span class="macro-ticker-item">' + t.replace(/</g, '&lt;') + '</span>').join('<span class="macro-ticker-sep">◆</span>');
+            track.innerHTML = seq + '<span class="macro-ticker-sep">◆</span>' + seq + '<span class="macro-ticker-sep">◆</span>';
         }
     }
 

@@ -493,3 +493,14 @@
     border-color: var(--gold-elev);
     color: var(--gold-elev);
 }
+
+
+/* ─── L31: timezone label ─── */
+.cal-tz-label {
+    font-size: 0.72rem;
+    color: var(--outline-elev);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+    white-space: nowrap;
+}

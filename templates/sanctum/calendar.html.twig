@@ -84,8 +84,18 @@
                 <option value="1">Bajo (1)</option>
             </select>
         </div>
+        <div class="flex items-center gap-2">
+            <label class="kpi-label" for="cal-window" title="Ventana de no operar alrededor de eventos críticos">Ventana</label>
+            <select id="cal-window" class="form-input" title="Ventana de no operar alrededor de eventos críticos">
+                <option value="5">±5 min</option>
+                <option value="15" selected>±15 min</option>
+                <option value="30">±30 min</option>
+                <option value="60">±60 min</option>
+            </select>
+        </div>
         <div class="flex-1"></div>
-        <div class="text-sm text-[var(--outline-elev)]">
+        <div class="text-sm text-[var(--outline-elev)] flex items-center gap-2">
+            <span id="cal-tz" class="cal-tz-label" title="Zona horaria de tu dispositivo"></span>
             <span id="cal-count">0 eventos</span>
         </div>
     </div>
@@ -134,6 +144,36 @@
     const dateInput = document.getElementById('cal-date');
     const countrySel = document.getElementById('cal-country');
     const impactSel = document.getElementById('cal-impact');
+    const windowSel = document.getElementById('cal-window');
+
+    // L33: configurable NO OPERAR window (persisted).
+    const WIN_KEY = 'tnsvt_cal_nowindow';
+    function noTradeWindow() {
+        const v = windowSel ? parseInt(windowSel.value, 10) : 15;
+        return Number.isFinite(v) ? v : 15;
+    }
+    try {
+        const saved = localStorage.getItem(WIN_KEY);
+        if (saved && windowSel) windowSel.value = saved;
+    } catch (e) {}
+    if (windowSel) {
+        windowSel.addEventListener('change', () => {
+            try { localStorage.setItem(WIN_KEY, windowSel.value); } catch (e) {}
+            loadEvents();
+        });
+    }
+
+    // L31: show the device timezone so event times are unambiguous.
+    (function paintTz() {
+        const tzEl = document.getElementById('cal-tz');
+        if (!tzEl) return;
+        try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local';
+            const off = -new Date().getTimezoneOffset() / 60;
+            const sign = off >= 0 ? '+' : '−';
+            tzEl.textContent = tz + ' (UTC' + sign + Math.abs(off) + ')';
+        } catch (e) { tzEl.textContent = ''; }
+    })();
 
     // Chip picker ↔ multi-select sync. Click a chip to toggle its
     // option in the underlying <select> (which is the source of truth
@@ -250,7 +290,7 @@
                         <div class="cal-critical-impact dot-${impact}"></div>
                     </div>`;
             }
-            html += '<div class="cal-critical-no-trade">⚠️ NO OPERAR durante la ventana crítica ±15 min</div>';
+            html += '<div class="cal-critical-no-trade">⚠️ NO OPERAR durante la ventana crítica ±' + noTradeWindow() + ' min</div>';
             html += '</div>';
         }
 

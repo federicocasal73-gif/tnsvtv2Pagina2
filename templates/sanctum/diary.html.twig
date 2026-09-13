@@ -420,6 +420,17 @@
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     openEntry(parseInt(el.dataset.id, 10));
+                    return;
+                }
+                // P7: arrow navigation between cards.
+                if (e.key === 'ArrowDown' || e.key === 'ArrowRight'
+                    || e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const cards = Array.from(grid.querySelectorAll('.diary-entry-card'));
+                    const i = cards.indexOf(el);
+                    const dir = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : -1;
+                    const next = cards[i + dir];
+                    if (next) next.focus();
                 }
             });
         });
