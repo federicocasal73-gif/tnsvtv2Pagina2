@@ -14,6 +14,34 @@ export default class extends Controller {
         if (saveBtn) {
             saveBtn.addEventListener('click', () => this.saveProfile());
         }
+
+        const copyBtn = document.getElementById('profile-code-copy');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => this.copyCode());
+        }
+    }
+
+    async copyCode() {
+        const codeEl = document.getElementById('profile-code');
+        const code = codeEl ? codeEl.textContent.trim() : '';
+        if (!code || code === '—' || code === 'Cargando...') return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(code);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = code;
+                ta.style.position = 'absolute';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+            }
+            if (window.apiToast) window.apiToast('Código copiado', 'success');
+        } catch (e) {
+            if (window.apiToast) window.apiToast('No se pudo copiar', 'error');
+        }
     }
 
     async loadProfile() {
@@ -36,6 +64,8 @@ export default class extends Controller {
             const u = data.user;
             if (nameEl) nameEl.textContent = u.name || '—';
             if (codeEl) codeEl.textContent = u.code || '—';
+            const copyBtn = document.getElementById('profile-code-copy');
+            if (copyBtn && u.code) copyBtn.style.display = '';
             if (tierEl) tierEl.textContent = u.tier || 'INITIATE';
             if (avatarImg && u.avatar_url) {
                 avatarImg.src = u.avatar_url;

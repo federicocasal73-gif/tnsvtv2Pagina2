@@ -8,6 +8,26 @@
 {% block content %}
 <div class="max-w-3xl mx-auto"
      data-controller="leaderboard">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-1 lb-filters" role="tablist" aria-label="Periodo">
+            <button type="button" class="lb-filter is-active" data-period="all" aria-pressed="true">Total</button>
+            <button type="button" class="lb-filter" data-period="month" aria-pressed="false" disabled title="Próximamente">Mes</button>
+            <button type="button" class="lb-filter" data-period="week"  aria-pressed="false" disabled title="Próximamente">Semana</button>
+        </div>
+        <label class="lb-metric-pick">
+            <span class="kpi-label">Ordenar por</span>
+            <select class="form-input"
+                    data-action="change->leaderboard#setMetric"
+                    data-leaderboard-target="metricSelect">
+                <option value="total_pnl">P&L total</option>
+                <option value="win_rate">Win rate</option>
+                <option value="total_trades">Cantidad de trades</option>
+                <option value="profit_factor">Profit factor</option>
+                <option value="best_trade">Mejor trade</option>
+            </select>
+        </label>
+    </div>
+
     <div class="grid grid-cols-3 gap-3 mb-6"
          data-leaderboard-target="podium">
         <p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Cargando...</p>

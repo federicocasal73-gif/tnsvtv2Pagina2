@@ -37,7 +37,12 @@
             </div>
             <div class="flex-1">
                 <h2 id="profile-name" class="text-xl font-bold">Cargando...</h2>
-                <p id="profile-code" class="text-sm text-[var(--outline-elev)]">—</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <p id="profile-code" class="text-sm text-[var(--outline-elev)]">—</p>
+                    <button type="button" id="profile-code-copy" class="text-[var(--outline-elev)] hover:text-[var(--gold-elev)] transition-colors" title="Copiar código" aria-label="Copiar código" style="display:none;">
+                        <span class="material-symbols-elev icon-size-sm" aria-hidden="true">content_copy</span>
+                    </button>
+                </div>
                 <div class="flex items-center gap-2 mt-1">
                     <span id="profile-tier" class="tier-badge-elev">—</span>
                     <span id="profile-vip" class="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-black font-semibold" style="display:none;">VIP</span>

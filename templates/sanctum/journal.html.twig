@@ -607,6 +607,21 @@
         t.addEventListener('click', () => activateTab(t.dataset.panel));
     });
 
+    // Keyboard navigation: Left/Right arrows cycle through tabs.
+    const tabArray = Array.from(tabs);
+    tabArray.forEach((t, i) => {
+        t.addEventListener('keydown', (e) => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            const dir = e.key === 'ArrowRight' ? 1 : -1;
+            const next = tabArray[(i + dir + tabArray.length) % tabArray.length];
+            if (next) {
+                e.preventDefault();
+                next.focus();
+                activateTab(next.dataset.panel);
+            }
+        });
+    });
+
     // Botón "Asentá la primera →" en equity vacía
     document.querySelectorAll('[data-jump-tab]').forEach(b => {
         b.addEventListener('click', () => activateTab(b.dataset.jumpTab));
@@ -710,7 +725,9 @@
             apiEmpty(listEl, {
                 icon: 'edit_note',
                 message: 'Sin trades registrados',
-                description: 'Hacé click en "Nuevo Trade" para empezar tu bitácora.',
+                description: 'Asentá tu primer trade para empezar tu bitácora.',
+                cta_label: 'Asentar primer trade',
+                cta_url: '/journal/new',
                 size: 'md'
             });
             return;
@@ -778,14 +795,20 @@
 
     async function deleteTrade(id) {
         if (!await apiConfirm('¿Eliminar este trade?', { title: 'Eliminar trade', variant: 'danger' })) return;
-        const r = await apiFetch('/api/journal/' + id, { method: 'DELETE' });
-        if (r.ok && r.data && r.data.success) {
-            if (window.apiToast) apiToast('Trade eliminado', 'success');
-            loadTrades();
-            loadGuardianBanner();
-            refreshOverviewPanel();
-        } else {
-            if (window.apiToast) apiToast('Error al eliminar', 'error');
+        const btn = listEl.querySelector(`[data-action="delete"][data-id="${id}"]`);
+        const done = (typeof window.apiButtonLoading === 'function' && btn) ? window.apiButtonLoading(btn) : function () {};
+        try {
+            const r = await apiFetch('/api/journal/' + id, { method: 'DELETE' });
+            if (r.ok && r.data && r.data.success) {
+                if (window.apiToast) apiToast('Trade eliminado', 'success');
+                loadTrades();
+                loadGuardianBanner();
+                refreshOverviewPanel();
+            } else {
+                if (window.apiToast) apiToast('Error al eliminar', 'error');
+            }
+        } finally {
+            done();
         }
     }
 

@@ -259,6 +259,26 @@
         return (s.trim().match(/\S+/g) || []).length;
     }
 
+    function relTime(iso) {
+        try {
+            const t = new Date(iso).getTime();
+            const diff = Date.now() - t;
+            const m = Math.floor(diff / 60000);
+            if (m < 1) return 'recién';
+            if (m < 60) return 'hace ' + m + ' min';
+            const h = Math.floor(m / 60);
+            if (h < 24) return 'hace ' + h + ' h';
+            const d = Math.floor(h / 24);
+            if (d < 7) return 'hace ' + d + ' día' + (d > 1 ? 's' : '');
+            const w = Math.floor(d / 7);
+            if (w < 4) return 'hace ' + w + ' sem';
+            const mo = Math.floor(d / 30);
+            if (mo < 12) return 'hace ' + mo + ' mes' + (mo > 1 ? 'es' : '');
+            const y = Math.floor(d / 365);
+            return 'hace ' + y + ' año' + (y > 1 ? 's' : '');
+        } catch (e) { return ''; }
+    }
+
     // ─── LOCKED state actions ───
     async function checkSetupAndLoad() {
         try {
@@ -386,7 +406,7 @@
                     <div class="diary-entry-card-footer">
                         <span style="display:inline-flex;align-items:center;gap:0.3rem;">
                             <span class="material-symbols-outlined" style="font-size:0.85rem;">lock</span>
-                            Cifrada · ${wc} palabras
+                            Cifrada · ${wc} palabras · ${escapeHtml(relTime(e.created_at))}
                         </span>
                         <span class="material-symbols-outlined diary-entry-card-chevron">chevron_right</span>
                     </div>

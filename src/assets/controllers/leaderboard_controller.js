@@ -4,16 +4,24 @@ import { Controller } from '@hotwired/stimulus';
  * Leaderboard — loads top 3 (podium) + full ranking on connect.
  * Refreshes every 60s via Mercure subscription (if available).
  *
+ * Filters:
+ *   - period (data-action="click->leaderboard#setPeriod") — UI only;
+ *     only "Total" is currently backed (mes/semana marked Próximamente).
+ *   - metric (data-action="change->leaderboard#setMetric") — sorts
+ *     client-side by selected metric.
+ *
  * Usage: <div data-controller="leaderboard">
  */
 export default class extends Controller {
-    static targets = ['podium', 'list'];
+    static targets = ['podium', 'list', 'metricSelect'];
 
     static values = {
         refreshInterval: { type: Number, default: 60000 },
     };
 
     connect() {
+        this.metric = 'total_pnl';
+        this.all = [];
         this.load();
         this.intervalId = setInterval(() => this.load(), this.refreshIntervalValue);
     }
@@ -22,19 +30,47 @@ export default class extends Controller {
         if (this.intervalId) clearInterval(this.intervalId);
     }
 
+    setMetric(event) {
+        this.metric = event.target.value;
+        this.render();
+    }
+
+    setPeriod(event) {
+        const btn = event.currentTarget;
+        if (btn.disabled) return;
+        this.element.querySelectorAll('.lb-filter').forEach((b) => {
+            const active = b === btn;
+            b.classList.toggle('is-active', active);
+            b.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        // Backend doesn't bucket by period yet — single reload is a no-op
+        // for "all" but keeps the hook ready when mes/semana go live.
+        this.load();
+    }
+
     async load() {
         try {
             const r = await window.apiFetch('/api/leaderboard?limit=50');
             const data = Array.isArray(r?.data) ? r.data : (Array.isArray(r) ? r : []);
-            if (data.length === 0) {
-                this.renderEmpty();
-                return;
-            }
-            this.renderPodium(data.slice(0, 3));
-            this.renderList(data);
+            this.all = Array.isArray(data) ? data : [];
+            this.render();
         } catch (e) {
             this.renderError();
         }
+    }
+
+    render() {
+        if (!this.all || this.all.length === 0) {
+            this.renderEmpty();
+            return;
+        }
+        const sorted = this.all.slice().sort((a, b) => {
+            const av = Number(a[this.metric] ?? 0);
+            const bv = Number(b[this.metric] ?? 0);
+            return bv - av;
+        });
+        this.renderPodium(sorted.slice(0, 3));
+        this.renderList(sorted);
     }
 
     renderEmpty() {
@@ -46,12 +82,19 @@ export default class extends Controller {
         this.podiumTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Error al cargar.</p>';
     }
 
+    scoreFor(p) {
+        const v = Number(p[this.metric] ?? 0);
+        if (this.metric === 'win_rate' || this.metric === 'total_trades') return v.toString();
+        if (this.metric === 'profit_factor') return v.toFixed(2);
+        return '$' + v.toFixed(2);
+    }
+
     renderPodium(top3) {
         const podiumHTML = top3.map((p) => `
             <div class="glass-card-elev podium-card">
                 <div class="podium-avatar">${this.escape((p.name || p.code || '?').charAt(0))}</div>
                 <div class="podium-name">${this.escape(p.name || p.code || '')}</div>
-                <div class="podium-score">${(p.total_pnl ?? 0).toFixed ? '$' + p.total_pnl.toFixed(2) : '$' + (p.total_pnl || 0)}</div>
+                <div class="podium-score">${this.scoreFor(p)}</div>
             </div>
         `).join('');
         this.podiumTarget.innerHTML = podiumHTML;
@@ -63,13 +106,12 @@ export default class extends Controller {
             const medal = medals[i] || '';
             const initial = this.escape((p.name || p.code || '?').charAt(0));
             const name = this.escape(p.name || p.code || '');
-            const score = p.total_pnl ?? 0;
             return `
                 <div class="lb-rank">
                     <span class="lb-pos ${medal}">${i + 1}</span>
                     <span class="lb-avatar-mini">${initial}</span>
                     <span class="lb-name">${name}</span>
-                    <span class="lb-score">$${Number(score).toFixed(2)}</span>
+                    <span class="lb-score">${this.scoreFor(p)}</span>
                 </div>
             `;
         }).join('');

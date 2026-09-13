@@ -114,6 +114,15 @@ export default class extends Controller {
         const selects = document.querySelectorAll('select#trade-account-id');
         selects.forEach(sel => {
             const current = window.TNSVT_ACTIVE_ACCOUNT_ID || this.getPersistedActive() || '';
+            // Micro-skeleton while async load is in flight (empty + skeleton class).
+            if (!this.accounts || this.accounts.length === 0) {
+                sel.innerHTML = '<option value="" disabled selected>Cargando cuentas…</option>';
+                sel.classList.add('select-skeleton');
+                sel.disabled = true;
+                return;
+            }
+            sel.classList.remove('select-skeleton');
+            sel.disabled = false;
             sel.innerHTML = this.accounts.map(a =>
                 `<option value="${a.id}" data-size="${a.account_size}">${escapeHtml(a.name)} — $${Number(a.account_size).toLocaleString()}</option>`
             ).join('');

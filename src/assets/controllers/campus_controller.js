@@ -26,6 +26,7 @@ export default class extends Controller {
         'statLessons',
         'statAssignments',
         'coursesGrid',
+        'searchInput',
         'courseDetail',
         'breadcrumb',
         'lessonView',
@@ -190,16 +191,38 @@ export default class extends Controller {
                 this.coursesGridTarget.innerHTML = this.emptyStateHtml('Sin cursos disponibles aún.');
                 return;
             }
-            const courses = r.data;
-            if (!Array.isArray(courses) || courses.length === 0) {
-                this.coursesGridTarget.innerHTML = this.emptyStateHtml('No hay cursos disponibles.');
-                return;
-            }
-            this.coursesGridTarget.innerHTML = courses.map(c => this.courseCardHtml(c)).join('');
-            this.bindCourseCardClicks();
+            this.allCourses = Array.isArray(r.data) ? r.data : [];
+            this.renderCourses();
         } catch (e) {
             this.coursesGridTarget.innerHTML = this.errorStateHtml(e);
         }
+    }
+
+    renderCourses() {
+        if (!this.hasCoursesGridTarget) return;
+        const courses = this.allCourses || [];
+        if (courses.length === 0) {
+            this.coursesGridTarget.innerHTML = this.emptyStateHtml('No hay cursos disponibles.');
+            return;
+        }
+        const q = (this.hasSearchInputTarget ? this.searchInputTarget.value : '').trim().toLowerCase();
+        const filtered = q
+            ? courses.filter(c =>
+                (c.title || '').toLowerCase().includes(q) ||
+                (c.description || '').toLowerCase().includes(q))
+            : courses;
+        if (filtered.length === 0) {
+            this.coursesGridTarget.innerHTML = this.emptyStateHtml(
+                'Sin cursos que coincidan con "' + q + '".'
+            );
+            return;
+        }
+        this.coursesGridTarget.innerHTML = filtered.map(c => this.courseCardHtml(c)).join('');
+        this.bindCourseCardClicks();
+    }
+
+    filterCourses() {
+        this.renderCourses();
     }
 
     courseCardHtml(c) {

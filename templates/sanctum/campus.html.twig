@@ -80,6 +80,15 @@
                     <span class="material-symbols-elev text-[var(--gold-elev)]">library_books</span>
                     Cursos Disponibles
                 </h2>
+                <label class="campus-search" aria-label="Buscar cursos">
+                    <span class="material-symbols-elev" aria-hidden="true">search</span>
+                    <input type="search"
+                           class="campus-search-input"
+                           placeholder="Buscar cursos…"
+                           data-campus-target="searchInput"
+                           data-action="input->campus#filterCourses"
+                           autocomplete="off" />
+                </label>
             </header>
             <div class="campus-courses-grid" data-campus-target="coursesGrid">
                 {% include '_partials/loading_state.html.twig' with {

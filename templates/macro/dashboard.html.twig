@@ -299,7 +299,7 @@
         </div>
 
         {# ─── Cuestionario de Perfil de Riesgo ─── #}
-        <article class="macro-card macro-questionnaire-card mt-4" id="risk-profile-card">
+        <article class="macro-card macro-questionnaire-card mt-4 macro-questionnaire-card--clickable" id="risk-profile-card" data-questionnaire-card="risk" role="button" tabindex="0" aria-label="Abrir cuestionario de Perfil de Riesgo">
             <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
                 <div>
                     <h3 class="text-cinzel-display text-base tracking-wider flex items-center gap-2">
@@ -323,7 +323,7 @@
         </article>
 
         {# ─── Cuestionario de Conocimiento del Mercado ─── #}
-        <article class="macro-card macro-questionnaire-card mt-4" id="market-knowledge-card">
+        <article class="macro-card macro-questionnaire-card mt-4 macro-questionnaire-card--clickable" id="market-knowledge-card" data-questionnaire-card="market_knowledge" role="button" tabindex="0" aria-label="Abrir cuestionario de Conocimiento del Mercado">
             <header class="flex items-center justify-between mb-4 flex-wrap gap-3">
                 <div>
                     <h3 class="text-cinzel-display text-base tracking-wider flex items-center gap-2">
@@ -1279,6 +1279,13 @@
         const retakeBtn = e.target.closest('[data-macro-retake]');
         if (retakeBtn) {
             openMacroQuestionnaireModal(retakeBtn.dataset.macroRetake);
+            return;
+        }
+        // Card-level click: anywhere on the questionnaire card opens it,
+        // unless the click landed on a nested button (button handler above wins).
+        const card = e.target.closest('[data-questionnaire-card]');
+        if (card && !e.target.closest('button, a')) {
+            openMacroQuestionnaireModal(card.dataset.questionnaireCard);
             return;
         }
         if (e.target.closest('[data-action="closeMacroQuestionnaire"]')) {

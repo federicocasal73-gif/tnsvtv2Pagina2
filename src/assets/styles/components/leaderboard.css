@@ -16,3 +16,50 @@
 .podium-avatar { width:48px; height:48px; border-radius:50%; margin:0 auto 0.5rem; background:linear-gradient(135deg,var(--gold-elev),var(--gold-bright-elev)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.25rem; }
 .podium-name { font-weight:600; font-size:0.875rem; }
 .podium-score { font-size:0.75rem; color:var(--gold-elev); }
+
+
+/* ─── Period + metric filters ─── */
+.lb-filters {
+    display: inline-flex;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 999px;
+}
+.lb-filter {
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    background: transparent;
+    border: none;
+    color: var(--outline-elev);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.lb-filter:not(:disabled):hover {
+    color: var(--on-surface-elev);
+    background: rgba(255, 255, 255, 0.04);
+}
+.lb-filter.is-active {
+    background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+    color: var(--on-primary-elev);
+}
+.lb-filter:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.lb-filter:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 2px;
+}
+.lb-metric-pick {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.lb-metric-pick .form-input {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+}

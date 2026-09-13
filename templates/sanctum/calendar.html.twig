@@ -45,9 +45,10 @@
             <input id="cal-date" type="date" class="form-input"
                    data-action="change->calendar-events#refresh" />
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
             <label class="kpi-label" for="cal-country">País</label>
-            <select id="cal-country" multiple size="1" class="form-input"
+            {# Multi-select kept for state; chip picker drives the UX. #}
+            <select id="cal-country" multiple size="1" class="sr-only" aria-hidden="true"
                     data-action="change->calendar-events#refresh">
                 <option value="US" selected>🇺🇸 USD</option>
                 <option value="EU" selected>🇪🇺 EUR</option>
@@ -58,6 +59,16 @@
                 <option value="CH">🇨🇭 CHF</option>
                 <option value="CN">🇨🇳 CNY</option>
             </select>
+            <div class="cal-country-chips" role="group" aria-label="Filtro de países">
+                <button type="button" class="cal-country-chip is-active" data-country="US" aria-pressed="true">🇺🇸 USD</button>
+                <button type="button" class="cal-country-chip is-active" data-country="EU" aria-pressed="true">🇪🇺 EUR</button>
+                <button type="button" class="cal-country-chip is-active" data-country="GB" aria-pressed="true">🇬🇧 GBP</button>
+                <button type="button" class="cal-country-chip is-active" data-country="JP" aria-pressed="true">🇯🇵 JPY</button>
+                <button type="button" class="cal-country-chip" data-country="CA" aria-pressed="false">🇨🇦 CAD</button>
+                <button type="button" class="cal-country-chip" data-country="AU" aria-pressed="false">🇦🇺 AUD</button>
+                <button type="button" class="cal-country-chip" data-country="CH" aria-pressed="false">🇨🇭 CHF</button>
+                <button type="button" class="cal-country-chip" data-country="CN" aria-pressed="false">🇨🇳 CNY</button>
+            </div>
         </div>
         <div class="flex items-center gap-2">
             <label class="kpi-label" for="cal-impact">Impacto</label>
@@ -119,6 +130,22 @@
     const dateInput = document.getElementById('cal-date');
     const countrySel = document.getElementById('cal-country');
     const impactSel = document.getElementById('cal-impact');
+
+    // Chip picker ↔ multi-select sync. Click a chip to toggle its
+    // option in the underlying <select> (which is the source of truth
+    // for the calendar-events controller and selectedCountries()).
+    document.querySelectorAll('.cal-country-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const code = chip.dataset.country;
+            const opt = Array.from(countrySel.options).find(o => o.value === code);
+            if (!opt) return;
+            opt.selected = !opt.selected;
+            const active = opt.selected;
+            chip.classList.toggle('is-active', active);
+            chip.setAttribute('aria-pressed', active ? 'true' : 'false');
+            countrySel.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    });
 
     function escapeHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));

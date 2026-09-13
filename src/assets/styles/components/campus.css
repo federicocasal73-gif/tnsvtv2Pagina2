@@ -647,3 +647,39 @@
     .campus-lesson-section { padding: var(--space-4); }
     .campus-mark-complete { min-width: auto; width: 100%; }
 }
+
+
+/* ─── Courses search bar ─── */
+.campus-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+.campus-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: var(--radius-md);
+    color: var(--outline-elev);
+    transition: border-color 0.15s ease;
+    min-width: 220px;
+}
+.campus-search:focus-within {
+    border-color: var(--gold-elev);
+    color: var(--gold-elev);
+}
+.campus-search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--on-surface-elev);
+    font-size: 0.875rem;
+    width: 100%;
+    min-width: 0;
+}
+.campus-search-input::placeholder { color: var(--outline-elev); }

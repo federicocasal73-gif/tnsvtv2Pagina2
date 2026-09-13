@@ -240,3 +240,17 @@ button[aria-busy="true"]::after {
 .status-pill.size-sm { font-size: 0.6rem; padding: 0.15rem 0.45rem; }
 .status-pill.size-md { font-size: 0.65rem; padding: 0.2rem 0.6rem; }
 .status-pill.size-lg { font-size: 0.75rem; padding: 0.3rem 0.8rem; }
+
+/* ─── Micro-skeleton on <select> during async load ─── */
+.select-skeleton {
+    background:
+        linear-gradient(90deg,
+            var(--glass-bg-elev) 0%,
+            var(--surface-high-elev) 50%,
+            var(--glass-bg-elev) 100%) !important;
+    background-size: 200% 100% !important;
+    animation: skeleton-shimmer 1.4s linear infinite;
+    color: transparent !important;
+    cursor: wait;
+}
+.select-skeleton option { color: var(--outline-elev); background: var(--surface-elev); }

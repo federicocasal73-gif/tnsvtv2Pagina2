@@ -398,3 +398,39 @@
     .cal-row-head { font-size: 0.75rem; }
     .cal-row-meta { font-size: 0.65rem; gap: 0.5rem; }
 }
+
+
+/* ─── Country chip picker ─── */
+.cal-country-chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+.cal-country-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    color: var(--outline-elev);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.cal-country-chip:hover {
+    border-color: var(--gold-elev);
+    color: var(--on-surface-elev);
+}
+.cal-country-chip.is-active {
+    background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+    border-color: var(--gold-elev);
+    color: var(--on-primary-elev);
+    box-shadow: var(--gold-glow-elev);
+}
+.cal-country-chip:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: 2px;
+}
