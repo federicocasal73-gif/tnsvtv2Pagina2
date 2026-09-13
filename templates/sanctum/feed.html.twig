@@ -179,7 +179,7 @@
         const cls = catClass(cat);
         const sig = p.signal;
         const sigHtml = sig && typeof sig === 'object' ? `<div class="feed-post-signal">${Object.entries(sig).slice(0,4).map(([k,v])=>`<div><div class="feed-post-signal-field-label">${esc(k.replace(/_/g,' '))}</div><div class="feed-post-signal-field-value gold">${esc(String(v))}</div></div>`).join('')}</div>` : '';
-        const photoHtml = p.photo ? `<img class="feed-post-photo" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura" loading="lazy" decoding="async" />` : '';
+        const photoHtml = p.photo ? `<img class="feed-post-photo lightbox-trigger" data-lightbox-group="feed-post" data-lightbox-name="${esc(p.author_name || 'post')}" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura" loading="lazy" decoding="async" />` : '';
         const comments = Array.isArray(p.comments) ? p.comments : [];
         const myPost = meCode && p.author_code === meCode;
         const liked = _likedIds.has(p.id);
@@ -217,7 +217,7 @@
                     `).join('')}
                 </div>
             ` : '';
-            const photoHtml = p.photo ? `<img class="feed-post-photo" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura de ${esc(p.user || 'usuario')}" loading="lazy" decoding="async" />` : '';
+            const photoHtml = p.photo ? `<img class="feed-post-photo lightbox-trigger" data-lightbox-group="feed-post" data-lightbox-name="${esc(p.user || 'usuario')}" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura de ${esc(p.user || 'usuario')}" loading="lazy" decoding="async" />` : '';
             const comments = Array.isArray(p.comments) ? p.comments : [];
             const myPost = meCode && p.author_code === meCode;
             const liked = _likedIds.has(p.id);

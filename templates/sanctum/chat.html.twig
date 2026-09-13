@@ -227,7 +227,7 @@
                     <div>
                         <div class="chat-msg-bubble">
                             <div class="chat-msg-content">${esc(m.text || m.content || m.message || '')}</div>
-                            ${m.photo ? `<img class="chat-msg-photo" style="display:block;width:auto;height:auto;max-width:240px;max-height:320px;border-radius:0.5rem;margin-top:0.4rem;" src="${esc(m.photo)}" alt="${esc(m.user || '')}" loading="lazy" decoding="async" />` : ''}
+                            ${m.photo ? `<img class="chat-msg-photo lightbox-trigger" data-lightbox-group="chat-msg" data-lightbox-name="${esc(m.user || 'adjunto')}" style="display:block;width:auto;height:auto;max-width:240px;max-height:320px;border-radius:0.5rem;margin-top:0.4rem;cursor:zoom-in;" src="${esc(m.photo)}" alt="${esc(m.user || '')}" loading="lazy" decoding="async" />` : ''}
                         </div>
                         <div class="chat-msg-meta">${esc(authorName)}${m.date || m.created_at ? ' · ' + esc(fmtTime(m.date || m.created_at)) : ''}</div>
                     </div>

@@ -194,7 +194,7 @@
         }
         grid.innerHTML = _PHOTOS.map((p, i) => `
             <div class="photo-thumb">
-                <img src="${p.dataUrl}" alt="captura ${i + 1}" loading="lazy" decoding="async" style="max-width:100%;height:auto;border-radius:0.5rem;" />
+                <img class="lightbox-trigger" data-lightbox-group="trade-new" data-lightbox-name="${p.kind === 'file' ? (p.name || ('captura ' + (i + 1))) : 'URL'}" src="${p.dataUrl}" alt="captura ${i + 1}" loading="lazy" decoding="async" style="max-width:100%;height:auto;border-radius:0.5rem;" />
                 <button type="button" class="photo-remove" data-idx="${i}" aria-label="Eliminar captura ${i + 1}">
                     <span class="material-symbols-elev icon-size-sm">close</span>
                 </button>

@@ -1,0 +1,85 @@
+{# _partials/lightbox.html.twig — Fullscreen photo lightbox (singleton).
+
+Mount once via shell: {% include '_partials/lightbox.html.twig' %}.
+
+Auto-binds any <img class="lightbox-trigger"> in the DOM (via Stimulus
+controller `lightbox_controller.js`). Photos sharing the same
+`data-lightbox-group="<id>"` value form a navigable gallery; ungrouped
+photos are opened standalone.
+
+Features:
+  - Swipe (touch) + arrow keys navigate prev/next
+  - Wheel + pinch zoom, drag-pan when zoomed
+  - Esc / click-outside / close-button to dismiss
+  - Hash deep-linking: #lightbox=group:index (popstate restores)
+  - Download, share (Web Share API w/ copy fallback), copy URL
+  - prefers-reduced-motion respected
+
+Wraps everything in a single Stimulus scope so the controller lifecycle
+manages event listeners (click delegation, keyboard, touch, wheel, popstate).
+#}
+<div class="lightbox-root" data-controller="lightbox" hidden>
+    <div class="lightbox-backdrop" data-lightbox-target="backdrop" data-action="click->lightbox#onBackdrop"></div>
+
+    <figure class="lightbox-stage" data-lightbox-target="stage"
+            data-action="wheel->lightbox#onWheel touchstart->lightbox#onTouchStart touchmove->lightbox#onTouchMove touchend->lightbox#onTouchEnd mousedown->lightbox#onMouseDown mousemove->lightbox#onMouseMove mouseup->lightbox#onMouseUp mouseleave->lightbox#onMouseUp dblclick->lightbox#onDoubleClick">
+        <img class="lightbox-image" data-lightbox-target="image" alt="" decoding="async" />
+        <figcaption class="lightbox-caption" data-lightbox-target="caption" hidden></figcaption>
+    </figure>
+
+    <button type="button" class="lightbox-btn lightbox-btn--close"
+            data-action="lightbox#close"
+            aria-label="Cerrar (Esc)" title="Cerrar (Esc)">
+        <span class="material-symbols-elev" aria-hidden="true">close</span>
+    </button>
+
+    <button type="button" class="lightbox-btn lightbox-btn--prev"
+            data-action="lightbox#prev"
+            aria-label="Anterior (←)" title="Anterior (←)">
+        <span class="material-symbols-elev" aria-hidden="true">chevron_left</span>
+    </button>
+
+    <button type="button" class="lightbox-btn lightbox-btn--next"
+            data-action="lightbox#next"
+            aria-label="Siguiente (→)" title="Siguiente (→)">
+        <span class="material-symbols-elev" aria-hidden="true">chevron_right</span>
+    </button>
+
+    <div class="lightbox-toolbar" role="toolbar" aria-label="Acciones de imagen">
+        <button type="button" class="lightbox-toolbar-btn"
+                data-action="lightbox#zoomOut"
+                aria-label="Alejar (-)" title="Alejar (-)">
+            <span class="material-symbols-elev" aria-hidden="true">zoom_out</span>
+        </button>
+        <button type="button" class="lightbox-toolbar-btn"
+                data-action="lightbox#zoomReset"
+                aria-label="Restablecer zoom (0)" title="Restablecer (0)">
+            <span class="material-symbols-elev" aria-hidden="true">zoom_in</span>
+        </button>
+        <button type="button" class="lightbox-toolbar-btn"
+                data-action="lightbox#zoomIn"
+                aria-label="Acercar (+)" title="Acercar (+)">
+            <span class="material-symbols-elev" aria-hidden="true">zoom_in</span>
+        </button>
+
+        <span class="lightbox-toolbar-sep" aria-hidden="true"></span>
+
+        <button type="button" class="lightbox-toolbar-btn"
+                data-action="lightbox#download"
+                aria-label="Descargar imagen" title="Descargar">
+            <span class="material-symbols-elev" aria-hidden="true">download</span>
+        </button>
+        <button type="button" class="lightbox-toolbar-btn"
+                data-action="lightbox#share"
+                aria-label="Compartir imagen" title="Compartir">
+            <span class="material-symbols-elev" aria-hidden="true">share</span>
+        </button>
+        <button type="button" class="lightbox-toolbar-btn"
+                data-action="lightbox#copyUrl"
+                aria-label="Copiar enlace" title="Copiar enlace">
+            <span class="material-symbols-elev" aria-hidden="true">link</span>
+        </button>
+    </div>
+
+    <div class="lightbox-counter" data-lightbox-target="counter" aria-live="polite" hidden></div>
+</div>
