@@ -701,6 +701,11 @@
         document.getElementById('stat-pnl').textContent = '$' + (stats.total_pnl || 0).toFixed(2);
         document.getElementById('journal-count').textContent = trades.length + ' trades';
 
+        // Cache by id so edit handler can rebuild the form from authoritative
+        // API data instead of scraping the rendered DOM (which loses notes,
+        // entry/sl/tp/photos/tags/ratio and mangles the datetime).
+        window._tradesById = Object.fromEntries(trades.map(t => [String(t.id), t]));
+
         if (trades.length === 0) {
             apiEmpty(listEl, {
                 icon: 'edit_note',
@@ -1436,16 +1441,8 @@
             const editBtn = e.target.closest('[data-action="edit"]');
             if (editBtn) {
                 const id = editBtn.dataset.id;
-                const row = listEl.querySelector(`[data-id="${id}"]`);
-                if (row) {
-                    const trade = {
-                        id: id,
-                        asset: row.querySelector('.trade-asset')?.textContent,
-                        dir: row.querySelector('[class*="trade-dir-"]')?.textContent,
-                        date: row.querySelector('.text-xs')?.textContent,
-                        pnl: parseFloat(row.querySelector('[class*="trade-pnl-"]')?.textContent.replace(/[^-\d.]/g, '')),
-                        result: row.querySelector('.status-pill')?.textContent.trim(),
-                    };
+                const trade = window._tradesById && window._tradesById[id];
+                if (trade) {
                     openModal(trade);
                 }
                 return;
