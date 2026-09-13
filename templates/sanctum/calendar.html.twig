@@ -250,11 +250,26 @@
             html += '</div>';
         }
 
-        // Rest as timeline
+        // Rest as timeline. Insert a horizontal "AHORA" divider between
+        // the last past event and the next upcoming one (or at the start
+        // if everything is in the past, or at the end if all upcoming).
+        let nowInjected = false;
+        const nowMs = Date.now();
         for (const e of rest) {
             const impact = e.importance || 1;
             const t = timeUntil(e.datetime_utc || e.datetime_local);
             const isNow = t && !t.past && t.text.includes('m') && !t.text.includes('h') && !t.text.includes('d');
+            const eventMs = e.datetime_utc ? new Date(e.datetime_utc).getTime() : new Date(e.datetime_local || 0).getTime();
+            if (!nowInjected && eventMs > nowMs) {
+                html += `
+                    <div class="cal-now-line" aria-label="Hora actual">
+                        <span class="cal-now-line-pill">
+                            <span class="cal-now-pulse"></span>
+                            AHORA · ${escapeHtml(new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' }))}
+                        </span>
+                    </div>`;
+                nowInjected = true;
+            }
             html += `
                 <div class="cal-row ${isCriticalEvent(e) ? 'cal-row-critical' : ''}">
                     <div class="cal-row-dot-col">
@@ -274,6 +289,13 @@
                         </div>
                     </div>
                 </div>`;
+        }
+        if (!nowInjected) {
+            // Either everything is past (line at bottom) or all upcoming (top).
+            const label = rest.length > 0
+                ? 'AHORA · ' + new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
+                : 'AHORA';
+            html = `<div class="cal-now-line"><span class="cal-now-line-pill"><span class="cal-now-pulse"></span>${escapeHtml(label)}</span></div>` + html;
         }
 
         threadEl.innerHTML = html;
@@ -318,6 +340,17 @@
         loadEvents();
         // Refresh every 5 minutes for countdowns
         setInterval(loadEvents, 5 * 60 * 1000);
+        // Tick the AHORA clock label every minute so the now-line moves
+        // smoothly without re-fetching events. Cheap DOM-only update.
+        setInterval(() => {
+            const label = document.querySelector('.cal-now-line-pill');
+            if (!label) return;
+            const t = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+            // Preserve the pulsing dot (first child span).
+            const dot = label.querySelector('.cal-now-pulse');
+            label.textContent = 'AHORA · ' + t;
+            if (dot) label.prepend(dot);
+        }, 60 * 1000);
     });
 })();
 </script>

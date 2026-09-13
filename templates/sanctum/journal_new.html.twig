@@ -253,6 +253,29 @@
         $success.classList.add('visible');
         $error.classList.remove('visible');
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Fullscreen checkmark overlay with progress bar to confirm
+        // success while we wait for the redirect. Pure JS injection,
+        // lives until the next page load.
+        if (document.getElementById('trade-success-overlay')) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'trade-success-overlay';
+        overlay.className = 'trade-success-overlay';
+        overlay.setAttribute('role', 'status');
+        overlay.setAttribute('aria-live', 'polite');
+        overlay.innerHTML = `
+            <div class="trade-success-card">
+                <div class="trade-success-check" aria-hidden="true">
+                    <span class="material-symbols-elev" style="font-size:4rem;">check_circle</span>
+                </div>
+                <p class="trade-success-title">Trade registrado</p>
+                <p class="trade-success-msg">${escapeHtml(msg)}</p>
+                <div class="trade-success-progress" aria-hidden="true">
+                    <div class="trade-success-progress-bar"></div>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        // Trigger CSS animation on next tick.
+        requestAnimationFrame(() => overlay.classList.add('is-visible'));
     }
     function hideMessages() {
         $error.classList.remove('visible');

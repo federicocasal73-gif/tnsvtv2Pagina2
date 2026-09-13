@@ -469,21 +469,29 @@
         }, 50);
     }
 
+    let _previewFadeTimer = null;
     function updatePreview() {
         const v = document.getElementById('diary-editor-textarea').value;
         const preview = document.getElementById('diary-editor-preview');
-        if (!v.trim()) {
-            preview.innerHTML = '<p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>';
-            return;
-        }
-        // Very light markdown: # heading, **bold**, *italic*, paragraphs
-        const html = escapeHtml(v)
-            .replace(/^# (.+)$/gm, '<h3>$1</h3>')
-            .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
-            .replace(/\n\n/g, '</p><p>')
-            .replace(/\n/g, '<br>');
-        preview.innerHTML = '<p>' + html + '</p>';
+        if (!preview) return;
+        // Fade out → swap → fade in. Debounced to coalesce bursts of keystrokes.
+        if (_previewFadeTimer) clearTimeout(_previewFadeTimer);
+        preview.classList.add('is-fading');
+        _previewFadeTimer = setTimeout(() => {
+            if (!v.trim()) {
+                preview.innerHTML = '<p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>';
+            } else {
+                // Very light markdown: # heading, **bold**, *italic*, paragraphs
+                const html = escapeHtml(v)
+                    .replace(/^# (.+)$/gm, '<h3>$1</h3>')
+                    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
+                preview.innerHTML = '<p>' + html + '</p>';
+            }
+            preview.classList.remove('is-fading');
+        }, 120);
     }
 
     function updateWordCount() {

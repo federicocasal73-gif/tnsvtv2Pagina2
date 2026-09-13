@@ -22,7 +22,7 @@
 
     {# Sacred Geometry Visualizer #}
     <div class="sanctuary-card mb-8">
-        <div class="frequency-visualizer">
+        <div class="frequency-visualizer is-idle" id="frequency-visualizer">
             <div class="freq-ring freq-ring-1"></div>
             <div class="freq-ring freq-ring-2"></div>
             <div class="freq-ring freq-ring-3"></div>
@@ -275,6 +275,8 @@
             const totalSeconds = selectedDuration * 60;
             document.getElementById('play-btn').disabled = true;
             document.getElementById('stop-btn').disabled = false;
+            const viz = document.getElementById('frequency-visualizer');
+            if (viz) viz.classList.replace('is-idle', 'is-playing');
             timerInterval = setInterval(() => {
                 secondsElapsed++;
                 if (totalSeconds > 0 && secondsElapsed >= totalSeconds) { stopSession(); return; }
@@ -291,6 +293,8 @@
         clearInterval(timerInterval);
         document.getElementById('play-btn').disabled = false;
         document.getElementById('stop-btn').disabled = true;
+        const viz = document.getElementById('frequency-visualizer');
+        if (viz) viz.classList.replace('is-playing', 'is-idle');
         const timerEl = document.getElementById('timer-display');
         if (timerEl) timerEl.textContent = '';
         if (oscillator) {

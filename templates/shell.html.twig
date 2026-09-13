@@ -87,6 +87,7 @@
         </div>
 
         <nav class="sanctum-nav">
+            <span class="sanctum-nav-indicator" id="sanctum-nav-indicator" aria-hidden="true"></span>
             <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
                 <span class="material-symbols-elev">dashboard</span>
                 <span class="sanctum-link-label">Inicio</span>
@@ -374,6 +375,17 @@
                   if (itemRect.top < navRect.top || itemRect.bottom > navRect.bottom) {
                       bestMatch.scrollIntoView({ block: 'center' });
                   }
+                  // Position the sliding active-state indicator over
+                  // the active link. Indicator sits absolutely inside
+                  // .sanctum-nav; CSS transitions handle the slide.
+                  const indicator = document.getElementById('sanctum-nav-indicator');
+                  if (indicator) {
+                      const top = bestMatch.offsetTop;
+                      const height = bestMatch.offsetHeight;
+                      indicator.style.transform = 'translateY(' + top + 'px)';
+                      indicator.style.height = height + 'px';
+                      indicator.style.opacity = '1';
+                  }
               });
           }
       })();
@@ -448,6 +460,16 @@
     })();
 
     // Notification badge in sidebar + topbar (poll every 60s)
+    var _notifPrev = 0;
+    var _notifFirstLoad = true;
+    function _triggerBadgePop(el) {
+        if (!el || _notifFirstLoad) return;
+        el.classList.remove('is-popping');
+        // Force reflow so the animation restarts on each new poll.
+        void el.offsetWidth;
+        el.classList.add('is-popping');
+        setTimeout(function () { el.classList.remove('is-popping'); }, 600);
+    }
     function refreshNotifBadge() {
         if (!window.TNSVT_USER) return;
         fetch('/notifications/unread-count')
@@ -459,12 +481,16 @@
                 if (badge) {
                     badge.textContent = label;
                     badge.classList.toggle('hidden', n === 0);
+                    if (n > _notifPrev) _triggerBadgePop(badge);
                 }
                 var headerBadge = document.getElementById('header-notif-badge');
                 if (headerBadge) {
                     headerBadge.textContent = label;
                     headerBadge.classList.toggle('hidden', n === 0);
+                    if (n > _notifPrev) _triggerBadgePop(headerBadge);
                 }
+                _notifPrev = n;
+                _notifFirstLoad = false;
             }).catch(function() {});
     }
     refreshNotifBadge();

@@ -434,3 +434,41 @@
     outline: 2px solid var(--gold-elev);
     outline-offset: 2px;
 }
+
+
+/* ─── Calendar "AHORA" line in timeline ─── */
+.cal-now-line {
+    position: relative;
+    margin: 0.5rem 0 0.5rem 2.25rem;
+    height: 0;
+    border-top: 1px dashed var(--gold-elev);
+    display: flex;
+    align-items: center;
+}
+.cal-now-line-pill {
+    position: absolute;
+    left: -2.25rem;
+    top: -0.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.15rem 0.6rem;
+    background: var(--surface-elev);
+    border: 1px solid var(--gold-elev);
+    color: var(--gold-elev);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    box-shadow: 0 0 12px rgba(242, 202, 80, 0.35);
+}
+.cal-now-line .cal-now-pulse {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold-elev);
+    box-shadow: 0 0 8px var(--gold-elev);
+    animation: cal-now-pulse 1.4s ease-in-out infinite;
+}

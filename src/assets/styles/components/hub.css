@@ -180,3 +180,29 @@
     background: rgba(242, 202, 80, 0.1);
     color: var(--gold-elev, #f2ca50);
 }
+
+
+/* ─── Frequency visualizer: idle breathing vs active glow ─── */
+.frequency-visualizer.is-idle .freq-ring {
+    opacity: 0.55;
+    filter: saturate(0.6);
+}
+.frequency-visualizer.is-playing {
+    filter: drop-shadow(0 0 30px rgba(242, 202, 80, 0.35));
+}
+.frequency-visualizer.is-playing .freq-ring {
+    animation-duration: 2.4s !important;
+    border-color: rgba(242, 202, 80, 0.85);
+    opacity: 1;
+}
+.frequency-visualizer.is-playing .freq-center {
+    animation: freq-core-pulse 1.6s ease-in-out infinite;
+}
+@keyframes freq-core-pulse {
+    0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(242, 202, 80, 0)); }
+    50%      { transform: scale(1.04); filter: drop-shadow(0 0 18px rgba(242, 202, 80, 0.55)); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .frequency-visualizer.is-playing .freq-ring { animation-duration: 4s !important; }
+    .frequency-visualizer.is-playing .freq-center { animation: none; }
+}

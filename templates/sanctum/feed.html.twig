@@ -58,6 +58,10 @@
 
 </main>
 
+<button type="button" id="feed-back-to-top" class="feed-back-to-top" aria-label="Volver arriba" title="Volver arriba">
+    <span class="material-symbols-elev" aria-hidden="true">arrow_upward</span>
+</button>
+
 <aside class="feed-side">
     <div class="feed-side-card">
         <h3 class="feed-side-card-header">Mensajes</h3>
@@ -488,11 +492,32 @@
         }, { rootMargin: '400px' }).observe(sentinel);
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
         loadFeed();
         loadSideConversations();
         loadSideTop();
-        // Refresh feed every 60s (silent) — reset to first page
+
+        // Back-to-top button: appears after scrolling down 600px,
+        // smooth-scrolls to the top when clicked. Pause when offscreen.
+        const btt = document.getElementById('feed-back-to-top');
+        if (btt) {
+            let _bttVisible = false;
+            const onScroll = () => {
+                const y = window.scrollY || document.documentElement.scrollTop;
+                const should = y > 600;
+                if (should !== _bttVisible) {
+                    _bttVisible = should;
+                    btt.classList.toggle('is-visible', should);
+                }
+            };
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+            btt.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+
+        // Refresh feed every 60s (silent) - reset to first page
         setInterval(() => { loadFeed(); loadSideConversations(); loadSideTop(); }, 60 * 1000);
     });
 })();

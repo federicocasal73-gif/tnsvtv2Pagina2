@@ -254,3 +254,33 @@ button[aria-busy="true"]::after {
     cursor: wait;
 }
 .select-skeleton option { color: var(--outline-elev); background: var(--surface-elev); }
+
+
+/* ─── Ripple effect on primary buttons (CSS-only, no JS) ─── */
+.ui-btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+.ui-btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center,
+        rgba(255, 255, 255, 0.55) 0%,
+        rgba(255, 255, 255, 0) 60%);
+    opacity: 0;
+    transform: scale(0.2);
+    pointer-events: none;
+    transition: none;
+}
+.ui-btn-primary:active::after {
+    animation: btn-ripple 480ms ease-out;
+}
+@keyframes btn-ripple {
+    0%   { opacity: 0.9; transform: scale(0.2); }
+    100% { opacity: 0;   transform: scale(2.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ui-btn-primary::after,
+    .ui-btn-primary:active::after { animation: none; }
+}

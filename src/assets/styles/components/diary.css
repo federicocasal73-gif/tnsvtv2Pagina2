@@ -374,3 +374,12 @@
     .diary-entries-grid { grid-template-columns: 1fr; }
     .diary-lock-icon { font-size: 3.5rem; }
 }
+
+
+/* ─── Diary editor preview: fade transition ─── */
+#diary-editor-preview {
+    transition: opacity 140ms ease;
+}
+#diary-editor-preview.is-fading {
+    opacity: 0.35;
+}
