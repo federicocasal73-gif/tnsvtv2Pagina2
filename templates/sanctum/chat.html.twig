@@ -39,7 +39,7 @@
             <div class="chat-conv-avatar" id="chat-conv-avatar">C</div>
             <div>
                 <div class="chat-conv-header-name" id="chat-conv-name">Conversación</div>
-                <div class="chat-conv-header-status" id="chat-conv-status">en línea</div>
+                <div class="chat-conv-header-status" id="chat-conv-status">—</div>
             </div>
         </div>
         <div class="chat-messages" id="chat-messages">
@@ -189,6 +189,21 @@
         if (conv) {
             document.getElementById('chat-conv-name').textContent = conv.name || conv.title || 'Conversación';
             document.getElementById('chat-conv-avatar').textContent = initials(conv.name || conv.title || 'C');
+            // L85 (full page): derive status from real data.
+            const statusEl = document.getElementById('chat-conv-status');
+            if (statusEl) {
+                const last = conv.last_message?.created_at || conv.lastMessage?.created_at
+                    || conv.updated_at || conv.last_message_at;
+                if (conv.is_group || conv.type === 'group') {
+                    const n = conv.member_count || conv.members?.length;
+                    statusEl.textContent = n ? 'Grupo · ' + n : 'Grupo';
+                } else if (last) {
+                    const diff = (Date.now() - new Date(last).getTime()) / 1000;
+                    statusEl.textContent = diff < 300 ? 'activo ahora' : 'últ. actividad ' + fmtTime(last);
+                } else {
+                    statusEl.textContent = 'Sin mensajes';
+                }
+            }
         }
         $convHeader.style.display = 'flex';
         $composer.style.display = 'flex';

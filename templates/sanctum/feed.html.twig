@@ -510,7 +510,9 @@
                 const name = p.author_name || 'Anónimo';
                 if (!tally[name]) tally[name] = { posts: 0, score: 0 };
                 tally[name].posts += 1;
-                tally[name].score += 1 + (Number(p.likes) || 0) + 2 * (Number(p.comment_count) || 0);
+                const likes = Number(p.likes) || 0;
+                const comments = Array.isArray(p.comments) ? p.comments.length : (Number(p.comment_count) || 0);
+                tally[name].score += 1 + likes + 2 * comments;
             });
             const ranking = Object.entries(tally)
                 .sort((a, b) => b[1].score - a[1].score)
