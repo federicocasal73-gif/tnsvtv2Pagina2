@@ -131,8 +131,9 @@
         <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
             <span class="material-symbols-elev">shield</span>
             Protocolos de Seguridad
+            <span class="ml-auto text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border border-[var(--outline-variant-elev)] text-[var(--outline-elev)]" title="Próximamente">Próximamente</span>
         </h3>
-        <div class="toggle-row">
+        <div class="toggle-row opacity-60">
             <div class="flex items-center gap-3">
                 <span class="material-symbols-elev text-[var(--gold-elev)]">fingerprint</span>
                 <div>
@@ -140,9 +141,9 @@
                     <p class="text-xs text-[var(--outline-elev)]">Acceso biométrico al Sanctum</p>
                 </div>
             </div>
-            <div class="toggle-switch active" id="toggle-biometric" onclick="this.classList.toggle('active')"></div>
+            <div class="toggle-switch active" id="toggle-biometric" aria-disabled="true" title="Próximamente"></div>
         </div>
-        <div class="toggle-row">
+        <div class="toggle-row opacity-60">
             <div class="flex items-center gap-3">
                 <span class="material-symbols-elev text-[var(--gold-elev)]">password</span>
                 <div>
@@ -150,9 +151,9 @@
                     <p class="text-xs text-[var(--outline-elev)]">Código de 6 dígitos</p>
                 </div>
             </div>
-            <button class="text-[var(--gold-elev)] text-xs font-medium hover:underline">Configurar</button>
+            <button type="button" class="text-[var(--gold-elev)] text-xs font-medium opacity-60 cursor-not-allowed" disabled aria-disabled="true" title="Próximamente">Configurar</button>
         </div>
-        <div class="toggle-row">
+        <div class="toggle-row opacity-60">
             <div class="flex items-center gap-3">
                 <span class="material-symbols-elev text-[var(--gold-elev)]">notifications_active</span>
                 <div>
@@ -160,7 +161,7 @@
                     <p class="text-xs text-[var(--outline-elev)]">Recibir alertas en tiempo real</p>
                 </div>
             </div>
-            <div class="toggle-switch active" id="toggle-notifs" onclick="this.classList.toggle('active')"></div>
+            <div class="toggle-switch active" id="toggle-notifs" aria-disabled="true" title="Próximamente"></div>
         </div>
     </div>
 
@@ -171,8 +172,8 @@
             Danger Zone
         </h3>
         <p class="text-xs text-[var(--outline-elev)] mb-4">Acciones irreversibles. Proceder con cuidado.</p>
-        <button class="w-full py-2 px-4 border border-[var(--error)]/50 text-[var(--error)] rounded-lg text-sm font-medium hover:bg-[var(--error)]/10 transition-colors">
-            Disolver Vínculo Soul Sigil
+        <button type="button" disabled aria-disabled="true" title="Próximamente" class="w-full py-2 px-4 border border-[var(--error)]/50 text-[var(--error)] rounded-lg text-sm font-medium opacity-60 cursor-not-allowed">
+            Disolver Vínculo Soul Sigil · Próximamente
         </button>
     </div>
 </div>
