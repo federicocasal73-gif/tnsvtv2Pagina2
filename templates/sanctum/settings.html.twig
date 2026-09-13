@@ -48,6 +48,23 @@
         <button data-settings-target="savePrefsBtn"
                 data-action="click->settings#saveAll"
                 class="ui-btn ui-btn-primary mt-4">Guardar Preferencias</button>
+        <div class="flex flex-wrap items-center gap-2 mt-3">
+            <button type="button"
+                    data-action="click->settings#exportPrefs"
+                    class="ui-btn ui-btn-ghost ui-btn-size-sm"
+                    title="Descargar tus preferencias (tema, sonido) como JSON">
+                <span class="material-symbols-elev align-middle icon-size-xs">download</span>
+                Exportar
+            </button>
+            <button type="button"
+                    data-action="click->settings#importPrefs"
+                    class="ui-btn ui-btn-ghost ui-btn-size-sm"
+                    title="Cargar preferencias desde un archivo JSON exportado">
+                <span class="material-symbols-elev align-middle icon-size-xs">upload</span>
+                Importar
+            </button>
+            <input type="file" accept="application/json,.json" data-settings-target="importFile" class="hidden" aria-label="Archivo de preferencias" />
+        </div>
     </div>
 
     <div class="glass-card-elev p-4 mb-6 flex items-center justify-between">

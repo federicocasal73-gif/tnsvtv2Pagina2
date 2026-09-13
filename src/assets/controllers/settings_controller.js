@@ -11,6 +11,7 @@ export default class extends Controller {
         'savePrefsBtn',
         'reloadBtn',
         'container',
+        'importFile',
     ];
 
     static values = {
@@ -180,6 +181,78 @@ export default class extends Controller {
 
     reload() {
         this.loadAll();
+    }
+
+    // F13: export user preferences as a JSON download.
+    exportPrefs() {
+        const prefs = {
+            tnsvt: 'user-preferences',
+            version: 1,
+            exported_at: new Date().toISOString(),
+            theme_preference: this.hasThemeTarget ? this.themeTarget.value : null,
+            notification_sound: this.hasSoundTarget ? this.soundTarget.value : null,
+        };
+        const blob = new Blob([JSON.stringify(prefs, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'tnsvt-preferencias.json';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        if (window.apiToast) window.apiToast('Preferencias exportadas', 'success');
+    }
+
+    // F13: import preferences from a JSON file, validate, then persist.
+    importPrefs() {
+        if (this.hasImportFileTarget) {
+            this.importFileTarget.value = '';
+            this.importFileTarget.click();
+            if (!this.importFileTarget.dataset.wired) {
+                this.importFileTarget.dataset.wired = '1';
+                this.importFileTarget.addEventListener('change', () => this.onImportFile());
+            }
+        }
+    }
+
+    async onImportFile() {
+        const file = this.hasImportFileTarget ? this.importFileTarget.files[0] : null;
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const data = JSON.parse(text);
+            if (!data || data.tnsvt !== 'user-preferences') {
+                throw new Error('formato inválido');
+            }
+            const themes = ['auto', 'dark', 'light'];
+            const sounds = ['chime', 'mario_coin', 'zelda_secret', 'sonic_ring', 'apple_tritone',
+                'pixel_popcorn', 'pokemon_levelup', 'deus_ex_scan', 'indiana_jones_whip',
+                'msn_message', 'swoosh'];
+            const payload = {};
+            if (typeof data.theme_preference === 'string' && themes.includes(data.theme_preference)) {
+                payload.theme_preference = data.theme_preference;
+                if (this.hasThemeTarget) this.themeTarget.value = data.theme_preference;
+                if (window.tnsvtTheme) window.tnsvtTheme.set(data.theme_preference);
+            }
+            if (typeof data.notification_sound === 'string' && sounds.includes(data.notification_sound)) {
+                payload.notification_sound = data.notification_sound;
+                if (this.hasSoundTarget) this.soundTarget.value = data.notification_sound;
+            }
+            if (Object.keys(payload).length === 0) {
+                throw new Error('sin preferencias válidas');
+            }
+            const r = await window.apiFetch('/api/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (r.ok) {
+                if (window.apiToast) window.apiToast('Preferencias importadas', 'success');
+            } else {
+                throw new Error((r.data && r.data.error) || 'error del servidor');
+            }
+        } catch (e) {
+            if (window.apiToast) window.apiToast('No se pudo importar: ' + (e.message || 'error'), 'error');
+        }
     }
 
     escape(str) {

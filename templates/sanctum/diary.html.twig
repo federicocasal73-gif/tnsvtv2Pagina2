@@ -59,6 +59,10 @@
                     <span class="material-symbols-outlined" style="font-size:1rem;">edit</span>
                     Escribir nueva
                 </button>
+                <button type="button" class="diary-btn-secondary" id="diary-export-btn" title="Descargar entradas descifradas como Markdown">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">download</span>
+                    Exportar
+                </button>
                 <button type="button" class="diary-lock-btn" id="diary-lock-now-btn" title="Bloquear cuaderno">
                     <span class="material-symbols-outlined" style="font-size:1rem;">lock</span>
                     Bloquear
@@ -584,6 +588,32 @@
         showState('locked');
     }
 
+    // L49: export decrypted entries as a Markdown download.
+    function exportEntries() {
+        if (!ENTRIES.length) {
+            showMessage('No hay entradas para exportar', 'error');
+            return;
+        }
+        const lines = ['# Cuaderno del Alma — exportación', '', '_Exportado el ' + new Date().toLocaleString('es-AR') + '_', ''];
+        ENTRIES.slice().sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).forEach(e => {
+            const when = e.created_at ? new Date(e.created_at).toLocaleString('es-AR') : '';
+            lines.push('## ' + (e.title || '(sin título)') + (when ? ' — ' + when : ''));
+            lines.push('');
+            lines.push(e.body || '');
+            lines.push('');
+            lines.push('---');
+            lines.push('');
+        });
+        const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'cuaderno-tnsvt.md';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        showMessage(ENTRIES.length + ' entrada(s) exportada(s)', 'success');
+    }
+
     // ─── Wire-up ───
     function wire() {
         document.getElementById('diary-unlock-btn').addEventListener('click', unlockOrSetup);
@@ -596,6 +626,7 @@
 
         document.getElementById('diary-new-btn').addEventListener('click', newEntry);
         document.getElementById('diary-lock-now-btn').addEventListener('click', lockNow);
+        document.getElementById('diary-export-btn').addEventListener('click', exportEntries);
         document.getElementById('diary-write-first-btn').addEventListener('click', newEntry);
         document.getElementById('diary-lock-empty-btn').addEventListener('click', lockNow);
 
