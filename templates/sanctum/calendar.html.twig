@@ -339,7 +339,7 @@
 
         loadEvents();
         // Refresh every 5 minutes for countdowns
-        setInterval(loadEvents, 5 * 60 * 1000);
+        apiPoller(loadEvents, 5 * 60 * 1000);
         // Tick the AHORA clock label every minute so the now-line moves
         // smoothly without re-fetching events. Cheap DOM-only update.
         setInterval(() => {

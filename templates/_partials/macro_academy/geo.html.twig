@@ -73,9 +73,9 @@
                     <div class="text-label" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
                     <p style="font-size:0.82rem;margin-bottom:12px;">Estalla una guerra en Europa del Este. ¿Cuál de estos pares deberías analizar para vender?</p>
                     <div style="display:flex;flex-direction:column;gap:8px;" id="geo-q1-opts">
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q1','A',false,'geo-q1-fb')"><div class="mc-quiz-letter">A</div> AUD/NZD</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q1','B',true,'geo-q1-fb')"><div class="mc-quiz-letter">B</div> EUR/CHF (vender EUR, comprar refugio CHF)</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q1','C',false,'geo-q1-fb')"><div class="mc-quiz-letter">C</div> GBP/JPY (comprar riesgo)</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q1" data-mcq-letter="A" data-mcq-correct="false" data-mcq-fb="geo-q1-fb"><div class="mc-quiz-letter">A</div> AUD/NZD</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q1" data-mcq-letter="B" data-mcq-correct="true" data-mcq-fb="geo-q1-fb"><div class="mc-quiz-letter">B</div> EUR/CHF (vender EUR, comprar refugio CHF)</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q1" data-mcq-letter="C" data-mcq-correct="false" data-mcq-fb="geo-q1-fb"><div class="mc-quiz-letter">C</div> GBP/JPY (comprar riesgo)</button>
                     </div>
                     <div class="mc-quiz-fb" id="geo-q1-fb" style="margin-top:10px;"></div>
                 </div>
@@ -120,9 +120,9 @@
                     <div class="text-label" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
                     <p style="font-size:0.82rem;margin-bottom:12px;">Las encuestas dan ganador a un candidato populista de izquierda en Brasil. ¿Qué es lo más probable que pase con el Real Brasileño (BRL)?</p>
                     <div style="display:flex;flex-direction:column;gap:8px;" id="geo-q2-opts">
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q2','A',false,'geo-q2-fb')"><div class="mc-quiz-letter">A</div> El BRL se fortalece porque habrá más gasto público</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q2','B',true,'geo-q2-fb')"><div class="mc-quiz-letter">B</div> El BRL cae porque el mercado teme incertidumbre y huida de capitales</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q2','C',false,'geo-q2-fb')"><div class="mc-quiz-letter">C</div> No hay efecto, los mercados no reaccionan a elecciones de países emergentes</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q2" data-mcq-letter="A" data-mcq-correct="false" data-mcq-fb="geo-q2-fb"><div class="mc-quiz-letter">A</div> El BRL se fortalece porque habrá más gasto público</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q2" data-mcq-letter="B" data-mcq-correct="true" data-mcq-fb="geo-q2-fb"><div class="mc-quiz-letter">B</div> El BRL cae porque el mercado teme incertidumbre y huida de capitales</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q2" data-mcq-letter="C" data-mcq-correct="false" data-mcq-fb="geo-q2-fb"><div class="mc-quiz-letter">C</div> No hay efecto, los mercados no reaccionan a elecciones de países emergentes</button>
                     </div>
                     <div class="mc-quiz-fb" id="geo-q2-fb" style="margin-top:10px;"></div>
                 </div>
@@ -156,9 +156,9 @@
                     <div class="text-label" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
                     <p style="font-size:0.82rem;margin-bottom:12px;">EE.UU. sanciona a Irán bloqueando sus exportaciones de petróleo. ¿Cuál es la consecuencia más directa en los mercados globales?</p>
                     <div style="display:flex;flex-direction:column;gap:8px;" id="geo-q3-opts">
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q3','A',false,'geo-q3-fb')"><div class="mc-quiz-letter">A</div> El petróleo baja porque hay menos oferta</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q3','B',true,'geo-q3-fb')"><div class="mc-quiz-letter">B</div> El precio del petróleo sube (menos oferta global) → inflación sube → FED más hawkish → USD sube</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q3','C',false,'geo-q3-fb')"><div class="mc-quiz-letter">C</div> El mercado no reacciona porque Irán es un productor pequeño</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q3" data-mcq-letter="A" data-mcq-correct="false" data-mcq-fb="geo-q3-fb"><div class="mc-quiz-letter">A</div> El petróleo baja porque hay menos oferta</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q3" data-mcq-letter="B" data-mcq-correct="true" data-mcq-fb="geo-q3-fb"><div class="mc-quiz-letter">B</div> El precio del petróleo sube (menos oferta global) → inflación sube → FED más hawkish → USD sube</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q3" data-mcq-letter="C" data-mcq-correct="false" data-mcq-fb="geo-q3-fb"><div class="mc-quiz-letter">C</div> El mercado no reacciona porque Irán es un productor pequeño</button>
                     </div>
                     <div class="mc-quiz-fb" id="geo-q3-fb" style="margin-top:10px;"></div>
                 </div>
@@ -192,9 +192,9 @@
                     <div class="text-label" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
                     <p style="font-size:0.82rem;margin-bottom:12px;">El rendimiento del bono italiano a 10 años sube de 2% a 6% en pocas semanas. ¿Qué señal te da esto sobre el EUR?</p>
                     <div style="display:flex;flex-direction:column;gap:8px;" id="geo-q4-opts">
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q4','A',false,'geo-q4-fb')"><div class="mc-quiz-letter">A</div> El EUR subirá porque Italia ofrece más rendimiento</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q4','B',true,'geo-q4-fb')"><div class="mc-quiz-letter">B</div> El EUR está bajo presión bajista — el mercado desconfía de la deuda italiana y por contagio del bloque Euro</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q4','C',false,'geo-q4-fb')"><div class="mc-quiz-letter">C</div> No hay relación entre bonos y el valor del EUR</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q4" data-mcq-letter="A" data-mcq-correct="false" data-mcq-fb="geo-q4-fb"><div class="mc-quiz-letter">A</div> El EUR subirá porque Italia ofrece más rendimiento</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q4" data-mcq-letter="B" data-mcq-correct="true" data-mcq-fb="geo-q4-fb"><div class="mc-quiz-letter">B</div> El EUR está bajo presión bajista — el mercado desconfía de la deuda italiana y por contagio del bloque Euro</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q4" data-mcq-letter="C" data-mcq-correct="false" data-mcq-fb="geo-q4-fb"><div class="mc-quiz-letter">C</div> No hay relación entre bonos y el valor del EUR</button>
                     </div>
                     <div class="mc-quiz-fb" id="geo-q4-fb" style="margin-top:10px;"></div>
                 </div>
@@ -244,9 +244,9 @@
                     <div class="text-label" style="font-size:0.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--violet);margin-bottom:10px;">🎯 Pregunta Rápida</div>
                     <p style="font-size:0.82rem;margin-bottom:12px;">El precio del petróleo sube un 20% en un mes por tensiones en Medio Oriente. ¿Qué par te daría una oportunidad de tendencia macro?</p>
                     <div style="display:flex;flex-direction:column;gap:8px;" id="geo-q5-opts">
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q5','A',false,'geo-q5-fb')"><div class="mc-quiz-letter">A</div> EUR/GBP (sin relación con petróleo)</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q5','B',true,'geo-q5-fb')"><div class="mc-quiz-letter">B</div> USD/CAD bajista (petróleo sube → CAD sube → el par cae)</button>
-                        <button type="button" class="mc-quiz-opt" onclick="geoQ('geo-q5','C',false,'geo-q5-fb')"><div class="mc-quiz-letter">C</div> AUD/NZD alcista (sin relación directa con petróleo)</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q5" data-mcq-letter="A" data-mcq-correct="false" data-mcq-fb="geo-q5-fb"><div class="mc-quiz-letter">A</div> EUR/GBP (sin relación con petróleo)</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q5" data-mcq-letter="B" data-mcq-correct="true" data-mcq-fb="geo-q5-fb"><div class="mc-quiz-letter">B</div> USD/CAD bajista (petróleo sube → CAD sube → el par cae)</button>
+                        <button type="button" class="mc-quiz-opt" data-mcq="geo-q5" data-mcq-letter="C" data-mcq-correct="false" data-mcq-fb="geo-q5-fb"><div class="mc-quiz-letter">C</div> AUD/NZD alcista (sin relación directa con petróleo)</button>
                     </div>
                     <div class="mc-quiz-fb" id="geo-q5-fb" style="margin-top:10px;"></div>
                 </div>

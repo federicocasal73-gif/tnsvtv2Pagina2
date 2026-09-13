@@ -290,6 +290,26 @@
     window.mcResetQuiz = mcResetQuiz;
     window.geoQ = geoQ;
 
+    // ── Migrated from inline onclick="geoQ(...)" / "mcCycle(...)" ──
+    // Event delegation: buttons use data-mcq / data-cycle-index instead of
+    // inline handlers. Keeps inline JS out of templates (CSP, a11y, audit).
+    document.addEventListener('click', function (e) {
+        const quizBtn = e.target.closest('.mc-quiz-opt[data-mcq]');
+        if (quizBtn) {
+            const id    = quizBtn.dataset.mcq;
+            const letter = quizBtn.dataset.mcqLetter;
+            const ok    = quizBtn.dataset.mcqCorrect === 'true';
+            const fb    = quizBtn.dataset.mcqFb;
+            if (typeof geoQ === 'function') geoQ(id, letter, ok, fb);
+            return;
+        }
+        const cycleTab = e.target.closest('.mc-cycle-tab[data-cycle-index]');
+        if (cycleTab) {
+            const idx = parseInt(cycleTab.dataset.cycleIndex, 10);
+            if (!Number.isNaN(idx) && typeof mcCycle === 'function') mcCycle(idx);
+        }
+    });
+
     // Boot
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', bootMacroAcademy);

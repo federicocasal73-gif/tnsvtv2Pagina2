@@ -696,7 +696,7 @@
         wireBento();
         loadMacroBento();
         // Re-fetch every 5 min for freshest data
-        setInterval(loadMacroBento, 5 * 60 * 1000);
+        apiPoller(loadMacroBento, 5 * 60 * 1000);
     });
 
     let countdownInterval = null;
@@ -864,7 +864,7 @@
         loadAll();
         renderOracleCharts();
         // Auto-refresh every 60s
-        setInterval(loadAll, 60000);
+        apiPoller(loadAll, 60000);
     });
 
     function renderOracleCharts() {

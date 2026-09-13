@@ -97,18 +97,18 @@
             <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
                 <p style="font-size:0.82rem;margin-bottom:10px;"><strong>1.</strong> El BoJ sube tasas de 0% a 1%. Los carry traders tenían posiciones largas en AUD/JPY (comprando AUD, vendiendo JPY). ¿Qué pasa con AUD/JPY?</p>
                 <div style="display:flex;flex-direction:column;gap:6px;" id="ct-q1-opts">
-                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q1','A',false,'ct-q1-fb')"><div class="mc-quiz-letter">A</div> Sube — Japón subió tasas, el JPY es más atractivo para invertir</button>
-                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q1','B',true,'ct-q1-fb')"><div class="mc-quiz-letter">B</div> Cae — el carry se deshace, todos venden AUD y compran JPY para cerrar posiciones</button>
-                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q1','C',false,'ct-q1-fb')"><div class="mc-quiz-letter">C</div> No hay efecto, una subida pequeña no cambia el carry</button>
+                    <button type="button" class="mc-quiz-opt" data-mcq="ct-q1" data-mcq-letter="A" data-mcq-correct="false" data-mcq-fb="ct-q1-fb"><div class="mc-quiz-letter">A</div> Sube — Japón subió tasas, el JPY es más atractivo para invertir</button>
+                    <button type="button" class="mc-quiz-opt" data-mcq="ct-q1" data-mcq-letter="B" data-mcq-correct="true" data-mcq-fb="ct-q1-fb"><div class="mc-quiz-letter">B</div> Cae — el carry se deshace, todos venden AUD y compran JPY para cerrar posiciones</button>
+                    <button type="button" class="mc-quiz-opt" data-mcq="ct-q1" data-mcq-letter="C" data-mcq-correct="false" data-mcq-fb="ct-q1-fb"><div class="mc-quiz-letter">C</div> No hay efecto, una subida pequeña no cambia el carry</button>
                 </div>
                 <div class="mc-quiz-fb" id="ct-q1-fb" style="margin-top:8px;"></div>
             </div>
             <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:14px;">
                 <p style="font-size:0.82rem;margin-bottom:10px;"><strong>2.</strong> El VIX está en 35 (pánico extremo). ¿Qué moneda esperarías que suba con fuerza?</p>
                 <div style="display:flex;flex-direction:column;gap:6px;" id="ct-q2-opts">
-                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q2','A',false,'ct-q2-fb')"><div class="mc-quiz-letter">A</div> AUD — los inversores buscan rendimiento</button>
-                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q2','B',false,'ct-q2-fb')"><div class="mc-quiz-letter">B</div> MXN — tasa alta, atractivo</button>
-                    <button type="button" class="mc-quiz-opt" onclick="geoQ('ct-q2','C',true,'ct-q2-fb')"><div class="mc-quiz-letter">C</div> JPY — carry unwinding, todos devuelven el préstamo en JPY</button>
+                    <button type="button" class="mc-quiz-opt" data-mcq="ct-q2" data-mcq-letter="A" data-mcq-correct="false" data-mcq-fb="ct-q2-fb"><div class="mc-quiz-letter">A</div> AUD — los inversores buscan rendimiento</button>
+                    <button type="button" class="mc-quiz-opt" data-mcq="ct-q2" data-mcq-letter="B" data-mcq-correct="false" data-mcq-fb="ct-q2-fb"><div class="mc-quiz-letter">B</div> MXN — tasa alta, atractivo</button>
+                    <button type="button" class="mc-quiz-opt" data-mcq="ct-q2" data-mcq-letter="C" data-mcq-correct="true" data-mcq-fb="ct-q2-fb"><div class="mc-quiz-letter">C</div> JPY — carry unwinding, todos devuelven el préstamo en JPY</button>
                 </div>
                 <div class="mc-quiz-fb" id="ct-q2-fb" style="margin-top:8px;"></div>
             </div>

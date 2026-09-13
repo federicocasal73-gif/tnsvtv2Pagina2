@@ -494,7 +494,7 @@
             }).catch(function() {});
     }
     refreshNotifBadge();
-    setInterval(refreshNotifBadge, 60000);
+    apiPoller(refreshNotifBadge, 60000);
 })();
 </script>
 

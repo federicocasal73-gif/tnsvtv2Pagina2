@@ -378,7 +378,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadConversations();
-        setInterval(loadConversations, 30 * 1000);
+        apiPoller(loadConversations, 30 * 1000);
     });
 })();
 </script>

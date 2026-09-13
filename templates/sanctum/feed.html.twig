@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Refresh feed every 60s (silent) - reset to first page
-        setInterval(() => { loadFeed(); loadSideConversations(); loadSideTop(); }, 60 * 1000);
+        apiPoller(() => { loadFeed(); loadSideConversations(); loadSideTop(); }, 60 * 1000);
     });
 })();
 </script>

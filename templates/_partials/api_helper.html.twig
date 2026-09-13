@@ -210,6 +210,44 @@
     window.apiButtonLoading = apiButtonLoading;
 
     /* ═══════════════════════════════════════════════════════════════
+       VISIBILITY-AWARE POLLER
+       Use: const id = apiPoller(fn, 60000);  // fn runs only while visible
+       Returns the interval id (compatible with clearInterval).
+       ─────────────────────────────────────────────────────────────── */
+    const _apiPollers = new Set();
+    function apiPoller(fn, ms) {
+        let id = null;
+        let lastRun = 0;
+        let pending = null;
+        const tick = () => {
+            lastRun = Date.now();
+            pending = null;
+            try { fn(); } catch (e) { console.error('[apiPoller]', e); }
+        };
+        const start = () => {
+            if (id) return;
+            id = setInterval(tick, ms);
+            // Run once immediately when (re)starting so the UI doesn't
+            // wait a full interval after the tab becomes visible again.
+            tick();
+        };
+        const stop = () => {
+            if (!id) return;
+            clearInterval(id);
+            id = null;
+        };
+        const onVis = () => { document.hidden ? stop() : start(); };
+        document.addEventListener('visibilitychange', onVis);
+        if (!document.hidden) start();
+        _apiPollers.add({ start, stop, onVis });
+        // Return a token that clears the poller if used as an id.
+        return { stop: () => { stop(); document.removeEventListener('visibilitychange', onVis); _apiPollers.delete(id); } };
+    }
+    // Backwards-compatible shim: if a caller passes the return value to
+    // clearInterval(), wrap it. Most call sites will use the .stop() method.
+    window.apiPoller = apiPoller;
+
+    /* ═══════════════════════════════════════════════════════════════
        FOCUS TRAP + MODAL A11Y
        Use: apiSetupModal(modalEl, { open: () => {}, close: () => {} })
        ─────────────────────────────────────────────────────────────── */

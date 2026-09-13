@@ -284,7 +284,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         if (!document.getElementById('dashboard-feed')) return;
         loadFeed();
-        setInterval(() => { if (document.getElementById('dashboard-feed')) loadFeed(); }, 60 * 1000);
+        apiPoller(() => { if (document.getElementById('dashboard-feed')) loadFeed(); }, 60 * 1000);
     });
 })();
 </script>

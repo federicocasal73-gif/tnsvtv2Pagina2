@@ -301,7 +301,7 @@
         if (createForm) createForm.addEventListener('submit', submitCreateTask);
 
         // El modal en sí puede estar siempre en el DOM; apiSetupModal ya tolera null.
-        setInterval(loadGuardianWidget, 90000);
+        apiPoller(loadGuardianWidget, 90000);
     });
     </script>
 {% endblock %}
