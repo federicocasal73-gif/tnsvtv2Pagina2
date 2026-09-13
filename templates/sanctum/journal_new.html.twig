@@ -26,8 +26,8 @@
             <h3 class="form-section-title"><span class="material-symbols-elev">event</span>Fecha y hora</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                    <label class="form-label" for="trade-date">Fecha</label>
-                    <input type="date" id="trade-date" name="date" class="form-input" required />
+                    <label class="form-label required" for="trade-date">Fecha</label>
+                    <input type="date" id="trade-date" name="date" class="form-input" value="{{ "now"|date("Y-m-d") }}" required />
                 </div>
                 <div>
                     <label class="form-label" for="trade-time">Hora</label>

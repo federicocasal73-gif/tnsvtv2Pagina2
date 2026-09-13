@@ -40,6 +40,18 @@
             <p class="text-center text-[var(--outline-elev)] py-8">Cargando leaderboard...</p>
         </div>
     </div>
+
+    {# ─── L72: Your-rank banner (highlights your position) ─── #}
+    <div class="lb-your-rank" id="lb-your-rank" hidden>
+        <span class="material-symbols-elev icon-size-sm" aria-hidden="true">military_tech</span>
+        <span class="lb-your-rank-label">Tu posición</span>
+        <strong class="lb-your-rank-pos" data-leaderboard-target="yourRankPos">—</strong>
+        <span class="lb-your-rank-sep">·</span>
+        <span class="lb-your-rank-name" data-leaderboard-target="yourRankName">—</span>
+        <span class="lb-your-rank-meta">
+            <span data-leaderboard-target="yourRankMetric">—</span>
+        </span>
+    </div>
 </div>
 
 {% endblock %}

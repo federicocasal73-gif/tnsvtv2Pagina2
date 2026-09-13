@@ -201,11 +201,11 @@
             <div class="glass-card-elev p-3">
                 <div class="flex items-center gap-3">
                     <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-[var(--on-primary-elev)] font-bold">
-                        ?
+                        {{ app.user ? (app.user.name|default(app.user.code)|slice(0, 1)|upper) : '?' }}
                     </div>
                     <div class="sidebar-user-meta">
-                        <p id="user-name" class="text-sm font-medium text-[var(--on-surface-elev)] truncate">Cargando...</p>
-                        <span id="user-tier" class="tier-badge-elev tier-initiate">—</span>
+                        <p id="user-name" class="text-sm font-medium text-[var(--on-surface-elev)] truncate">{{ app.user ? (app.user.name|default(app.user.code)) : 'Invitado' }}</p>
+                        <span id="user-tier" class="tier-badge-elev tier-initiate">{{ app.user ? (app.user.tier|default('INITIATE')) : '—' }}</span>
                     </div>
                 </div>
                 <button id="logout-btn" class="mt-2 w-full text-xs py-1 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-variant-elev)] hover:bg-[var(--glass-bg-strong-elev)]">
@@ -221,6 +221,8 @@
             <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Inicio{% endblock %}</h2>
             <p class="text-xs text-[var(--outline-elev)] italic">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
         </div>
+        {# ─── Section chips (streak, badge, etc.) — child templates can override ─── #}
+        {% block topbar_chips %}{% endblock %}
         <div class="flex items-center gap-3" data-controller="protocol notification-bell">
             <button type="button" class="ui-btn ui-btn primary group" title="Invocar Protocolo" aria-label="Invocar Protocolo" aria-haspopup="dialog" data-action="protocol#onButtonClick">
                 <span class="material-symbols-elev icon-size-sm" aria-hidden="true">bolt</span>
@@ -535,6 +537,7 @@
     var aside = document.getElementById('sanctum-sidebar');
     if (!btn || !aside) return;
     var KEY = 'tnsvt_sidebar_collapsed';
+    var HINT_KEY = 'tnsvt_sidebar_hint_shown';
     function apply(collapsed) {
         aside.classList.toggle('sidebar-manual-collapsed', collapsed);
         btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
@@ -542,6 +545,18 @@
         var icon = btn.querySelector('.material-symbols-elev');
         if (icon) icon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
         try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch (_) {}
+        // H7: first time the user collapses, show a brief toast so they
+        // know the state is remembered across sessions/tabs.
+        if (collapsed) {
+            try {
+                if (!localStorage.getItem(HINT_KEY)) {
+                    localStorage.setItem(HINT_KEY, '1');
+                    if (window.apiToast) {
+                        window.apiToast('Menú colapsado. Tu preferencia está guardada.', 'info');
+                    }
+                }
+            } catch (_) {}
+        }
     }
     try {
         if (localStorage.getItem(KEY) === '1') apply(true);

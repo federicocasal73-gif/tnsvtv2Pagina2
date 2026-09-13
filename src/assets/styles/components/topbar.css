@@ -178,3 +178,26 @@
 @media (max-width: 380px) {
   .tnsvt-admin-info { display: none; }
 }
+
+
+/* ─── Section chips in topbar (streak, etc.) ─── */
+.topbar-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(242, 202, 80, 0.18), rgba(248, 113, 113, 0.12));
+    border: 1px solid rgba(242, 202, 80, 0.4);
+    color: var(--gold-elev);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.topbar-chip .material-symbols-elev {
+    color: #fb923c;
+}
+.topbar-chip-unit {
+    color: var(--outline-elev);
+    font-weight: 500;
+}
+.topbar-chip[hidden] { display: none; }

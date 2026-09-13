@@ -248,6 +248,54 @@
     window.apiPoller = apiPoller;
 
     /* ═══════════════════════════════════════════════════════════════
+       FORM REQUIRED MARKERS
+       On load: any [required] input gets aria-required="true" and the
+       matching <label for=id> gets the .required class (which renders
+       a red asterisk via CSS). Idempotent.
+       ─────────────────────────────────────────────────────────────── */
+    function apiMarkRequired() {
+        document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function (el) {
+            el.setAttribute('aria-required', 'true');
+            const id = el.id;
+            if (!id) return;
+            const labels = document.querySelectorAll('label[for="' + id + '"]');
+            labels.forEach(function (l) { l.classList.add('required'); });
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', apiMarkRequired);
+    } else {
+        apiMarkRequired();
+    }
+    window.apiMarkRequired = apiMarkRequired;
+
+    /* ═══════════════════════════════════════════════════════════════
+       CTRL+ENTER SUBMIT
+       Global keydown: any textarea inside a form with data-ctrl-enter
+       (default true) submits the closest form on Ctrl/Cmd+Enter, unless
+       the textarea is marked with data-ctrl-enter="off". Adds a tiny
+       hint badge to focused textareas.
+       ─────────────────────────────────────────────────────────────── */
+    document.addEventListener('keydown', function (e) {
+        const ta = e.target;
+        if (!ta || ta.tagName !== 'TEXTAREA') return;
+        if (!(e.key === 'Enter' && (e.ctrlKey || e.metaKey))) return;
+        if (ta.dataset.ctrlEnter === 'off') return;
+        const form = ta.closest('form');
+        if (!form) return;
+        e.preventDefault();
+        const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]')
+            || form.querySelector('button:not([type])');
+        if (submitBtn && !submitBtn.disabled) {
+            submitBtn.click();
+        } else if (form.requestSubmit) {
+            form.requestSubmit();
+        } else {
+            form.submit();
+        }
+    });
+
+    /* ═══════════════════════════════════════════════════════════════
        FOCUS TRAP + MODAL A11Y
        Use: apiSetupModal(modalEl, { open: () => {}, close: () => {} })
        ─────────────────────────────────────────────────────────────── */

@@ -29,6 +29,7 @@
     color: var(--outline-elev, #99907c);
     border: none;
     cursor: pointer;
+    white-space: nowrap;
 }
 .journal-nav-btn.active {
     background: var(--gold-elev, #f2ca50);
@@ -37,11 +38,19 @@
 .journal-nav-btn:hover:not(.active) {
     color: var(--on-surface-elev, #e9def6);
 }
-@media (max-width: 480px) {
+@media (max-width: 640px) {
     .journal-nav-btn {
         flex: 0 0 auto;
-        padding: 0.4rem 0.75rem;
-        font-size: 0.65rem;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.66rem;
+    }
+    #journal-tabs { gap: 0.25rem; }
+}
+@media (max-width: 360px) {
+    .journal-nav-btn {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.62rem;
+        letter-spacing: 0.02em;
     }
 }
 .trade-row {

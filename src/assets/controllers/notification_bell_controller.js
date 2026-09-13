@@ -48,10 +48,19 @@ export default class extends Controller {
     connect() {
         this.loading = false;
         document.addEventListener('click', this.documentClick);
+        // H6: re-centre / close popover on resize so it never falls
+        // off-screen if the user rotates the device or resizes the window.
+        this._onResize = () => {
+            if (!this.popoverTarget.classList.contains('hidden')) {
+                this.close();
+            }
+        };
+        window.addEventListener('resize', this._onResize);
     }
 
     disconnect() {
         document.removeEventListener('click', this.documentClick);
+        window.removeEventListener('resize', this._onResize);
     }
 
     documentClick = (event) => {

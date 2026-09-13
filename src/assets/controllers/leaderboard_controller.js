@@ -13,7 +13,7 @@ import { Controller } from '@hotwired/stimulus';
  * Usage: <div data-controller="leaderboard">
  */
 export default class extends Controller {
-    static targets = ['podium', 'list', 'metricSelect'];
+    static targets = ['podium', 'list', 'metricSelect', 'yourRank', 'yourRankPos', 'yourRankName', 'yourRankMetric', 'yourRankBox'];
 
     static values = {
         refreshInterval: { type: Number, default: 60000 },
@@ -71,6 +71,25 @@ export default class extends Controller {
         });
         this.renderPodium(sorted.slice(0, 3));
         this.renderList(sorted);
+        this.renderYourRank(sorted);
+    }
+
+    // L72: surface the current user's position with their chosen-metric score.
+    renderYourRank(sorted) {
+        const me = window.TNSVT_USER && window.TNSVT_USER.code;
+        const box = document.getElementById('lb-your-rank');
+        if (!box || !me) return;
+        const idx = sorted.findIndex(p => String(p.code) === String(me));
+        if (idx === -1) {
+            box.hidden = true;
+            return;
+        }
+        box.hidden = false;
+        const pos = idx + 1;
+        const entry = sorted[idx];
+        this.yourRankPosTarget.textContent = '#' + pos;
+        this.yourRankNameTarget.textContent = entry.name || entry.code;
+        this.yourRankMetricTarget.textContent = this.scoreFor(entry);
     }
 
     renderEmpty() {

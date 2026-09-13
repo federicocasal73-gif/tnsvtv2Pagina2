@@ -101,3 +101,26 @@
     font-size: 0.75rem;
     color: var(--outline-elev);
 }
+
+
+/* ─── Required field marker (asterisk + color) ─── */
+.form-label.required::after,
+label.required::after {
+    content: ' *';
+    color: var(--error-elev, #f87171);
+    font-weight: 700;
+    margin-left: 0.15rem;
+}
+.form-input[required]:not(:placeholder-shown):invalid,
+.form-input[required]:user-invalid,
+textarea[required]:user-invalid,
+select[required]:user-invalid {
+    border-color: rgba(248, 113, 113, 0.5);
+    box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.12);
+}
+.form-input[required]:not(:placeholder-shown):valid,
+.form-input[required]:user-valid,
+textarea[required]:user-valid,
+select[required]:user-valid {
+    border-color: rgba(74, 222, 128, 0.45);
+}

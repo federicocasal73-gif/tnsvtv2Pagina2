@@ -149,10 +149,7 @@ export default class extends Controller {
                 access_status: u.status,
             }));
             const badge = document.getElementById('badge-users');
-            if (badge) {
-                badge.textContent = this.allUsers.length;
-                badge.hidden = this.allUsers.length === 0;
-            }
+            if (badge) badge.hidden = true;
             if (this.allUsers.length === 0) {
                 list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros. Probá con otra búsqueda.</p>';
                 return;
