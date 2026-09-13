@@ -16,13 +16,29 @@
         <p>Registrá cada trade · Mantené tu bitácora de ejecutor</p>
     </div>
 
+    {# ─── L23: Progress stepper (auto-tracks which sections are filled) ─── #}
+    <ol class="form-stepper" id="trade-form-stepper" aria-label="Pasos para registrar un trade">
+        <li class="form-step is-current" data-step="date">
+            <span class="form-step-num">1</span><span class="form-step-label">Fecha</span>
+        </li>
+        <li class="form-step" data-step="asset">
+            <span class="form-step-num">2</span><span class="form-step-label">Activo</span>
+        </li>
+        <li class="form-step" data-step="price">
+            <span class="form-step-num">3</span><span class="form-step-label">Precio</span>
+        </li>
+        <li class="form-step" data-step="risk">
+            <span class="form-step-num">4</span><span class="form-step-label">Riesgo</span>
+        </li>
+    </ol>
+
     <div id="form-error" class="form-error"></div>
     <div id="form-success" class="form-success"></div>
 
-    <form id="trade-form" autocomplete="off" novalidate>
+    <form id="trade-form" autocomplete="off" novalidate data-api-validate>
 
         {# ─── 1. Fecha y hora ─── #}
-        <div class="form-section">
+        <div class="form-section" data-form-step="date">
             <h3 class="form-section-title"><span class="material-symbols-elev">event</span>Fecha y hora</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -37,7 +53,7 @@
         </div>
 
         {# ─── 2. Activo ─── #}
-        <div class="form-section">
+        <div class="form-section" data-form-step="asset">
             <h3 class="form-section-title"><span class="material-symbols-elev">currency_exchange</span>Activo</h3>
             <div class="flex flex-wrap gap-2 mb-3" id="asset-chips">
                 <button type="button" class="chip" data-asset="XAUUSD">XAUUSD</button>
@@ -56,7 +72,7 @@
         </div>
 
         {# ─── 3. Dirección ─── #}
-        <div class="form-section">
+        <div class="form-section" data-form-step="price">
             <h3 class="form-section-title"><span class="material-symbols-elev">swap_horiz</span>Dirección</h3>
             <div class="grid grid-cols-2 gap-3" id="dir-toggle">
                 <button type="button" class="dir-btn" data-dir="BUY">
@@ -118,9 +134,13 @@
         </div>
 
         {# ─── 6. Risk:Reward computed ─── #}
-        <div class="form-section">
+        <div class="form-section" data-form-step="risk">
             <h3 class="form-section-title"><span class="material-symbols-elev">calculate</span>Ratio Riesgo:Beneficio</h3>
             <div id="rr-display" class="rr-display">—</div>
+            <div id="rr-warning" class="rr-warning" hidden>
+                <span class="material-symbols-elev" aria-hidden="true">warning</span>
+                Risk:Reward bajo. Considerá ajustar TP o SL antes de operar.
+            </div>
             <small>Calculado automáticamente desde Entry / TP / SL (TP arriba del Entry si BUY; SL abajo)</small>
         </div>
 
@@ -355,13 +375,66 @@
         }
         if (risk <= 0) {
             $rr.textContent = '—';
+            const warn = document.getElementById('rr-warning');
+            if (warn) warn.hidden = true;
             return;
         }
         const ratio = reward / risk;
+        const warn = document.getElementById('rr-warning');
+        if (warn) warn.hidden = ratio >= 1;
         $rr.innerHTML = `<span style="color: var(--gold-elev);">1 : ${ratio.toFixed(2)}</span> <small>Riesgo ${risk.toFixed(2)} / Benef ${reward.toFixed(2)}</small>`;
     }
 
     [$entry, $tp, $sl].forEach(el => el.addEventListener('input', updateRR));
+
+    // ─── L23: progress stepper — mark current step based on which
+    // fields have values; mark earlier steps complete.
+    function updateStepper() {
+        const steps = document.querySelectorAll('#trade-form-stepper .form-step');
+        if (!steps.length) return;
+        const checks = {
+            date: () => !!document.getElementById('trade-date')?.value
+                      && !!document.getElementById('trade-time')?.value,
+            asset: () => !!(document.getElementById('trade-asset')?.value
+                       || document.querySelector('#asset-chips .chip.active')),
+            price: () => !!document.getElementById('trade-entry')?.value,
+            risk:  () => {
+                const tp = document.getElementById('trade-tp')?.value;
+                const sl = document.getElementById('trade-sl')?.value;
+                return !!tp && !!sl;
+            },
+        };
+        const order = ['date', 'asset', 'price', 'risk'];
+        let currentStep = null;
+        order.forEach(function (name) {
+            const step = document.querySelector('#trade-form-stepper .form-step[data-step="' + name + '"]');
+            if (!step) return;
+            const done = checks[name]();
+            step.classList.toggle('is-complete', done);
+            if (done && currentStep === null) {
+                // mark next step as current (if any)
+            }
+        });
+        // First incomplete step becomes "current"
+        currentStep = order.find(function (n) { return !checks[n](); }) || order[order.length - 1];
+        steps.forEach(function (s) {
+            s.classList.remove('is-current');
+            if (s.dataset.step === currentStep) s.classList.add('is-current');
+        });
+    }
+    // Hook into existing change handlers
+    ['trade-date', 'trade-time', 'trade-asset', 'trade-entry', 'trade-tp', 'trade-sl'].forEach(function (id) {
+        document.getElementById(id)?.addEventListener('input', updateStepper);
+        document.getElementById(id)?.addEventListener('change', updateStepper);
+    });
+    // Asset chip clicks also update stepper
+    document.querySelectorAll('#asset-chips .chip').forEach(function (c) {
+        c.addEventListener('click', updateStepper);
+    });
+    document.querySelectorAll('#dir-toggle .dir-btn').forEach(function (c) {
+        c.addEventListener('click', updateStepper);
+    });
+    updateStepper();
 
     // ─── Tip chips ───
     document.querySelectorAll('.tip-chip').forEach(btn => {

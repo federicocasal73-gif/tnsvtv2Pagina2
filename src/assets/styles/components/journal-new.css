@@ -422,3 +422,83 @@
     .trade-success-check { animation: none; }
     .trade-success-overlay, .trade-success-card { transition: none; }
 }
+
+
+/* ─── Trade form stepper (L23) + RR warning (L27) ─── */
+.form-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 1rem 0 1.5rem;
+    list-style: none;
+}
+.form-step {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    color: var(--outline-elev);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 0.25s ease;
+}
+.form-step.is-current {
+    color: var(--gold-elev);
+    border-color: rgba(242, 202, 80, 0.55);
+    box-shadow: 0 0 12px rgba(242, 202, 80, 0.18);
+}
+.form-step.is-complete {
+    color: var(--on-surface-elev);
+    border-color: rgba(74, 222, 128, 0.4);
+    background: rgba(74, 222, 128, 0.05);
+}
+.form-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+.form-step.is-complete .form-step-num {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: #052e16;
+}
+.form-step.is-current .form-step-num {
+    background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+    color: var(--on-primary-elev);
+}
+.form-step-label { white-space: nowrap; }
+@media (max-width: 640px) {
+    .form-stepper { gap: 0.25rem; }
+    .form-step-label { display: none; }
+    .form-step { justify-content: center; padding: 0.35rem 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .form-step { transition: none; }
+}
+
+/* L27: Risk:Reward warning */
+.rr-warning {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    padding: 0.45rem 0.7rem;
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    border-radius: 6px;
+    color: #fca5a5;
+    font-size: 0.78rem;
+}
+.rr-warning[hidden] { display: none; }
+.rr-warning .material-symbols-elev { font-size: 1rem; color: #f87171; }

@@ -296,6 +296,159 @@
     });
 
     /* ═══════════════════════════════════════════════════════════════
+       INLINE FORM VALIDATION (F19)
+       Auto-attaches to any form with [data-api-validate]. Each
+       required/pattern field gets:
+         - aria-invalid="true" on failure
+         - field-error tooltip with arrow above the field
+         - success check on valid (user-valid state)
+       Re-validates on blur (first time) and on input thereafter.
+       Falls back to native :invalid pseudo-class when the tooltip
+       helper isn't available.
+       ─────────────────────────────────────────────────────────────── */
+    function _ensureTooltip(errEl, anchor) {
+        if (!errEl) {
+            errEl = document.createElement('div');
+            errEl.className = 'field-error';
+            errEl.setAttribute('role', 'alert');
+            errEl.hidden = true;
+            anchor.parentNode.insertBefore(errEl, anchor.nextSibling);
+        }
+        return errEl;
+    }
+    function _showFieldError(input, msg) {
+        const errEl = _ensureTooltip(null, input);
+        errEl.textContent = msg;
+        errEl.hidden = false;
+        input.setAttribute('aria-invalid', 'true');
+        input.classList.add('is-invalid');
+    }
+    function _clearFieldError(input) {
+        const errEl = input.parentNode.querySelector('.field-error');
+        if (errEl) { errEl.hidden = true; errEl.textContent = ''; }
+        input.removeAttribute('aria-invalid');
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    }
+    function apiValidateField(input) {
+        // Re-uses the native constraint validation API. Custom rules
+        // can be added via data-rule="rule-name" and the registered
+        // map below.
+        const rules = {
+            positive: function (v) { return Number(v) > 0 ? '' : 'Debe ser positivo'; },
+            rr:       function (v) { return Number(v) >= 1 ? '' : 'Risk:Reward ≥ 1 recomendado'; },
+            future:   function (v) { return new Date(v) > new Date() ? '' : 'Debe ser futuro'; },
+        };
+        const v = (input.value || '').trim();
+        if (input.required && !v) {
+            _showFieldError(input, 'Este campo es obligatorio');
+            return false;
+        }
+        if (input.pattern && v && !new RegExp(input.pattern).test(v)) {
+            _showFieldError(input, input.title || 'Formato inválido');
+            return false;
+        }
+        if (input.type === 'email' && v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+            _showFieldError(input, 'Email inválido');
+            return false;
+        }
+        if (input.dataset.rule && rules[input.dataset.rule]) {
+            const msg = rules[input.dataset.rule](v);
+            if (msg) { _showFieldError(input, msg); return false; }
+        }
+        _clearFieldError(input);
+        return true;
+    }
+    function apiValidateForm(form) {
+        const fields = form.querySelectorAll('input, select, textarea');
+        let ok = true;
+        fields.forEach(function (el) {
+            if (!apiValidateField(el)) ok = false;
+        });
+        return ok;
+    }
+    function apiAttachValidation(form) {
+        if (!form || form.__apiValidate) return;
+        form.__apiValidate = true;
+        const fields = form.querySelectorAll('input, select, textarea');
+        fields.forEach(function (input) {
+            if (input.type === 'hidden' || input.type === 'submit') return;
+            // Validate on blur the first time, then on every input.
+            let touched = false;
+            input.addEventListener('blur', function () {
+                touched = true;
+                apiValidateField(input);
+            });
+            input.addEventListener('input', function () {
+                if (!touched) return;
+                apiValidateField(input);
+            });
+        });
+        // Block submission when invalid.
+        form.addEventListener('submit', function (e) {
+            if (!apiValidateForm(form)) {
+                e.preventDefault();
+                e.stopPropagation();
+                const firstBad = form.querySelector('.is-invalid');
+                if (firstBad) firstBad.focus();
+            }
+        }, true);
+    }
+    function apiAutoAttach() {
+        document.querySelectorAll('form[data-api-validate]').forEach(apiAttachValidation);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', apiAutoAttach);
+    } else {
+        apiAutoAttach();
+    }
+    window.apiValidateForm = apiValidateForm;
+    window.apiAttachValidation = apiAttachValidation;
+    window.apiValidateField = apiValidateField;
+
+    /* ═══════════════════════════════════════════════════════════════
+       KPI COUNTER ANIMATION (P2)
+       Animate any element with [data-counter] from 0 to the value
+       parsed from its initial textContent. Honour
+       prefers-reduced-motion (skip animation).
+       ─────────────────────────────────────────────────────────────── */
+    function apiAnimateCounter(el, opts) {
+        opts = opts || {};
+        const text = el.textContent.trim();
+        // Parse: "$1,234", "12%", "1,234.56", "-42", "—", "∞"
+        const m = text.match(/^(-?)\s*([\$]?)([\d,\.]+)([%a-z]*)$/i);
+        if (!m) return false;
+        const sign = m[1] === '-' ? -1 : 1;
+        const prefix = m[2] || '';
+        const suffix = m[4] || '';
+        const target = parseFloat(m[3].replace(/,/g, '')) * sign;
+        if (!isFinite(target)) return false;
+        const duration = opts.duration || 900;
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduced) return false;
+        const decimals = (m[3].split('.')[1] || '').length;
+        const fmt = new Intl.NumberFormat('es-AR', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        });
+        const start = performance.now();
+        function step(now) {
+                const t = Math.min(1, (now - start) / duration);
+                const eased = 1 - Math.pow(1 - t, 3);  // easeOutCubic
+                el.textContent = prefix + fmt.format(target * eased) + suffix;
+                if (t < 1) requestAnimationFrame(step);
+            }
+        requestAnimationFrame(step);
+        return true;
+    }
+    function apiAnimateCounters(selector) {
+        const els = document.querySelectorAll(selector || '[data-counter]');
+        els.forEach(function (el) { apiAnimateCounter(el); });
+    }
+    window.apiAnimateCounter = apiAnimateCounter;
+    window.apiAnimateCounters = apiAnimateCounters;
+
+    /* ═══════════════════════════════════════════════════════════════
        FOCUS TRAP + MODAL A11Y
        Use: apiSetupModal(modalEl, { open: () => {}, close: () => {} })
        ─────────────────────────────────────────────────────────────── */
