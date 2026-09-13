@@ -416,3 +416,8 @@
 }
 .feed-char-count.is-warn { color: var(--gold-elev); font-weight: 600; }
 .feed-char-count.is-danger { color: #f87171; font-weight: 700; }
+
+
+/* ─── L63: bookmark toggle ─── */
+.feed-save-btn.saved { color: var(--gold-elev); }
+.feed-save-btn.saved .material-symbols-elev { font-variation-settings: 'FILL' 1; }

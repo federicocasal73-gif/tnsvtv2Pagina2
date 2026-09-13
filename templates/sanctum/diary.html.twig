@@ -168,8 +168,25 @@
     function showState(s) {
         STATES.forEach(name => {
             const el = document.getElementById('diary-state-' + name);
-            if (el) el.hidden = (name !== s);
+            if (!el) return;
+            // L44: fade transition instead of an abrupt swap.
+            if (name === s) {
+                el.hidden = false;
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    el.classList.add('is-visible');
+                }));
+            } else {
+                el.classList.remove('is-visible');
+                setTimeout(() => { if (name !== currentState()) el.hidden = true; }, 160);
+            }
         });
+    }
+    function currentState() {
+        for (const name of STATES) {
+            const el = document.getElementById('diary-state-' + name);
+            if (el && !el.hidden) return name;
+        }
+        return null;
     }
 
     // ─── Crypto ───
@@ -570,9 +587,11 @@
         dirty = true;
         if (autosaveTimer) clearTimeout(autosaveTimer);
         setAutosaveBadge('saved');
+        // L46: 5s debounce instead of 30s — entries are encrypted
+        // locally, so saving early costs nothing server-side.
         autosaveTimer = setTimeout(() => {
             if (dirty) saveCurrent({ silent: true });
-        }, 30000);
+        }, 5000);
     }
 
     async function lockNow() {

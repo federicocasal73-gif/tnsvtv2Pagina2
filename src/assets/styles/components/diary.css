@@ -383,3 +383,15 @@
 #diary-editor-preview.is-fading {
     opacity: 0.35;
 }
+
+
+/* ─── L44: state fade transitions ─── */
+.diary-state {
+    opacity: 0;
+    transition: opacity 160ms ease;
+}
+.diary-state.is-visible { opacity: 1; }
+.diary-state[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) {
+    .diary-state { transition: none; opacity: 1; }
+}

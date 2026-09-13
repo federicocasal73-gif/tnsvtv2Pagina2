@@ -275,6 +275,14 @@ export default class extends Controller {
     }
 
     async sendRequest(targetCode) {
+        // L68: confirm before sending (irreversible-ish social action).
+        if (window.apiConfirm) {
+            const ok = await window.apiConfirm(
+                '¿Enviar solicitud de acceso a ' + targetCode + '? Podrán ver tu journal.',
+                { title: 'Enviar solicitud' }
+            );
+            if (!ok) return;
+        }
         try {
             const response = await fetch('/api/access-request?code=' + encodeURIComponent(this.me), {
                 method: 'POST',
