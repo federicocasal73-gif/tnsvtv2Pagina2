@@ -145,7 +145,7 @@ export default class extends Controller {
     }
 
     async deleteLesson() {
-        if (!confirm('¿Eliminar esta lección? Esta acción no se puede deshacer.')) return;
+        if (!await window.apiConfirm('¿Eliminar esta lección? Esta acción no se puede deshacer.', { title: 'Eliminar lección', variant: 'danger' })) return;
         try {
             const r = await fetch(`/api/campus/admin/lessons/${this.lessonIdValue}`, {
                 method: 'DELETE',
@@ -216,7 +216,7 @@ export default class extends Controller {
 
     async deleteMaterial(event) {
         const id = parseInt(event.currentTarget.dataset.materialId, 10);
-        if (!confirm('¿Eliminar este material?')) return;
+        if (!await window.apiConfirm('¿Eliminar este material?', { title: 'Eliminar material', variant: 'danger' })) return;
         try {
             const r = await fetch(`/api/campus/admin/materials/${id}`, {
                 method: 'DELETE',

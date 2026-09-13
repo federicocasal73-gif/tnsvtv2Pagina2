@@ -317,7 +317,7 @@ export default class extends Controller {
     }
 
     async removeConnection(id) {
-        if (!confirm('¿Eliminar esta conexión?')) return;
+        if (!await window.apiConfirm('¿Eliminar esta conexión?', { title: 'Eliminar conexión', variant: 'danger' })) return;
         try {
             const response = await fetch('/api/connections/' + id + '?code=' + encodeURIComponent(this.me), {
                 method: 'DELETE'

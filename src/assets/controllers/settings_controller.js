@@ -171,10 +171,10 @@ export default class extends Controller {
             });
             const data = await r.json();
             if (!data.success) {
-                alert('Error: ' + (data.error || 'desconocido'));
+                if (window.apiToast) window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');
             }
         } catch (e) {
-            alert('Error: ' + e.message);
+            if (window.apiToast) window.apiToast('Error: ' + e.message, 'error');
         }
     }
 

@@ -240,7 +240,7 @@ export default class extends Controller {
     async deleteModule(event) {
         const btn = event.currentTarget;
         const moduleId = parseInt(btn.dataset.moduleId, 10);
-        if (!confirm('¿Eliminar este módulo y todas sus lecciones? Esta acción no se puede deshacer.')) return;
+        if (!await window.apiConfirm('¿Eliminar este módulo y todas sus lecciones? Esta acción no se puede deshacer.', { title: 'Eliminar módulo', variant: 'danger' })) return;
         try {
             const r = await fetch(`/api/campus/admin/modules/${moduleId}`, {
                 method: 'DELETE',

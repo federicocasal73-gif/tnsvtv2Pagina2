@@ -493,7 +493,7 @@ window.renderFeed = renderFeed;
 
 async function deletePost(postId) {
   if (!window.sb || !window.TNSVT_USER) return;
-  if (!confirm('¿Eliminar este post?')) return;
+  if (!await window.apiConfirm('¿Eliminar este post?', { title: 'Eliminar publicación', variant: 'danger' })) return;
   try {
     await window.sb.deletePost(postId, window.TNSVT_USER.code);
     document.getElementById('post-' + postId)?.remove();

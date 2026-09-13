@@ -266,9 +266,9 @@ export default class extends Controller {
         if (!acc) return;
         const trades = acc.trade_count || 0;
         if (trades > 0) {
-            if (!confirm(`La cuenta "${acc.name}" tiene ${trades} trades. Se hará soft-delete (se conserva el historial). ¿Continuar?`)) return;
+            if (!await window.apiConfirm(`La cuenta "${acc.name}" tiene ${trades} trades. Se hará soft-delete (se conserva el historial). ¿Continuar?`, { title: 'Eliminar cuenta', variant: 'danger' })) return;
         } else {
-            if (!confirm(`¿Eliminar la cuenta "${acc.name}"?`)) return;
+            if (!await window.apiConfirm(`¿Eliminar la cuenta "${acc.name}"?`, { title: 'Eliminar cuenta', variant: 'danger' })) return;
         }
         const r = await window.apiFetch(`/api/accounts/${id}`, { method: 'DELETE' });
         if (r.ok && r.data && r.data.success) {

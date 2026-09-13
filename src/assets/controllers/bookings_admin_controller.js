@@ -119,7 +119,7 @@ export default class extends Controller {
         const act = btn.dataset.action;
 
         if (act === 'cancel') {
-            if (!confirm('¿Cancelar esta reserva?')) return;
+            if (!await window.apiConfirm('¿Cancelar esta reserva?', { title: 'Cancelar reserva', variant: 'danger' })) return;
             await this.patchBooking(`/api/academic/bookings/${id}/cancel`, {});
             this.loadBookings();
             return;
@@ -131,7 +131,7 @@ export default class extends Controller {
             return;
         }
         if (act === 'decline') {
-            if (!confirm('¿Rechazar esta reserva?')) return;
+            if (!await window.apiConfirm('¿Rechazar esta reserva?', { title: 'Rechazar reserva', variant: 'danger' })) return;
             btn.disabled = true;
             await this.patchBooking(`/api/academic/bookings/${id}/decline`, {});
             this.loadBookings();
