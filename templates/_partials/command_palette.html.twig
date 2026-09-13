@@ -1,0 +1,41 @@
+{# _partials/command_palette.html.twig — Global command palette (F1).
+
+Mount once via shell: {% include '_partials/command_palette.html.twig' %}.
+
+Opens with Ctrl+K / Cmd+K from anywhere. Fuzzy-filters a catalog of
+navigation targets + contextual page actions. Full keyboard control:
+Up/Down to move, Enter to run, Esc to close.
+
+The catalog lives in command_palette_controller.js so it can detect
+which actions exist on the current page (e.g. "Nuevo trade" only when
+#btn-new-trade or the trade form is present).
+#}
+<div class="cmdk-root" data-controller="command-palette" hidden>
+    <div class="cmdk-backdrop" data-command-palette-target="backdrop" data-action="click->command-palette#onBackdrop"></div>
+
+    <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="Paleta de comandos">
+        <div class="cmdk-input-wrap">
+            <span class="material-symbols-elev cmdk-input-icon" aria-hidden="true">search</span>
+            <input type="text"
+                   class="cmdk-input"
+                   data-command-palette-target="input"
+                   data-action="input->command-palette#onInput keydown->command-palette#onInputKey"
+                   placeholder="Escribí un comando o buscá una sección…  (Esc para cerrar)"
+                   autocomplete="off"
+                   spellcheck="false"
+                   role="combobox"
+                   aria-expanded="true"
+                   aria-controls="cmdk-list"
+                   aria-autocomplete="list" />
+            <kbd class="cmdk-kbd" aria-hidden="true">esc</kbd>
+        </div>
+
+        <div class="cmdk-list" id="cmdk-list" role="listbox" aria-label="Resultados" data-command-palette-target="list"></div>
+
+        <footer class="cmdk-footer" aria-hidden="true">
+            <span><kbd>↑</kbd><kbd>↓</kbd> navegar</span>
+            <span><kbd>↵</kbd> ejecutar</span>
+            <span><kbd>esc</kbd> cerrar</span>
+        </footer>
+    </div>
+</div>

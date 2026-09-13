@@ -229,6 +229,13 @@
                 <span>Invocar Protocolo</span>
             </button>
 
+            {# ─── F1: command palette trigger (visible affordance for Ctrl+K) ─── #}
+            <button type="button" class="ui-btn ui-btn ghost relative" title="Buscar o ejecutar (Ctrl+K)"
+                    aria-label="Abrir paleta de comandos (Ctrl+K)" id="cmdk-open-btn">
+                <span class="material-symbols-elev" aria-hidden="true">search</span>
+                <kbd class="cmdk-trigger-kbd" aria-hidden="true">⌘K</kbd>
+            </button>
+
             <div class="notif-wrap" data-notification-bell-target="wrap">
                 <button type="button" class="ui-btn ui-btn ghost relative" title="Notificaciones" aria-label="Notificaciones" aria-haspopup="menu" aria-expanded="false" data-notification-bell-target="button" data-action="notification-bell#toggle">
                     <span class="material-symbols-elev relative" aria-hidden="true">notifications</span>
@@ -569,6 +576,9 @@
 
 {# ─── Photo lightbox (singleton) ─── #}
 {% include '_partials/lightbox.html.twig' %}
+
+{# ─── Command palette Ctrl+K (singleton) ─── #}
+{% include '_partials/command_palette.html.twig' %}
 
 {# ═══ Onboarding wizard (first-login) — hidden por default ═══ #}
 {% include '_partials/_onboarding/wizard.html.twig' %}
