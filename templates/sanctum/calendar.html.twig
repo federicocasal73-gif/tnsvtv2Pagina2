@@ -44,6 +44,10 @@
             <label class="kpi-label" for="cal-date">Fecha</label>
             <input id="cal-date" type="date" class="form-input"
                    data-action="change->calendar-events#refresh" />
+            <button type="button" id="cal-today-btn" class="cal-today-btn" title="Ir a hoy" aria-label="Ir a hoy">
+                <span class="material-symbols-elev icon-size-sm" aria-hidden="true">today</span>
+                Hoy
+            </button>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <label class="kpi-label" for="cal-country">País</label>
@@ -334,6 +338,15 @@
         }
 
         dateInput.addEventListener('change', onFilterChange);
+        // L30: Today button — jump to today without re-typing the date.
+        const todayBtn = document.getElementById('cal-today-btn');
+        if (todayBtn) {
+            todayBtn.addEventListener('click', () => {
+                const now = new Date();
+                dateInput.value = now.toISOString().slice(0, 10);
+                onFilterChange();
+            });
+        }
         countrySel.addEventListener('change', onFilterChange);
         impactSel.addEventListener('change', onFilterChange);
 

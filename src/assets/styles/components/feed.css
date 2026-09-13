@@ -401,3 +401,18 @@
     .feed-back-to-top,
     .feed-back-to-top.is-visible { transition: none; transform: none; }
 }
+
+
+/* ─── L61: composer char count ─── */
+.feed-composer-meta {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 0.25rem;
+}
+.feed-char-count {
+    font-size: 0.72rem;
+    color: var(--outline-elev);
+    font-variant-numeric: tabular-nums;
+}
+.feed-char-count.is-warn { color: var(--gold-elev); font-weight: 600; }
+.feed-char-count.is-danger { color: #f87171; font-weight: 700; }

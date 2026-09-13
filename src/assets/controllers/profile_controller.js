@@ -19,6 +19,11 @@ export default class extends Controller {
         if (copyBtn) {
             copyBtn.addEventListener('click', () => this.copyCode());
         }
+
+        const shareBtn = document.getElementById('profile-share');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', () => this.shareProfile());
+        }
     }
 
     async copyCode() {
@@ -44,6 +49,39 @@ export default class extends Controller {
         }
     }
 
+    // F8: copy the public profile URL with the user's code.
+    async shareProfile() {
+        const codeEl = document.getElementById('profile-code');
+        const code = codeEl ? codeEl.textContent.trim() : '';
+        if (!code || code === '—' || code === 'Cargando...') return;
+        const url = location.origin + '/profile/' + encodeURIComponent(code);
+        try {
+            // Web Share API first (mobile-friendly), fallback to copy.
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title: 'Mi perfil en T.N.S.V.T', url });
+                    return;
+                } catch (e) { /* user cancelled, fall through */ }
+            }
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(url);
+                if (window.apiToast) window.apiToast('Enlace copiado al portapapeles', 'success');
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = url;
+                ta.style.position = 'absolute';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                if (window.apiToast) window.apiToast('Enlace copiado', 'success');
+            }
+        } catch (e) {
+            if (window.apiToast) window.apiToast('No se pudo compartir', 'error');
+        }
+    }
+
     async loadProfile() {
         const nameEl = document.getElementById('profile-name');
         const codeEl = document.getElementById('profile-code');
@@ -66,6 +104,8 @@ export default class extends Controller {
             if (codeEl) codeEl.textContent = u.code || '—';
             const copyBtn = document.getElementById('profile-code-copy');
             if (copyBtn && u.code) copyBtn.style.display = '';
+            const shareBtn = document.getElementById('profile-share');
+            if (shareBtn && u.code) shareBtn.style.display = '';
             if (tierEl) tierEl.textContent = u.tier || 'INITIATE';
             if (avatarImg && u.avatar_url) {
                 avatarImg.src = u.avatar_url;

@@ -472,3 +472,24 @@
     box-shadow: 0 0 8px var(--gold-elev);
     animation: cal-now-pulse 1.4s ease-in-out infinite;
 }
+
+
+/* ─── Today button (L30) ─── */
+.cal-today-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.4rem;
+    background: var(--glass-bg-elev);
+    border: 1px solid var(--glass-border-elev);
+    color: var(--on-surface-elev);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.cal-today-btn:hover {
+    border-color: var(--gold-elev);
+    color: var(--gold-elev);
+}

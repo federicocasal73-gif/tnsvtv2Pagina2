@@ -43,6 +43,9 @@
             </div>
             <button id="composer-submit" data-test-id="composer-submit" class="feed-composer-submit" disabled>Publicar</button>
         </div>
+        <div class="feed-composer-meta">
+            <span class="feed-char-count" id="composer-count" aria-live="polite">0 / 2000</span>
+        </div>
     </article>
 
     <div class="feed-list" id="feed-list" data-test-id="feed-list">
@@ -355,12 +358,25 @@
     const $text = document.getElementById('composer-text');
     const $submit = document.getElementById('composer-submit');
     const $chips = document.getElementById('composer-chips');
+    const $count = document.getElementById('composer-count');
+
+    // L61: live char count with warn/danger thresholds.
+    function updateCharCount() {
+        if (!$count) return;
+        const max = parseInt($text.getAttribute('maxlength') || '2000', 10);
+        const len = $text.value.length;
+        $count.textContent = len + ' / ' + max;
+        $count.classList.toggle('is-warn', len > max * 0.85 && len <= max * 0.97);
+        $count.classList.toggle('is-danger', len > max * 0.97);
+    }
 
     function updateSubmitState() {
         $submit.disabled = !($text.value.trim().length > 0 && state.activeCat);
+        updateCharCount();
     }
 
     $text.addEventListener('input', updateSubmitState);
+    updateCharCount();
     $chips.querySelectorAll('.feed-composer-chip').forEach(chip => {
         chip.addEventListener('click', () => {
             $chips.querySelectorAll('.feed-composer-chip').forEach(c => c.classList.toggle('active', c === chip));
