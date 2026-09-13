@@ -299,7 +299,7 @@
     <section class="journal-panel" id="journal-panel-log" role="tabpanel" aria-labelledby="journal-tab-log" data-panel="log" hidden>
         {# ─── Toolbar ─── #}
         <div class="glass-card-elev mb-4 flex flex-wrap items-center gap-3">
-            <button id="btn-new-trade" class="ui-btn ui-btn-primary flex items-center gap-2">
+            <button id="btn-new-trade" data-test-id="btn-new-trade" class="ui-btn ui-btn-primary flex items-center gap-2">
                 <span class="material-symbols-elev align-middle icon-size-xs">add</span>
                 Nuevo Trade
             </button>
@@ -421,13 +421,13 @@
                 <span class="material-symbols-elev" aria-hidden="true">close</span>
             </button>
         </div>
-        <form id="trade-form" class="tnsvt-modal__body space-y-3" style="padding-top:1.25rem;" data-api-validate>
+        <form id="trade-form" data-test-id="trade-form" class="tnsvt-modal__body space-y-3" style="padding-top:1.25rem;" data-api-validate>
             <input type="hidden" id="trade-id" />
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="kpi-label block mb-1">Asset *</label>
-                    <input id="trade-asset" type="text" required maxlength="20" placeholder="XAUUSD"
+                    <input id="trade-asset" data-test-id="trade-asset" type="text" required maxlength="20" placeholder="XAUUSD"
                            class="form-input" />
                 </div>
                 <div>
@@ -470,29 +470,29 @@
             <div class="grid grid-cols-4 gap-3">
                 <div>
                     <label class="kpi-label block mb-1">Entry</label>
-                    <input id="trade-entry" type="text" step="any" placeholder="2650.50"
+                    <input id="trade-entry" data-test-id="trade-entry" type="text" step="any" placeholder="2650.50"
                            class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">SL</label>
-                    <input id="trade-sl" type="text" step="any" placeholder="2645"
+                    <input id="trade-sl" data-test-id="trade-sl" type="text" step="any" placeholder="2645"
                            class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">TP</label>
-                    <input id="trade-tp" type="text" step="any" placeholder="2660"
+                    <input id="trade-tp" data-test-id="trade-tp" type="text" step="any" placeholder="2660"
                            class="form-input" />
                 </div>
                 <div>
                     <label class="kpi-label block mb-1">PnL ($)</label>
-                    <input id="trade-pnl" type="number" step="any" placeholder="125.50"
+                    <input id="trade-pnl" data-test-id="trade-pnl" type="number" step="any" placeholder="125.50"
                            class="form-input" />
                 </div>
             </div>
 
             <div>
                 <label class="kpi-label block mb-1">Notas</label>
-                <textarea id="trade-notes" rows="3" placeholder="Análisis, emociones, plan ejecutado..."
+                <textarea id="trade-notes" data-test-id="trade-notes" rows="3" placeholder="Análisis, emociones, plan ejecutado..."
                           class="form-input"></textarea>
             </div>
 

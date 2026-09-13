@@ -47,6 +47,7 @@ export default class extends Controller {
 
     connect() {
         this.loading = false;
+        this.prevCount = 0;
         document.addEventListener('click', this.documentClick);
         // H6: re-centre / close popover on resize so it never falls
         // off-screen if the user rotates the device or resizes the window.
@@ -118,6 +119,14 @@ export default class extends Controller {
         const n = unread || 0;
         this.countTarget.textContent = n > 99 ? '99+' : n;
         this.countTarget.classList.toggle('hidden', n === 0);
+        // P16: pulse the bell button when unread count grows.
+        if (n > this.prevCount && this.hasButtonTarget) {
+            this.buttonTarget.classList.remove('is-pulsing');
+            void this.buttonTarget.offsetWidth;
+            this.buttonTarget.classList.add('is-pulsing');
+            setTimeout(() => this.buttonTarget.classList.remove('is-pulsing'), 700);
+        }
+        this.prevCount = n;
     }
 
     renderItems(notifs) {

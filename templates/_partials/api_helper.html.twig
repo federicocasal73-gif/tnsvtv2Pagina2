@@ -449,6 +449,89 @@
     window.apiAnimateCounters = apiAnimateCounters;
 
     /* ═══════════════════════════════════════════════════════════════
+       GLOBAL ERROR HANDLER (T3)
+       Catches unhandled errors and unhandled promise rejections,
+       surfaces them as a non-blocking toast, and logs to console.
+       Opt-out per-zone via window.__apiQuiet = true.
+       ─────────────────────────────────────────────────────────────── */
+    function _reportError(kind, message, source) {
+        if (window.__apiQuiet) {
+            console[kind === 'error' ? 'error' : 'warn'](message, source || '');
+            return;
+        }
+        // Avoid duplicate toasts for the same error string within 1.5s.
+        const k = kind + ':' + message;
+        if (_reportError._last === k && Date.now() - _reportError._t < 1500) return;
+        _reportError._last = k; _reportError._t = Date.now();
+        const toastKind = kind === 'error' ? 'error' : 'warning';
+        if (window.apiToast) {
+            window.apiToast('Error inesperado: ' + (message || kind), toastKind);
+        }
+        console[kind === 'error' ? 'error' : 'warn'](message, source || '');
+    }
+    window.addEventListener('error', function (e) {
+        _reportError('error', (e.error && e.error.message) || e.message, e.filename + ':' + e.lineno);
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+        const reason = e.reason && (e.reason.message || e.reason) || 'Promise rechazada';
+        _reportError('error', String(reason), 'unhandledrejection');
+    });
+
+    /* ═══════════════════════════════════════════════════════════════
+       HAPTIC FEEDBACK (P3) — opt-in via window.apiHaptic(kind)
+       Mobile only (navigator.vibrate). Falls back silently on
+       desktop. Kinds: 'success' / 'warning' / 'error'.
+       ─────────────────────────────────────────────────────────────── */
+    function apiHaptic(kind) {
+        try {
+            if (!navigator.vibrate) return false;
+            const patterns = { success: [10], warning: [30, 30, 30], error: [60, 40, 60] };
+            navigator.vibrate(patterns[kind] || [20]);
+            return true;
+        } catch (e) { return false; }
+    }
+    window.apiHaptic = apiHaptic;
+    // Auto-haptic on toast (only success / error / warning kinds).
+    // Skip info (too noisy).
+    (function () {
+        // Patch apiToast to also vibrate on haptic-capable devices.
+        const orig = window.apiToast;
+        if (typeof orig !== 'function') return;
+        window.apiToast = function (msg, kind) {
+            orig(msg, kind);
+            if (kind === 'success' || kind === 'error' || kind === 'warning') {
+                apiHaptic(kind);
+            }
+        };
+    })();
+
+    /* ═══════════════════════════════════════════════════════════════
+       SCREEN-READER LOADING ANNOUNCER (T5)
+       For every .loading-pulse element without role/aria-live set,
+       inject role="status" + aria-live="polite" so SR users hear
+       "Cargando…" / "Sin datos" / etc. as content changes.
+       ─────────────────────────────────────────────────────────────── */
+    function apiA11yLoading() {
+        document.querySelectorAll('.loading-pulse:not([role]):not([aria-live])').forEach(function (el) {
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
+        });
+    }
+    // Re-scan when DOM mutates (new loading-pulse elements added).
+    if (window.MutationObserver) {
+        new MutationObserver(apiA11yLoading).observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', apiA11yLoading);
+    } else {
+        apiA11yLoading();
+    }
+    window.apiA11yLoading = apiA11yLoading;
+
+    /* ═══════════════════════════════════════════════════════════════
        FOCUS TRAP + MODAL A11Y
        Use: apiSetupModal(modalEl, { open: () => {}, close: () => {} })
        ─────────────────────────────────────────────────────────────── */

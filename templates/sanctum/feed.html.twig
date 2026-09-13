@@ -30,7 +30,7 @@
     </nav>
 
     <article class="feed-composer" aria-label="Composer">
-        <textarea id="composer-text" class="feed-composer-textarea"
+        <textarea id="composer-text" data-test-id="composer-text" class="feed-composer-textarea"
                   placeholder="¿Qué querés compartir con el Cónclave?" maxlength="2000"></textarea>
         <div class="feed-composer-footer">
             <div class="feed-composer-chips" id="composer-chips">
@@ -41,11 +41,11 @@
                 <button class="feed-composer-chip" data-cat="projection"  type="button">Proyección</button>
                 <button class="feed-composer-chip" data-cat="question"    type="button">Pregunta</button>
             </div>
-            <button id="composer-submit" class="feed-composer-submit" disabled>Publicar</button>
+            <button id="composer-submit" data-test-id="composer-submit" class="feed-composer-submit" disabled>Publicar</button>
         </div>
     </article>
 
-    <div class="feed-list" id="feed-list">
+    <div class="feed-list" id="feed-list" data-test-id="feed-list">
         <div class="feed-loading" id="feed-loading">
             <div class="skeleton-stack" aria-hidden="true">
                 <div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div>
@@ -191,7 +191,7 @@
             <header class="feed-post-head"><div class="feed-avatar">${esc(initials(p.author_name))}</div><div class="feed-author-block"><div class="feed-author-name">${esc(p.author_name||'Anónimo')}</div><div class="feed-author-meta"><span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span><span>· ${esc(relTime(p.created_at))}</span></div></div>${myPost?`<button type="button" class="feed-action feed-post-delete" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">delete</span></button>`:''}</header>
             <div class="feed-post-body">${esc(p.text||'')}</div>${sigHtml}${photoHtml}
             <div class="feed-post-actions"><button type="button" class="feed-action feed-like-btn ${liked?'liked':''}" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">favorite</span><span data-likes-count>${p.likes||0}</span></button><button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">chat_bubble</span><span data-comments-count>${comments.length}</span></button></div>
-            <div class="feed-comments" data-id="${p.id}" data-collapsed="true">${comments.map(c=>`<div class="feed-comment"><div class="feed-comment-avatar">${esc(initials(c.author))}</div><div class="feed-comment-body"><span class="feed-comment-author">${esc(c.author||'')}</span><span class="feed-comment-text">${esc(c.text||'')}</span><span class="feed-comment-time">${esc(relTime(c.date))}</span></div></div>`).join('')}<form class="feed-comment-form" data-id="${p.id}"><input type="text" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" /><button type="submit" class="feed-comment-submit">Comentar</button></form></div>
+            <div class="feed-comments" data-id="${p.id}" data-collapsed="true">${comments.map(c=>`<div class="feed-comment"><div class="feed-comment-avatar">${esc(initials(c.author))}</div><div class="feed-comment-body"><span class="feed-comment-author">${esc(c.author||'')}</span><span class="feed-comment-text">${esc(c.text||'')}</span><span class="feed-comment-time">${esc(relTime(c.date))}</span></div></div>`).join('')}<form class="feed-comment-form" data-id="${p.id}"><input type="text" data-test-id="feed-comment-input" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" /><button type="submit" class="feed-comment-submit">Comentar</button></form></div>
         </article>`;
     }
 
@@ -268,7 +268,7 @@
                             </div>
                         `).join('')}
                         <form class="feed-comment-form" data-id="${p.id}">
-                            <input type="text" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" />
+                            <input type="text" data-test-id="feed-comment-input" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" />
                             <button type="submit" class="feed-comment-submit">Comentar</button>
                         </form>
                     </div>

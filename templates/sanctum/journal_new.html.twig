@@ -35,7 +35,7 @@
     <div id="form-error" class="form-error"></div>
     <div id="form-success" class="form-success"></div>
 
-    <form id="trade-form" autocomplete="off" novalidate data-api-validate>
+    <form id="trade-form" data-test-id="trade-form" autocomplete="off" novalidate data-api-validate>
 
         {# ─── 1. Fecha y hora ─── #}
         <div class="form-section" data-form-step="date">
@@ -66,7 +66,7 @@
                 <button type="button" class="chip" data-asset="ETHUSDT">ETHUSDT</button>
                 <button type="button" class="chip" data-asset="XAGUSD">XAGUSD</button>
             </div>
-            <input type="text" id="trade-asset" name="asset" class="form-input"
+            <input type="text" id="trade-asset" name="asset" data-test-id="trade-asset" class="form-input"
                    required maxlength="16" placeholder="Otro activo (ej: AUDUSD, SPX, NATGAS)"
                    style="text-transform: uppercase;" />
         </div>
@@ -101,15 +101,15 @@
             <div class="grid grid-cols-3 gap-3">
                 <div>
                     <label class="form-label" for="trade-entry">Entry</label>
-                    <input type="number" step="any" id="trade-entry" name="entry" class="form-input" placeholder="2650.50" />
+                    <input type="number" step="any" id="trade-entry" data-test-id="trade-entry" name="entry" class="form-input" placeholder="2650.50" />
                 </div>
                 <div>
                     <label class="form-label pos" for="trade-tp">Take Profit</label>
-                    <input type="number" step="any" id="trade-tp" name="tp" class="form-input" placeholder="2660.00" />
+                    <input type="number" step="any" id="trade-tp" data-test-id="trade-tp" name="tp" class="form-input" placeholder="2660.00" />
                 </div>
                 <div>
                     <label class="form-label neg" for="trade-sl">Stop Loss</label>
-                    <input type="number" step="any" id="trade-sl" name="sl" class="form-input" placeholder="2645.00" />
+                    <input type="number" step="any" id="trade-sl" data-test-id="trade-sl" name="sl" class="form-input" placeholder="2645.00" />
                 </div>
             </div>
         </div>
@@ -125,7 +125,7 @@
             </div>
             <div>
                 <label class="form-label" for="trade-pnl">P&L final (USD)</label>
-                <input type="number" step="any" id="trade-pnl" name="pnl" class="form-input"
+                <input type="number" step="any" id="trade-pnl" data-test-id="trade-pnl" name="pnl" class="form-input"
                        placeholder="ej: +95.50 o -50.00" required />
                 <p class="text-xs text-[var(--outline-elev)] mt-1">
                     Positivo si fue ganancia, negativo si fue pérdida.
@@ -163,7 +163,7 @@
         {# ─── 8. Notas + Tips del Creador ─── #}
         <div class="form-section">
             <h3 class="form-section-title"><span class="material-symbols-elev">description</span>Notas (opcional)</h3>
-            <textarea id="trade-notes" name="notes" class="form-textarea"
+            <textarea id="trade-notes" name="notes" data-test-id="trade-notes" class="form-textarea"
                       placeholder="¿Qué patrón reconociste? ¿Qué hiciste bien? ¿Qué patrón volvió a aparecer?"></textarea>
             <div class="flex flex-wrap gap-2 mt-3">
                 <button type="button" class="tip-chip" data-tip="¿Qué patrón reconociste?">Patrón</button>
