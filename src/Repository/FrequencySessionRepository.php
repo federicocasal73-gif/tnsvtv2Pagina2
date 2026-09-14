@@ -28,6 +28,17 @@ class FrequencySessionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findActiveByUserId(int $userId): ?FrequencySession
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.user = :uid AND s.completed = false')
+            ->setParameter('uid', $userId)
+            ->orderBy('s.startedAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function getTotalMinutesForUser(User $user): int
     {
         return (int)$this->createQueryBuilder('s')
@@ -36,5 +47,16 @@ class FrequencySessionRepository extends ServiceEntityRepository
             ->setParameter('u', $user)
             ->getQuery()
             ->getSingleScalarResult() ?? 0;
+    }
+
+    /**
+     * Time elapsed since the session started, in whole seconds (clamped >= 0).
+     */
+    public function elapsedSeconds(FrequencySession $session): int
+    {
+        $start = $session->getStartedAt();
+        $end = $session->getEndedAt() ?? new \DateTimeImmutable();
+        $diff = $end->getTimestamp() - $start->getTimestamp();
+        return max(0, $diff);
     }
 }
