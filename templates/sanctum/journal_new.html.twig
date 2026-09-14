@@ -38,7 +38,7 @@
     <form id="trade-form" data-test-id="trade-form" autocomplete="off" novalidate data-api-validate>
 
         {# ─── 1. Fecha y hora ─── #}
-        <div class="form-section" data-form-step="date">
+        <div class="form-section" data-form-step="date" data-wizard="1">
             <h3 class="form-section-title"><span class="material-symbols-elev">event</span>Fecha y hora</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -53,7 +53,7 @@
         </div>
 
         {# ─── 2. Activo ─── #}
-        <div class="form-section" data-form-step="asset">
+        <div class="form-section" data-form-step="asset" data-wizard="2">
             <h3 class="form-section-title"><span class="material-symbols-elev">currency_exchange</span>Activo</h3>
             <div class="flex flex-wrap gap-2 mb-3" id="asset-chips">
                 <button type="button" class="chip" data-asset="XAUUSD">XAUUSD</button>
@@ -72,7 +72,7 @@
         </div>
 
         {# ─── 3. Dirección ─── #}
-        <div class="form-section" data-form-step="price">
+        <div class="form-section" data-form-step="price" data-wizard="2">
             <h3 class="form-section-title"><span class="material-symbols-elev">swap_horiz</span>Dirección</h3>
             <div class="grid grid-cols-2 gap-3" id="dir-toggle">
                 <button type="button" class="dir-btn" data-dir="BUY">
@@ -87,7 +87,7 @@
         </div>
 
         {# ─── 3b. Cuenta ─── #}
-        <div class="form-section">
+        <div class="form-section" data-wizard="2">
             <h3 class="form-section-title"><span class="material-symbols-elev">account_balance</span>Cuenta</h3>
             <select id="trade-account-id" name="account_id" class="form-input" required>
                 <option value="">— Cargando cuentas... —</option>
@@ -96,7 +96,7 @@
         </div>
 
         {# ─── 4. Precios ─── #}
-        <div class="form-section">
+        <div class="form-section" data-wizard="3">
             <h3 class="form-section-title"><span class="material-symbols-elev">price_check</span>Precios (opcional)</h3>
             <div class="grid grid-cols-3 gap-3">
                 <div>
@@ -115,7 +115,7 @@
         </div>
 
         {# ─── 5. Resultado + P&L ─── #}
-        <div class="form-section">
+        <div class="form-section" data-wizard="3">
             <h3 class="form-section-title"><span class="material-symbols-elev">emoji_events</span>Resultado</h3>
             <div class="grid grid-cols-4 gap-2 mb-4" id="result-toggle">
                 <button type="button" class="result-btn" data-result="WIN">WIN</button>
@@ -134,7 +134,7 @@
         </div>
 
         {# ─── 6. Risk:Reward computed ─── #}
-        <div class="form-section" data-form-step="risk">
+        <div class="form-section" data-form-step="risk" data-wizard="4">
             <h3 class="form-section-title"><span class="material-symbols-elev">calculate</span>Ratio Riesgo:Beneficio</h3>
             <div id="rr-display" class="rr-display">—</div>
             <div id="rr-warning" class="rr-warning" hidden>
@@ -145,7 +145,7 @@
         </div>
 
         {# ─── 7. Capturas (drag-drop) ─── #}
-        <div class="form-section">
+        <div class="form-section" data-wizard="4">
             <h3 class="form-section-title"><span class="material-symbols-elev">image</span>Capturas (opcional, máx 3)</h3>
 
             <div class="photo-dropzone" id="photo-dropzone" tabindex="0" role="button" aria-label="Soltá imágenes o hacé click para elegir">
@@ -161,7 +161,7 @@
         </div>
 
         {# ─── 8. Notas + Tips del Creador ─── #}
-        <div class="form-section">
+        <div class="form-section" data-wizard="4">
             <h3 class="form-section-title"><span class="material-symbols-elev">description</span>Notas (opcional)</h3>
             <textarea id="trade-notes" name="notes" data-test-id="trade-notes" class="form-textarea"
                       placeholder="¿Qué patrón reconociste? ¿Qué hiciste bien? ¿Qué patrón volvió a aparecer?"></textarea>
@@ -174,9 +174,17 @@
             </div>
         </div>
 
-        <div class="form-footer">
+        {# ─── F6: wizard footer ─── #}
+        <div class="form-footer form-footer-wizard">
             <a href="/journal" class="form-cancel-btn" id="cancel-btn">Cancelar</a>
-            <button type="submit" id="submit-btn" class="form-submit-primary">
+            <span class="wizard-spacer"></span>
+            <button type="button" id="wizard-back" class="form-cancel-btn" hidden>
+                ← Anterior
+            </button>
+            <button type="button" id="wizard-next" class="form-submit-primary">
+                Siguiente →
+            </button>
+            <button type="submit" id="submit-btn" class="form-submit-primary" hidden>
                 <span class="material-symbols-elev">save</span>
                 Registrar trade
             </button>
@@ -389,9 +397,23 @@
 
     // ─── L23: progress stepper — mark current step based on which
     // fields have values; mark earlier steps complete.
+    // In wizard mode (F6) the stepper is driven by the wizard instead.
+    let wizardActive = true;
+    let wizardStep = 1;
+    let wizardMax = 1;
+    const WIZARD_STEPS = ['date', 'asset', 'price', 'risk'];
     function updateStepper() {
         const steps = document.querySelectorAll('#trade-form-stepper .form-step');
         if (!steps.length) return;
+        if (wizardActive) {
+            const cur = WIZARD_STEPS[wizardStep - 1];
+            steps.forEach(function (s) {
+                const idx = WIZARD_STEPS.indexOf(s.dataset.step);
+                s.classList.toggle('is-complete', idx < wizardStep - 1);
+                s.classList.toggle('is-current', s.dataset.step === cur);
+            });
+            return;
+        }
         const checks = {
             date: () => !!document.getElementById('trade-date')?.value
                       && !!document.getElementById('trade-time')?.value,
@@ -435,6 +457,91 @@
         c.addEventListener('click', updateStepper);
     });
     updateStepper();
+
+    // ─── F6: trade form wizard (4 steps) ───
+    // Sections carry data-wizard="1..4". showWizardStep toggles them,
+    // drives the stepper, and swaps the footer buttons. Per-step gates
+    // validate before advancing; the F19 submit handler still guards
+    // the final POST (e.g. Enter-key submits).
+    function wizardSections(n) {
+        return Array.from(document.querySelectorAll('#trade-form .form-section[data-wizard="' + n + '"]'));
+    }
+    function wizardGates() {
+        return {
+            1: () => {
+                const d = document.getElementById('trade-date');
+                const t = document.getElementById('trade-time');
+                const okD = d && d.value;
+                const okT = t && t.value;
+                if (window.apiValidateField) {
+                    let ok = true;
+                    if (d && !window.apiValidateField(d)) ok = false;
+                    if (t && !window.apiValidateField(t)) ok = false;
+                    return ok;
+                }
+                return !!(okD && okT);
+            },
+            2: () => {
+                const assetEl = document.getElementById('trade-asset');
+                const hasAsset = !!(assetEl && assetEl.value.trim())
+                    || !!document.querySelector('#asset-chips .chip.active');
+                if (!hasAsset && window.apiToast) {
+                    window.apiToast('Elegí un activo o escribilo para continuar', 'warning');
+                }
+                return hasAsset;
+            },
+            3: () => {
+                const pnl = document.getElementById('trade-pnl');
+                if (window.apiValidateField && pnl) return window.apiValidateField(pnl);
+                return !!(pnl && pnl.value.trim());
+            },
+            4: () => true,
+        };
+    }
+    function showWizardStep(n, opts) {
+        opts = opts || {};
+        n = Math.min(4, Math.max(1, n));
+        wizardStep = n;
+        wizardMax = Math.max(wizardMax, n);
+        for (let i = 1; i <= 4; i++) {
+            wizardSections(i).forEach(sec => { sec.hidden = (i !== n); });
+        }
+        const back = document.getElementById('wizard-back');
+        const next = document.getElementById('wizard-next');
+        const submit = document.getElementById('submit-btn');
+        if (back) back.hidden = (n === 1);
+        if (next) next.hidden = (n === 4);
+        if (submit) submit.hidden = (n !== 4);
+        updateStepper();
+        if (!opts.noScroll) {
+            const form = document.getElementById('trade-form');
+            if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // Focus the first field of the step for keyboard flow.
+        const first = wizardSections(n)[0]?.querySelector('input, select, textarea, button.chip, button.dir-btn');
+        if (first && !opts.noFocus) {
+            setTimeout(() => { try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); } }, 120);
+        }
+    }
+    function wizardNext() {
+        const gate = wizardGates()[wizardStep];
+        if (gate && !gate()) return;
+        showWizardStep(wizardStep + 1);
+    }
+    function wizardBack() {
+        showWizardStep(wizardStep - 1);
+    }
+    document.getElementById('wizard-next')?.addEventListener('click', wizardNext);
+    document.getElementById('wizard-back')?.addEventListener('click', wizardBack);
+    // Stepper steps are clickable — only up to the furthest reached.
+    document.querySelectorAll('#trade-form-stepper .form-step').forEach(el => {
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', () => {
+            const idx = WIZARD_STEPS.indexOf(el.dataset.step) + 1;
+            if (idx >= 1 && idx <= wizardMax) showWizardStep(idx);
+        });
+    });
+    showWizardStep(1, { noScroll: true, noFocus: true });
 
     // ─── Tip chips ───
     document.querySelectorAll('.tip-chip').forEach(btn => {

@@ -502,3 +502,18 @@
 }
 .rr-warning[hidden] { display: none; }
 .rr-warning .material-symbols-elev { font-size: 1rem; color: #f87171; }
+
+
+/* ─── F6: wizard ─── */
+.form-footer-wizard .wizard-spacer { flex: 1; }
+#trade-form .form-section[data-wizard] {
+    animation: wizardStepIn 240ms ease;
+}
+@keyframes wizardStepIn {
+    from { opacity: 0; transform: translateX(14px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+#trade-form-stepper .form-step { user-select: none; }
+@media (prefers-reduced-motion: reduce) {
+    #trade-form .form-section[data-wizard] { animation: none; }
+}
