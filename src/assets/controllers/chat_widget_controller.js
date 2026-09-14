@@ -84,6 +84,7 @@ export default class extends Controller {
 
   async openPanel() {
     this.openValue = true;
+    this.panelTarget.classList.remove('hidden');
     this.panelTarget.classList.add('is-open');
     this.toggleIconTarget.textContent = 'close';
     this._moveFocusIntoPanel();
@@ -93,6 +94,7 @@ export default class extends Controller {
 
   close() {
     this.openValue = false;
+    this.panelTarget.classList.add('hidden');
     this.panelTarget.classList.remove('is-open');
     this.toggleIconTarget.textContent = 'chat_bubble';
     this.stopPoll();
