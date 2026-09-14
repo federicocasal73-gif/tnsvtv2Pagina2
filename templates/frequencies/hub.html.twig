@@ -12,7 +12,10 @@
 {# WebGL Background #}
 <script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
 
-<div class="max-w-6xl mx-auto">
+<div class="max-w-6xl mx-auto"
+     data-controller="frequency-player"
+     data-frequency-player-default-duration-value="30">
+
     {# Header #}
     <div class="text-center mb-8">
         <p class="font-label-sm text-label-sm text-primary uppercase tracking-[0.3em] mb-2">Dimensión Sonora</p>
@@ -22,7 +25,9 @@
 
     {# Sacred Geometry Visualizer #}
     <div class="sanctuary-card mb-8">
-        <div class="frequency-visualizer is-idle" id="frequency-visualizer">
+        <div class="frequency-visualizer is-idle"
+             id="frequency-visualizer"
+             data-frequency-player-target="visualizer">
             <div class="freq-ring freq-ring-1"></div>
             <div class="freq-ring freq-ring-2"></div>
             <div class="freq-ring freq-ring-3"></div>
@@ -33,103 +38,139 @@
             </div>
         </div>
     </div>
-            <p class="text-sm text-[var(--outline-elev)] tracking-widest">432Hz · Solfeggio · Chakra · Universal</p>
-        </div>
 
-        {# Stats + Player #}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="glass-card-elev p-6 lg:col-span-2">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-12 h-12 rounded-full gold-glow-elev flex items-center justify-center bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)]">
-                        <span class="material-symbols-elev text-[var(--on-primary-elev)]" style="font-variation-settings: 'FILL' 1;">graphic_eq</span>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-[var(--on-surface-elev)]">Sintonía actual</h2>
-                        <p class="text-xs text-[var(--outline-elev)]">Web Audio API · OscillatorNode</p>
-                    </div>
+    {# Stats + Player #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="glass-card-elev p-6 lg:col-span-2">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-full gold-glow-elev flex items-center justify-center bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)]">
+                    <span class="material-symbols-elev text-[var(--on-primary-elev)]" style="font-variation-settings: 'FILL' 1;">graphic_eq</span>
                 </div>
-                <div class="text-center my-8">
-                    <p id="current-freq" class="text-7xl font-bold text-[var(--gold-elev)] tracking-wider">—</p>
-                    <p id="current-freq-name" class="text-sm text-[var(--outline-elev)] mt-2">Selecciona una frecuencia</p>
-                </div>
-                <div class="flex items-center justify-center gap-3 mb-6">
-                    <select id="duration-select" class="px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm">
-                        <option value="15">15 min</option>
-                        <option value="30" selected>30 min</option>
-                        <option value="60">1 hora</option>
-                        <option value="0">∞ Infinito</option>
-                    </select>
-                    <button id="play-btn" class="ui-btn ui-btn primary">
-                        <span class="material-symbols-elev align-middle">play_arrow</span>
-                        Iniciar
-                    </button>
-                    <button id="stop-btn" class="ui-btn ui-btn ghost" disabled>
-                        <span class="material-symbols-elev align-middle">stop</span>
-                        Detener
-                    </button>
-                </div>
-                <div id="timer-display" class="text-center text-sm text-[var(--outline-elev)] h-6"></div>
-            </div>
-
-            <div class="glass-card-elev p-6">
-                <h3 class="text-sm font-semibold text-[var(--outline-elev)] mb-4 tracking-wider">TU PRÁCTICA</h3>
-                <div id="user-stats">
-                    <div class="mb-4">
-                        <p class="text-xs text-[var(--outline-elev)]">Total minutos</p>
-                        <p id="stat-minutes" class="text-3xl font-bold text-[var(--gold-elev)]">0</p>
-                    </div>
-                    <div class="mb-4">
-                        <p class="text-xs text-[var(--outline-elev)]">Horas equivalentes</p>
-                        <p id="stat-hours" class="text-2xl text-[var(--on-surface-elev)]">0.0</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-[var(--outline-elev)]">Sesiones activas</p>
-                        <p id="stat-active" class="text-2xl text-[var(--on-surface-elev)]">0</p>
-                    </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-[var(--on-surface-elev)]">Sintonía actual</h2>
+                    <p class="text-xs text-[var(--outline-elev)]">Web Audio API · OscillatorNode</p>
                 </div>
             </div>
+            <div class="text-center my-8">
+                <p id="current-freq"
+                   data-frequency-player-target="freqDisplay"
+                   class="text-7xl font-bold text-[var(--gold-elev)] tracking-wider">—</p>
+                <p id="current-freq-name"
+                   data-frequency-player-target="freqNameDisplay"
+                   class="text-sm text-[var(--outline-elev)] mt-2">Selecciona una frecuencia</p>
+            </div>
+            <div class="flex items-center justify-center gap-3 mb-6">
+                <select id="duration-select"
+                        data-frequency-player-target="durationSelect"
+                        data-action="change->frequency-player#setDuration"
+                        class="px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm">
+                    <option value="15">15 min</option>
+                    <option value="30" selected>30 min</option>
+                    <option value="60">1 hora</option>
+                    <option value="0">∞ Infinito</option>
+                </select>
+                <button id="play-btn"
+                        data-frequency-player-target="playBtn"
+                        data-action="click->frequency-player#startSession"
+                        class="ui-btn ui-btn primary">
+                    <span class="material-symbols-elev align-middle">play_arrow</span>
+                    Iniciar
+                </button>
+                <button id="stop-btn"
+                        data-frequency-player-target="stopBtn"
+                        data-action="click->frequency-player#stopSession"
+                        class="ui-btn ui-btn ghost" disabled>
+                    <span class="material-symbols-elev align-middle">stop</span>
+                    Detener
+                </button>
+            </div>
+            <div id="timer-display"
+                 data-frequency-player-target="timerDisplay"
+                 class="text-center text-sm text-[var(--outline-elev)] h-6"></div>
         </div>
 
-        {# Frequency grid (loaded by JS) #}
-        <h3 class="text-xl font-semibold mb-4 text-[var(--on-surface-elev)]">Frecuencias Sagradas</h3>
-        {# L59: recently played (localStorage, rendered by JS) #}
-        <div id="recent-freqs" class="flex flex-wrap gap-2 mb-4" hidden></div>
-        <div id="presets-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-            <p class="col-span-full text-center text-[var(--outline-elev)] py-8">Cargando frecuencias...</p>
-        </div>
-            <p class="col-span-full text-center text-[var(--outline-elev)] py-8">Cargando frecuencias...</p>
-        </div>
-
-        {# My custom frequencies #}
-        <h3 class="text-xl font-semibold mb-4 text-[var(--on-surface-elev)]">Mis Frecuencias</h3>
-        <div class="glass-card-elev p-4 mb-4">
-            <div class="flex gap-2 mb-3">
-                <input id="my-freq-name" type="text" placeholder="Nombre (ej: Meditación matutina)" class="flex-1 px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]" />
-                <input id="my-freq-hz" type="number" min="50" max="2000" placeholder="Hz" class="w-24 px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]" />
-                <button id="add-freq-btn" class="ui-btn ui-btn secondary text-xs">+ Agregar</button>
-            </div>
-            <div id="my-freqs-list" class="space-y-2">
-                <p class="text-sm text-[var(--outline-elev)] text-center py-4">Sin frecuencias personalizadas aún.</p>
-            </div>
-        </div>
-
-        {# Sacred Timer #}
-        <div class="sanctuary-card">
-            <div class="flex items-center justify-between mb-4">
-                <span class="font-label-md text-label-md text-on-surface uppercase tracking-widest">Sacred Timer</span>
-                <span class="font-label-sm text-label-sm text-primary">Focused Session</span>
-            </div>
-            <div class="grid grid-cols-4 gap-3">
-                <button class="timer-btn" data-time="15">15m</button>
-                <button class="timer-btn active" data-time="30">30m</button>
-                <button class="timer-btn" data-time="60">1h</button>
-                <button class="timer-btn" data-time="0"><span class="material-symbols-outlined">all_inclusive</span></button>
+        <div class="glass-card-elev p-6">
+            <h3 class="text-sm font-semibold text-[var(--outline-elev)] mb-4 tracking-wider">TU PRÁCTICA</h3>
+            <div id="user-stats">
+                <div class="mb-4">
+                    <p class="text-xs text-[var(--outline-elev)]">Total minutos</p>
+                    <p id="stat-minutes"
+                       data-frequency-player-target="statMinutes"
+                       class="text-3xl font-bold text-[var(--gold-elev)]">0</p>
+                </div>
+                <div class="mb-4">
+                    <p class="text-xs text-[var(--outline-elev)]">Horas equivalentes</p>
+                    <p id="stat-hours"
+                       data-frequency-player-target="statHours"
+                       class="text-2xl text-[var(--on-surface-elev)]">0.0</p>
+                </div>
+                <div>
+                    <p class="text-xs text-[var(--outline-elev)]">Sesiones activas</p>
+                    <p id="stat-active"
+                       data-frequency-player-target="statActive"
+                       class="text-2xl text-[var(--on-surface-elev)]">0</p>
+                </div>
             </div>
         </div>
     </div>
 
+    {# Frequency grid (loaded by Stimulus) #}
+    <h3 class="text-xl font-semibold mb-4 text-[var(--on-surface-elev)]">Frecuencias Sagradas</h3>
+    {# L59: recently played (localStorage, rendered by Stimulus) #}
+    <div id="recent-freqs"
+         data-frequency-player-target="recentFreqs"
+         class="flex flex-wrap gap-2 mb-4"
+         hidden></div>
+    <div id="presets-grid"
+         data-frequency-player-target="presetsGrid"
+         class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        <p class="col-span-full text-center text-[var(--outline-elev)] py-8">Cargando frecuencias...</p>
+    </div>
+
+    {# My custom frequencies #}
+    <h3 class="text-xl font-semibold mb-4 text-[var(--on-surface-elev)]">Mis Frecuencias</h3>
+    <div class="glass-card-elev p-4 mb-4">
+        <div class="flex gap-2 mb-3">
+            <input id="my-freq-name"
+                   data-frequency-player-target="myFreqName"
+                   type="text"
+                   placeholder="Nombre (ej: Meditación matutina)"
+                   class="flex-1 px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]" />
+            <input id="my-freq-hz"
+                   data-frequency-player-target="myFreqHz"
+                   type="number" min="50" max="2000" placeholder="Hz"
+                   class="w-24 px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)]" />
+            <button id="add-freq-btn"
+                    data-frequency-player-target="addFreqBtn"
+                    data-action="click->frequency-player#addMyFreq"
+                    class="ui-btn ui-btn secondary text-xs">+ Agregar</button>
+        </div>
+        <div id="my-freqs-list"
+             data-frequency-player-target="myFreqsList"
+             class="space-y-2">
+            <p class="text-sm text-[var(--outline-elev)] text-center py-4">Sin frecuencias personalizadas aún.</p>
+        </div>
+    </div>
+
+    {# Sacred Timer #}
+    <div class="sanctuary-card">
+        <div class="flex items-center justify-between mb-4">
+            <span class="font-label-md text-label-md text-on-surface uppercase tracking-widest">Sacred Timer</span>
+            <span class="font-label-sm text-label-sm text-primary">Focused Session</span>
+        </div>
+        <div class="grid grid-cols-4 gap-3">
+            <button type="button" class="timer-btn" data-time="15">15m</button>
+            <button type="button" class="timer-btn active" data-time="30">30m</button>
+            <button type="button" class="timer-btn" data-time="60">1h</button>
+            <button type="button" class="timer-btn" data-time="0"><span class="material-symbols-outlined">all_inclusive</span></button>
+        </div>
+    </div>
+
     {# Floating Mini Player #}
-    <div class="mini-player" id="mini-player" style="display: none;">
+    <div class="mini-player"
+         id="mini-player"
+         data-frequency-player-target="miniPlayer"
+         style="display: none;">
         <div class="mini-player-icon">
             <span class="material-symbols-outlined text-[var(--void-black)]" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">music_note</span>
         </div>
@@ -137,251 +178,12 @@
             <p class="text-xs font-bold text-[var(--gold-elev)]" id="mini-player-freq">432Hz</p>
             <p class="text-[10px] text-[var(--outline-elev)]">TNSVT Sanctum</p>
         </div>
-        <button id="mini-player-toggle" class="text-[var(--on-surface-elev)]">
+        <button id="mini-player-toggle"
+                data-frequency-player-target="miniPlayerToggle"
+                data-action="click->frequency-player#toggleMiniPlayer"
+                class="text-[var(--on-surface-elev)]">
             <span class="material-symbols-outlined">pause</span>
         </button>
     </div>
-
-    <script>
-    let audioCtx = null;
-    let oscillator = null;
-    let gainNode = null;
-    let currentSessionId = null;
-    let timerInterval = null;
-    let secondsElapsed = 0;
-    let selectedDuration = 30; // min
-    let selectedFrequency = null;
-
-    async function init() {
-        await loadPresets();
-        await loadMyFreqs();
-        await loadStats();
-        renderRecents();
-        document.getElementById('duration-select').addEventListener('change', e => setDuration(parseInt(e.target.value)));
-        document.getElementById('play-btn').addEventListener('click', startSession);
-        document.getElementById('stop-btn').addEventListener('click', stopSession);
-        document.getElementById('add-freq-btn').addEventListener('click', addMyFreq);
-        // L56+L60: Sacred Timer buttons were dead — wire them as the
-        // single duration control, kept in sync with the select.
-        document.querySelectorAll('.timer-btn[data-time]').forEach(btn => {
-            btn.addEventListener('click', () => setDuration(parseInt(btn.dataset.time, 10)));
-        });
-        setDuration(selectedDuration);
-    }
-
-    function setDuration(min) {
-        selectedDuration = min;
-        const sel = document.getElementById('duration-select');
-        if (sel) sel.value = String(min);
-        document.querySelectorAll('.timer-btn[data-time]').forEach(b => {
-            b.classList.toggle('active', parseInt(b.dataset.time, 10) === min);
-        });
-    }
-
-    async function loadPresets() {
-        try {
-            const r = await fetch('/api/frequencies/presets');
-            const data = await r.json();
-            if (data.success) {
-                const grid = document.getElementById('presets-grid');
-                grid.innerHTML = data.presets.map(p => `
-                    <button class="preset-card glass-card-elev p-4 text-left hover:gold-glow-elev transition-all" data-freq="${p.frequency}" data-name="${p.name}" data-id="${p.id}">
-                        <div class="text-2xl font-bold text-[var(--gold-elev)] mb-1">${p.frequency}Hz</div>
-                        <div class="text-sm text-[var(--on-surface-elev)] mb-2 line-clamp-2">${p.name}</div>
-                        <div class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">${p.category || ''}</div>
-                    </button>
-                `).join('');
-                grid.querySelectorAll('.preset-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        grid.querySelectorAll('.preset-card').forEach(c => c.classList.remove('ring-2', 'ring-[var(--gold-elev)]'));
-                        card.classList.add('ring-2', 'ring-[var(--gold-elev)]');
-                        selectedFrequency = { id: parseInt(card.dataset.id), frequency: parseInt(card.dataset.freq), name: card.dataset.name, type: 'preset' };
-                        const freqEl = document.getElementById('current-freq');
-                        const freqNameEl = document.getElementById('current-freq-name');
-                        if (freqEl) freqEl.textContent = card.dataset.freq + ' Hz';
-                        if (freqNameEl) freqNameEl.textContent = card.dataset.name;
-                    });
-                });
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function loadMyFreqs() {
-        try {
-            const r = await fetch('/api/frequencies/mine');
-            const data = await r.json();
-            if (data.success && data.frequencies.length > 0) {
-                const list = document.getElementById('my-freqs-list');
-                list.innerHTML = data.frequencies.map(f => `
-                    <button class="w-full text-left p-2 rounded glass-card-elev hover:gold-glow-elev" data-freq="${f.frequency}" data-name="${f.name}" data-id="${f.id}">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-[var(--on-surface-elev)]">${f.name}</span>
-                            <span class="text-sm font-mono text-[var(--gold-elev)]">${f.frequency} Hz</span>
-                        </div>
-                    </button>
-                `).join('');
-                list.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        selectedFrequency = { id: parseInt(btn.dataset.id), frequency: parseInt(btn.dataset.freq), name: btn.dataset.name, type: 'user' };
-                        const freqEl = document.getElementById('current-freq');
-                        const freqNameEl = document.getElementById('current-freq-name');
-                        if (freqEl) freqEl.textContent = btn.dataset.freq + ' Hz';
-                        if (freqNameEl) freqNameEl.textContent = btn.dataset.name;
-                    });
-                });
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function loadStats() {
-        try {
-            const r = await fetch('/api/frequencies/stats');
-            const data = await r.json();
-            if (data.success) {
-                const minEl = document.getElementById('stat-minutes');
-                const hrsEl = document.getElementById('stat-hours');
-                const actEl = document.getElementById('stat-active');
-                if (minEl) minEl.textContent = data.totalMinutes;
-                if (hrsEl) hrsEl.textContent = data.totalHours;
-                if (actEl) actEl.textContent = data.activeSessions;
-            }
-        } catch (e) { console.error(e); }
-    }
-
-    async function addMyFreq() {
-        const name = document.getElementById('my-freq-name').value.trim();
-        const hz = parseInt(document.getElementById('my-freq-hz').value);
-        if (!name || !hz || hz < 50 || hz > 2000) { apiToast('Nombre y Hz (50-2000) requeridos', 'warning'); return; }
-        // L57: warn on duplicate Hz instead of silently creating a twin.
-        const dup = Array.from(document.querySelectorAll('#my-freqs-list [data-freq]'))
-            .some(el => parseInt(el.dataset.freq, 10) === hz);
-        if (dup) {
-            const ok = await apiConfirm(
-                `Ya tenés una frecuencia en ${hz} Hz. ¿Crear otra igual?`,
-                { title: 'Frecuencia duplicada' }
-            );
-            if (!ok) return;
-        }
-        const r = await fetch('/api/frequencies/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, frequency: hz}) });
-        const data = await r.json();
-        if (data.success) {
-            document.getElementById('my-freq-name').value = '';
-            document.getElementById('my-freq-hz').value = '';
-            await loadMyFreqs();
-        } else apiToast('Error: ' + data.error, 'error');
-    }
-
-    async function startSession() {
-        if (!selectedFrequency) { apiToast('Selecciona una frecuencia primero', 'warning'); return; }
-        try {
-            // Create session
-            const r = await fetch('/api/frequencies/session/start', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    duration_minutes: selectedDuration,
-                    preset_id: selectedFrequency.type === 'preset' ? selectedFrequency.id : null,
-                    user_frequency_id: selectedFrequency.type === 'user' ? selectedFrequency.id : null,
-                })
-            });
-            const data = await r.json();
-            if (!data.success) { apiToast('Error: ' + data.error, 'error'); return; }
-            currentSessionId = data.id;
-            recordRecent(selectedFrequency.frequency, selectedFrequency.name);
-
-            // Start Web Audio
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            oscillator = audioCtx.createOscillator();
-            gainNode = audioCtx.createGain();
-            oscillator.frequency.value = selectedFrequency.frequency;
-            oscillator.type = 'sine';
-            gainNode.gain.value = 0.05; // start quiet
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            oscillator.start();
-            // Fade in
-            gainNode.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 2);
-
-            // Timer
-            secondsElapsed = 0;
-            const totalSeconds = selectedDuration * 60;
-            document.getElementById('play-btn').disabled = true;
-            document.getElementById('stop-btn').disabled = false;
-            const viz = document.getElementById('frequency-visualizer');
-            if (viz) viz.classList.replace('is-idle', 'is-playing');
-            timerInterval = setInterval(() => {
-                secondsElapsed++;
-                if (totalSeconds > 0 && secondsElapsed >= totalSeconds) { stopSession(); return; }
-                const h = Math.floor(secondsElapsed / 3600);
-                const m = Math.floor((secondsElapsed % 3600) / 60);
-                const s = secondsElapsed % 60;
-                const timerEl = document.getElementById('timer-display');
-                if (timerEl) timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-            }, 1000);
-        } catch (e) { apiToast('Error: ' + e.message, 'error'); }
-    }
-
-    // ─── L59: recently played (localStorage, max 5) ───
-    const RECENT_KEY = 'tnsvt_freq_recent';
-    function getRecents() {
-        try {
-            const raw = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
-            return Array.isArray(raw) ? raw.slice(0, 5) : [];
-        } catch (e) { return []; }
-    }
-    function recordRecent(freq, name) {
-        if (!freq) return;
-        try {
-            const list = getRecents().filter(r => Number(r.frequency) !== Number(freq));
-            list.unshift({ frequency: Number(freq), name: name || (freq + ' Hz'), at: Date.now() });
-            localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 5)));
-            renderRecents();
-        } catch (e) {}
-    }
-    function renderRecents() {
-        const box = document.getElementById('recent-freqs');
-        if (!box) return;
-        const list = getRecents();
-        if (!list.length) { box.hidden = true; box.innerHTML = ''; return; }
-        box.hidden = false;
-        box.innerHTML = '<span class="text-xs uppercase tracking-widest text-[var(--outline-elev)] w-full">Recientes</span>' + list.map(r =>
-            `<button type="button" class="cal-country-chip" data-recent-freq="${r.frequency}" data-recent-name="${String(r.name).replace(/"/g, '&quot;')}">${r.frequency} Hz</button>`
-        ).join('');
-        box.querySelectorAll('[data-recent-freq]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectedFrequency = {
-                    id: null,
-                    frequency: parseInt(btn.dataset.recentFreq, 10),
-                    name: btn.dataset.recentName || (btn.dataset.recentFreq + ' Hz'),
-                    type: 'recent',
-                };
-                const freqEl = document.getElementById('current-freq');
-                const freqNameEl = document.getElementById('current-freq-name');
-                if (freqEl) freqEl.textContent = btn.dataset.recentFreq + ' Hz';
-                if (freqNameEl) freqNameEl.textContent = btn.dataset.recentName || '';
-            });
-        });
-    }
-
-    async function stopSession() {
-        clearInterval(timerInterval);
-        document.getElementById('play-btn').disabled = false;
-        document.getElementById('stop-btn').disabled = true;
-        const viz = document.getElementById('frequency-visualizer');
-        if (viz) viz.classList.replace('is-playing', 'is-idle');
-        const timerEl = document.getElementById('timer-display');
-        if (timerEl) timerEl.textContent = '';
-        if (oscillator) {
-            try { gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5); } catch (e) {}
-            setTimeout(() => { try { oscillator.stop(); } catch (e) {} }, 600);
-            oscillator = null;
-        }
-        if (currentSessionId) {
-            try { await fetch('/api/frequencies/session/' + currentSessionId + '/end', {method: 'POST'}); } catch (e) {}
-            currentSessionId = null;
-        }
-        await loadStats();
-    }
-
-    init();
-    </script>
+</div>
 {% endblock %}
