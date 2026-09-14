@@ -46,16 +46,14 @@
             <article class="ui-card ui-card-elevated ui-card-padding-md campus-admin-user-card">
                 <header class="ui-card-header">
                     <div class="campus-admin-user-avatar">
-                        <span>{{ s.name|default(s.code)|slice(0, 1)|upper }}</span>
+                        <span>{{ s.name|default('?')|slice(0, 1)|upper }}</span>
                     </div>
                     <div>
                         <h3 class="ui-card-title">{{ s.name|default('—') }}</h3>
-                        <p class="campus-admin-user-code">{{ s.code }}</p>
                     </div>
                 </header>
                 <div class="campus-admin-user-meta">
                     {{ ui.status_pill(s.tier|default('INITIATE'), s.tier|default('INITIATE')) }}
-                    <span class="text-xs">{{ s.email|default('') }}</span>
                 </div>
                 <p class="campus-admin-user-empty">Progreso cargado vía overview bulk (incluye alumnos en 0%).</p>
                 <footer class="campus-admin-user-actions">

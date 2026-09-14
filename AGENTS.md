@@ -123,12 +123,17 @@ After every push to `main`, the agent runs this SSH command:
 ```bash
 ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 -o StrictHostKeyChecking=accept-new \
     u310596868@185.173.111.201 \
-    "cd ~/domains/tnsvt.com/public_html && \
+     "cd ~/domains/tnsvt.com/public_html && \
      git fetch origin main && \
      git reset --hard origin/main && \
      rm -rf var/cache/prod var/cache/dev && \
-     php bin/console cache:warmup --env=prod --no-debug"
+     php bin/console cache:warmup --env=prod --no-debug && \
+     php bin/console asset-map:compile --env=prod --no-interaction"
 ```
+
+`public/assets/` is gitignored, so `asset-map:compile` **must** run on every
+deploy — otherwise new Stimulus controllers never reach the browser (see
+campus admin users panel incident: twig deployed but JS never hydrated).
 
 `composer install` is **intentionally omitted** because of the
 `proc_open` limitation below.

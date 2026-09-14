@@ -144,6 +144,13 @@ jobs:
             - name: Lint templates
               run: php bin/console lint:twig templates
 
+            - name: Compile asset map (Stimulus controllers)
+              # Guards against shipping new controllers/ that never reach
+              # public/assets (see campus admin users panel incident).
+              env:
+                  JWT_PASSPHRASE: ''
+              run: php bin/console asset-map:compile --no-interaction
+
     lint-js:
         name: JS Syntax Check
         runs-on: ubuntu-latest

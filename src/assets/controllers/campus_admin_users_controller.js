@@ -66,16 +66,16 @@ export default class extends Controller {
     this.gridTarget.innerHTML = users.map((u) => {
       const pct = u.progress_percent ?? 0;
       const avg = u.average_grade !== null && u.average_grade !== undefined ? ` · Nota ${this.esc(u.average_grade)}` : '';
-      const initial = this.esc((u.name || u.code || '?').slice(0, 1).toUpperCase());
-      return `<article class="ui-card ui-card-elevated ui-card-padding-md campus-admin-user-card" data-user-code="${this.esc(u.code)}">
+      const initial = this.esc((u.name || '?').slice(0, 1).toUpperCase());
+      // NOTE: user code is a login credential (code+name) — never paint it on cards.
+      // Full code/email live only on the detail page (/users/{code}).
+      return `<article class="ui-card ui-card-elevated ui-card-padding-md campus-admin-user-card">
         <header class="ui-card-header">
           <div class="campus-admin-user-avatar"><span>${initial}</span></div>
-          <div><h3 class="ui-card-title">${this.esc(u.name || '—')}</h3>
-          <p class="campus-admin-user-code">${this.esc(u.code)}</p></div>
+          <div><h3 class="ui-card-title">${this.esc(u.name || '—')}</h3></div>
         </header>
         <div class="campus-admin-user-meta">
           <span class="status-pill status-pill-${this.esc(u.tier || 'INITIATE')} size-md" role="status">${this.esc(u.tier || 'INITIATE')}</span>
-          <span class="text-xs">${this.esc(u.email || '')}</span>
         </div>
         <div class="progress-bar progress-bar-md progress-bar-gold" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso general: ${pct}%">
           <div class="progress-bar-label"><span>Progreso general</span><span class="progress-bar-value">${pct}%</span></div>
