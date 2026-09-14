@@ -124,8 +124,12 @@
             </div>
         </div>
 
-        <div class="diary-editor-wrap">
-            <div class="diary-editor-side">
+        <div class="diary-editor-wrap" id="diary-editor-wrap" data-diary-view="write">
+            <div class="diary-view-toggle" role="tablist" aria-label="Vista del editor">
+                <button type="button" class="diary-view-tab is-active" data-view="write" role="tab" aria-selected="true">Escribir</button>
+                <button type="button" class="diary-view-tab" data-view="read" role="tab" aria-selected="false">Vista</button>
+            </div>
+            <div class="diary-editor-side" data-side="write">
                 <input id="diary-editor-title-input" type="text" class="diary-editor-input"
                        placeholder="Título (opcional)" maxlength="120" />
                 <textarea id="diary-editor-textarea" class="diary-editor-textarea"
@@ -148,7 +152,7 @@
                     </span>
                 </div>
             </div>
-            <div class="diary-editor-side">
+            <div class="diary-editor-side" data-side="read">
                 <div class="diary-editor-side-header">Vista de lectura</div>
                 <div id="diary-editor-preview" class="diary-editor-preview">
                     <p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>
@@ -635,6 +639,18 @@
 
     // ─── Wire-up ───
     function wire() {
+        // L47: mobile write/read toggle for the stacked editor.
+        document.querySelectorAll('.diary-view-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const wrap = document.getElementById('diary-editor-wrap');
+                if (wrap) wrap.dataset.diaryView = btn.dataset.view;
+                document.querySelectorAll('.diary-view-tab').forEach(x => {
+                    const active = x === btn;
+                    x.classList.toggle('is-active', active);
+                    x.setAttribute('aria-selected', active ? 'true' : 'false');
+                });
+            });
+        });
         document.getElementById('diary-unlock-btn').addEventListener('click', unlockOrSetup);
         document.getElementById('diary-pass-input').addEventListener('keydown', e => {
             if (e.key === 'Enter') unlockOrSetup();

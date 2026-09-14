@@ -151,7 +151,25 @@ export default class extends Controller {
             return;
         }
         const sel = this;
-        this.listTarget.innerHTML = notifs.map((n) => {
+        // L84: group by day — Hoy / Ayer / formatted date.
+        const dayKey = (n) => {
+            const d = n.ts ? new Date(n.ts) : null;
+            if (!d || Number.isNaN(d.getTime())) return '';
+            return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate();
+        };
+        const dayLabel = (key) => {
+            if (!key) return '';
+            const [y, m, d] = key.split('-').map(Number);
+            const dt = new Date(y, m, d);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const diff = Math.round((today - dt) / 86400000);
+            if (diff === 0) return 'Hoy';
+            if (diff === 1) return 'Ayer';
+            return dt.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'short' });
+        };
+        let html = '';
+        let lastKey = null;
+        notifs.forEach((n) => {
             const icon = ICONS[n.type] || ICONS[n.type?.split('_')[0]] || 'notifications';
             let link = n.link || LINKS[n.type] || '/feed';
             if (link.startsWith('task:')) link = '/sanctum/tasks/' + link.split(':')[1];
@@ -164,7 +182,13 @@ export default class extends Controller {
                 : '';
             const tagName = sel.bulkMode ? 'div' : 'a';
             const hrefAttr = sel.bulkMode ? '' : ` href="${sel.escapeHtml(link)}"`;
-            return `<${tagName}${hrefAttr} data-id="${n.id}" class="block glass-card-elev p-3 ${unreadClass} ${checked} hover:bg-[var(--glass-bg-elev)] transition">`
+            const key = dayKey(n);
+            if (key !== lastKey) {
+                lastKey = key;
+                const label = dayLabel(key);
+                if (label) html += `<p class="notif-day-header">${sel.escapeHtml(label)}</p>`;
+            }
+            html += `<${tagName}${hrefAttr} data-id="${n.id}" class="block glass-card-elev p-3 ${unreadClass} ${checked} hover:bg-[var(--glass-bg-elev)] transition">`
                 + `<div class="flex items-start gap-3">`
                 + checkbox
                 + `<span class="material-symbols-elev text-[var(--gold-elev)] mt-0.5">${icon}</span>`
@@ -175,8 +199,8 @@ export default class extends Controller {
                 + (n.read ? '' : '<span class="text-xs text-[var(--gold-elev)] font-semibold">NUEVO</span>')
                 + `</div>`
                 + `</${tagName}>`;
-        }).join('');
-        // Wire bulk checkboxes
+        });
+        this.listTarget.innerHTML = html;
         if (this.bulkMode) {
             this.listTarget.querySelectorAll('.notif-bulk-checkbox').forEach(cb => {
                 cb.addEventListener('change', () => {

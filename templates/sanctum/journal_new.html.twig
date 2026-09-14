@@ -738,6 +738,25 @@
         }
     });
     $form.addEventListener('input', () => { $form.dataset.dirty = '1'; });
+
+    // ─── L28: guard browser-back when the form is dirty ───
+    // Push a guard entry; if the user goes back with unsaved changes,
+    // confirm first. Confirming lets the back navigation proceed
+    // (we go back one extra step); cancelling re-arms the guard.
+    try { history.pushState({ jnGuard: true }, ''); } catch (e) {}
+    window.addEventListener('popstate', async () => {
+        if ($form.dataset.dirty !== '1') return;
+        const ok = await apiConfirm(
+            'Tenés cambios sin guardar. ¿Volver sin guardar?',
+            { title: 'Cambios sin guardar' }
+        );
+        if (ok) {
+            $form.dataset.dirty = '';
+            history.back();
+        } else {
+            try { history.pushState({ jnGuard: true }, ''); } catch (e) {}
+        }
+    });
 })();
 </script>
 {% endblock %}

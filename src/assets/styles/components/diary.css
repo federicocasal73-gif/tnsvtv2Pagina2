@@ -395,3 +395,38 @@
 @media (prefers-reduced-motion: reduce) {
     .diary-state { transition: none; opacity: 1; }
 }
+
+
+/* ─── L47: mobile write/read toggle ─── */
+.diary-view-toggle { display: none; }
+@media (max-width: 720px) {
+    .diary-view-toggle {
+        display: inline-flex;
+        gap: 0.25rem;
+        padding: 0.25rem;
+        margin-bottom: 0.6rem;
+        background: var(--glass-bg-elev);
+        border: 1px solid var(--glass-border-elev);
+        border-radius: 999px;
+        grid-column: 1 / -1;
+    }
+    .diary-view-tab {
+        flex: 1;
+        padding: 0.35rem 0.9rem;
+        border-radius: 999px;
+        background: transparent;
+        border: none;
+        color: var(--outline-elev);
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .diary-view-tab.is-active {
+        background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
+        color: var(--on-primary-elev);
+    }
+    #diary-editor-wrap[data-diary-view="write"] .diary-editor-side[data-side="read"],
+    #diary-editor-wrap[data-diary-view="read"] .diary-editor-side[data-side="write"] {
+        display: none;
+    }
+}

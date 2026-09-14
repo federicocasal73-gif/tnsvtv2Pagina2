@@ -154,3 +154,24 @@
     outline: 2px solid var(--gold-elev);
     outline-offset: -2px;
 }
+
+
+/* ─── L84: day group headers ─── */
+.notif-day-header {
+    margin: 0.9rem 0 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold-elev);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.notif-day-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(242,202,80,0.35), transparent);
+}
+.notif-day-header:first-child { margin-top: 0; }

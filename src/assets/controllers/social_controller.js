@@ -132,11 +132,17 @@ export default class extends Controller {
         const list = document.getElementById('users-list');
         if (!list) return;
 
+        // L69: abort the in-flight search before starting a new one so
+        // slow responses can't overwrite fresher results.
+        if (this._usersAbort) { try { this._usersAbort.abort(); } catch (e) {} }
+        this._usersAbort = new AbortController();
+        const signal = this._usersAbort.signal;
+
         list.innerHTML = '<p class="social-loading" style="grid-column: 1 / -1;">Cargando...</p>';
         try {
             const q = document.getElementById('social-search').value.trim();
             const url = '/social/api/users' + (q ? '?q=' + encodeURIComponent(q) : '');
-            const response = await fetch(url);
+            const response = await fetch(url, { signal });
             const r = await response.json();
 
             if (!r.success || !Array.isArray(r.users)) {
@@ -159,6 +165,7 @@ export default class extends Controller {
                 b.addEventListener('click', () => this.sendRequest(b.dataset.code));
             });
         } catch (e) {
+            if (e && e.name === 'AbortError') return; // superseded search
             list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin conexión.</p>';
         }
     }
