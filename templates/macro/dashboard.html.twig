@@ -361,7 +361,7 @@
                     <span class="material-symbols-elev">quiz</span>
                     <span>Cuestionario</span>
                 </h2>
-                <button type="button" class="tnsvt-modal__close" data-action="closeMacroQuestionnaire" aria-label="Cerrar">
+                <button type="button" class="tnsvt-modal__close" data-macro-close-questionnaire aria-label="Cerrar">
                     <span class="material-symbols-elev" aria-hidden="true">close</span>
                 </button>
             </header>
@@ -369,7 +369,7 @@
                 <p>Cargando...</p>
             </div>
             <footer class="tnsvt-modal__footer">
-                <button type="button" class="ui-btn ui-btn ghost" data-action="closeMacroQuestionnaire">Cancelar</button>
+                <button type="button" class="ui-btn ui-btn ghost" data-macro-close-questionnaire>Cancelar</button>
                 <button type="button" class="ui-btn ui-btn primary" id="macro-questionnaire-submit-btn" disabled>Enviar respuestas</button>
             </footer>
         </div>
@@ -1312,7 +1312,7 @@
                 r.classList.toggle('is-focused', r === rule));
             return;
         }
-        if (e.target.closest('[data-action="closeMacroQuestionnaire"]')) {
+        if (e.target.closest('[data-macro-close-questionnaire]')) {
             closeMacroQuestionnaireModal();
         }
     });
