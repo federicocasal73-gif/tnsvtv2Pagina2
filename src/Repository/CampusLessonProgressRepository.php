@@ -77,4 +77,32 @@ class CampusLessonProgressRepository extends ServiceEntityRepository
 
         return array_map('current', $result);
     }
+
+    /**
+     * Bulk completed-lessons per user (1 query for N users).
+     * @param string[] $userCodes
+     * @return array<string,int> map userCode => completed count
+     */
+    public function countCompletedGroupedByUser(array $userCodes): array
+    {
+        if ($userCodes === []) {
+            return [];
+        }
+        $rows = $this->createQueryBuilder('p')
+            ->select('p.userCode as user_code, COUNT(p.id) as completed')
+            ->andWhere('p.userCode IN (:codes)')
+            ->andWhere('p.completed = :completed')
+            ->setParameter('codes', $userCodes)
+            ->setParameter('completed', true)
+            ->groupBy('p.userCode')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($rows as $r) {
+            $map[(string) $r['user_code']] = (int) $r['completed'];
+        }
+
+        return $map;
+    }
 }

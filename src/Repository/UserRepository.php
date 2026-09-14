@@ -28,4 +28,36 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Paginated active users for the campus admin overview.
+     * Includes users with zero progress (LEFT-join friendly: caller merges aggregates).
+     * @return array{users: User[], total: int}
+     */
+    public function findActivePaginated(?string $search, int $offset, int $limit): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->andWhere('u.active = :active')
+            ->setParameter('active', true);
+        $countQb = $this->createQueryBuilder('u2')
+            ->select('COUNT(u2.id)')
+            ->andWhere('u2.active = :active')
+            ->setParameter('active', true);
+
+        if ($search !== null && $search !== '') {
+            $qb->andWhere('u.code LIKE :q OR u.name LIKE :q OR u.email LIKE :q')
+                ->setParameter('q', '%' . $search . '%');
+            $countQb->andWhere('u2.code LIKE :q OR u2.name LIKE :q OR u2.email LIKE :q')
+                ->setParameter('q', '%' . $search . '%');
+        }
+
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
+        $users = $qb->orderBy('u.name', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return ['users' => $users, 'total' => $total];
+    }
 }

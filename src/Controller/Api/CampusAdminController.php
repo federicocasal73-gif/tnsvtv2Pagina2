@@ -767,18 +767,15 @@ class CampusAdminController extends AbstractController
             ];
         }
 
-        // Fetch all courses and build the response
+        // Fetch all courses and build the response (1 query for totals, no N+1 per module)
         $allCourses = $this->getCourseRepo()->findAllForAdmin();
+        $totalsPerCourse = $this->getLessonRepo()->countTotalPerCourse();
         $coursesData = [];
         $totals = ['total_lessons' => 0, 'completed_lessons' => 0, 'total_submissions' => 0, 'graded_submissions' => 0, 'sum_grades' => 0];
 
         foreach ($allCourses as $course) {
             $cid = $course->getId();
-            $modules = $this->getModuleRepo()->findByCourse($cid);
-            $totalLessons = 0;
-            foreach ($modules as $m) {
-                $totalLessons += count($this->getLessonRepo()->findByModule($m->getId()));
-            }
+            $totalLessons = $totalsPerCourse[$cid] ?? 0;
 
             $prog = $courseProgressMap[$cid] ?? ['total' => 0, 'completed' => 0];
             $completed = $prog['completed'];
@@ -865,6 +862,79 @@ class CampusAdminController extends AbstractController
         }
 
         return $this->json(['users' => $users]);
+    }
+
+    // === OVERVIEW (bulk, paginated — scales to 50+ students in 5 queries) ===
+
+    #[Route('/overview', name: 'campus_admin_overview', methods: ['GET'])]
+    public function overview(Request $request): JsonResponse
+    {
+        $this->requireAdmin($request);
+
+        $search = trim((string) $request->query->get('search', ''));
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(50, max(5, (int) $request->query->get('limit', 20)));
+        $sort = (string) $request->query->get('sort', 'name_asc');
+        $offset = ($page - 1) * $limit;
+
+        // 1-2. Users page + total (includes zero-progress students)
+        $paginated = $this->getUserRepo()->findActivePaginated($search !== '' ? $search : null, $offset, $limit);
+        /** @var User[] $users */
+        $users = $paginated['users'];
+        $total = $paginated['total'];
+
+        $codes = array_map(fn (User $u) => (string) $u->getCode(), $users);
+
+        // 3. Catalog total (single denominator for everyone — fixes countTotalByUser 0/0 bug)
+        $totalCatalog = $this->getLessonRepo()->countTotalCatalog();
+
+        // 4. Completed per user (1 query)
+        $completedMap = $this->getProgressRepo()->countCompletedGroupedByUser($codes);
+
+        // 5. Submissions stats per user (1-2 queries inside)
+        $statsMap = $this->getSubmissionRepo()->statsGroupedByUser($codes);
+
+        $rows = [];
+        foreach ($users as $u) {
+            $code = (string) $u->getCode();
+            $completed = $completedMap[$code] ?? 0;
+            $stats = $statsMap[$code] ?? ['submissions' => 0, 'graded' => 0, 'avg' => null];
+            $rows[] = [
+                'code' => $code,
+                'name' => $u->getName(),
+                'email' => $u->getEmail(),
+                'tier' => method_exists($u, 'getTier') ? $u->getTier() : 'INITIATE',
+                'active' => $u->isActive(),
+                'is_admin' => $u->getIsAdmin(),
+                'avatar_url' => $u->getAvatarUrl(),
+                'avatar_color' => $u->getAvatarColor(),
+                'completed_lessons' => $completed,
+                'total_lessons' => $totalCatalog,
+                'progress_percent' => $totalCatalog > 0 ? (int) round(($completed / $totalCatalog) * 100) : 0,
+                'submissions_count' => $stats['submissions'],
+                'graded_submissions' => $stats['graded'],
+                'average_grade' => $stats['avg'],
+            ];
+        }
+
+        // Sort in PHP (keeps SQL simple; page size <= 50)
+        usort($rows, function (array $a, array $b) use ($sort) {
+            return match ($sort) {
+                'pct_asc' => $a['progress_percent'] <=> $b['progress_percent'],
+                'pct_desc' => $b['progress_percent'] <=> $a['progress_percent'],
+                'subs_desc' => $b['submissions_count'] <=> $a['submissions_count'],
+                'name_desc' => strcmp((string) $b['name'], (string) $a['name']),
+                default => strcmp((string) $a['name'], (string) $b['name']),
+            };
+        });
+
+        return $this->json([
+            'users' => $rows,
+            'total' => $total,
+            'page' => $page,
+            'pages' => $limit > 0 ? (int) ceil($total / $limit) : 0,
+            'total_lessons_catalog' => $totalCatalog,
+        ]);
     }
 
     // === ENROLLMENTS ===

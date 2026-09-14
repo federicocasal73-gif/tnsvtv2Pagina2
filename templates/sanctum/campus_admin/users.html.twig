@@ -8,11 +8,11 @@
 {% block topbar_subtitle %}Vista por estudiante: lecciones completadas, tareas y feedback{% endblock %}
 
 {% block content %}
-<div class="campus-admin-shell">
+<div class="campus-admin-shell" data-controller="campus-admin-users">
     <header class="campus-admin-header">
         <div>
             <h1 class="campus-admin-title">Progreso de alumnos</h1>
-            <p class="campus-admin-subtitle">Vista detallada del avance por estudiante.</p>
+            <p class="campus-admin-subtitle" data-campus-admin-users-target="count">Vista detallada del avance por estudiante.</p>
         </div>
         <a href="{{ path('sanctum_campus_admin_courses') }}" class="ui-btn ui-btn ghost ui-btn-size-md">
             <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">arrow_back</span>
@@ -20,7 +20,28 @@
         </a>
     </header>
 
-    <section class="campus-admin-users-grid">
+    <section class="campus-admin-toolbar" aria-label="Filtros de alumnos">
+        <label class="campus-search" aria-label="Buscar alumnos">
+            <span class="material-symbols-elev" aria-hidden="true">search</span>
+            <input type="search" class="campus-search-input" placeholder="Buscar por nombre, código o email…"
+                data-campus-admin-users-target="search"
+                data-action="input->campus-admin-users#onSearch" autocomplete="off" />
+        </label>
+        <select class="ui-select" data-campus-admin-users-target="sort" data-action="change->campus-admin-users#onSort" aria-label="Ordenar">
+            <option value="name_asc">Nombre A–Z</option>
+            <option value="name_desc">Nombre Z–A</option>
+            <option value="pct_desc">Mayor progreso</option>
+            <option value="pct_asc">Menor progreso</option>
+            <option value="subs_desc">Más entregas</option>
+        </select>
+        <div class="campus-admin-pagination">
+            <button type="button" class="ui-btn ui-btn ghost ui-btn-size-sm" data-campus-admin-users-target="prev" data-action="click->campus-admin-users#prev">←</button>
+            <span class="text-xs" data-campus-admin-users-target="pageInfo">Página 1 / 1</span>
+            <button type="button" class="ui-btn ui-btn ghost ui-btn-size-sm" data-campus-admin-users-target="next" data-action="click->campus-admin-users#next">→</button>
+        </div>
+    </section>
+
+    <section class="campus-admin-users-grid" data-campus-admin-users-target="grid">
         {% for s in students %}
             <article class="ui-card ui-card-elevated ui-card-padding-md campus-admin-user-card">
                 <header class="ui-card-header">
@@ -36,10 +57,9 @@
                     {{ ui.status_pill(s.tier|default('INITIATE'), s.tier|default('INITIATE')) }}
                     <span class="text-xs">{{ s.email|default('') }}</span>
                 </div>
-                <p class="campus-admin-user-empty">Haz clic en "Ver detalle" para inspeccionar el avance de este alumno en cada curso.</p>
+                <p class="campus-admin-user-empty">Progreso cargado vía overview bulk (incluye alumnos en 0%).</p>
                 <footer class="campus-admin-user-actions">
-                    <a href="#" class="ui-btn ui-btn secondary ui-btn-size-sm campus-admin-user-detail-btn"
-                       data-user-code="{{ s.code }}">
+                    <a href="{{ path('sanctum_campus_admin_user_detail', {code: s.code}) }}" class="ui-btn ui-btn secondary ui-btn-size-sm campus-admin-user-detail-btn">
                         <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">visibility</span>
                         Ver detalle
                     </a>

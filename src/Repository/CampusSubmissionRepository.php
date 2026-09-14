@@ -136,4 +136,53 @@ class CampusSubmissionRepository extends ServiceEntityRepository
 
         return array_map('current', $result);
     }
+
+    /**
+     * Bulk submissions stats per user (1 query for N users).
+     * @param string[] $userCodes
+     * @return array<string,array{submissions:int,graded:int,avg:?float}>
+     */
+    public function statsGroupedByUser(array $userCodes): array
+    {
+        if ($userCodes === []) {
+            return [];
+        }
+        $rows = $this->createQueryBuilder('s')
+            ->select('s.userCode as user_code, COUNT(s.id) as submissions')
+            ->andWhere('s.userCode IN (:codes)')
+            ->setParameter('codes', $userCodes)
+            ->groupBy('s.userCode')
+            ->getQuery()
+            ->getResult();
+
+        $map = [];
+        foreach ($rows as $r) {
+            $map[(string) $r['user_code']] = [
+                'submissions' => (int) $r['submissions'],
+                'graded' => 0,
+                'avg' => null,
+            ];
+        }
+
+        // Grades live on CampusFeedback (OneToOne mapped by submission);
+        // aggregate separately to keep the main count query index-friendly.
+        $gradeRows = $this->createQueryBuilder('s')
+            ->select('s.userCode as user_code, COUNT(f.id) as graded, AVG(f.grade) as avg')
+            ->leftJoin('s.feedback', 'f')
+            ->andWhere('s.userCode IN (:codes)')
+            ->setParameter('codes', $userCodes)
+            ->groupBy('s.userCode')
+            ->getQuery()
+            ->getResult();
+        foreach ($gradeRows as $r) {
+            $code = (string) $r['user_code'];
+            if (!isset($map[$code])) {
+                $map[$code] = ['submissions' => 0, 'graded' => 0, 'avg' => null];
+            }
+            $map[$code]['graded'] = (int) ($r['graded'] ?? 0);
+            $map[$code]['avg'] = $r['avg'] !== null ? round((float) $r['avg'], 1) : null;
+        }
+
+        return $map;
+    }
 }

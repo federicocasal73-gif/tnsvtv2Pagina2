@@ -481,9 +481,7 @@
     }
     function refreshNotifBadge() {
         if (!window.TNSVT_USER) return;
-        fetch('/notifications/unread-count')
-            .then(function(r) { return r.ok ? r.json() : { count: 0 }; })
-            .then(function(data) {
+        var doPaint = function(data) {
                 var n = (data && data.count) || 0;
                 var label = n > 99 ? '99+' : n;
                 var badge = document.getElementById('bell-badge');
@@ -500,7 +498,19 @@
                 }
                 _notifPrev = n;
                 _notifFirstLoad = false;
+            };
+        if (window.apiFetch) {
+            apiFetch('/api/notifications/count', {silent: true, redirectOn401: false}).then(function(r) {
+                if (r.ok && r.data) { doPaint(r.data); return; }
+                fetch('/notifications/unread-count')
+                    .then(function(fr) { return fr.ok ? fr.json() : { count: 0 }; })
+                    .then(doPaint).catch(function() {});
             }).catch(function() {});
+        } else {
+            fetch('/notifications/unread-count')
+                .then(function(fr) { return fr.ok ? fr.json() : { count: 0 }; })
+                .then(doPaint).catch(function() {});
+        }
     }
     refreshNotifBadge();
     apiPoller(refreshNotifBadge, 60000);

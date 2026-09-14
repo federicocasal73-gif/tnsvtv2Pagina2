@@ -2,15 +2,10 @@
 
 namespace App\Controller;
 
-use App\Entity\Notification;
 use App\Entity\User;
 use App\Repository\AccessRequestRepository;
 use App\Repository\ConnectionRepository;
-use App\Repository\JournalPermissionRepository;
-use App\Repository\JournalSettingRepository;
 use App\Repository\NotificationRepository;
-use App\Repository\TradeRepository;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,6 +22,12 @@ use Symfony\Component\Routing\Attribute\Route;
  */
 class SanctumModuleController extends AbstractController
 {
+    public function __construct(
+        private NotificationRepository $notifications,
+        private EntityManagerInterface $em,
+        private ConnectionRepository $connections,
+        private AccessRequestRepository $accessRequests,
+    ) {}
     #[Route('/journal', name: 'sanctum_journal', methods: ['GET'])]
     public function journal(): Response
     {
@@ -90,7 +91,7 @@ class SanctumModuleController extends AbstractController
         if (!$user instanceof User) {
             return $this->json(['count' => 0]);
         }
-        $repo = $this->container->get(NotificationRepository::class);
+        $repo = $this->notifications;
         return $this->json(['count' => $repo->countUnread($user)]);
     }
 
@@ -110,16 +111,16 @@ class SanctumModuleController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
         }
 
-        $em = $this->container->get(EntityManagerInterface::class);
+        $em = $this->em;
         $users = $em->getRepository(User::class)->createQueryBuilder('u')
             ->orderBy('u.code', 'ASC')
             ->getQuery()->getResult();
 
-        $connRepo = $this->container->get(ConnectionRepository::class);
+        $connRepo = $this->connections;
         $myConnections = $connRepo->findByUser($user);
         $connectedCodes = array_map(fn($c) => $c->getConnectedUser()->getCode(), $myConnections);
 
-        $reqRepo = $this->container->get(AccessRequestRepository::class);
+        $reqRepo = $this->accessRequests;
         $pendingSent = $reqRepo->findByRequesterAndStatus($user, 'pending');
         $pendingSentCodes = array_map(fn($r) => $r->getTarget()->getCode(), $pendingSent);
         $pendingReceived = $reqRepo->findByTargetAndStatus($user, 'pending');
@@ -155,16 +156,16 @@ class SanctumModuleController extends AbstractController
         $user = $this->getUser();
         if (!$user instanceof User) return $this->json(['error' => 'Unauthorized'], 401);
 
-        $em = $this->container->get(EntityManagerInterface::class);
+        $em = $this->em;
         $userRepo = $em->getRepository(User::class);
-        $reqRepo = $this->container->get(AccessRequestRepository::class);
+        $reqRepo = $this->accessRequests;
 
         $target = $userRepo->findByCode($code);
         if (!$target) return $this->json(['success' => true, 'status' => 'none']);
 
         if ($target === $user) return $this->json(['success' => true, 'status' => 'owner']);
 
-        $connRepo = $this->container->get(ConnectionRepository::class);
+        $connRepo = $this->connections;
         if ($connRepo->areConnected($user, $target)) {
             return $this->json(['success' => true, 'status' => 'connected']);
         }

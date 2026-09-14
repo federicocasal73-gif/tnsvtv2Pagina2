@@ -82,4 +82,21 @@ class CampusAdminPageController extends AbstractController
             'students' => $students,
         ]);
     }
+
+    #[Route('/users/{code}', name: 'sanctum_campus_admin_user_detail', methods: ['GET'], requirements: ['code' => '[A-Za-z0-9_-]{2,50}'])]
+    public function userDetail(string $code): Response
+    {
+        if (in_array(strtolower($code), ['new', 'search', 'export'], true)) {
+            throw $this->createNotFoundException('Alumno no encontrado');
+        }
+        $user = $this->userRepository->findByCode($code);
+        if (!$user) {
+            throw $this->createNotFoundException('Alumno no encontrado');
+        }
+
+        return $this->render('sanctum/campus_admin/user_detail.html.twig', [
+            'student' => $user,
+            'user_code' => $user->getCode(),
+        ]);
+    }
 }

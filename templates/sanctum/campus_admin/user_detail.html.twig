@@ -1,0 +1,88 @@
+{% extends 'shell.html.twig' %}
+
+{% import '_partials/components/_macros.html.twig' as ui %}
+
+{% block title %}{{ student.name|default(student.code) }} · Alumno · T.N.S.V.T{% endblock %}
+
+{% block topbar_title %}{{ student.name|default(student.code) }}{% endblock %}
+{% block topbar_subtitle %}Código {{ student.code }} · {{ student.tier|default('INITIATE') }}{% endblock %}
+
+{% block content %}
+<div class="campus-admin-shell" data-controller="campus-admin-user-detail" data-user-code="{{ user_code }}">
+    <nav class="campus-breadcrumb" aria-label="Ruta de navegación">
+        <a href="{{ path('sanctum_campus_admin_users') }}">← Volver a Alumnos</a>
+        <span class="campus-breadcrumb-sep">›</span>
+        <span>{{ student.name|default(student.code) }}</span>
+    </nav>
+
+    <header class="campus-admin-header">
+        <div class="campus-admin-user-head">
+            <div class="campus-admin-user-avatar"><span>{{ student.name|default(student.code)|slice(0, 1)|upper }}</span></div>
+            <div>
+                <h1 class="campus-admin-title">{{ student.name|default('—') }}</h1>
+                <p class="campus-admin-subtitle">{{ student.code }} · {{ student.email|default('sin email') }}</p>
+            </div>
+            {{ ui.status_pill(student.tier|default('INITIATE'), student.tier|default('INITIATE')) }}
+        </div>
+    </header>
+
+    {# ─── Hero progreso (mismo lenguaje visual que /campus alumno) ─── #}
+    <div class="campus-hero glass-card-elev">
+        <div class="campus-hero-header">
+            <div>
+                <h2 class="campus-hero-title">Progreso de aprendizaje</h2>
+                <p class="campus-hero-subtitle">Cursos, módulos y lecciones del Reino.</p>
+            </div>
+            <div class="campus-hero-icon">
+                <span class="material-symbols-elev text-5xl text-[var(--gold-elev)]">school</span>
+            </div>
+        </div>
+        <div class="campus-hero-progress" data-campus-admin-user-detail-target="heroProgress">
+            {{ ui.progress_bar(0, 'Progreso general', 'lg', 'gold') }}
+        </div>
+        <div class="campus-hero-stats">
+            <div class="campus-hero-stat">
+                <span class="campus-hero-stat-value" data-campus-admin-user-detail-target="statLessons">—</span>
+                <span class="campus-hero-stat-label">Lecciones</span>
+            </div>
+            <div class="campus-hero-stat">
+                <span class="campus-hero-stat-value" data-campus-admin-user-detail-target="statSubs">—</span>
+                <span class="campus-hero-stat-label">Entregas campus</span>
+            </div>
+            <div class="campus-hero-stat">
+                <span class="campus-hero-stat-value" data-campus-admin-user-detail-target="statGrade">—</span>
+                <span class="campus-hero-stat-label">Nota media</span>
+            </div>
+            <div class="campus-hero-stat">
+                <span class="campus-hero-stat-value" data-campus-admin-user-detail-target="statTasks">—</span>
+                <span class="campus-hero-stat-label">Tasks mentoría</span>
+            </div>
+        </div>
+    </div>
+
+    {# ─── Tabs ─── #}
+    <div class="campus-admin-tabs" role="tablist" aria-label="Detalle del alumno">
+        <button type="button" role="tab" aria-selected="true" data-action="click->campus-admin-user-detail#showTab" data-tab="courses" data-campus-admin-user-detail-target="tabBtn">Cursos</button>
+        <button type="button" role="tab" aria-selected="false" data-action="click->campus-admin-user-detail#showTab" data-tab="campus" data-campus-admin-user-detail-target="tabBtn">Tareas campus</button>
+        <button type="button" role="tab" aria-selected="false" data-action="click->campus-admin-user-detail#showTab" data-tab="mentoring" data-campus-admin-user-detail-target="tabBtn">Mentoría</button>
+    </div>
+
+    <section data-campus-admin-user-detail-target="tabPanel" data-panel="courses" role="tabpanel">
+        <div class="campus-courses-grid" data-campus-admin-user-detail-target="coursesGrid">
+            {% include '_partials/loading_state.html.twig' with {icon: 'progress_activity', message: 'Cargando cursos...', size: 'md'} only %}
+        </div>
+    </section>
+
+    <section data-campus-admin-user-detail-target="tabPanel" data-panel="campus" role="tabpanel" hidden>
+        <div data-campus-admin-user-detail-target="campusTasks">
+            {% include '_partials/loading_state.html.twig' with {icon: 'progress_activity', message: 'Cargando entregas...', size: 'md'} only %}
+        </div>
+    </section>
+
+    <section data-campus-admin-user-detail-target="tabPanel" data-panel="mentoring" role="tabpanel" hidden>
+        <div data-campus-admin-user-detail-target="mentoringTasks">
+            {% include '_partials/loading_state.html.twig' with {icon: 'progress_activity', message: 'Cargando tasks...', size: 'md'} only %}
+        </div>
+    </section>
+</div>
+{% endblock %}
