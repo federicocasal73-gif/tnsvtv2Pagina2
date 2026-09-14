@@ -27,6 +27,21 @@
     {# ══════ Tab Routing ══════ #}
     {% if tab == 'dashboard' %}
 
+        {# ─── Today's Tasks (Phase 6) — L13: above Guardian, first thing the eye hits ─── #}
+        <section class="glass-card-elev p-6 mb-6" data-controller="upcoming-tasks">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-3);">
+                <h3 style="display:flex; align-items:center; gap: var(--space-2); font-weight:600; color: var(--on-surface-elev);">
+                    <span class="material-symbols-elev" style="color: var(--gold-elev);">today</span>
+                    Para hoy
+                    <span class="status-pill size-sm" data-upcoming-tasks-target="count">—</span>
+                </h3>
+                <a href="/sanctum/tasks" style="font-size:0.8rem; color: var(--gold-elev);">Ver todas →</a>
+            </div>
+            <div data-upcoming-tasks-target="list" style="display:grid; gap: var(--space-2);">
+                <p style="text-align:center; color: var(--outline-elev); padding: var(--space-4);">Cargando…</p>
+            </div>
+        </section>
+
         {# ─── Guardian Widget (Phase 3) ─── #}
         <section class="glass-card-elev scan-sweep p-6 mb-6 overflow-hidden relative">
             <div class="flex items-center justify-between mb-4">
@@ -63,21 +78,6 @@
             </div>
         </section>
 
-        {# ─── Today's Tasks (Phase 6) ─── #}
-        <section class="glass-card-elev p-6 mb-6" data-controller="upcoming-tasks">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-3);">
-                <h3 style="display:flex; align-items:center; gap: var(--space-2); font-weight:600; color: var(--on-surface-elev);">
-                    <span class="material-symbols-elev" style="color: var(--gold-elev);">today</span>
-                    Para hoy
-                    <span class="status-pill size-sm" data-upcoming-tasks-target="count">—</span>
-                </h3>
-                <a href="/sanctum/tasks" style="font-size:0.8rem; color: var(--gold-elev);">Ver todas →</a>
-            </div>
-            <div data-upcoming-tasks-target="list" style="display:grid; gap: var(--space-2);">
-                <p style="text-align:center; color: var(--outline-elev); padding: var(--space-4);">Cargando…</p>
-            </div>
-        </section>
-
         {# ─── Recent Signals + Task Sovereignty ─── #}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6" data-controller="dashboard_tasks">
             <div class="glass-card-elev p-6">
@@ -87,10 +87,12 @@
                         Task Sovereignty
                     </h3>
                     <div class="flex gap-2">
+                        {% if is_granted('ROLE_ADMIN') %}
                         <button id="quick-add-task" class="ui-btn ui-btn secondary text-xs">
                             <span class="material-symbols-elev align-middle icon-size-xs">add</span>
                             Nueva
                         </button>
+                        {% endif %}
                         <a href="/sanctum/tasks" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
                     </div>
                 </div>
@@ -105,7 +107,10 @@
                         <span class="material-symbols-elev text-[var(--gold-elev)]">timeline</span>
                         Recent Signals
                     </h3>
+                    {# L14: audit log is admin-only — hide the link for non-admins #}
+                    {% if is_granted('ROLE_ADMIN') %}
                     <a href="/sanctum/audit" class="text-xs text-[var(--gold-elev)] hover:underline">Ver audit log →</a>
+                    {% endif %}
                 </div>
                 <div id="signal-list" class="space-y-2 max-h-72 overflow-y-auto pr-2" data-dashboard-tasks-target="signalList">
                     <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando actividad reciente...</p>
@@ -191,9 +196,12 @@
             const d = scoreRes.data;
             const scoreEl = document.getElementById('gw-score');
             const tierEl  = document.getElementById('gw-tier');
-            scoreEl.textContent = d.score ?? 0;
+            // L11: single normalized score — green ≥75 (tier color),
+            // gold 40–74, red below. Null → 0 → red, never gold-on-empty.
+            const score = d.score ?? 0;
+            scoreEl.textContent = score;
             const c = GW_TIER_COLOR[d.tier] || 'var(--outline-elev)';
-            scoreEl.style.color = (d.score ?? 0) >= 75 ? c : (d.score >= 40 ? 'var(--gold-elev)' : 'var(--error-elev)');
+            scoreEl.style.color = score >= 75 ? c : (score >= 40 ? 'var(--gold-elev)' : 'var(--error-elev)');
             tierEl.textContent = (d.tier || '—').toUpperCase();
             tierEl.style.color = c;
             tierEl.style.borderColor = c;

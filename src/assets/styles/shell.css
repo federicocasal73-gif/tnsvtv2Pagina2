@@ -1229,3 +1229,33 @@
 @media (prefers-reduced-motion: reduce) {
     .sanctum-nav-indicator { transition: opacity 200ms ease; }
 }
+
+
+/* ─── L8: collapsible nav sections ─── */
+.sanctum-section-title[data-section-toggle] {
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.sanctum-section-title[data-section-toggle]:hover { color: var(--gold-elev); }
+.sanctum-section-title[data-section-toggle]::after {
+    content: 'expand_more';
+    font-family: 'Material Symbols Outlined';
+    font-size: 1rem;
+    margin-left: auto;
+    transition: transform 0.18s ease;
+}
+.sanctum-section-title[data-section-toggle].is-collapsed::after {
+    transform: rotate(-90deg);
+}
+.sanctum-section-title[data-section-toggle]:focus-visible {
+    outline: 2px solid var(--gold-elev);
+    outline-offset: -2px;
+    border-radius: 4px;
+}
+#sanctum-sidebar .sanctum-link[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) {
+    .sanctum-section-title[data-section-toggle]::after { transition: none; }
+}

@@ -93,7 +93,7 @@
                 <span class="sanctum-link-label">Inicio</span>
             </a>
 
-            <div class="sanctum-section-title">Trading</div>
+            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Trading</div>
             <a href="{{ path('sanctum_journal') }}" class="sanctum-link" data-page="journal">
                 <span class="material-symbols-elev">edit_note</span>
                 <span class="sanctum-link-label">Journal</span>
@@ -107,7 +107,7 @@
                 <span class="sanctum-link-label">Leaderboard</span>
             </a>
 
-            <div class="sanctum-section-title">Mente &amp; Macro</div>
+            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Mente &amp; Macro</div>
             <a href="{{ path('macro_dashboard') }}" class="sanctum-link" data-page="macro">
                 <span class="material-symbols-elev">event_upcoming</span>
                 <span class="sanctum-link-label">Macroeconomía</span>
@@ -129,13 +129,13 @@
                 <span class="sanctum-link-label">Frecuencias</span>
             </a>
 
-            <div class="sanctum-section-title">Formación</div>
+            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Formación</div>
             <a href="{{ path('sanctum_campus') }}" class="sanctum-link" data-page="campus">
                 <span class="material-symbols-elev">school</span>
                 <span class="sanctum-link-label">Campus</span>
             </a>
 
-            <div class="sanctum-section-title">Mi cuenta</div>
+            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Mi cuenta</div>
             <a href="{{ path('sanctum_profile') }}" class="sanctum-link" data-page="profile">
                 <span class="material-symbols-elev">person</span>
                 <span class="sanctum-link-label">Perfil</span>
@@ -150,26 +150,8 @@
                 <span id="bell-badge" class="sanctum-bell-badge hidden">0</span>
             </a>
 
-            <div class="sanctum-section-title">Comunidad</div>
-            <a href="{{ path('sanctum_feed') }}" class="sanctum-link" data-page="feed">
-                <span class="material-symbols-elev">forum</span>
-                <span class="sanctum-link-label">Feed</span>
-            </a>
-            <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
-                <span class="material-symbols-elev">share</span>
-                <span class="sanctum-link-label">Social</span>
-            </a>
-            <a href="{{ path('sanctum_chat') }}" class="sanctum-link" data-page="chat">
-                <span class="material-symbols-elev">chat</span>
-                <span class="sanctum-link-label">Chat</span>
-            </a>
-            <a href="{{ path('sanctum_clan') }}" class="sanctum-link" data-page="clan">
-                <span class="material-symbols-elev">groups</span>
-                <span class="sanctum-link-label">Clanes</span>
-            </a>
-
             {% if is_granted('ROLE_ADMIN') %}
-            <div class="sanctum-section-title">Admin</div>
+            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Admin</div>
             <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
                 <span class="material-symbols-elev">group</span>
                 <span class="sanctum-link-label">Usuarios</span>
@@ -195,6 +177,24 @@
                 <span class="sanctum-link-label">Monitoring</span>
             </a>
             {% endif %}
+
+            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Comunidad</div>
+            <a href="{{ path('sanctum_feed') }}" class="sanctum-link" data-page="feed">
+                <span class="material-symbols-elev">forum</span>
+                <span class="sanctum-link-label">Feed</span>
+            </a>
+            <a href="{{ path('sanctum_social') }}" class="sanctum-link" data-page="social">
+                <span class="material-symbols-elev">share</span>
+                <span class="sanctum-link-label">Social</span>
+            </a>
+            <a href="{{ path('sanctum_chat') }}" class="sanctum-link" data-page="chat">
+                <span class="material-symbols-elev">chat</span>
+                <span class="sanctum-link-label">Chat</span>
+            </a>
+            <a href="{{ path('sanctum_clan') }}" class="sanctum-link" data-page="clan">
+                <span class="material-symbols-elev">groups</span>
+                <span class="sanctum-link-label">Clanes</span>
+            </a>
         </nav>
 
         <div class="sidebar-user-card">
@@ -579,7 +579,45 @@
         if (localStorage.getItem(KEY) === '1') apply(true);
     } catch (_) {}
     btn.addEventListener('click', function () {
-        apply(aside.classList.contains('sidebar-manual-collapsed'));
+        // Note: apply() inverts — it receives the CURRENT state.
+        apply(!aside.classList.contains('sidebar-manual-collapsed'));
+    });
+    // L10: sync collapse state across tabs.
+    window.addEventListener('storage', function (e) {
+        if (e.key === KEY) {
+            apply(e.newValue === '1');
+        }
+    });
+
+    // ─── L8: collapsible nav sections ───
+    // Clicking a section title hides its links until the next title.
+    // State persists per-session only (not synced); the active link's
+    // section is never auto-collapsed on load.
+    function repositionIndicator() {
+        var active = document.querySelector('#sanctum-sidebar .sanctum-link.active');
+        var indicator = document.getElementById('sanctum-nav-indicator');
+        if (!active || !indicator) return;
+        indicator.style.transform = 'translateY(' + active.offsetTop + 'px)';
+        indicator.style.height = active.offsetHeight + 'px';
+        indicator.style.opacity = '1';
+    }
+    window.__repositionNavIndicator = repositionIndicator;
+    document.querySelectorAll('#sanctum-sidebar [data-section-toggle]').forEach(function (title) {
+        function toggle() {
+            var collapsed = title.classList.toggle('is-collapsed');
+            title.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            var el = title.nextElementSibling;
+            while (el && !el.classList.contains('sanctum-section-title')) {
+                if (el.classList.contains('sanctum-link')) el.hidden = collapsed;
+                el = el.nextElementSibling;
+            }
+            repositionIndicator();
+        }
+        title.setAttribute('aria-expanded', 'true');
+        title.addEventListener('click', toggle);
+        title.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+        });
     });
 })();
 </script>
