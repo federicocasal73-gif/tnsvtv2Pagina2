@@ -70,7 +70,7 @@
 {% block gateway_emblem %}{% endblock %}
 
 <div class="sanctum-layout">
-    <aside id="sanctum-sidebar" class="sanctum-sidebar" aria-label="Menú principal">
+    <aside id="sanctum-sidebar" class="sanctum-sidebar" aria-label="Menú principal" data-turbo-permanent>
         <button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Colapsar menú" aria-expanded="true" aria-controls="sanctum-sidebar">
             <span class="material-symbols-elev" aria-hidden="true">chevron_left</span>
         </button>
@@ -216,7 +216,7 @@
     </aside>
 
     <main class="sanctum-main" id="main-content" tabindex="-1">
-        <header class="sanctum-topbar">
+        <header class="sanctum-topbar" data-turbo-permanent>
         <div>
             <h2 class="text-cinzel-display text-xl tracking-wide">{% block topbar_title %}Inicio{% endblock %}</h2>
             <p class="text-xs text-[var(--outline-elev)] italic">{% block topbar_subtitle %}Divine synchronization active.{% endblock %}</p>
@@ -339,7 +339,7 @@
     {% include '_partials/chat_widget.html.twig' %}
 {% endif %}
 
-<div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50">
+<div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50" data-turbo-permanent>
     {% block floats %}{% endblock %}
 </div>
 
