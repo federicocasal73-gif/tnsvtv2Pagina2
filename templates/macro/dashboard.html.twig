@@ -178,18 +178,18 @@
             <span class="material-symbols-outlined text-[var(--gold-elev)]">shield</span>
             Regla de Disciplina
         </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div class="glass-card-elev p-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm" id="discipline-rules">
+                <div class="glass-card-elev p-4 discipline-rule" role="button" tabindex="0" title="Enfocar regla">
                     <p class="text-[var(--gold-elev)] font-bold text-2xl">15'</p>
                     <p class="text-[var(--on-surface-elev)] font-medium">Antes del evento</p>
                     <p class="text-[var(--outline-elev)] text-xs">No abras trades. Cierra posiciones abiertas.</p>
                 </div>
-                <div class="glass-card-elev p-4 border-2 border-[var(--gold-elev)]">
+                <div class="glass-card-elev p-4 border-2 border-[var(--gold-elev)] discipline-rule" role="button" tabindex="0" title="Enfocar regla">
                     <p class="text-[var(--gold-elev)] font-bold text-2xl">EVENTO</p>
                     <p class="text-[var(--on-surface-elev)] font-medium">Durante la noticia</p>
                     <p class="text-[var(--outline-elev)] text-xs">Spread se expande. Liquidez se seca. Chaos.</p>
                 </div>
-                <div class="glass-card-elev p-4">
+                <div class="glass-card-elev p-4 discipline-rule" role="button" tabindex="0" title="Enfocar regla">
                     <p class="text-[var(--gold-elev)] font-bold text-2xl">15'</p>
                     <p class="text-[var(--on-surface-elev)] font-medium">Después del evento</p>
                     <p class="text-[var(--outline-elev)] text-xs">Espera. Confirmá dirección. Re-entrada segura.</p>
@@ -878,11 +878,23 @@
         renderSessionBars();
     }
 
-    function renderFaithLogicGauge() {
+    async function renderFaithLogicGauge() {
         const svg = document.getElementById('faith-logic-gauge');
         if (!svg) return;
+        // L38: fetch the real faith/logic split instead of a hardcoded 50.
+        let faith = 50;
+        try {
+            const code = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+            if (code) {
+                const r = await window.apiFetch(`/sanctum/api/oracle/faith-logic?code=${encodeURIComponent(code)}&days=30`, { silent: true });
+                const g = r && r.ok && r.data ? (r.data.gauge || r.data) : null;
+                if (g && Number(g.total) > 0) {
+                    const v = Number(g.faith ?? NaN);
+                    if (Number.isFinite(v)) faith = Math.min(100, Math.max(0, v));
+                }
+            }
+        } catch (e) { /* fall back to 50/50 */ }
         const cx = 100, cy = 100, r = 80;
-        const faith = 50; // default balance (0-100)
         const angle = -90 + (faith / 100) * 180; // semicircle from -90 to +90
         const rad = (angle * Math.PI) / 180;
         const needleX = cx + (r - 12) * Math.cos(rad);
@@ -1293,8 +1305,22 @@
             openMacroQuestionnaireModal(card.dataset.questionnaireCard);
             return;
         }
+        // L39: discipline rules are focusable — click highlights one.
+        const rule = e.target.closest('.discipline-rule');
+        if (rule) {
+            document.querySelectorAll('.discipline-rule').forEach(r =>
+                r.classList.toggle('is-focused', r === rule));
+            return;
+        }
         if (e.target.closest('[data-action="closeMacroQuestionnaire"]')) {
             closeMacroQuestionnaireModal();
+        }
+    });
+    // L39 keyboard: Enter/Space on a focused rule triggers its click.
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('discipline-rule')) {
+            e.preventDefault();
+            e.target.click();
         }
     });
     document.getElementById('macro-questionnaire-submit-btn')?.addEventListener('click', submitMacroQuestionnaire);

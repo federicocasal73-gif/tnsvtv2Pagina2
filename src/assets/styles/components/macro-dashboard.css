@@ -764,3 +764,16 @@
 @media (prefers-reduced-motion: reduce) {
     .macro-ticker-track { animation: none; }
 }
+
+
+/* ─── L39: focusable discipline rules ─── */
+.discipline-rule { cursor: pointer; transition: all 0.18s ease; }
+.discipline-rule:hover { border-color: rgba(242,202,80,0.45); transform: translateY(-2px); }
+.discipline-rule:focus-visible { outline: 2px solid var(--gold-elev); outline-offset: 2px; }
+.discipline-rule.is-focused {
+    border-color: var(--gold-elev);
+    box-shadow: 0 0 24px rgba(242,202,80,0.25);
+}
+@media (prefers-reduced-motion: reduce) {
+    .discipline-rule, .discipline-rule:hover { transition: none; transform: none; }
+}

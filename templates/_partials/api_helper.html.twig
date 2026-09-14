@@ -227,14 +227,15 @@
         const start = () => {
             if (id) return;
             id = setInterval(tick, ms);
-            // Run once immediately when (re)starting so the UI doesn't
-            // wait a full interval after the tab becomes visible again.
-            tick();
+            // H12: stagger the immediate first tick by 0–800ms so the
+            // ~8 page pollers don't thundering-herd the API on load.
+            pending = setTimeout(tick, Math.floor(Math.random() * 800));
         };
         const stop = () => {
             if (!id) return;
             clearInterval(id);
             id = null;
+            if (pending) { clearTimeout(pending); pending = null; }
         };
         const onVis = () => { document.hidden ? stop() : start(); };
         document.addEventListener('visibilitychange', onVis);

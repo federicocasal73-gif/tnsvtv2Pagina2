@@ -92,7 +92,11 @@
 
         {# Frequency grid (loaded by JS) #}
         <h3 class="text-xl font-semibold mb-4 text-[var(--on-surface-elev)]">Frecuencias Sagradas</h3>
+        {# L59: recently played (localStorage, rendered by JS) #}
+        <div id="recent-freqs" class="flex flex-wrap gap-2 mb-4" hidden></div>
         <div id="presets-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            <p class="col-span-full text-center text-[var(--outline-elev)] py-8">Cargando frecuencias...</p>
+        </div>
             <p class="col-span-full text-center text-[var(--outline-elev)] py-8">Cargando frecuencias...</p>
         </div>
 
@@ -152,10 +156,26 @@
         await loadPresets();
         await loadMyFreqs();
         await loadStats();
-        document.getElementById('duration-select').addEventListener('change', e => selectedDuration = parseInt(e.target.value));
+        renderRecents();
+        document.getElementById('duration-select').addEventListener('change', e => setDuration(parseInt(e.target.value)));
         document.getElementById('play-btn').addEventListener('click', startSession);
         document.getElementById('stop-btn').addEventListener('click', stopSession);
         document.getElementById('add-freq-btn').addEventListener('click', addMyFreq);
+        // L56+L60: Sacred Timer buttons were dead — wire them as the
+        // single duration control, kept in sync with the select.
+        document.querySelectorAll('.timer-btn[data-time]').forEach(btn => {
+            btn.addEventListener('click', () => setDuration(parseInt(btn.dataset.time, 10)));
+        });
+        setDuration(selectedDuration);
+    }
+
+    function setDuration(min) {
+        selectedDuration = min;
+        const sel = document.getElementById('duration-select');
+        if (sel) sel.value = String(min);
+        document.querySelectorAll('.timer-btn[data-time]').forEach(b => {
+            b.classList.toggle('active', parseInt(b.dataset.time, 10) === min);
+        });
     }
 
     async function loadPresets() {
@@ -232,6 +252,16 @@
         const name = document.getElementById('my-freq-name').value.trim();
         const hz = parseInt(document.getElementById('my-freq-hz').value);
         if (!name || !hz || hz < 50 || hz > 2000) { apiToast('Nombre y Hz (50-2000) requeridos', 'warning'); return; }
+        // L57: warn on duplicate Hz instead of silently creating a twin.
+        const dup = Array.from(document.querySelectorAll('#my-freqs-list [data-freq]'))
+            .some(el => parseInt(el.dataset.freq, 10) === hz);
+        if (dup) {
+            const ok = await apiConfirm(
+                `Ya tenés una frecuencia en ${hz} Hz. ¿Crear otra igual?`,
+                { title: 'Frecuencia duplicada' }
+            );
+            if (!ok) return;
+        }
         const r = await fetch('/api/frequencies/add', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, frequency: hz}) });
         const data = await r.json();
         if (data.success) {
@@ -256,6 +286,7 @@
             const data = await r.json();
             if (!data.success) { apiToast('Error: ' + data.error, 'error'); return; }
             currentSessionId = data.id;
+            recordRecent(selectedFrequency.frequency, selectedFrequency.name);
 
             // Start Web Audio
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -287,6 +318,48 @@
                 if (timerEl) timerEl.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
             }, 1000);
         } catch (e) { apiToast('Error: ' + e.message, 'error'); }
+    }
+
+    // ─── L59: recently played (localStorage, max 5) ───
+    const RECENT_KEY = 'tnsvt_freq_recent';
+    function getRecents() {
+        try {
+            const raw = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+            return Array.isArray(raw) ? raw.slice(0, 5) : [];
+        } catch (e) { return []; }
+    }
+    function recordRecent(freq, name) {
+        if (!freq) return;
+        try {
+            const list = getRecents().filter(r => Number(r.frequency) !== Number(freq));
+            list.unshift({ frequency: Number(freq), name: name || (freq + ' Hz'), at: Date.now() });
+            localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 5)));
+            renderRecents();
+        } catch (e) {}
+    }
+    function renderRecents() {
+        const box = document.getElementById('recent-freqs');
+        if (!box) return;
+        const list = getRecents();
+        if (!list.length) { box.hidden = true; box.innerHTML = ''; return; }
+        box.hidden = false;
+        box.innerHTML = '<span class="text-xs uppercase tracking-widest text-[var(--outline-elev)] w-full">Recientes</span>' + list.map(r =>
+            `<button type="button" class="cal-country-chip" data-recent-freq="${r.frequency}" data-recent-name="${String(r.name).replace(/"/g, '&quot;')}">${r.frequency} Hz</button>`
+        ).join('');
+        box.querySelectorAll('[data-recent-freq]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedFrequency = {
+                    id: null,
+                    frequency: parseInt(btn.dataset.recentFreq, 10),
+                    name: btn.dataset.recentName || (btn.dataset.recentFreq + ' Hz'),
+                    type: 'recent',
+                };
+                const freqEl = document.getElementById('current-freq');
+                const freqNameEl = document.getElementById('current-freq-name');
+                if (freqEl) freqEl.textContent = btn.dataset.recentFreq + ' Hz';
+                if (freqNameEl) freqNameEl.textContent = btn.dataset.recentName || '';
+            });
+        });
     }
 
     async function stopSession() {

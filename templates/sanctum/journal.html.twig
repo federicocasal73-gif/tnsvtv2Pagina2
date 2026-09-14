@@ -1294,6 +1294,12 @@
             <line x1="${padL}" x2="${W-padR}" y1="${baselineY.toFixed(1)}" y2="${baselineY.toFixed(1)}"
                   stroke="rgba(255,255,255,0.25)" stroke-dasharray="4 4" stroke-width="1" />
             <text x="${W-padR}" y="${(baselineY-4).toFixed(1)}" fill="rgba(255,255,255,0.5)" font-size="9" text-anchor="end" font-family="Space Grotesk">baseline</text>
+            <g id="ec-baseline-hit" style="cursor:pointer" role="button" tabindex="0"
+               aria-label="Baseline: tamaño de cuenta. Activar para ver el valor.">
+                <title>Baseline = tamaño de cuenta ($${accountSize.toLocaleString('es-AR')})</title>
+                <line x1="${padL}" x2="${W-padR}" y1="${baselineY.toFixed(1)}" y2="${baselineY.toFixed(1)}"
+                      stroke="transparent" stroke-width="14" />
+            </g>
             <path d="${fillPath}" fill="url(#ec-fill)" />
             <path d="${linePath}" stroke="#f2ca50" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
             ${points.map((p, i) => {
@@ -1344,6 +1350,20 @@
                 tooltip.hidden = true;
             });
         });
+
+        // P6: baseline hit-area — click/Enter announces the value.
+        const baseHit = document.getElementById('ec-baseline-hit');
+        if (baseHit) {
+            const announce = () => {
+                if (window.apiToast) {
+                    window.apiToast('Baseline = tamaño de cuenta ($' + Number(accountSize).toLocaleString('es-AR') + ')', 'info');
+                }
+            };
+            baseHit.addEventListener('click', announce);
+            baseHit.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); announce(); }
+            });
+        }
 
         document.getElementById('ec-source').textContent =
             `${rangeLabel.toUpperCase()} · ${points.length} ops`;
