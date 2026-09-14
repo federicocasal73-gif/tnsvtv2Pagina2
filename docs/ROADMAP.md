@@ -2,6 +2,7 @@
 
 Updated after initial audit (`/audit`) and module mapping (`/map`).
 **Last cleanup pass: 2026-08-19 — Phase 1-5 complete (see "Cleanup Pass" below).**
+**2026-09 — UI/UX master plan executed: see `CHANGELOG-2026-09.md` (26 commits, ~120 mejoras applied).**
 
 Legend: `[x]` done · `[~]` in progress · `[ ]` not started · `[!]` blocked
 
