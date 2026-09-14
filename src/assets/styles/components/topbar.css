@@ -229,3 +229,20 @@
 @media (prefers-reduced-motion: reduce) {
     .notif-wrap button.is-pulsing { animation: none; }
 }
+
+
+/* ─── L2: consistent topbar action-button heights ─── */
+.sanctum-topbar .ui-btn {
+    min-height: 40px;
+}
+.sanctum-topbar .ui-btn.ui-btn-size-sm {
+    min-height: 32px;
+}
+.sanctum-topbar .notif-wrap .ui-btn,
+.sanctum-topbar #theme-toggle-btn,
+.sanctum-topbar #cmdk-open-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+}

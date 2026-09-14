@@ -50,15 +50,37 @@
 
         camera.position.z = 4;
 
-        function animate() {
-            requestAnimationFrame(animate);
-            sigil.rotation.y += 0.005;
-            sigil.rotation.z += 0.003;
-            const scale = 1 + Math.sin(Date.now() * 0.002) * 0.1;
-            core.scale.setScalar(scale);
-            renderer.render(scene, camera);
+        // P17: tap-to-pause (mobile). The loop also skips rendering
+        // while the tab is hidden (battery) and resumes on return.
+        let paused = false;
+        function frame() {
+            if (!paused && !document.hidden) {
+                sigil.rotation.y += 0.005;
+                sigil.rotation.z += 0.003;
+                const scale = 1 + Math.sin(Date.now() * 0.002) * 0.1;
+                core.scale.setScalar(scale);
+                renderer.render(scene, camera);
+            }
+            requestAnimationFrame(frame);
         }
-        animate();
+        container.style.cursor = 'pointer';
+        container.setAttribute('role', 'button');
+        container.setAttribute('tabindex', '0');
+        container.setAttribute('aria-label', 'Pausar animación del sigilo');
+        container.setAttribute('aria-pressed', 'false');
+        function togglePause() {
+            paused = !paused;
+            container.setAttribute('aria-pressed', paused ? 'true' : 'false');
+            container.setAttribute('aria-label', paused ? 'Reanudar animación del sigilo' : 'Pausar animación del sigilo');
+            if (window.apiToast) {
+                window.apiToast(paused ? 'Sigilo en pausa' : 'Sigilo en movimiento', 'info');
+            }
+        }
+        container.addEventListener('click', togglePause);
+        container.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePause(); }
+        });
+        frame();
 
         window.addEventListener('resize', () => {
             const w = container.clientWidth || 200;

@@ -134,3 +134,11 @@
     padding: 1.5rem;
     margin-top: 1.5rem;
 }
+
+
+/* ─── L79: stat-mini on very small screens ─── */
+@media (max-width: 360px) {
+    .stat-mini { padding: 0.5rem 0.25rem; }
+    .stat-mini-value { font-size: 1rem; }
+    .stat-mini-label { font-size: 0.58rem; letter-spacing: 0.06em; }
+}
