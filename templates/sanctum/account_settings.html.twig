@@ -153,6 +153,45 @@
             </div>
         </section>
 
+        {# ── F18: Toast notifications per type ── #}
+        <section class="glass-card-elev p-6">
+            <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] mb-4 flex items-center gap-2">
+                <span class="material-symbols-elev text-[var(--gold-elev)]">notifications</span>
+                Notificaciones toast
+            </h3>
+            <p class="text-xs text-[var(--outline-elev)] mb-4">Elegí qué categorías de toast querés ver. Los cambios se guardan localmente.</p>
+            <div class="space-y-3" id="toast-prefs-list">
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" data-toast-kind="success" checked class="mt-1 toast-pref-toggle" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Éxitos</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Acciones completadas correctamente (trade guardado, etc.)</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" data-toast-kind="warning" checked class="mt-1 toast-pref-toggle" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Advertencias</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Datos faltantes, validaciones, riesgos detectados</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" data-toast-kind="error" checked class="mt-1 toast-pref-toggle" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Errores</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Fallos de red, errores del servidor, validaciones críticas</p>
+                    </div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg hover:bg-[var(--glass-bg-elev)] cursor-pointer">
+                    <input type="checkbox" data-toast-kind="info" checked class="mt-1 toast-pref-toggle" />
+                    <div>
+                        <p class="text-sm text-[var(--on-surface-elev)]">Información</p>
+                        <p class="text-xs text-[var(--outline-elev)] mt-0.5">Mensajes neutrales, hints, persistencias de UI</p>
+                    </div>
+                </label>
+            </div>
+        </section>
+
         {# ── Seguridad ── #}
         <section class="glass-card-elev p-6">
             <h3 class="text-lg font-semibold text-[var(--on-surface-elev)] mb-4 flex items-center gap-2">
@@ -191,5 +230,35 @@
     </div>
 
 </div>
+
+<script>
+// F18: per-kind toast preference toggles.
+(function() {
+    'use strict';
+    const KEY = 'tnsvt_toast_prefs';
+    const list = document.getElementById('toast-prefs-list');
+    if (!list) return;
+    const boxes = list.querySelectorAll('.toast-pref-toggle');
+    let prefs = {};
+    try { prefs = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) {}
+
+    boxes.forEach(function (cb) {
+        const kind = cb.dataset.toastKind;
+        cb.checked = prefs[kind] !== false; // default = true
+        cb.addEventListener('change', function () {
+            prefs[kind] = cb.checked;
+            try { localStorage.setItem(KEY, JSON.stringify(prefs)); } catch (e) {}
+            if (window.apiToast) {
+                window.apiToast(
+                    cb.checked
+                        ? 'Toasts de "' + kind + '" activados'
+                        : 'Toasts de "' + kind + '" silenciados',
+                    'info'
+                );
+            }
+        });
+    });
+})();
+</script>
 
 {% endblock %}

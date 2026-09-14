@@ -84,6 +84,12 @@
 
     function apiToast(message, kind) {
         kind = kind || 'info';
+        // F18: per-kind channel filter. If the user disabled this
+        // kind in their preferences, suppress the toast entirely.
+        try {
+            const prefs = JSON.parse(localStorage.getItem('tnsvt_toast_prefs') || '{}');
+            if (prefs[kind] === false) return;
+        } catch (e) {}
         const stack = toastStack();
         if (!stack) return;
         const dedupKey = kind + '|' + message;
