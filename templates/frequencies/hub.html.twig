@@ -165,25 +165,5 @@
             <button type="button" class="timer-btn" data-time="0"><span class="material-symbols-outlined">all_inclusive</span></button>
         </div>
     </div>
-
-    {# Floating Mini Player #}
-    <div class="mini-player"
-         id="mini-player"
-         data-frequency-player-target="miniPlayer"
-         style="display: none;">
-        <div class="mini-player-icon">
-            <span class="material-symbols-outlined text-[var(--void-black)]" style="font-size: 1rem; font-variation-settings: 'FILL' 1;">music_note</span>
-        </div>
-        <div>
-            <p class="text-xs font-bold text-[var(--gold-elev)]" id="mini-player-freq">432Hz</p>
-            <p class="text-[10px] text-[var(--outline-elev)]">TNSVT Sanctum</p>
-        </div>
-        <button id="mini-player-toggle"
-                data-frequency-player-target="miniPlayerToggle"
-                data-action="click->frequency-player#toggleMiniPlayer"
-                class="text-[var(--on-surface-elev)]">
-            <span class="material-symbols-outlined">pause</span>
-        </button>
-    </div>
 </div>
 {% endblock %}

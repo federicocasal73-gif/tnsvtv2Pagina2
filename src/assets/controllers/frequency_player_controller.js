@@ -20,7 +20,7 @@ export default class extends Controller {
         'playBtn', 'stopBtn',
         'durationSelect', 'addFreqBtn',
         'freqDisplay', 'freqNameDisplay',
-        'timerDisplay', 'visualizer', 'miniPlayer', 'miniPlayerToggle',
+        'timerDisplay', 'visualizer',
         'statMinutes', 'statHours', 'statActive',
         'recentFreqs', 'presetsGrid', 'myFreqsList',
         'myFreqName', 'myFreqHz',
@@ -58,7 +58,9 @@ export default class extends Controller {
 
     disconnect() {
         this.stopTimer();
-        this.stopAudio({ silent: true, noApi: true });
+        if (!this.globalMiniPlayerMounted()) {
+            this.stopAudio({ silent: true, noApi: true });
+        }
     }
 
     // ─── UI sync ──────────────────────────────────────────────────────
@@ -274,19 +276,25 @@ export default class extends Controller {
         this.currentSessionId = r.data.id;
         this.recordRecent(this.selectedFrequency.frequency, this.selectedFrequency.name);
 
-        try {
-            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            this.oscillator = this.audioCtx.createOscillator();
-            this.gainNode = this.audioCtx.createGain();
-            this.oscillator.frequency.value = this.selectedFrequency.frequency;
-            this.oscillator.type = 'sine';
-            this.gainNode.gain.value = 0.05;
-            this.oscillator.connect(this.gainNode);
-            this.gainNode.connect(this.audioCtx.destination);
-            this.oscillator.start();
-            this.gainNode.gain.linearRampToValueAtTime(0.15, this.audioCtx.currentTime + 2);
-        } catch (e) {
-            if (window.apiToast) window.apiToast('Audio error: ' + e.message, 'error');
+        const globalExists = this.globalMiniPlayerMounted();
+        if (!globalExists) {
+            // Legacy fallback: shell didn't include the floats panel.
+            // Same path as pre-F10 so the page still works without the
+            // global shell.
+            try {
+                this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                this.oscillator = this.audioCtx.createOscillator();
+                this.gainNode = this.audioCtx.createGain();
+                this.oscillator.frequency.value = this.selectedFrequency.frequency;
+                this.oscillator.type = 'sine';
+                this.gainNode.gain.value = 0.05;
+                this.oscillator.connect(this.gainNode);
+                this.gainNode.connect(this.audioCtx.destination);
+                this.oscillator.start();
+                this.gainNode.gain.linearRampToValueAtTime(0.15, this.audioCtx.currentTime + 2);
+            } catch (e) {
+                if (window.apiToast) window.apiToast('Audio error: ' + e.message, 'error');
+            }
         }
 
         this.secondsElapsed = 0;
@@ -297,10 +305,9 @@ export default class extends Controller {
         if (this.hasVisualizerTarget) {
             this.visualizerTarget.classList.replace('is-idle', 'is-playing');
         }
-        if (this.hasMiniPlayerTarget) {
-            this.miniPlayerTarget.style.display = '';
-        }
 
+        // Local display timer (page-level) — independent of the global
+        // mini-player so the user always sees the elapsed time on the hub.
         this.timerInterval = setInterval(() => {
             this.secondsElapsed += 1;
             if (totalSeconds > 0 && this.secondsElapsed >= totalSeconds) {
@@ -309,8 +316,10 @@ export default class extends Controller {
             }
             this.renderTimer();
         }, 1000);
+        this.renderTimer();
 
-        // Let the global mini-player controller (if mounted) know.
+        // Dispatch global event — the frequency_mini_player_controller in
+        // the shell owns the AudioContext + survives navigations.
         window.dispatchEvent(new CustomEvent('tnsvt:freq:start', {
             detail: {
                 sessionId: this.currentSessionId,
@@ -325,7 +334,10 @@ export default class extends Controller {
     async stopSession() {
         const elapsedSec = this.secondsElapsed;
         this.stopTimer();
-        this.stopAudio();
+        const globalExists = this.globalMiniPlayerMounted();
+        if (!globalExists) {
+            this.stopAudio();
+        }
 
         if (this.currentSessionId) {
             const sid = this.currentSessionId;
@@ -346,16 +358,18 @@ export default class extends Controller {
             this.visualizerTarget.classList.replace('is-playing', 'is-idle');
         }
         if (this.hasTimerDisplayTarget) this.timerDisplayTarget.textContent = '';
-        if (this.hasMiniPlayerTarget) {
-            this.miniPlayerTarget.style.display = 'none';
-        }
 
         await this.loadStats();
 
-        // Let the global mini-player controller know.
+        // Ask the global mini-player to stop too (if mounted).
         window.dispatchEvent(new CustomEvent('tnsvt:freq:stop', {
             detail: { elapsedSeconds: elapsedSec },
         }));
+    }
+
+    globalMiniPlayerMounted() {
+        return typeof document !== 'undefined'
+            && !!document.querySelector('[data-controller~="frequency-mini-player"]');
     }
 
     stopTimer() {
@@ -375,12 +389,6 @@ export default class extends Controller {
             try { this.audioCtx.close(); } catch (e) {}
             this.audioCtx = null;
         }
-    }
-
-    toggleMiniPlayer() {
-        if (!this.hasMiniPlayerTarget) return;
-        const hidden = this.miniPlayerTarget.style.display === 'none';
-        this.miniPlayerTarget.style.display = hidden ? '' : 'none';
     }
 
     // ─── helpers ─────────────────────────────────────────────────────

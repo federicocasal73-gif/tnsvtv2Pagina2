@@ -94,6 +94,19 @@ class TurboPermanentTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
         );
     }
 
+    public function testGlobalMiniPlayerIsMountedInFloats(): void
+    {
+        // F10 slice 4: the frequency_mini_player_controller must mount inside
+        // #sanctum-floats so its AudioContext survives Turbo navigation.
+        $tpl = $this->read('templates/shell.html.twig');
+        $this->assertStringContainsString('data-controller="frequency-mini-player"', $tpl,
+            'templates/shell.html.twig must mount frequency-mini-player inside #sanctum-floats.');
+
+        $js = $this->read('src/assets/controllers/frequency_mini_player_controller.js');
+        $this->assertStringContainsString("'tnsvt:freq:start'", $js);
+        $this->assertStringContainsString("'tnsvt:freq:stop'", $js);
+    }
+
     public function testMainStaysReplaceable(): void
     {
         // The OUTER element <main class="sanctum-main"> is intentionally NOT
