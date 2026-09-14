@@ -757,7 +757,16 @@
             return;
         }
 
-        listEl.innerHTML = trades.map(t => {
+        listEl.innerHTML = trades.map(t => tradeRowHtml(t)).join('');
+    }
+
+    // ─── Row renderer (shared by full list render + single-row restore
+    // after inline-edit cancel / save). ───
+    function tradeRowHtml(t) {
+        const pnlClass = (t.pnl >= 0) ? 'trade-pnl-pos' : 'trade-pnl-neg';
+        const pnlStr = (t.pnl >= 0 ? '+$' : '-$') + Math.abs(t.pnl).toFixed(2);
+        const dateStr = t.date ? new Date(t.date).toLocaleString() : '';
+        return `
                 <div class="trade-row" data-id="${t.id}">
                     <span class="trade-asset">${escapeHtml(t.asset)}</span>
                     ${t.account_name ? `<span class="trade-account-chip" title="Cuenta">${escapeHtml(t.account_name)}</span>` : ''}
@@ -771,7 +780,118 @@
                     </div>
                 </div>
             `;
-        }).join('');
+    }
+
+    // ─── F3: inline row editor. Edits the row-visible fields
+    // (asset, dir, date, pnl, result) in place. Full-field editing
+    // (entry/sl/tp/notes/…) stays in the modal via "Más campos".
+    function openInlineEdit(id) {
+        const trade = window._tradesById && window._tradesById[id];
+        if (!trade) return;
+        // Only one row edits at a time — restore any other open editor.
+        document.querySelectorAll('.trade-row.is-editing').forEach(row => {
+            const rid = row.dataset.id;
+            const orig = window._tradesById && window._tradesById[rid];
+            if (orig) row.outerHTML = tradeRowHtml(orig);
+        });
+        const row = listEl.querySelector(`[data-id="${id}"]`);
+        if (!row) return;
+        const dateVal = trade.date ? String(trade.date).slice(0, 16) : '';
+        const pnlVal = trade.pnl != null ? trade.pnl : '';
+        row.classList.add('is-editing');
+        row.innerHTML = `
+            <input class="trade-inline-input trade-inline-asset" data-field="asset"
+                   value="${escapeHtml(trade.asset || '')}" maxlength="20"
+                   aria-label="Activo" />
+            <select class="trade-inline-input" data-field="dir" aria-label="Dirección">
+                <option value="BUY"${trade.dir === 'BUY' ? ' selected' : ''}>BUY</option>
+                <option value="SELL"${trade.dir === 'SELL' ? ' selected' : ''}>SELL</option>
+            </select>
+            <input class="trade-inline-input trade-inline-date" data-field="date" type="datetime-local"
+                   value="${escapeHtml(dateVal)}" aria-label="Fecha" />
+            <input class="trade-inline-input trade-inline-pnl" data-field="pnl" type="number" step="any"
+                   value="${escapeHtml(String(pnlVal))}" aria-label="PnL" />
+            <select class="trade-inline-input" data-field="result" aria-label="Resultado">
+                ${['OPEN', 'WIN', 'LOSS', 'BE'].map(r =>
+                    `<option value="${r}"${(trade.result || 'OPEN') === r ? ' selected' : ''}>${r}</option>`
+                ).join('')}
+            </select>
+            <div class="trade-actions trade-inline-actions">
+                <button data-inline="save" data-id="${id}">Guardar</button>
+                <button data-inline="cancel" data-id="${id}">Cancelar</button>
+                <button data-inline="full" data-id="${id}" title="Editar todos los campos">Más</button>
+            </div>
+            <p class="trade-inline-err" hidden></p>
+        `;
+        const assetInput = row.querySelector('[data-field="asset"]');
+        if (assetInput) { assetInput.focus(); assetInput.select(); }
+        // Enter saves, Esc cancels.
+        row.querySelectorAll('.trade-inline-input').forEach(el => {
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); saveInlineEdit(id); }
+                else if (e.key === 'Escape') { e.preventDefault(); cancelInlineEdit(id); }
+            });
+        });
+    }
+
+    function inlineErr(id, msg) {
+        const row = listEl.querySelector(`[data-id="${id}"]`);
+        const err = row && row.querySelector('.trade-inline-err');
+        if (err) { err.textContent = msg; err.hidden = !msg; }
+    }
+
+    function cancelInlineEdit(id) {
+        const trade = window._tradesById && window._tradesById[id];
+        const row = listEl.querySelector(`[data-id="${id}"]`);
+        if (trade && row) row.outerHTML = tradeRowHtml(trade);
+    }
+
+    async function saveInlineEdit(id) {
+        const row = listEl.querySelector(`[data-id="${id}"]`);
+        if (!row) return;
+        const get = (f) => row.querySelector(`[data-field="${f}"]`);
+        const asset = (get('asset').value || '').trim().toUpperCase();
+        const dir = get('dir').value;
+        const result = get('result').value;
+        const pnlRaw = (get('pnl').value || '').trim();
+        if (!asset) { inlineErr(id, 'El activo es obligatorio'); get('asset').focus(); return; }
+        if (pnlRaw !== '' && !isFinite(Number(pnlRaw))) {
+            inlineErr(id, 'PnL debe ser numérico'); get('pnl').focus(); return;
+        }
+        inlineErr(id, '');
+        const saveBtn = row.querySelector('[data-inline="save"]');
+        const done = (typeof window.apiButtonLoading === 'function' && saveBtn)
+            ? window.apiButtonLoading(saveBtn) : function () {};
+        try {
+            const r = await apiFetch('/api/journal/' + id, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_code: currentUserCode(),
+                    asset: asset,
+                    dir: dir,
+                    date: get('date').value || null,
+                    result: result,
+                    pnl: pnlRaw === '' ? null : Number(pnlRaw),
+                }),
+            });
+            if (r.ok && r.data && r.data.success) {
+                if (window.apiToast) apiToast('Trade actualizado', 'success');
+                // Refresh cache + dependent panels, then restore the row.
+                await loadTrades();
+                loadGuardianBanner();
+                if (typeof refreshOverviewPanel === 'function') {
+                    const overviewVisible = !document.getElementById('journal-panel-overview').hidden;
+                    if (overviewVisible) refreshOverviewPanel();
+                }
+            } else {
+                inlineErr(id, (r.data && (r.data.error || r.data.message)) || 'Error al guardar');
+            }
+        } catch (e) {
+            inlineErr(id, 'Error de red: ' + (e.message || 'sin detalle'));
+        } finally {
+            done();
+        }
     }
 
     // ─── F11: insights card (best day, best asset, profit factor) ───
@@ -1646,13 +1766,25 @@
         document.getElementById('trade-form').addEventListener('submit', saveTrade);
 
         listEl.addEventListener('click', (e) => {
+            // F3: inline editor buttons (Guardar / Cancelar / Más campos).
+            const inlineBtn = e.target.closest('[data-inline]');
+            if (inlineBtn) {
+                const id = inlineBtn.dataset.id;
+                const kind = inlineBtn.dataset.inline;
+                if (kind === 'save') saveInlineEdit(id);
+                else if (kind === 'cancel') cancelInlineEdit(id);
+                else if (kind === 'full') {
+                    const trade = window._tradesById && window._tradesById[id];
+                    cancelInlineEdit(id);
+                    if (trade) openModal(trade);
+                }
+                return;
+            }
             const editBtn = e.target.closest('[data-action="edit"]');
             if (editBtn) {
-                const id = editBtn.dataset.id;
-                const trade = window._tradesById && window._tradesById[id];
-                if (trade) {
-                    openModal(trade);
-                }
+                // F3: edit in place; the modal stays for new trades +
+                // full-field editing via the "Más" button.
+                openInlineEdit(editBtn.dataset.id);
                 return;
             }
             const delBtn = e.target.closest('[data-action="delete"]');
