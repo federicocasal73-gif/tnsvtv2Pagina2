@@ -24,7 +24,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
                 <label class="oracle-label block mb-1">Usuario</label>
-                <input id="user-code" type="text" value="ADMIN01" class="w-full px-3 py-2 rounded bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
+                <input id="user-code" type="text" value="{{ app.user ? app.user.code : '' }}" placeholder="Tu código" class="w-full px-3 py-2 rounded bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
             </div>
             <div>
                 <label class="oracle-label block mb-1">Rango (días)</label>
@@ -135,7 +135,12 @@
     let perfChart = null;
 
     async function loadAll() {
-        const userCode = document.getElementById('user-code').value.trim();
+        // L40: default to the logged-in user instead of a hardcoded code.
+        const input = document.getElementById('user-code');
+        if (!input.value.trim() && window.TNSVT_USER && window.TNSVT_USER.code) {
+            input.value = window.TNSVT_USER.code;
+        }
+        const userCode = input.value.trim();
         const days = parseInt(document.getElementById('days-select').value);
         const status = document.getElementById('loading-status');
         status.textContent = 'Cargando...';

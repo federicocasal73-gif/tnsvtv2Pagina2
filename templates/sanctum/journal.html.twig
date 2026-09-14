@@ -1309,8 +1309,13 @@
             const p = points[idx];
             circle.addEventListener('mouseenter', () => {
                 const dateStr = p.date ? new Date(p.date).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' }) : '—';
-                const pnlSign = p.pnl >= 0 ? '+' : '';
-                const pnlColor = p.pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
+                // L17: coerce numerics — API may send strings/nulls, which
+                // used to render "$NaN" in the tooltip.
+                const pnl = Number(p.pnl) || 0;
+                const bal = Number(p.balance) || 0;
+                const dd = Number(p.drawdown_pct) || 0;
+                const pnlSign = pnl >= 0 ? '+' : '';
+                const pnlColor = pnl >= 0 ? 'var(--success-elev)' : 'var(--error-elev)';
                 tooltip.innerHTML = `
                     <div class="text-xs">
                         <div class="flex items-center gap-2 mb-1">
@@ -1318,9 +1323,9 @@
                             <span class="text-[10px] px-1.5 rounded ${p.result === 'WIN' ? 'bg-green-500/20 text-green-300' : p.result === 'LOSS' ? 'bg-red-500/20 text-red-300' : 'bg-white/10 text-white/60'}">${escapeHtml(p.result || '—')}</span>
                         </div>
                         <div class="text-[var(--outline-elev)]">${dateStr}</div>
-                        <div class="mt-1">Balance <span class="font-bold">$${p.balance.toLocaleString('es-AR', {minimumFractionDigits: 2})}</span></div>
-                        <div style="color: ${pnlColor}">P&L ${pnlSign}$${Math.abs(p.pnl).toFixed(2)}</div>
-                        ${p.drawdown_pct > 0 ? `<div class="text-[var(--outline-elev)] text-[10px]">DD ${p.drawdown_pct.toFixed(2)}%</div>` : ''}
+                        <div class="mt-1">Balance <span class="font-bold">$${bal.toLocaleString('es-AR', {minimumFractionDigits: 2})}</span></div>
+                        <div style="color: ${pnlColor}">P&L ${pnlSign}$${Math.abs(pnl).toFixed(2)}</div>
+                        ${dd > 0 ? `<div class="text-[var(--outline-elev)] text-[10px]">DD ${dd.toFixed(2)}%</div>` : ''}
                     </div>
                 `;
                 if (card) {

@@ -146,7 +146,17 @@
         }
         if (state.search) {
             const q = state.search.toLowerCase();
-            items = items.filter(c => (c.name || c.title || '').toLowerCase().includes(q));
+            // L87: match names/titles AND last-message bodies.
+            const bodyOf = (c) => {
+                const lm = c.last_message_preview ?? c.last_message ?? c.lastMessage ?? '';
+                if (typeof lm === 'string') return lm;
+                if (lm && typeof lm === 'object') return lm.content || lm.text || lm.message || '';
+                return '';
+            };
+            items = items.filter(c =>
+                (c.name || c.title || '').toLowerCase().includes(q)
+                || bodyOf(c).toLowerCase().includes(q)
+            );
         }
 
         if (items.length === 0) {
