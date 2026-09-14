@@ -8,7 +8,7 @@
 {% block stylesheets %}{% endblock %}
 
 {% block content %}
-<div class="feed-layout">
+<div class="feed-layout" data-controller="feed">
 
 <main class="feed-main">
 
@@ -19,7 +19,10 @@
         </p>
     </header>
 
-    <nav class="feed-tabs" id="feed-tabs" role="tablist" aria-label="Filtros de feed">
+    <nav class="feed-tabs"
+         data-feed-target="tabs"
+         id="feed-tabs"
+         role="tablist" aria-label="Filtros de feed">
         <button class="feed-tab active" data-cat="all"        role="tab" aria-selected="true">Todos</button>
         <button class="feed-tab"        data-cat="general"     role="tab" aria-selected="false">General</button>
         <button class="feed-tab"        data-cat="señales"     role="tab" aria-selected="false">Señales</button>
@@ -30,10 +33,15 @@
     </nav>
 
     <article class="feed-composer" aria-label="Composer">
-        <textarea id="composer-text" data-test-id="composer-text" class="feed-composer-textarea"
+        <textarea id="composer-text"
+                  data-test-id="composer-text"
+                  data-feed-target="text"
+                  class="feed-composer-textarea"
                   placeholder="¿Qué querés compartir con el Cónclave?" maxlength="2000"></textarea>
         <div class="feed-composer-footer">
-            <div class="feed-composer-chips" id="composer-chips">
+            <div class="feed-composer-chips"
+                 data-feed-target="chips"
+                 id="composer-chips">
                 <button class="feed-composer-chip" data-cat="general"     type="button">General</button>
                 <button class="feed-composer-chip" data-cat="señales"     type="button">Señales</button>
                 <button class="feed-composer-chip" data-cat="result-win"  type="button">Resultado +</button>
@@ -41,34 +49,56 @@
                 <button class="feed-composer-chip" data-cat="projection"  type="button">Proyección</button>
                 <button class="feed-composer-chip" data-cat="question"    type="button">Pregunta</button>
             </div>
-            <button id="composer-submit" data-test-id="composer-submit" class="feed-composer-submit" disabled>Publicar</button>
+            <button id="composer-submit"
+                    data-test-id="composer-submit"
+                    data-feed-target="submit"
+                    class="feed-composer-submit" disabled>Publicar</button>
         </div>
         <div class="feed-composer-meta">
-            <span class="feed-char-count" id="composer-count" aria-live="polite">0 / 2000</span>
+            <span class="feed-char-count"
+                  data-feed-target="count"
+                  id="composer-count"
+                  aria-live="polite">0 / 2000</span>
         </div>
     </article>
 
-    <div class="feed-list" id="feed-list" data-test-id="feed-list">
-        <div class="feed-loading" id="feed-loading">
+    <div class="feed-list"
+         data-feed-target="list"
+         id="feed-list"
+         data-test-id="feed-list">
+        <div class="feed-loading"
+             data-feed-target="loading"
+             id="feed-loading">
             <div class="skeleton-stack" aria-hidden="true">
                 <div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div>
                 <div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div>
             </div>
         </div>
     </div>
-    <div id="feed-sentinel" style="height:1px;"></div>
-    <button id="feed-load-more" class="ui-btn ui-btn ghost ui-btn-size-sm" style="display:none; margin: 1rem auto;">Cargar más</button>
+    <div id="feed-sentinel"
+         data-feed-target="sentinel"
+         style="height:1px;"></div>
+    <button id="feed-load-more"
+            data-feed-target="loadMore"
+            class="ui-btn ui-btn ghost ui-btn-size-sm"
+            style="display:none; margin: 1rem auto;">Cargar más</button>
 
 </main>
 
-<button type="button" id="feed-back-to-top" class="feed-back-to-top" aria-label="Volver arriba" title="Volver arriba">
+<button type="button"
+        data-feed-target="backToTop"
+        id="feed-back-to-top"
+        class="feed-back-to-top"
+        aria-label="Volver arriba" title="Volver arriba">
     <span class="material-symbols-elev" aria-hidden="true">arrow_upward</span>
 </button>
 
 <aside class="feed-side">
     <div class="feed-side-card">
         <h3 class="feed-side-card-header">Mensajes</h3>
-        <div id="feed-side-conversations" class="feed-side-list">
+        <div data-feed-target="sideConversations"
+             id="feed-side-conversations"
+             class="feed-side-list">
             <div class="feed-loading">Cargando...</div>
         </div>
         <p style="text-align:center;margin-top:0.5rem;">
@@ -77,502 +107,13 @@
     </div>
     <div class="feed-side-card">
         <h3 class="feed-side-card-header">Top publicadores</h3>
-        <div id="feed-side-top" class="feed-side-list">
+        <div data-feed-target="sideTop"
+             id="feed-side-top"
+             class="feed-side-list">
             <div class="feed-loading">Cargando...</div>
         </div>
     </div>
 </aside>
 
 </div>
-
-<script>
-(function() {
-    'use strict';
-
-    // ══════ F5 — Salón del Cónclave ══════
-    const state = { category: 'all', activeCat: 'general' };
-    let _likedIds = new Set();
-    // L63: bookmarks persisted in localStorage (per-device).
-    let _savedIds = new Set();
-    try {
-        const raw = localStorage.getItem('tnsvt_feed_saved');
-        if (raw) _savedIds = new Set(JSON.parse(raw));
-    } catch (e) {}
-    function persistSaved() {
-        try { localStorage.setItem('tnsvt_feed_saved', JSON.stringify(Array.from(_savedIds))); } catch (e) {}
-    }
-    const $list = document.getElementById('feed-list');
-    const $loading = document.getElementById('feed-loading');
-
-    function esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-    function relTime(iso) {
-        try {
-            const d = new Date(iso);
-            const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-            if (diff < 60)   return 'hace ' + diff + 's';
-            if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + 'm';
-            if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + 'h';
-            return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
-        } catch (e) { return ''; }
-    }
-    function catLabel(cat) {
-        return ({
-            'general': 'General', 'señales': 'Señal', 'result-win': 'Resultado +',
-            'result-loss': 'Resultado −', 'projection': 'Proyección', 'question': 'Pregunta'
-        })[cat] || cat;
-    }
-    function catClass(cat) {
-        return ({
-            'general': 'cat-general', 'señales': 'cat-signal', 'result-win': 'cat-result-win',
-            'result-loss': 'cat-result-loss', 'projection': 'cat-projection', 'question': 'cat-question'
-        })[cat] || 'cat-general';
-    }
-    function initials(name) {
-        return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
-    }
-
-    let feedNextBeforeId = null;
-    let feedHasMore = true;
-    let feedIsLoading = false;
-
-    async function loadFeed({ append = false } = {}) {
-        if (!$list || feedIsLoading) return;
-        if (!append) {
-            feedNextBeforeId = null;
-            feedHasMore = true;
-            $list.innerHTML = '<div class="feed-loading"><div class="skeleton-stack" aria-hidden="true"><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div></div></div>';
-            document.getElementById('feed-load-more')?.style.setProperty('display','none');
-        } else {
-            if (!feedHasMore || !feedNextBeforeId) return;
-        }
-        feedIsLoading = true;
-        try {
-            let url = `/api/feed?category=${encodeURIComponent(state.category)}&limit=10`;
-            if (append && feedNextBeforeId) url += `&before_id=${feedNextBeforeId}`;
-            const r = await apiFetch(url, { silent: true });
-            if (!r.ok || !r.data || !Array.isArray(r.data)) {
-                if (!append) {
-                    $list.innerHTML = '';
-                    apiEmpty($list, { icon: 'cloud_off', message: 'Sin datos disponibles', size: 'illustrated' });
-                }
-                feedHasMore = false;
-                return;
-            }
-            const me = window.TNSVT_USER ? window.TNSVT_USER.code : '';
-            if (append) {
-                appendFeed(r.data, me);
-            } else {
-                renderFeed(r.data, me);
-            }
-            if (r.data.length < 10) feedHasMore = false;
-            else feedNextBeforeId = r.data[r.data.length - 1]?.id || null;
-            document.getElementById('feed-load-more').style.display = feedHasMore ? 'block' : 'none';
-        } catch (e) {
-            if (!append) $list.innerHTML = '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">cloud_off</span><p>Sin conexión.</p></div>';
-            feedHasMore = false;
-        } finally {
-            feedIsLoading = false;
-        }
-    }
-    function appendFeed(posts, meCode) {
-        if (!posts.length) { feedHasMore = false; return; }
-        const frag = document.createElement('div');
-        // reuse render by appending
-        const tmp = document.createElement('div');
-        tmp.innerHTML = posts.map(p => renderPostHtml(p, meCode)).join('');
-        // wire events for new nodes
-        while (tmp.firstChild) $list.appendChild(tmp.firstChild);
-        // re-bind like/comment for new nodes only (simplified: re-bind all)
-        $list.querySelectorAll('.feed-like-btn').forEach(b => {
-            if (b.dataset.bound) return; b.dataset.bound='1';
-            b.addEventListener('click', () => likePost(parseInt(b.dataset.id, 10), b));
-        });
-    }
-    function renderPostHtml(p, meCode) {
-        const cat = p.cat || 'general';
-        const cls = catClass(cat);
-        const sig = p.signal;
-        const sigHtml = sig && typeof sig === 'object' ? `<div class="feed-post-signal">${Object.entries(sig).sort(([a], [b]) => a.localeCompare(b)).slice(0,4).map(([k,v])=>`<div><div class="feed-post-signal-field-label">${esc(k.replace(/_/g,' '))}</div><div class="feed-post-signal-field-value gold">${esc(String(v))}</div></div>`).join('')}</div>` : '';
-        const photoHtml = p.photo ? `<img class="feed-post-photo lightbox-trigger" data-lightbox-group="feed-post" data-lightbox-name="${esc(p.author_name || 'post')}" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura" loading="lazy" decoding="async" />` : '';
-        const comments = Array.isArray(p.comments) ? p.comments : [];
-        const myPost = meCode && p.author_code === meCode;
-        const liked = _likedIds.has(p.id);
-        const saved = _savedIds.has(p.id);
-        return `<article class="feed-post cat-${esc(cat)}" data-id="${p.id}">
-            <header class="feed-post-head"><div class="feed-avatar">${esc(initials(p.author_name))}</div><div class="feed-author-block"><div class="feed-author-name">${esc(p.author_name||'Anónimo')}</div><div class="feed-author-meta"><span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span><span>· ${esc(relTime(p.created_at))}</span></div></div>${myPost?`<button type="button" class="feed-action feed-post-delete" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">delete</span></button>`:''}</header>
-            <div class="feed-post-body">${esc(p.text||'')}</div>${sigHtml}${photoHtml}
-            <div class="feed-post-actions"><button type="button" class="feed-action feed-like-btn ${liked?'liked':''}" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">favorite</span><span data-likes-count>${p.likes||0}</span></button><button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}"><span class="material-symbols-elev icon-size-sm">chat_bubble</span><span data-comments-count>${comments.length}</span></button><button type="button" class="feed-action feed-save-btn ${saved?'saved':''}" data-id="${p.id}" aria-label="Guardar" title="Guardar"><span class="material-symbols-elev icon-size-sm">bookmark</span></button></div>
-            <div class="feed-comments" data-id="${p.id}" data-collapsed="true">${comments.map(c=>`<div class="feed-comment"><div class="feed-comment-avatar">${esc(initials(c.author))}</div><div class="feed-comment-body"><span class="feed-comment-author">${esc(c.author||'')}</span><span class="feed-comment-text">${esc(c.text||'')}</span><span class="feed-comment-time">${esc(relTime(c.date))}</span></div></div>`).join('')}<form class="feed-comment-form" data-id="${p.id}"><input type="text" data-test-id="feed-comment-input" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" /><button type="submit" class="feed-comment-submit">Comentar</button></form></div>
-        </article>`;
-    }
-
-    function renderFeed(posts, meCode) {
-        if (posts.length === 0) {
-            $list.innerHTML = `
-                <div class="feed-empty">
-                    <span class="material-symbols-elev feed-empty-icon">forum</span>
-                    <p style="font-size:1rem;color:var(--on-surface-elev);">No hay publicaciones todavía.</p>
-                    <p>Sé el primero en escribir.</p>
-                </div>
-            `;
-            return;
-        }
-
-        $list.innerHTML = posts.map(p => {
-            const cat = p.cat || 'general';
-            const cls = catClass(cat);
-            const sig = p.signal;
-            const sigHtml = sig && typeof sig === 'object' ? `
-                <div class="feed-post-signal">
-                    ${Object.entries(sig).sort(([a], [b]) => String(a).localeCompare(String(b))).slice(0, 4).map(([k, v]) => `
-                        <div>
-                            <div class="feed-post-signal-field-label">${esc(k.replace(/_/g, ' '))}</div>
-                            <div class="feed-post-signal-field-value gold">${esc(String(v))}</div>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : '';
-            const photoHtml = p.photo ? `<img class="feed-post-photo lightbox-trigger" data-lightbox-group="feed-post" data-lightbox-name="${esc(p.user || 'usuario')}" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura de ${esc(p.user || 'usuario')}" loading="lazy" decoding="async" />` : '';
-            const comments = Array.isArray(p.comments) ? p.comments : [];
-            const myPost = meCode && p.author_code === meCode;
-            const liked = _likedIds.has(p.id);
-            const saved = _savedIds.has(p.id);
-
-            return `
-                <article class="feed-post cat-${esc(cat)}" data-id="${p.id}">
-                    <header class="feed-post-head">
-                        <div class="feed-avatar">${esc(initials(p.author_name))}</div>
-                        <div class="feed-author-block">
-                            <div class="feed-author-name">${esc(p.author_name || 'Anónimo')}</div>
-                            <div class="feed-author-meta">
-                                <span class="feed-cat-pill ${cls}">${esc(catLabel(cat))}</span>
-                                <span>· ${esc(relTime(p.created_at))}</span>
-                            </div>
-                        </div>
-                        ${myPost ? `
-                            <button type="button" class="feed-action feed-post-delete" data-id="${p.id}" aria-label="Eliminar publicación">
-                                <span class="material-symbols-elev icon-size-sm">delete</span>
-                            </button>
-                        ` : ''}
-                    </header>
-                    <div class="feed-post-body">${esc(p.text || '')}</div>
-                    ${sigHtml}
-                    ${photoHtml}
-                    <div class="feed-post-actions">
-                        <button type="button" class="feed-action feed-like-btn ${liked ? 'liked' : ''}" data-id="${p.id}">
-                            <span class="material-symbols-elev icon-size-sm">favorite</span>
-                            <span data-likes-count>${p.likes || 0}</span>
-                        </button>
-                        <button type="button" class="feed-action feed-toggle-comments" data-id="${p.id}">
-                            <span class="material-symbols-elev icon-size-sm">chat_bubble</span>
-                            <span data-comments-count>${comments.length}</span>
-                        </button>
-                        <button type="button" class="feed-action feed-save-btn ${saved ? 'saved' : ''}" data-id="${p.id}" aria-label="Guardar" title="Guardar">
-                            <span class="material-symbols-elev icon-size-sm">bookmark</span>
-                        </button>
-                    </div>
-                    <div class="feed-comments" data-id="${p.id}" data-collapsed="true">
-                        ${comments.map(c => `
-                            <div class="feed-comment">
-                                <div class="feed-comment-avatar">${esc(initials(c.author))}</div>
-                                <div class="feed-comment-body">
-                                    <span class="feed-comment-author">${esc(c.author || '')}</span>
-                                    <span class="feed-comment-text">${esc(c.text || '')}</span>
-                                    <span class="feed-comment-time">${esc(relTime(c.date))}</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                        <form class="feed-comment-form" data-id="${p.id}">
-                            <input type="text" data-test-id="feed-comment-input" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" />
-                            <button type="submit" class="feed-comment-submit">Comentar</button>
-                        </form>
-                    </div>
-                </article>
-            `;
-        }).join('');
-
-        // Wire actions
-        $list.querySelectorAll('.feed-like-btn').forEach(b => {
-            b.addEventListener('click', () => likePost(parseInt(b.dataset.id, 10), b));
-        });
-        // L63: bookmark toggle (local).
-        $list.querySelectorAll('.feed-save-btn').forEach(b => {
-            b.addEventListener('click', () => {
-                const id = parseInt(b.dataset.id, 10);
-                if (_savedIds.has(id)) {
-                    _savedIds.delete(id);
-                    b.classList.remove('saved');
-                    if (window.apiToast) apiToast('Eliminado de guardados', 'info');
-                } else {
-                    _savedIds.add(id);
-                    b.classList.add('saved');
-                    if (window.apiToast) apiToast('Guardado', 'success');
-                }
-                persistSaved();
-            });
-        });
-        $list.querySelectorAll('.feed-toggle-comments').forEach(b => {
-            b.addEventListener('click', () => {
-                const id = parseInt(b.dataset.id, 10);
-                const c = $list.querySelector(`.feed-comments[data-id="${id}"]`);
-                const collapsed = c.getAttribute('data-collapsed') === 'true';
-                c.setAttribute('data-collapsed', collapsed ? 'false' : 'true');
-                b.classList.toggle('active', !collapsed);
-                if (!collapsed) {
-                    const input = c.querySelector('.feed-comment-input');
-                    if (input) input.focus();
-                }
-            });
-        });
-        $list.querySelectorAll('.feed-comment-form').forEach(f => {
-            f.addEventListener('submit', e => {
-                e.preventDefault();
-                const id = parseInt(f.dataset.id, 10);
-                const input = f.querySelector('.feed-comment-input');
-                const text = input.value.trim();
-                if (!text) return;
-                input.disabled = true;
-                apiFetch(`/api/feed/${id}/comment`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
-                }).then(r => {
-                    input.disabled = false;
-                    if (r.ok && r.data && r.data.success) {
-                        input.value = '';
-                        loadFeed();
-                    } else {
-                        apiToast(r.data && r.data.error ? r.data.error : 'Error al comentar', 'error');
-                    }
-                }).catch(() => { input.disabled = false; });
-            });
-        });
-        $list.querySelectorAll('.feed-post-delete').forEach(b => {
-            b.addEventListener('click', async () => {
-                const id = parseInt(b.dataset.id, 10);
-                if (!await apiConfirm('¿Eliminar esta publicación?', { title: 'Eliminar publicación', variant: 'danger' })) return;
-                try {
-                    const r = await apiFetch(`/api/feed/${id}`, { method: 'DELETE' });
-                    if (r.ok) {
-                        loadFeed();
-                    } else {
-                        apiToast((r.data && r.data.error) || 'Error al eliminar', 'error');
-                    }
-                } catch (e) {
-                    console.error('[feed] delete error', e);
-                    apiToast('Error de red al eliminar', 'error');
-                }
-            });
-        });
-    }
-
-    async function likePost(id, btn) {
-        const liked = btn.classList.contains('liked');
-        const action = liked ? 'unlike' : 'like';
-        const r = await apiFetch(`/api/feed/${id}/like`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action })
-        });
-        if (r.ok && r.data && typeof r.data.likes === 'number') {
-            const countEl = btn.querySelector('[data-likes-count]');
-            countEl.textContent = r.data.likes;
-            btn.classList.toggle('liked');
-            if (!liked) _likedIds.add(id); else _likedIds.delete(id);
-        }
-    }
-
-    // ─── Composer ───
-    const $text = document.getElementById('composer-text');
-    const $submit = document.getElementById('composer-submit');
-    const $chips = document.getElementById('composer-chips');
-    const $count = document.getElementById('composer-count');
-
-    // L61: live char count with warn/danger thresholds.
-    function updateCharCount() {
-        if (!$count) return;
-        const max = parseInt($text.getAttribute('maxlength') || '2000', 10);
-        const len = $text.value.length;
-        $count.textContent = len + ' / ' + max;
-        $count.classList.toggle('is-warn', len > max * 0.85 && len <= max * 0.97);
-        $count.classList.toggle('is-danger', len > max * 0.97);
-    }
-
-    function updateSubmitState() {
-        $submit.disabled = !($text.value.trim().length > 0 && state.activeCat);
-        updateCharCount();
-    }
-
-    $text.addEventListener('input', updateSubmitState);
-    updateCharCount();
-    $chips.querySelectorAll('.feed-composer-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            $chips.querySelectorAll('.feed-composer-chip').forEach(c => c.classList.toggle('active', c === chip));
-            state.activeCat = chip.dataset.cat;
-            updateSubmitState();
-        });
-    });
-    // Default active chip
-    $chips.querySelector('[data-cat="general"]').classList.add('active');
-
-    $submit.addEventListener('click', async () => {
-        const text = $text.value.trim();
-        if (!text || !state.activeCat) return;
-        $submit.disabled = true;
-        $submit.textContent = 'Publicando...';
-        try {
-            const r = await apiFetch('/api/feed', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, cat: state.activeCat })
-            });
-            if (r.ok && r.data && r.data.success) {
-                $text.value = '';
-                await loadFeed();
-            } else {
-                apiToast(r.data && r.data.error ? r.data.error : 'Error al publicar', 'error');
-            }
-        } finally {
-            $submit.textContent = 'Publicar';
-            updateSubmitState();
-        }
-    });
-
-    // ─── Tabs ───
-    document.querySelectorAll('#feed-tabs .feed-tab').forEach(t => {
-        t.addEventListener('click', () => {
-            document.querySelectorAll('#feed-tabs .feed-tab').forEach(x => x.classList.toggle('active', x === t));
-            document.querySelectorAll('#feed-tabs .feed-tab').forEach(x => x.setAttribute('aria-selected', x === t ? 'true' : 'false'));
-            state.category = t.dataset.cat;
-            const url = new URL(location.href);
-            if (state.category) url.searchParams.set('cat', state.category);
-            else url.searchParams.delete('cat');
-            history.replaceState(null, '', url);
-            loadFeed();
-        });
-    });
-
-    // Restore tab from URL
-    const urlCat = new URLSearchParams(location.search).get('cat');
-    if (urlCat) {
-        document.querySelectorAll('#feed-tabs .feed-tab').forEach(x => {
-            const active = x.dataset.cat === urlCat;
-            x.classList.toggle('active', active);
-            x.setAttribute('aria-selected', active ? 'true' : 'false');
-            if (active) state.category = urlCat;
-        });
-    }
-
-    // ─── Side panel — recent conversations ───
-    async function loadSideConversations() {
-        const el = document.getElementById('feed-side-conversations');
-        if (!el) return;
-        try {
-            const r = await apiFetch('/api/chat/conversations', { silent: true });
-            if (!r.ok || !r.data || !Array.isArray(r.data)) {
-                el.innerHTML = '<div class="feed-loading">Sin datos</div>';
-                return;
-            }
-            const items = (r.data || []).slice(0, 5);
-            if (items.length === 0) {
-                el.innerHTML = '<div class="feed-loading" style="font-style:normal;">Sin conversaciones aún</div>';
-                return;
-            }
-            el.innerHTML = items.map(c => `
-                <a class="feed-side-row" href="/chat" style="text-decoration:none;color:inherit;">
-                    <div class="feed-avatar" style="width:30px;height:30px;font-size:0.75rem;">${esc(initials(c.name || c.title || 'C'))}</div>
-                    <div style="flex-grow:1;min-width:0;">
-                        <div class="feed-side-name">${esc(c.name || c.title || 'Conversación')}</div>
-                        <div class="feed-side-meta">${esc((c.last_message || '').slice(0, 40))}</div>
-                    </div>
-                </a>
-            `).join('');
-        } catch (e) {
-            el.innerHTML = '<div class="feed-loading">Sin conexión</div>';
-        }
-    }
-
-    async function loadSideTop() {
-        const el = document.getElementById('feed-side-top');
-        if (!el) return;
-        try {
-            // L62: weight by engagement (likes + comments) so a thoughtful
-            // poster ranks above someone spamming low-quality posts.
-            const r = await apiFetch('/api/feed?category=all&limit=50', { silent: true });
-            if (!r.ok || !r.data || !Array.isArray(r.data)) {
-                el.innerHTML = '<div class="feed-loading">Sin datos</div>';
-                return;
-            }
-            const tally = {};
-            r.data.forEach(p => {
-                const name = p.author_name || 'Anónimo';
-                if (!tally[name]) tally[name] = { posts: 0, score: 0 };
-                tally[name].posts += 1;
-                const likes = Number(p.likes) || 0;
-                const comments = Array.isArray(p.comments) ? p.comments.length : (Number(p.comment_count) || 0);
-                tally[name].score += 1 + likes + 2 * comments;
-            });
-            const ranking = Object.entries(tally)
-                .sort((a, b) => b[1].score - a[1].score)
-                .slice(0, 5);
-            if (ranking.length === 0) {
-                el.innerHTML = '<div class="feed-loading" style="font-style:normal;">Sin datos aún</div>';
-                return;
-            }
-            el.innerHTML = ranking.map(([name, info]) => `
-                <div class="feed-side-row">
-                    <div class="feed-avatar" style="width:30px;height:30px;font-size:0.75rem;">${esc(initials(name))}</div>
-                    <div style="flex-grow:1;">
-                        <div class="feed-side-name">${esc(name)}</div>
-                        <div class="feed-side-meta">${info.posts} pub · ${info.score} pts</div>
-                    </div>
-                </div>
-            `).join('');
-        } catch (e) {
-            el.innerHTML = '<div class="feed-loading">Sin conexión</div>';
-        }
-    }
-
-    // Infinite scroll + Load more
-    const sentinel = document.getElementById('feed-sentinel');
-    const loadMoreBtn = document.getElementById('feed-load-more');
-    if (loadMoreBtn) loadMoreBtn.addEventListener('click', () => loadFeed({ append: true }));
-    if (sentinel && 'IntersectionObserver' in window) {
-        new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting && feedHasMore && !feedIsLoading) loadFeed({ append: true });
-        }, { rootMargin: '400px' }).observe(sentinel);
-    }
-
-document.addEventListener('DOMContentLoaded', () => {
-        loadFeed();
-        loadSideConversations();
-        loadSideTop();
-
-        // Back-to-top button: appears after scrolling down 600px,
-        // smooth-scrolls to the top when clicked. Pause when offscreen.
-        const btt = document.getElementById('feed-back-to-top');
-        if (btt) {
-            let _bttVisible = false;
-            const onScroll = () => {
-                const y = window.scrollY || document.documentElement.scrollTop;
-                const should = y > 600;
-                if (should !== _bttVisible) {
-                    _bttVisible = should;
-                    btt.classList.toggle('is-visible', should);
-                }
-            };
-            window.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
-            btt.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        }
-
-        // Refresh feed every 60s (silent) - reset to first page
-        apiPoller(() => { loadFeed(); loadSideConversations(); loadSideTop(); }, 60 * 1000);
-    });
-})();
-</script>
 {% endblock %}
