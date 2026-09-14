@@ -113,33 +113,13 @@
         <div class="cal-thread-line"></div>
         <p class="text-center text-[var(--outline-elev)] py-12 loading-pulse">Cargando eventos del día...</p>
     </div>
-
-    {# ─── Hidden data for backward compat (cal-list still referenced by old scripts) ─── #}
-    <div class="glass-card-elev p-0 overflow-hidden mt-6" id="cal-table-legacy" style="display:none;">
-        <div class="overflow-x-auto">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th scope="col">Hora</th>
-                        <th scope="col">País</th>
-                        <th scope="col">Evento</th>
-                        <th scope="col">Impacto</th>
-                        <th scope="col">Actual</th>
-                        <th scope="col">Previsión</th>
-                        <th scope="col">Anterior</th>
-                    </tr>
-                </thead>
-                <tbody id="cal-list"></tbody>
-            </table>
-        </div>
-    </div>
 </div>
 
 <script>
 (function() {
     'use strict';
     const threadEl = document.getElementById('cal-thread');
-    const listEl = document.getElementById('cal-list');
+    const threadEl = document.getElementById('cal-thread');
     const countEl = document.getElementById('cal-count');
     const dateInput = document.getElementById('cal-date');
     const countrySel = document.getElementById('cal-country');
@@ -343,26 +323,6 @@
         }
 
         threadEl.innerHTML = html;
-
-        // Also populate legacy table for backward compat (e.g., exports)
-        if (listEl) {
-            listEl.innerHTML = events.map(e => {
-                const impact = e.importance || 1;
-                const critical = e.is_critical ? 'cal-critical' : '';
-                const t = timeUntil(e.datetime_utc || e.datetime_local);
-                return `
-                    <tr class="${critical}">
-                        <td class="font-mono">${escapeHtml(e.time || '')}${t && !t.past ? ` <small>(${escapeHtml(t.text)})</small>` : ''}</td>
-                        <td>${escapeHtml(e.currency || e.country_code || '')}</td>
-                        <td>${escapeHtml(e.title || '')}</td>
-                        <td class="cal-impact-${impact}">${'●'.repeat(impact)}${'○'.repeat(3 - impact)}</td>
-                        <td>${escapeHtml(e.actual || '—')}</td>
-                        <td>${escapeHtml(e.forecast || '—')}</td>
-                        <td>${escapeHtml(e.previous || '—')}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
     }
 
     function onFilterChange() {

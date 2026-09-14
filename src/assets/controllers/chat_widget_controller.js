@@ -223,12 +223,18 @@ export default class extends Controller {
         if (this.sendBtnTarget) {
             this.sendBtnTarget.disabled = body.length === 0;
         }
-        // Indicador visual "escribiendo..."
+        // Indicador visual "escribiendo…"
         if (body.length > 5) {
             this.showTypingIndicator();
         }
         // TNSVT Sprint E.2 — Contador de caracteres
         this.updateCharCount();
+    }
+
+    // P19: clear the local typing indicator the instant we send so
+    // the user's own "Escribiendo…" bubble never lingers post-send.
+    onBeforeSend() {
+        this.removeTypingIndicator();
     }
 
     updateCharCount() {
@@ -558,6 +564,7 @@ export default class extends Controller {
         if (!this.activeConv) return;
         const content = this.inputTarget.value.trim();
         if (!content) return;
+        this.onBeforeSend();
         this.sendBtnTarget.disabled = true;
         try {
             const r = await window.apiFetch(`/api/chat/conversations/${this.activeConv.id}/messages`, {
@@ -585,6 +592,7 @@ export default class extends Controller {
     keydown(event) {
         if (event.key === 'Enter' && !event.shiftKey) {
             event.preventDefault();
+            this.onBeforeSend();
             this.send();
         }
     }
