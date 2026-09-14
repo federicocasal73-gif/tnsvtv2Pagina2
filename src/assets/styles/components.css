@@ -3232,3 +3232,56 @@ header {
 @media (min-width: 1024px) {
     .lg\:gap-4 { gap: 1rem; }
 }
+
+
+/* ─── F14: read receipts + reactions (widget) ─── */
+.chat-widget-read {
+    color: var(--outline-elev);
+    font-size: 0.68rem;
+    letter-spacing: -0.05em;
+}
+.chat-widget-read.is-read { color: var(--gold-elev); }
+.chat-widget-react-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.3rem;
+}
+.chat-widget-react-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--on-surface-elev);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+.chat-widget-react-chip.is-own {
+    border-color: rgba(242,202,80,0.55);
+    background: rgba(242,202,80,0.12);
+}
+.chat-widget-react-bar {
+    display: none;
+    gap: 0.15rem;
+    margin-top: 0.25rem;
+}
+.chat-widget-msg-body:hover .chat-widget-react-bar,
+.chat-widget-msg-body:focus-within .chat-widget-react-bar { display: flex; }
+.chat-widget-react-pick {
+    background: transparent;
+    border: none;
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 0.05rem 0.15rem;
+    border-radius: 6px;
+}
+.chat-widget-react-pick:hover { transform: scale(1.25); background: rgba(255,255,255,0.08); }
+@media (hover: none) {
+    .chat-widget-react-bar { display: flex; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chat-widget-react-pick:hover { transform: none; }
+}

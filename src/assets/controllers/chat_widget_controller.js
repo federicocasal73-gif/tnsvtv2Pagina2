@@ -487,27 +487,70 @@ export default class extends Controller {
             return;
         }
         const me = window.TNSVT_USER?.code;
+        const QUICK = ['❤️', '👍', '🔥', '👏', '😮'];
         this.messagesTarget.innerHTML = msgs.map(m => {
             const isMe = m.sender_code === me;
             const initials = (m.sender_name || '?').slice(0, 2).toUpperCase();
             const avatarBg = m.sender_color || 'var(--gold-elev)';
+            // F14: read receipts + reactions (mirrors full-page chat).
+            const readers = Array.isArray(m.read_by) ? m.read_by : [];
+            const receipt = isMe
+                ? (readers.length > 0
+                    ? `<span class="chat-widget-read is-read" title="Leído por ${this.escapeHtml(readers.join(', '))}">✓✓</span>`
+                    : `<span class="chat-widget-read" title="Enviado">✓</span>`)
+                : '';
+            const reacts = (m.reactions && typeof m.reactions === 'object') ? m.reactions : {};
+            const chips = Object.entries(reacts)
+                .filter(([, codes]) => Array.isArray(codes) && codes.length > 0)
+                .map(([emoji, codes]) => {
+                    const own = me && codes.includes(me);
+                    return `<button type="button" class="chat-widget-react-chip${own ? ' is-own' : ''}" data-react="${this.escapeHtml(emoji)}" data-id="${m.id}" title="${this.escapeHtml(codes.join(', '))}">${this.escapeHtml(emoji)} ${codes.length}</button>`;
+                }).join('');
+            const picker = QUICK.map(e =>
+                `<button type="button" class="chat-widget-react-pick" data-react="${this.escapeHtml(e)}" data-id="${m.id}" aria-label="Reaccionar ${this.escapeHtml(e)}">${this.escapeHtml(e)}</button>`
+            ).join('');
             return `
                 <div class="chat-widget-msg ${isMe ? 'me' : 'them'}">
                     ${!isMe ? `<div class="chat-widget-msg-avatar" style="background: ${avatarBg};">${this.escapeHtml(initials)}</div>` : ''}
                     <div class="chat-widget-msg-body">
                         ${!isMe ? `<div class="chat-widget-msg-name">${this.escapeHtml(m.sender_name || '')}</div>` : ''}
                         <div class="chat-widget-msg-text">${this.escapeHtml(m.content || '')}</div>
-                        <div class="chat-widget-msg-time">${this.relativeTime(m.created_at)}</div>
+                        ${chips ? `<div class="chat-widget-react-row">${chips}</div>` : ''}
+                        <div class="chat-widget-react-bar" aria-label="Reaccionar">${picker}</div>
+                        <div class="chat-widget-msg-time">${this.relativeTime(m.created_at)} ${receipt}</div>
                     </div>
                 </div>
             `;
         }).join('');
+        // Wire reaction buttons.
+        this.messagesTarget.querySelectorAll('[data-react][data-id]').forEach(btn => {
+            btn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                this.sendReaction(btn.dataset.id, btn.dataset.react);
+            });
+        });
         // Scroll al final
         setTimeout(() => {
             if (this.hasMessagesTarget) {
                 this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
             }
         }, 50);
+    }
+
+    async sendReaction(msgId, emoji) {
+        if (!this.activeConv || !msgId || !emoji) return;
+        try {
+            await window.apiFetch(`/api/chat/conversations/${this.activeConv.id}/messages/${msgId}/react`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_code: this.getUserCode(),
+                    emoji: emoji,
+                }),
+                silent: true,
+            });
+            this.loadMessages(this.activeConv.id);
+        } catch (e) { /* silent: toggle is best-effort */ }
     }
 
     // ══════ Enviar mensaje ══════

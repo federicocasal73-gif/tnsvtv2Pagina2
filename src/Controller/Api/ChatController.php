@@ -104,8 +104,25 @@ class ChatController extends AbstractController
         ];
     }
 
-    private function serializeMessage(Message $m): array
+    private function serializeMessage(Message $m, ?Conversation $conv = null): array
     {
+        // F14: read receipts — codes of OTHER participants whose lastReadAt
+        // is at/after this message's creation (sender excluded).
+        $readBy = [];
+        if ($conv) {
+            $created = $m->getCreatedAt();
+            $senderId = $m->getSender()?->getId();
+            foreach ($conv->getParticipants() as $p) {
+                $u = $p->getUser();
+                $lr = $p->getLastReadAt();
+                if (!$u || !$lr || !$created) continue;
+                if ($senderId !== null && $u->getId() === $senderId) continue;
+                if ($lr >= $created && $u->getCode()) $readBy[] = $u->getCode();
+            }
+        }
+        $meta = $m->getMetadata() ?? [];
+        $reactions = $meta['reactions'] ?? [];
+        if (!is_array($reactions)) $reactions = [];
         return [
             'id' => $m->getId(),
             'conversation_id' => $m->getConversation()?->getId(),
@@ -115,6 +132,8 @@ class ChatController extends AbstractController
             'photo' => $m->getPhoto(),
             'is_ai' => $m->isAi(),
             'metadata' => $m->getMetadata(),
+            'reactions' => $reactions,
+            'read_by' => $readBy,
             'edited_at' => $m->getEditedAt()?->format('c'),
             'attachment' => $m->getAttachment(),
             'created_at' => $m->getCreatedAt()?->format('c'),
@@ -210,7 +229,7 @@ class ChatController extends AbstractController
         $beforeId = $beforeId !== null ? (int) $beforeId : null;
 
         $messages = $this->messageRepository->findByConversation($conv, $limit, $beforeId);
-        return $this->json(array_map(fn(Message $m) => $this->serializeMessage($m), $messages));
+        return $this->json(array_map(fn(Message $m) => $this->serializeMessage($m, $conv), $messages));
     }
 
     #[Route('/conversations/{id}/messages', name: 'api_chat_send', methods: ['POST'])]
@@ -324,10 +343,55 @@ class ChatController extends AbstractController
         return $this->json(['success' => true, 'deleted_id' => $msgId]);
     }
 
-    #[Route('/conversations/{id}/read', name: 'api_chat_read', methods: ['POST'])]
-    public function markRead(int $id, Request $request): JsonResponse
+    #[Route('/conversations/{id}/messages/{msgId}/react', name: 'api_chat_react', methods: ['POST'])]
+    public function react(int $id, int $msgId, Request $request): JsonResponse
     {
         $me = $this->resolveUser($request);
+        if (!$me) return $this->json(['error' => 'user_code requerido'], 400);
+
+        $conv = $this->conversationRepository->find($id);
+        if (!$conv) return $this->json(['error' => 'Conversación no encontrada'], 404);
+        if (!$this->isParticipant($conv, $me)) return $this->json(['error' => 'No autorizado'], 403);
+
+        $msg = $this->messageRepository->find($msgId);
+        if (!$msg || $msg->getConversation()?->getId() !== $conv->getId()) {
+            return $this->json(['error' => 'Mensaje no encontrado'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $emoji = trim((string) ($data['emoji'] ?? ''));
+        $allowed = ['❤️', '👍', '🔥', '👏', '😮', '😂', '🙏'];
+        if (!in_array($emoji, $allowed, true)) {
+            return $this->json(['error' => 'Emoji no permitido'], 400);
+        }
+
+        // F14: reactions live in message.metadata.reactions = { emoji: [codes] }.
+        // Toggle: clicking your own reaction removes it.
+        $meta = $msg->getMetadata() ?? [];
+        $reactions = $meta['reactions'] ?? [];
+        if (!is_array($reactions)) $reactions = [];
+        $codes = $reactions[$emoji] ?? [];
+        if (!is_array($codes)) $codes = [];
+        if (in_array($me->getCode(), $codes, true)) {
+            $codes = array_values(array_diff($codes, [$me->getCode()]));
+        } else {
+            $codes[] = $me->getCode();
+        }
+        if (empty($codes)) {
+            unset($reactions[$emoji]);
+        } else {
+            $reactions[$emoji] = array_values($codes);
+        }
+        $meta['reactions'] = $reactions;
+        $msg->setMetadata($meta);
+        $this->em->flush();
+
+        return $this->json($this->serializeMessage($msg, $conv));
+    }
+
+    #[Route('/conversations/{id}/read', name: 'api_chat_read', methods: ['POST'])]
+    public function markRead(int $id, Request $request): JsonResponse
+    {        $me = $this->resolveUser($request);
         if (!$me) return $this->json(['error' => 'user_code requerido'], 400);
 
         $conv = $this->conversationRepository->find($id);

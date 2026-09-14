@@ -233,9 +233,28 @@
             return;
         }
         const me = window.TNSVT_USER ? window.TNSVT_USER.code : null;
+        const QUICK = ['❤️', '👍', '🔥', '👏', '😮'];
         $messages.innerHTML = items.map(m => {
             const mine = me && (m.author_code === me || m.sender_code === me || m.from_code === me);
             const authorName = m.author || m.author_name || m.sender_name || m.from_name || (mine ? 'Vos' : '—');
+            // F14: read receipts — ✓✓ gold when someone else read it, ✓ gray otherwise.
+            const readers = Array.isArray(m.read_by) ? m.read_by : [];
+            const receipt = mine
+                ? (readers.length > 0
+                    ? `<span class="chat-read is-read" title="Leído por ${esc(readers.join(', '))}">✓✓</span>`
+                    : `<span class="chat-read" title="Enviado">✓</span>`)
+                : '';
+            // F14: reaction chips (highlight mine) + hover quick-pick bar.
+            const reacts = (m.reactions && typeof m.reactions === 'object') ? m.reactions : {};
+            const chips = Object.entries(reacts)
+                .filter(([, codes]) => Array.isArray(codes) && codes.length > 0)
+                .map(([emoji, codes]) => {
+                    const own = me && codes.includes(me);
+                    return `<button type="button" class="chat-react-chip${own ? ' is-own' : ''}" data-react="${esc(emoji)}" data-id="${m.id}" title="${esc(codes.join(', '))}">${esc(emoji)} ${codes.length}</button>`;
+                }).join('');
+            const picker = QUICK.map(e =>
+                `<button type="button" class="chat-react-pick" data-react="${esc(e)}" data-id="${m.id}" aria-label="Reaccionar ${esc(e)}">${esc(e)}</button>`
+            ).join('');
             return `
                 <div class="chat-msg ${mine ? 'own' : ''}" data-id="${esc(m.id || '')}">
                     <div class="chat-msg-avatar">${esc(initials(authorName))}</div>
@@ -243,13 +262,35 @@
                         <div class="chat-msg-bubble">
                             <div class="chat-msg-content">${esc(m.text || m.content || m.message || '')}</div>
                             ${m.photo ? `<img class="chat-msg-photo lightbox-trigger" data-lightbox-group="chat-msg" data-lightbox-name="${esc(m.user || 'adjunto')}" style="display:block;width:auto;height:auto;max-width:240px;max-height:320px;border-radius:0.5rem;margin-top:0.4rem;cursor:zoom-in;" src="${esc(m.photo)}" alt="${esc(m.user || '')}" loading="lazy" decoding="async" />` : ''}
+                            ${chips ? `<div class="chat-react-row">${chips}</div>` : ''}
+                            <div class="chat-react-bar" aria-label="Reaccionar">${picker}</div>
                         </div>
-                        <div class="chat-msg-meta">${esc(authorName)}${m.date || m.created_at ? ' · ' + esc(fmtTime(m.date || m.created_at)) : ''}</div>
+                        <div class="chat-msg-meta">${esc(authorName)}${m.date || m.created_at ? ' · ' + esc(fmtTime(m.date || m.created_at)) : ''} ${receipt}</div>
                     </div>
                 </div>
             `;
         }).join('');
         $messages.scrollTop = $messages.scrollHeight;
+        // Wire reaction buttons (chips toggle, picker adds).
+        $messages.querySelectorAll('[data-react][data-id]').forEach(btn => {
+            btn.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                sendReaction(state.activeConvId, btn.dataset.id, btn.dataset.react);
+            });
+        });
+    }
+
+    async function sendReaction(convId, msgId, emoji) {
+        if (!convId || !msgId || !emoji) return;
+        try {
+            await apiFetch(`/api/chat/conversations/${convId}/messages/${msgId}/react`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ emoji }),
+                silent: true,
+            });
+            if (state.activeConvId) openConversation(state.activeConvId);
+        } catch (e) { /* silent: toggle is best-effort */ }
     }
 
     function updateSend() {

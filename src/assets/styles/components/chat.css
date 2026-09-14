@@ -253,3 +253,59 @@
     .chat-layout { grid-template-columns: 1fr; }
     .chat-list-pane { max-height: 35vh; }
 }
+
+
+/* ─── F14: read receipts + reactions (full page) ─── */
+.chat-read {
+    color: var(--outline-elev);
+    font-size: 0.72rem;
+    letter-spacing: -0.05em;
+}
+.chat-read.is-read { color: var(--gold-elev); }
+.chat-react-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+}
+.chat-react-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--on-surface-elev);
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+.chat-react-chip.is-own {
+    border-color: rgba(242,202,80,0.55);
+    background: rgba(242,202,80,0.12);
+}
+.chat-react-bar {
+    display: none;
+    gap: 0.15rem;
+    margin-top: 0.3rem;
+}
+.chat-msg-bubble:hover .chat-react-bar,
+.chat-msg-bubble:focus-within .chat-react-bar { display: flex; }
+.chat-react-pick {
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.1rem 0.2rem;
+    border-radius: 6px;
+    transition: transform 0.12s ease, background 0.12s ease;
+}
+.chat-react-pick:hover { transform: scale(1.25); background: rgba(255,255,255,0.08); }
+@media (hover: none) {
+    /* touch: always show the picker (no hover) */
+    .chat-react-bar { display: flex; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chat-react-pick { transition: none; }
+    .chat-react-pick:hover { transform: none; }
+}
