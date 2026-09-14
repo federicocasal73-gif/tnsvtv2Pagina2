@@ -79,7 +79,10 @@ class ConversationRepository extends ServiceEntityRepository
             }
         }
 
-        // 4) Get participant records for unread counts (1 query)
+        // 5+6) Batch count unread for all conversations (2 queries: one for
+        // total unread, one for the read-before-lastReadAt correction).
+        // Replaces the old N+1 loop that ran one COUNT per conversation with
+        // a lastReadAt set — bounded and uses index idx_msg_conv_created.
         $participantRecords = $em->createQueryBuilder()
             ->select('p')
             ->from(ConversationParticipant::class, 'p')
@@ -91,12 +94,15 @@ class ConversationRepository extends ServiceEntityRepository
             ->getResult();
 
         $partByConv = [];
+        $lastReadByConv = [];
         foreach ($participantRecords as $p) {
-            $partByConv[$p->getConversation()?->getId()] = $p;
+            $cid = $p->getConversation()?->getId();
+            if ($cid === null) continue;
+            $partByConv[$cid] = $p;
+            $lastReadByConv[$cid] = $p->getLastReadAt();
         }
 
-        // 5) Batch count unread for all conversations (1 query)
-        $unreadData = $em->createQueryBuilder()
+        $unreadRows = $em->createQueryBuilder()
             ->select('IDENTITY(m.conversation) AS cid, COUNT(m.id) AS cnt')
             ->from(Message::class, 'm')
             ->andWhere('m.conversation IN (:ids)')
@@ -108,27 +114,34 @@ class ConversationRepository extends ServiceEntityRepository
             ->getResult();
 
         $unreadByConv = [];
-        foreach ($unreadData as $row) {
-            $unreadByConv[$row['cid']] = (int) $row['cnt'];
+        foreach ($unreadRows as $row) {
+            $unreadByConv[(int) $row['cid']] = (int) $row['cnt'];
         }
 
-        // 6) Subtract read messages using lastReadAt
-        foreach ($participantRecords as $p) {
-            $lastRead = $p->getLastReadAt();
-            $cid = $p->getConversation()?->getId();
-            if ($lastRead && isset($unreadByConv[$cid])) {
-                $readBeforeLastRead = $em->createQueryBuilder()
-                    ->select('COUNT(m.id)')
-                    ->from(Message::class, 'm')
-                    ->andWhere('m.conversation = :c')
-                    ->andWhere('(m.sender != :u OR m.sender IS NULL)')
-                    ->andWhere('m.createdAt <= :lr')
-                    ->setParameter('c', $p->getConversation())
-                    ->setParameter('u', $user)
-                    ->setParameter('lr', $lastRead)
-                    ->getQuery()
-                    ->getSingleScalarResult();
-                $unreadByConv[$cid] = max(0, $unreadByConv[$cid] - (int) $readBeforeLastRead);
+        // Subtract read-before-lastReadAt only for conversations that have a
+        // marker. One batch query grouped by conversation with CASE WHEN.
+        $withMarker = array_filter($lastReadByConv, fn($lr) => $lr !== null);
+        if ($withMarker !== []) {
+            $markerIds = array_keys($withMarker);
+            /** @var array<int<0, max>|string, \Doctrine\DBAL\ArrayParameterType|\Doctrine\DBAL\ParameterType> $types */
+            $types = ['user_id' => \PDO::PARAM_INT, 'ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER];
+            $rows = $em->getConnection()->executeQuery(
+                'SELECT m.conversation_id AS cid, COUNT(*) AS read_before
+                   FROM messages m
+                   JOIN conversation_participants cp
+                     ON cp.conversation_id = m.conversation_id
+                    AND cp.user_id = :user_id
+                  WHERE m.conversation_id IN (:ids)
+                    AND (m.sender_id <> :user_id OR m.sender_id IS NULL)
+                    AND m.created_at <= cp.last_read_at
+                  GROUP BY m.conversation_id',
+                ['user_id' => $user->getId(), 'ids' => $markerIds],
+                $types
+            )->fetchAllAssociative();
+
+            foreach ($rows as $row) {
+                $cid = (int) $row['cid'];
+                $unreadByConv[$cid] = max(0, ($unreadByConv[$cid] ?? 0) - (int) $row['read_before']);
             }
         }
 

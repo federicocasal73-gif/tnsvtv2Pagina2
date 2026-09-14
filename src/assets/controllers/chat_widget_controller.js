@@ -1,819 +1,638 @@
 import { Controller } from '@hotwired/stimulus';
 
 /**
- * TNSVT Sprint B.3 — Chat Widget Controller.
- *
- * Widget de chat flotante para todas las páginas del Sanctum.
- * Muestra lista de conversaciones + mensajes sin necesidad de ir a /chat.
- *
- * Targets:
- *   - toggle       (botón flotante)
- *   - toggleIcon   (ícono del botón)
- *   - badge        (contador de no leídos)
- *   - panel        (panel del chat)
- *   - search       (input de búsqueda)
- *   - list         (lista de conversaciones)
- *   - convPanel    (panel de conversación activa)
- *   - convAvatar   (avatar de la conversación)
- *   - convName     (nombre de la conversación)
- *   - convStatus   (estado de la conversación)
- *   - messages     (lista de mensajes)
- *   - input        (textarea para escribir)
- *   - sendBtn      (botón enviar)
- *   - newDmModal   (modal de nuevo DM)
- *   - userSearch   (input buscar usuarios)
- *   - users        (lista de usuarios)
- *
- * Values:
- *   - open         (boolean: panel abierto o no)
+ * chat-widget — Flotante global. Funcional: realtime (Mercure SSE),
+ * typing real, optimistic UI, retry offline, badges siempre vivos.
  */
 export default class extends Controller {
-    static targets = [
-        'toggle', 'toggleIcon', 'badge', 'panel', 'bubbles',
-        'search', 'list',
-        'convPanel', 'convAvatar', 'convName', 'convStatus',
-        'messages', 'input', 'sendBtn',
-        'newDmModal', 'userSearch', 'users',
-        'charCount', 'charCountValue', 'soundIcon',
-    ];
+  static targets = [
+    'toggle', 'toggleIcon', 'badge', 'panel', 'bubbles', 'search', 'list',
+    'convPanel', 'convAvatar', 'convName', 'convStatus', 'messages',
+    'input', 'sendBtn', 'newDmModal', 'userSearch', 'users',
+    'charCount', 'charCountValue', 'soundIcon',
+    'typingIndicator', 'unreadPill', 'scrollToBottom',
+  ];
+  static values = {
+    open: { type: Boolean, default: false },
+    pollInterval: { type: Number, default: 15000 },
+  };
 
-    static values = {
-        open: { type: Boolean, default: false },
-        pollInterval: { type: Number, default: 15000 },
+  connect() {
+    this.activeConvId = null;
+    this.lastMessageId = 0;
+    this.pollTimer = null;
+    this.badgePoll = null;
+    this.mercure = null;          // EventSource for /chat/{id}
+    this.typingEventSource = null; // EventSource for /chat/{id}/typing
+    this.typingMap = {};          // {code: timestamp}
+    this.typingDebounce = null;
+    this.knownUserCode = null;
+    this.reconnectAttempts = 0;
+
+    if (window.TNSVT_USER?.code) {
+      this.knownUserCode = window.TNSVT_USER.code;
+      this.startBadgePoll();
+    }
+    window.addEventListener('tnsvt:user-loaded', (e) => {
+      if (e.detail?.code && !this.knownUserCode) {
+        this.knownUserCode = e.detail.code;
+        this.startBadgePoll();
+      }
+    });
+    window.addEventListener('online', () => this.flushOutbox());
+  }
+
+  disconnect() {
+    this.stopPoll();
+    this.stopBadgePoll();
+    this.closeMercure();
+    this.closeTypingEventSource();
+    clearTimeout(this.typingDebounce);
+  }
+
+  // ─── Badge always live (panel cerrado) ─────────────────────
+  startBadgePoll() {
+    this.stopBadgePoll();
+    this.badgePoll = setInterval(() => this.loadBadge(), this.pollIntervalValue);
+    this.loadBadge();
+  }
+  stopBadgePoll() {
+    if (this.badgePoll) clearInterval(this.badgePoll);
+    this.badgePoll = null;
+  }
+  async loadBadge() {
+    if (!this.knownUserCode) return;
+    const r = await window.apiFetch(`/api/chat/conversations?user_code=${this.knownUserCode}`, { silent: true });
+    if (!r.ok || !r.data) return;
+    const total = (r.data.users || []).reduce((s, c) => s + (c.unread_count || 0), 0);
+    this.updateUnreadBadge(total);
+  }
+  updateUnreadBadge(n) {
+    const label = n > 99 ? '99+' : String(n);
+    [this.badgeTarget, ...this.bubbleBadgeTargets()].forEach((el) => {
+      if (!el) return;
+      el.textContent = label;
+      el.classList.toggle('hidden', n === 0);
+    });
+  }
+  bubbleBadgeTargets() {
+    return Array.from(this.element.querySelectorAll('[data-chat-widget-bubble-badge]'));
+  }
+
+  // ─── Open / close ─────────────────────────────────────────
+  toggle() { this.openValue ? this.close() : this.openPanel(); }
+
+  async openPanel() {
+    this.openValue = true;
+    this.panelTarget.classList.add('is-open');
+    this.toggleIconTarget.textContent = 'close';
+    this._moveFocusIntoPanel();
+    await this.loadConversations();
+    this.startPoll();
+  }
+
+  close() {
+    this.openValue = false;
+    this.panelTarget.classList.remove('is-open');
+    this.toggleIconTarget.textContent = 'chat_bubble';
+    this.stopPoll();
+    this.backToList();
+    this.closeMercure();
+    this.closeTypingEventSource();
+  }
+
+  _moveFocusIntoPanel() {
+    setTimeout(() => this.searchTarget?.focus(), 50);
+  }
+
+  // ─── Conversaciones ────────────────────────────────────────
+  async loadConversations(q = '') {
+    if (!this.knownUserCode) return;
+    const url = `/api/chat/conversations?user_code=${this.knownUserCode}` + (q ? `&q=${encodeURIComponent(q)}` : '');
+    const r = await window.apiFetch(url, { silent: true });
+    if (!r.ok || !r.data) return;
+    this.conversations = r.data.users || [];
+    this.totalUnread = this.conversations.reduce((s, c) => s + (c.unread_count || 0), 0);
+    this.updateUnreadBadge(this.totalUnread);
+    this.renderList(this.conversations, this.currentFilter || 'all');
+  }
+
+  currentFilter = 'all';
+  switchTab(e) {
+    this.currentFilter = e.currentTarget.dataset.tab;
+    this.tabBtnTargets?.forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === this.currentFilter)));
+    this.renderList(this.conversations || [], this.currentFilter);
+  }
+
+  onSearch() {
+    clearTimeout(this._searchTimer);
+    this._searchTimer = setTimeout(() => this.loadConversations(this.searchTarget.value), 300);
+  }
+
+  renderList(items, filter) {
+    const filtered = items.filter((c) => {
+      if (filter === 'unread') return (c.unread_count || 0) > 0;
+      if (filter === 'groups') return c.is_group;
+      return true;
+    });
+    this.listTarget.innerHTML = filtered.map((c) => `
+      <button type="button" class="chat-widget-conv" data-conv-id="${c.id}">
+        <div class="chat-widget-conv-avatar">${this.esc((c.other_user_name || c.title || '?').slice(0, 1).toUpperCase())}</div>
+        <div class="chat-widget-conv-meta">
+          <div class="chat-widget-conv-row">
+            <span class="chat-widget-conv-name">${this.esc(c.other_user_name || c.title || 'Conversación')}</span>
+            <span class="chat-widget-conv-time">${this.relativeTime(c.last_message_at)}</span>
+          </div>
+          <div class="chat-widget-conv-row">
+            <span class="chat-widget-conv-preview">${this.esc(c.last_message_preview || '').slice(0, 50)}</span>
+            ${c.unread_count ? `<span class="chat-widget-conv-badge">${c.unread_count > 99 ? '99+' : c.unread_count}</span>` : ''}
+          </div>
+        </div>
+      </button>`).join('');
+    this.listTarget.querySelectorAll('.chat-widget-conv').forEach((btn) => {
+      btn.addEventListener('click', () => this.openConv(parseInt(btn.dataset.convId, 10)));
+    });
+    if (!filtered.length) {
+      this.listTarget.innerHTML = '<p class="text-xs opacity-70 p-3">Sin conversaciones.</p>';
+    }
+  }
+
+  async openConv(id) {
+    this.activeConvId = id;
+    this.lastMessageId = 0;
+    this.convPanelTarget.classList.add('is-open');
+    const conv = (this.conversations || []).find((c) => c.id === id);
+    this.convNameTarget.textContent = conv?.other_user_name || conv?.title || 'Conversación';
+    this.convAvatarTarget.textContent = (conv?.other_user_name || conv?.title || '?').slice(0, 1).toUpperCase();
+    this.convStatusTarget.textContent = conv?.online ? 'En línea' : 'Desconectado';
+    await this.loadMessages();
+    await this.markRead(id);
+    this.openMercure(id);
+    this.openTypingEventSource(id);
+  }
+
+  backToList() {
+    this.activeConvId = null;
+    this.lastMessageId = 0;
+    this.convPanelTarget?.classList.remove('is-open');
+    this.closeMercure();
+    this.closeTypingEventSource();
+    this.clearTypingIndicator();
+  }
+
+  // ─── Mensajes con delta polling + realtime ─────────────────
+  async loadMessages() {
+    if (!this.activeConvId || !this.knownUserCode) return;
+    const url = `/api/chat/conversations/${this.activeConvId}/messages?user_code=${this.knownUserCode}`;
+    const r = await window.apiFetch(url, { silent: true });
+    if (!r.ok || !r.data) return;
+    const msgs = r.data || [];
+    if (!msgs.length) return;
+    this.messagesTarget.innerHTML = msgs.map((m) => this.renderMessage(m)).join('');
+    if (msgs.length) this.lastMessageId = msgs[msgs.length - 1].id;
+    this._smartScrollToBottom();
+  }
+
+  // ─── Optimistic UI + retry offline ────────────────────────
+  outbox = [];
+  async send() {
+    const content = (this.inputTarget.value || '').trim();
+    if (!content || !this.activeConvId) return;
+    const tempId = `temp-${Date.now()}`;
+    const optimistic = {
+      id: tempId,
+      conversation_id: this.activeConvId,
+      content,
+      sender_code: this.knownUserCode,
+      created_at: new Date().toISOString(),
+      pending: true,
     };
+    this.messagesTarget.insertAdjacentHTML('beforeend', this.renderMessage(optimistic));
+    this.inputTarget.value = '';
+    this.autoResize();
+    this._smartScrollToBottom();
 
-    connect() {
-        this.conversations = [];
-        this.users = [];
-        this.activeConv = null;
-        this.activeTab = 'all';
-        this.pollTimer = null;
-        this._previouslyFocused = null;
-        this._modalTrigger = null;
-        this.userSearchTimer = null;
-        this.lastMessageCount = 0;
-        this.typingTimer = null;
-        this.previousUnreadCount = 0;
-        this.soundEnabled = this.getSoundPreference();
-        this.searchTimer = null;
-        this.dismissedBubbles = new Set();
+    if (!navigator.onLine) {
+      this.outbox.push({ tempId, content, convId: this.activeConvId });
+      this.showBanner('Sin conexión — mensaje en cola', 'info');
+      return;
+    }
+    await this._postMessage(tempId, content, this.activeConvId);
+  }
 
-        // Auto-resize del textarea
-        if (this.hasInputTarget) {
-            this.inputTarget.addEventListener('input', () => this.onInputChange());
+  async _postMessage(tempId, content, convId) {
+    const r = await window.apiFetch(`/api/chat/conversations/${convId}/messages`, {
+      method: 'POST',
+      body: { user_code: this.knownUserCode, content },
+    });
+    const node = this.messagesTarget.querySelector(`[data-msg-temp="${tempId}"]`);
+    if (r.ok && r.data) {
+      if (node) node.outerHTML = this.renderMessage(r.data);
+      this.lastMessageId = Math.max(this.lastMessageId, r.data.id);
+    } else if (node) {
+      node.classList.add('chat-widget-msg-failed');
+      node.title = 'Envío falló. Click para reintentar.';
+      node.addEventListener('click', () => this._postMessage(tempId, content, convId), { once: true });
+    }
+  }
+
+  flushOutbox() {
+    if (!this.outbox.length || !navigator.onLine) return;
+    const copy = this.outbox.slice();
+    this.outbox = [];
+    copy.forEach((m) => this._postMessage(m.tempId, m.content, m.convId));
+  }
+
+  // ─── Realtime Mercure ─────────────────────────────────────
+  async openMercure(convId) {
+    this.closeMercure();
+    const tokenR = await window.apiFetch('/api/mercure/subscribe-token', {
+      method: 'POST',
+      body: { topics: [`/chat/${convId}`] },
+    });
+    if (!tokenR.ok || !tokenR.data?.token) return;
+    const url = `${this._mercureHubUrl()}?topic=${encodeURIComponent(`/chat/${convId}`)}&access_token=${encodeURIComponent(tokenR.data.token)}`;
+    this.mercure = new EventSource(url);
+    this.mercure.onmessage = (e) => this._handleMercureEvent(e);
+    this.mercure.onerror = () => this._scheduleMercureReconnect(convId);
+  }
+  closeMercure() {
+    if (this.mercure) { this.mercure.close(); this.mercure = null; }
+  }
+  _handleMercureEvent(e) {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.event !== 'message' || !data.message) return;
+      // Skip if we already have it (race with polling or own optimistic).
+      if (data.message.id <= this.lastMessageId) return;
+      if (this.messagesTarget.querySelector(`[data-msg-id="${data.message.id}"]`)) return;
+      this.messagesTarget.insertAdjacentHTML('beforeend', this.renderMessage(data.message));
+      this.lastMessageId = Math.max(this.lastMessageId, data.message.id);
+      this._smartScrollToBottom();
+      if (data.message.sender_code !== this.knownUserCode) this.markRead(this.activeConvId);
+    } catch {}
+  }
+  _scheduleMercureReconnect(convId) {
+    this.closeMercure();
+    if (!this.activeConvId || this.activeConvId !== convId) return;
+    const delay = Math.min(30000, 1000 * Math.pow(2, this.reconnectAttempts++));
+    setTimeout(() => this.openMercure(convId), delay);
+  }
+  _mercureHubUrl() {
+    // Mirrors api_helper's MercureURL convention if present, falls back to same-origin /mercure.
+    return window.MERCURE_URL || `${window.location.origin}/.well-known/mercure`;
+  }
+
+  // ─── Typing real ──────────────────────────────────────────
+  async openTypingEventSource(convId) {
+    this.closeTypingEventSource();
+    const tokenR = await window.apiFetch('/api/mercure/subscribe-token', {
+      method: 'POST',
+      body: { topics: [`/chat/${convId}/typing`] },
+    });
+    if (!tokenR.ok || !tokenR.data?.token) return;
+    const url = `${this._mercureHubUrl()}?topic=${encodeURIComponent(`/chat/${convId}/typing`)}&access_token=${encodeURIComponent(tokenR.data.token)}`;
+    this.typingEventSource = new EventSource(url);
+    this.typingEventSource.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.sender_code === this.knownUserCode) return;
+        this.typingMap[data.sender_code] = Date.now();
+        this.renderTypingIndicator();
+      } catch {}
+    };
+  }
+  closeTypingEventSource() {
+    if (this.typingEventSource) { this.typingEventSource.close(); this.typingEventSource = null; }
+    this.typingMap = {};
+  }
+  onInputChange() {
+    this.autoResize();
+    if (!this.activeConvId) return;
+    clearTimeout(this.typingDebounce);
+    this.typingDebounce = setTimeout(() => {
+      window.apiFetch('/api/chat/typing', {
+        method: 'POST',
+        body: { user_code: this.knownUserCode, conversation_id: this.activeConvId },
+      }).catch(() => {});
+    }, 300);
+  }
+  renderTypingIndicator() {
+    const now = Date.now();
+    // Drop stale (>3s) entries.
+    Object.keys(this.typingMap).forEach((code) => {
+      if (now - this.typingMap[code] > 3000) delete this.typingMap[code];
+    });
+    const names = Object.keys(this.typingMap);
+    if (!names.length || !this.hasTypingIndicatorTarget) {
+      this.clearTypingIndicator();
+      return;
+    }
+    this.typingIndicatorTarget.textContent = names.length === 1
+      ? `${names[0]} está escribiendo…`
+      : `${names.length} personas están escribiendo…`;
+    this.typingIndicatorTarget.classList.remove('hidden');
+  }
+  clearTypingIndicator() {
+    if (this.hasTypingIndicatorTarget) {
+      this.typingIndicatorTarget.textContent = '';
+      this.typingIndicatorTarget.classList.add('hidden');
+    }
+  }
+
+  // ─── Polling (ciclo de vida del panel abierto) ────────────
+  startPoll() {
+    this.stopPoll();
+    this.pollTimer = setInterval(async () => {
+      await this.loadConversations();
+      if (this.activeConvId) {
+        const url = `/api/chat/conversations/${this.activeConvId}/messages?user_code=${this.knownUserCode}&after_id=${this.lastMessageId}`;
+        const r = await window.apiFetch(url, { silent: true });
+        if (r.ok && r.data && r.data.length) {
+          const newMsgs = r.data.filter((m) => !this.messagesTarget.querySelector(`[data-msg-id="${m.id}"]`));
+          if (newMsgs.length) {
+            this.messagesTarget.insertAdjacentHTML('beforeend', newMsgs.map((m) => this.renderMessage(m)).join(''));
+            this.lastMessageId = Math.max(this.lastMessageId, ...newMsgs.map((m) => m.id));
+            this._smartScrollToBottom();
+          }
         }
+      }
+    }, this.pollIntervalValue);
+  }
+  stopPoll() {
+    if (this.pollTimer) clearInterval(this.pollTimer);
+    this.pollTimer = null;
+  }
 
-        // Búsqueda de usuarios con debounce
-        if (this.hasUserSearchTarget) {
-            this.userSearchTarget.addEventListener('input', (e) => this.onUserSearchInput(e));
-        }
+  async markRead(convId) {
+    await window.apiFetch(`/api/chat/conversations/${convId}/read`, {
+      method: 'POST',
+      body: { user_code: this.knownUserCode },
+    }).catch(() => {});
+    this.loadBadge();
+  }
 
-        // TNSVT Sprint J.2 — Atajos de teclado globales
-        this._globalKeyHandler = (e) => this.onGlobalKeydown(e);
-        document.addEventListener('keydown', this._globalKeyHandler);
+  // ─── Render message + attachment firmado ──────────────────
+  renderMessage(m) {
+    const isOwn = m.sender_code === this.knownUserCode;
+    const tempAttr = m.pending ? ` data-msg-temp="${m.id}" class="chat-widget-msg-pending"` : ` data-msg-id="${m.id}"`;
+    const content = m.pending ? this.esc(m.content) + '<small class="chat-widget-msg-pending-mark">⏱</small>' : this.esc(m.content || '');
+    const attachment = m.attachment ? this.renderAttachment(m.attachment, isOwn) : '';
+    return `<article${tempAttr}>
+      <div class="chat-widget-msg-bubble ${isOwn ? 'is-own' : 'is-other'}">
+        ${content ? `<div class="chat-widget-msg-content">${content}</div>` : ''}
+        ${attachment}
+        <time class="chat-widget-msg-time">${this.relativeTime(m.created_at)}</time>
+      </div>
+    </article>`;
+  }
+  renderAttachment(att) {
+    if (!att || !att.url) return '';
+    const mime = att.mime || '';
+    const isImg = mime.startsWith('image/');
+    const isVid = mime.startsWith('video/');
+    const isAud = mime.startsWith('audio/');
+    const label = this.esc(att.name || 'archivo');
+    // The server returns signed_url only via /attachment/sign; the widget
+    // asks for it lazily when the user clicks the file (avoid storing tokens
+    // we may never use). Inline media uses a one-shot signed URL too.
+    const inline = isImg || isVid || isAud;
+    const dataAttr = `data-attachment-url="${this.esc(att.url)}" data-attachment-name="${label}" data-attachment-mime="${this.esc(mime)}" data-attachment-inline="${inline}"`;
+    const inner = inline
+      ? (isImg ? `<img class="chat-widget-att-preview" alt="${label}" data-signed-src="${this.esc(att.url)}">`
+              : isVid ? `<video controls class="chat-widget-att-preview" data-signed-src="${this.esc(att.url)}"></video>`
+              : `<audio controls class="chat-widget-att-preview" data-signed-src="${this.esc(att.url)}"></audio>`)
+      : `<span class="material-symbols-elev">description</span> ${label}`;
+    return `<a href="#" class="chat-widget-att" ${dataAttr}>${inner}</a>`;
+  }
 
-        // Cargar conversaciones iniciales
-        this.loadConversations().then(() => {
-            // Guardar el conteo inicial para detectar nuevos mensajes
-            this.previousUnreadCount = this.conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
-        });
-        this.updateUnreadBadge();
-
-        // TNSVT Sprint J.3 — Actualizar icono de sonido según preferencia
-        this.updateSoundIcon();
+  // ─── Composer + keydown ───────────────────────────────────
+  keydown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      this.send();
+    } else if (e.key === 'Escape') {
+      this.backToList();
     }
-
-        disconnect() {
-        this.stopPolling();
-        if (this.userSearchTimer) clearTimeout(this.userSearchTimer);
-        if (this.typingTimer) clearTimeout(this.typingTimer);
-        if (this.searchTimer) clearTimeout(this.searchTimer);
-        if (this._globalKeyHandler) {
-            document.removeEventListener('keydown', this._globalKeyHandler);
-        }
+  }
+  autoResize() {
+    const el = this.inputTarget;
+    el.style.height = 'auto';
+    el.style.height = Math.min(160, el.scrollHeight) + 'px';
+    const n = el.value.length;
+    if (this.hasCharCountTarget) {
+      this.charCountTarget.classList.toggle('hidden', n < 800);
+      this.charCountTarget.classList.toggle('is-warning', n > 800 && n <= 1500);
+      this.charCountTarget.classList.toggle('is-danger', n > 1500);
+      if (this.hasCharCountValueTarget) this.charCountValueTarget.textContent = String(n);
     }
+  }
 
-    /**
-     * TNSVT Sprint J.2 — Manejador global de atajos de teclado.
-     * Ctrl+K: Toggle panel de chat
-     * Ctrl+M: Nuevo DM
-     * Escape: Cerrar modal o volver a lista
-     */
-    onGlobalKeydown(event) {
-        // Tab/Shift+Tab inside the new-DM modal: cycle within the modal.
-        this._trapModalFocus(event);
-
-        // Ctrl+K (Cmd+K en Mac): Toggle chat
-        if ((event.ctrlKey || event.metaKey) && event.key === 'k' && !event.shiftKey) {
-            event.preventDefault();
-            this.toggle();
-            return;
-        }
-        // Ctrl+M: Abrir modal de nuevo DM
-        if ((event.ctrlKey || event.metaKey) && event.key === 'm' && !event.shiftKey) {
-            event.preventDefault();
-            if (this.openValue) this.openNewDm();
-            return;
-        }
-        // Escape: Cerrar modal o volver a lista
-        if (event.key === 'Escape') {
-            // Si el modal de nuevo DM está abierto, cerrarlo
-            if (this.hasNewDmModalTarget && !this.newDmModalTarget.classList.contains('hidden')) {
-                event.preventDefault();
-                this.closeNewDm();
-                return;
-            }
-            // Si estamos en una conversación, volver a la lista
-            if (this.activeConv) {
-                event.preventDefault();
-                this.backToList();
-                return;
-            }
-        }
+  // ─── Scroll inteligente ───────────────────────────────────
+  _smartScrollToBottom() {
+    const m = this.messagesTarget;
+    if (!m) return;
+    const distanceToBottom = m.scrollHeight - m.scrollTop - m.clientHeight;
+    if (distanceToBottom < 120) {
+      m.scrollTop = m.scrollHeight;
+    } else if (this.hasScrollToBottomTarget) {
+      const pending = this.messagesTarget.querySelectorAll('[data-msg-id]:not([data-msg-temp])').length - this._lastSeenCount;
+      if (pending > 0) this.scrollToBottomTarget.classList.remove('hidden');
     }
+    this._lastSeenCount = this.messagesTarget.querySelectorAll('[data-msg-id]').length;
+  }
 
-    /**
-     * TNSVT Sprint J.3 — Obtener preferencia de sonido del localStorage.
-     */
-    getSoundPreference() {
-        try {
-            const v = localStorage.getItem('tnsvt_chat_sound');
-            // Default: true (activado)
-            return v === null ? true : v === '1';
-        } catch (e) {
-            return false;
-        }
-    }
+  scrollToBottomClicked() {
+    this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
+    if (this.hasScrollToBottomTarget) this.scrollToBottomTarget.classList.add('hidden');
+  }
 
-    /**
-     * TNSVT Sprint J.3 — Toggle de sonido de notificación.
-     */
-    toggleSound() {
-        this.soundEnabled = !this.soundEnabled;
-        try {
-            localStorage.setItem('tnsvt_chat_sound', this.soundEnabled ? '1' : '0');
-        } catch (e) {
-            // Silenciar
-        }
-        this.updateSoundIcon();
-        if (window.apiToast) {
-            window.apiToast(
-                this.soundEnabled ? 'Sonido de notificación activado' : 'Sonido desactivado',
-                'info'
-            );
-        }
-    }
+  // ─── Reacciones + editar + eliminar ────────────────────────
+  react(emoji, msgId) {
+    return window.apiFetch(`/api/chat/conversations/${this.activeConvId}/messages/${msgId}/react`, {
+      method: 'POST',
+      body: { user_code: this.knownUserCode, emoji },
+    }).then(() => this.loadMessages());
+  }
+  editMessage(msgId) {
+    const node = this.messagesTarget.querySelector(`[data-msg-id="${msgId}"] .chat-widget-msg-content`);
+    if (!node) return;
+    const next = prompt('Editar mensaje:', node.textContent || '');
+    if (next === null || next.trim() === '') return;
+    window.apiFetch(`/api/chat/conversations/${this.activeConvId}/messages/${msgId}`, {
+      method: 'PUT',
+      body: { user_code: this.knownUserCode, content: next.trim() },
+    }).then(() => this.loadMessages());
+  }
+  deleteMessage(msgId) {
+    if (!confirm('¿Eliminar mensaje?')) return;
+    window.apiFetch(`/api/chat/conversations/${this.activeConvId}/messages/${msgId}`, {
+      method: 'DELETE',
+      body: { user_code: this.knownUserCode },
+    }).then(() => this.loadMessages());
+  }
 
-    /**
-     * TNSVT Sprint J.3 — Actualizar el icono según el estado del sonido.
-     */
-    updateSoundIcon() {
-        if (!this.hasSoundIconTarget) return;
-        this.soundIconTarget.textContent = this.soundEnabled ? 'volume_up' : 'volume_off';
+  // ─── New DM modal ─────────────────────────────────────────
+  showNewDm() {
+    if (!this.hasNewDmModalTarget) return;
+    this.newDmModalTarget.classList.remove('hidden');
+    this.userSearchTarget.focus();
+  }
+  hideNewDm() {
+    this.newDmModalTarget.classList.add('hidden');
+  }
+  onUserSearchInput() {
+    clearTimeout(this._uTimer);
+    this._uTimer = setTimeout(() => this.loadUsers(), 200);
+  }
+  async loadUsers() {
+    const r = await window.apiFetch(`/api/chat/users?user_code=${this.knownUserCode}&q=${encodeURIComponent(this.userSearchTarget.value || '')}`, { silent: true });
+    if (!r.ok || !r.data) return;
+    this.usersTarget.innerHTML = (r.data.users || [])
+      .filter((u) => u.code !== this.knownUserCode)
+      .map((u) => `<button class="chat-widget-user-item" data-user-code="${this.esc(u.code)}"><span class="chat-widget-user-name">${this.esc(u.name)}</span><span class="chat-widget-user-meta">${this.esc(u.code)} · ${u.online ? '🟢' : 'off'}</span></button>`)
+      .join('');
+    this.usersTarget.querySelectorAll('.chat-widget-user-item').forEach((b) => {
+      b.addEventListener('click', () => this.startDmWith(b.dataset.userCode));
+    });
+  }
+  async startDmWith(code) {
+    const r = await window.apiFetch('/api/chat/conversations', {
+      method: 'POST',
+      body: { user_code: this.knownUserCode, other_code: code },
+    });
+    if (r.ok) {
+      this.hideNewDm();
+      await this.loadConversations();
+      this.openConv(r.data.conversation?.id);
     }
+  }
 
-    /**
-     * TNSVT Sprint J.3 — Reproducir sonido de notificación cuando llega un mensaje.
-     */
-    playNotificationSound() {
-        if (!this.soundEnabled) return;
-        try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            oscillator.connect(gain);
-            gain.connect(audioCtx.destination);
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.05);
-            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + 0.2);
-        } catch (e) {
-            // Silenciar si Web Audio no está disponible
-        }
-    }
+  // ─── Adjuntos: drag/drop + signed URLs ────────────────────
+  composerKeydown(e) {
+    // Composer keydown already bound in template; keep this as a no-op alias
+    // in case the template wires it without the main handler.
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); }
+  }
+  pickAttachment() { this.fileInputTarget?.click(); }
+  onAttachmentChosen(e) {
+    const file = e.target.files?.[0];
+    if (file) this.uploadAttachment(file);
+    e.target.value = '';
+  }
+  async uploadAttachment(file) {
+    if (!this.activeConvId) return;
+    const fd = new FormData();
+    fd.append('user_code', this.knownUserCode);
+    fd.append('file', file);
+    const r = await fetch(`/api/chat/upload?user_code=${this.knownUserCode}`, { method: 'POST', body: fd, credentials: 'same-origin' });
+    if (!r.ok) { this.showBanner('Adjunto falló', 'error'); return; }
+    const data = await r.json();
+    // Ask the server to sign it for this conversation.
+    const signed = await window.apiFetch('/api/chat/attachment/sign', {
+      method: 'POST',
+      body: { user_code: this.knownUserCode, conversation_id: this.activeConvId, url: data.url },
+    });
+    const finalUrl = signed.ok ? signed.data.signed_url : data.url;
+    await window.apiFetch(`/api/chat/conversations/${this.activeConvId}/messages`, {
+      method: 'POST',
+      body: { user_code: this.knownUserCode, attachment: { url: finalUrl, name: data.name, mime: data.mime, size: data.size } },
+    });
+  }
+  dragOver(e) { e.preventDefault(); this.composerEl?.classList.add('is-drag'); }
+  dragLeave() { this.composerEl?.classList.remove('is-drag'); }
+  async drop(e) {
+    e.preventDefault();
+    this.composerEl?.classList.remove('is-drag');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) await this.uploadAttachment(file);
+  }
 
-    // TNSVT Sprint B.2 — Debounce en búsqueda + indicador typing
-    onUserSearchInput(event) {
-        const q = event.target.value.trim();
-        if (this.userSearchTimer) clearTimeout(this.userSearchTimer);
-        this.userSearchTimer = setTimeout(() => {
-            this.loadUsers(q);
-        }, 300);
-    }
+  // ─── Sonido ───────────────────────────────────────────────
+  getSoundPref() { return localStorage.getItem('tnsvt_chat_sound') !== '0'; }
+  toggleSound() {
+    const next = !this.getSoundPref();
+    localStorage.setItem('tnsvt_chat_sound', next ? '1' : '0');
+    this._updateSoundIcon();
+    this.showBanner(next ? 'Sonido activado' : 'Sonido desactivado', 'info');
+  }
+  _updateSoundIcon() {
+    if (this.hasSoundIconTarget) this.soundIconTarget.textContent = this.getSoundPref() ? 'volume_up' : 'volume_off';
+  }
+  _playSound() {
+    if (!this.getSoundPref()) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator(); const gain = ctx.createGain();
+      osc.frequency.value = 800; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.2);
+    } catch {}
+  }
 
-    /**
-     * TNSVT Sprint K.3 — Búsqueda global de conversaciones.
-     * Envía el query al servidor para filtrar conversaciones por nombre,
-     * título o contenido del último mensaje.
-     */
-    search(event) {
-        const q = event.target.value.trim();
-        if (this.searchTimer) clearTimeout(this.searchTimer);
-        this.searchTimer = setTimeout(() => {
-            this.loadConversations(q);
-        }, 300);
+  // ─── Atajos globales ──────────────────────────────────────
+  onGlobalKeydown(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      this.openValue ? this.close() : this.openPanel();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'm' && this.openValue) {
+      e.preventDefault();
+      this.showNewDm();
+    } else if (e.key === 'Escape') {
+      if (this.hasNewDmModalTarget && !this.newDmModalTarget.classList.contains('hidden')) {
+        this.hideNewDm();
+      } else if (this.openValue) {
+        this.close();
+      }
     }
+  }
 
-    onInputChange() {
-        this.autoResize();
-        const body = this.inputTarget.value.trim();
-        if (this.sendBtnTarget) {
-            this.sendBtnTarget.disabled = body.length === 0;
-        }
-        // Indicador visual "escribiendo…"
-        if (body.length > 5) {
-            this.showTypingIndicator();
-        }
-        // TNSVT Sprint E.2 — Contador de caracteres
-        this.updateCharCount();
-    }
+  // ─── Helpers ──────────────────────────────────────────────
+  esc(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  relativeTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const diff = (Date.now() - d.getTime()) / 1000;
+    if (diff < 60) return 'ahora';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h';
+    return Math.floor(diff / 86400) + 'd';
+  }
+  showBanner(msg, kind = 'info') {
+    if (window.showBanner) window.showBanner(msg);
+  }
 
-    // P19: clear the local typing indicator the instant we send so
-    // the user's own "Escribiendo…" bubble never lingers post-send.
-    onBeforeSend() {
-        this.removeTypingIndicator();
+  // ─── Lazy signed URLs para adjuntos inline ────────────────
+  onMessagesClick(e) {
+    const link = e.target.closest('.chat-widget-att');
+    if (!link) return;
+    const inline = link.dataset.attachmentInline === 'true';
+    if (inline) {
+      e.preventDefault();
+      const url = link.dataset.attachmentUrl;
+      if (!link.querySelector('[data-signed-src]')) return;
+      const media = link.querySelector('[data-signed-src]');
+      this._signThenSet(url, media);
+    } else {
+      e.preventDefault();
+      this._signThenOpen(link.dataset.attachmentUrl, link.dataset.attachmentName);
     }
-
-    updateCharCount() {
-        if (!this.hasInputTarget || !this.hasCharCountTarget) return;
-        const len = this.inputTarget.value.length;
-        if (this.hasCharCountValueTarget) {
-            this.charCountValueTarget.textContent = len;
-        }
-        // Mostrar contador solo cuando > 500 chars (warning) o > 1800 (danger)
-        if (len === 0) {
-            this.charCountTarget.hidden = true;
-        } else if (len > 1500) {
-            this.charCountTarget.hidden = false;
-            this.charCountTarget.classList.add('char-count-danger');
-            this.charCountTarget.classList.remove('char-count-warning');
-        } else if (len > 800) {
-            this.charCountTarget.hidden = false;
-            this.charCountTarget.classList.add('char-count-warning');
-            this.charCountTarget.classList.remove('char-count-danger');
-        } else {
-            this.charCountTarget.hidden = true;
-            this.charCountTarget.classList.remove('char-count-warning', 'char-count-danger');
-        }
-    }
-
-    showTypingIndicator() {
-        if (!this.hasMessagesTarget) return;
-        // Solo añadir una vez
-        if (this.messagesTarget.querySelector('.chat-widget-typing')) return;
-        const typingHtml = `
-            <div class="chat-widget-typing">
-                <div class="chat-widget-typing-bubble">
-                    <span></span><span></span><span></span>
-                </div>
-                <span class="chat-widget-typing-label">Escribiendo...</span>
-            </div>
-        `;
-        this.messagesTarget.insertAdjacentHTML('beforeend', typingHtml);
-        this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
-        if (this.typingTimer) clearTimeout(this.typingTimer);
-        this.typingTimer = setTimeout(() => this.removeTypingIndicator(), 2000);
-    }
-
-    removeTypingIndicator() {
-        if (!this.hasMessagesTarget) return;
-        const el = this.messagesTarget.querySelector('.chat-widget-typing');
-        if (el) el.remove();
-    }
-
-    // ══════ Toggle del panel ══════
-    toggle() {
-        if (this.openValue) {
-            this.close();
-        } else {
-            // Remember which element opened the widget so we can restore focus.
-            if (document.activeElement && document.activeElement !== document.body) {
-                this._previouslyFocused = document.activeElement;
-            }
-            this.openPanel();
-        }
-    }
-
-    openPanel() {
-        this.openValue = true;
-        this.panelTarget.classList.remove('hidden');
-        this.toggleTarget.classList.add('active');
-        this.toggleTarget.setAttribute('aria-expanded', 'true');
-        this.toggleIconTarget.textContent = 'close';
-        // Refrescar al abrir
-        this.loadConversations();
-        this.startPolling();
-        // Focus management: move focus into the panel for keyboard users.
-        // Prefer the search field; fall back to the first conversation.
-        this._moveFocusIntoPanel();
-    }
-
-    close() {
-        this.openValue = false;
-        this.panelTarget.classList.add('hidden');
-        this.toggleTarget.classList.remove('active');
-        this.toggleTarget.setAttribute('aria-expanded', 'false');
-        this.toggleIconTarget.textContent = 'chat_bubble';
-        this.stopPolling();
-        this.backToList();
-        // Restore focus to the toggle button (or whatever opened it).
-        const restoreTo = this._previouslyFocused && document.contains(this._previouslyFocused)
-            ? this._previouslyFocused
-            : this.toggleTarget;
-        restoreTo.focus();
-    }
-
-    _moveFocusIntoPanel() {
-        // Wait for the panel to be visible before focusing.
-        requestAnimationFrame(() => {
-            if (this.hasSearchTarget) {
-                this.searchTarget.focus();
-                return;
-            }
-            const firstConv = this.panelTarget.querySelector('.chat-widget-item');
-            if (firstConv) firstConv.focus();
-        });
-    }
-
-    // Focus trap for the new-DM modal. Keeps Tab cycling inside the modal.
-    _trapModalFocus(event) {
-        if (!this.hasNewDmModalTarget) return;
-        const modal = this.newDmModalTarget;
-        if (modal.classList.contains('hidden')) return;
-        if (event.key !== 'Tab') return;
-        const focusables = modal.querySelectorAll(
-            'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        if (!focusables.length) return;
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-            event.preventDefault();
-            last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-            event.preventDefault();
-            first.focus();
-        }
-    }
-
-    // ══════ Cargar conversaciones ══════
-    async loadConversations(searchQuery = '') {
-        if (!window.apiFetch) return;
-        try {
-            let url = '/api/chat/conversations?user_code=' + this.getUserCode();
-            if (searchQuery) {
-                url += '&q=' + encodeURIComponent(searchQuery);
-            }
-            const r = await window.apiFetch(url);
-            let conversations = [];
-            if (r.ok && r.data) {
-                if (r.data.conversations) {
-                    conversations = r.data.conversations;
-                } else if (Array.isArray(r.data)) {
-                    conversations = r.data;
-                }
-            }
-            this.conversations = conversations;
-            this.renderList();
-            this.updateUnreadBadge();
-            this.renderBubbles();
-        } catch (e) {
-            console.error('[chat-widget] load error', e);
-        }
-    }
-
-    renderList() {
-        if (!this.hasListTarget) return;
-        const filtered = this.filterConversations();
-        if (filtered.length === 0) {
-            this.listTarget.innerHTML = `
-                <div class="chat-widget-empty">
-                    <span class="material-symbols-elev">forum</span>
-                    <p>${this.activeTab === 'unread' ? 'Sin mensajes no leídos' : (this.activeTab === 'groups' ? 'Sin grupos activos' : 'Sin conversaciones todavía')}</p>
-                </div>
-            `;
-            return;
-        }
-        this.listTarget.innerHTML = filtered.map(conv => this.renderConvItem(conv)).join('');
-        // Wire clicks
-        this.listTarget.querySelectorAll('.chat-widget-item').forEach(el => {
-            el.addEventListener('click', () => this.openConv(parseInt(el.dataset.id, 10)));
-        });
-    }
-
-    renderConvItem(conv) {
-        const lastMsg = conv.last_message || {};
-        const initials = (conv.title || conv.other_user_name || '?').slice(0, 2).toUpperCase();
-        const isUnread = (conv.unread_count || 0) > 0;
-        const preview = lastMsg.content ? this.escapeHtml(lastMsg.content.slice(0, 50)) : '<em>Sin mensajes</em>';
-        const time = lastMsg.created_at ? this.relativeTime(lastMsg.created_at) : '';
-        const avatarBg = conv.other_user_color || 'var(--violet-elev)';
-        return `
-            <div class="chat-widget-item ${isUnread ? 'unread' : ''}" data-id="${conv.id}">
-                <div class="chat-widget-item-avatar" style="background: ${avatarBg};">${this.escapeHtml(initials)}</div>
-                <div class="chat-widget-item-body">
-                    <div class="chat-widget-item-head">
-                        <span class="chat-widget-item-name">${this.escapeHtml(conv.title || conv.other_user_name || 'Conversación')}</span>
-                        <span class="chat-widget-item-time">${time}</span>
-                    </div>
-                    <div class="chat-widget-item-preview">${preview}</div>
-                </div>
-                ${isUnread ? `<span class="chat-widget-item-badge">${conv.unread_count}</span>` : ''}
-            </div>
-        `;
-    }
-
-    // TNSVT Sprint K.3 — Filtrado ahora es solo por tabs (busqueda server-side)
-    filterConversations() {
-        let convs = this.conversations;
-        if (this.activeTab === 'unread') {
-            convs = convs.filter(c => (c.unread_count || 0) > 0);
-        } else if (this.activeTab === 'groups') {
-            convs = convs.filter(c => c.is_group);
-        }
-        return convs;
-    }
-
-    // ══════ Abrir conversación ══════
-    async openConv(convId) {
-        this.activeConv = this.conversations.find(c => c.id === convId);
-        if (!this.activeConv) return;
-        this.convPanelTarget.classList.remove('hidden');
-        this.listTarget.parentElement.classList.add('hidden');
-        const initials = (this.activeConv.title || this.activeConv.other_user_name || '?').slice(0, 2).toUpperCase();
-        this.convAvatarTarget.textContent = initials;
-        this.convNameTarget.textContent = this.activeConv.title || this.activeConv.other_user_name || 'Conversación';
-        // L85: derive status from real data instead of hardcoding "en línea".
-        this.convStatusTarget.textContent = this.convStatus(this.activeConv);
-        await this.loadMessages(convId);
-        this.markRead(convId);
-    }
-
-    backToList() {
-        if (this.hasConvPanelTarget) {
-            this.convPanelTarget.classList.add('hidden');
-            this.listTarget.parentElement.classList.remove('hidden');
-        }
-        this.activeConv = null;
-    }
-
-    // ══════ Cargar mensajes ══════
-    async loadMessages(convId) {
-        try {
-            const r = await window.apiFetch(`/api/chat/conversations/${convId}/messages?user_code=${this.getUserCode()}`);
-            if (r.ok && r.data) {
-                const msgs = Array.isArray(r.data) ? r.data : (r.data.messages || []);
-                this.renderMessages(msgs);
-                // Scroll al final
-                setTimeout(() => {
-                    if (this.hasMessagesTarget) {
-                        this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
-                    }
-                }, 50);
-            }
-        } catch (e) {
-            console.error('[chat-widget] load messages error', e);
-        }
-    }
-
-    renderMessages(msgs) {
-        if (!this.hasMessagesTarget) return;
-        // Limpiar typing indicator al renderizar mensajes
-        this.removeTypingIndicator();
-        if (msgs.length === 0) {
-            this.messagesTarget.innerHTML = `
-                <div class="chat-widget-empty">
-                    <span class="material-symbols-elev">chat</span>
-                    <p>Sin mensajes. ¡Sé el primero en escribir!</p>
-                </div>
-            `;
-            return;
-        }
-        const me = window.TNSVT_USER?.code;
-        const QUICK = ['❤️', '👍', '🔥', '👏', '😮'];
-        this.messagesTarget.innerHTML = msgs.map(m => {
-            const isMe = m.sender_code === me;
-            const initials = (m.sender_name || '?').slice(0, 2).toUpperCase();
-            const avatarBg = m.sender_color || 'var(--gold-elev)';
-            // F14: read receipts + reactions (mirrors full-page chat).
-            const readers = Array.isArray(m.read_by) ? m.read_by : [];
-            const receipt = isMe
-                ? (readers.length > 0
-                    ? `<span class="chat-widget-read is-read" title="Leído por ${this.escapeHtml(readers.join(', '))}">✓✓</span>`
-                    : `<span class="chat-widget-read" title="Enviado">✓</span>`)
-                : '';
-            const reacts = (m.reactions && typeof m.reactions === 'object') ? m.reactions : {};
-            const chips = Object.entries(reacts)
-                .filter(([, codes]) => Array.isArray(codes) && codes.length > 0)
-                .map(([emoji, codes]) => {
-                    const own = me && codes.includes(me);
-                    return `<button type="button" class="chat-widget-react-chip${own ? ' is-own' : ''}" data-react="${this.escapeHtml(emoji)}" data-id="${m.id}" title="${this.escapeHtml(codes.join(', '))}">${this.escapeHtml(emoji)} ${codes.length}</button>`;
-                }).join('');
-            const picker = QUICK.map(e =>
-                `<button type="button" class="chat-widget-react-pick" data-react="${this.escapeHtml(e)}" data-id="${m.id}" aria-label="Reaccionar ${this.escapeHtml(e)}">${this.escapeHtml(e)}</button>`
-            ).join('');
-            return `
-                <div class="chat-widget-msg ${isMe ? 'me' : 'them'}">
-                    ${!isMe ? `<div class="chat-widget-msg-avatar" style="background: ${avatarBg};">${this.escapeHtml(initials)}</div>` : ''}
-                    <div class="chat-widget-msg-body">
-                        ${!isMe ? `<div class="chat-widget-msg-name">${this.escapeHtml(m.sender_name || '')}</div>` : ''}
-                        <div class="chat-widget-msg-text">${this.escapeHtml(m.content || '')}</div>
-                        ${chips ? `<div class="chat-widget-react-row">${chips}</div>` : ''}
-                        <div class="chat-widget-react-bar" aria-label="Reaccionar">${picker}</div>
-                        <div class="chat-widget-msg-time">${this.relativeTime(m.created_at)} ${receipt}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        // Wire reaction buttons.
-        this.messagesTarget.querySelectorAll('[data-react][data-id]').forEach(btn => {
-            btn.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                this.sendReaction(btn.dataset.id, btn.dataset.react);
-            });
-        });
-        // Scroll al final
-        setTimeout(() => {
-            if (this.hasMessagesTarget) {
-                this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
-            }
-        }, 50);
-    }
-
-    async sendReaction(msgId, emoji) {
-        if (!this.activeConv || !msgId || !emoji) return;
-        try {
-            await window.apiFetch(`/api/chat/conversations/${this.activeConv.id}/messages/${msgId}/react`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    user_code: this.getUserCode(),
-                    emoji: emoji,
-                }),
-                silent: true,
-            });
-            this.loadMessages(this.activeConv.id);
-        } catch (e) { /* silent: toggle is best-effort */ }
-    }
-
-    // ══════ Enviar mensaje ══════
-    async send() {
-        if (!this.activeConv) return;
-        const content = this.inputTarget.value.trim();
-        if (!content) return;
-        this.onBeforeSend();
-        this.sendBtnTarget.disabled = true;
-        try {
-            const r = await window.apiFetch(`/api/chat/conversations/${this.activeConv.id}/messages`, {
-                method: 'POST',
-                body: JSON.stringify({
-                    user_code: this.getUserCode(),
-                    content: content,
-                }),
-            });
-            if (r.ok && r.data) {
-                this.inputTarget.value = '';
-                this.autoResize();
-                this.loadMessages(this.activeConv.id);
-                this.loadConversations();
-            } else {
-                const msg = (r.data && r.data.error) || 'Error al enviar';
-                if (window.apiToast) window.apiToast(msg, 'error');
-            }
-        } catch (e) {
-            console.error('[chat-widget] send error', e);
-        }
-        this.sendBtnTarget.disabled = false;
-    }
-
-    keydown(event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            this.onBeforeSend();
-            this.send();
-        }
-    }
-
-    autoResize() {
-        this.inputTarget.style.height = 'auto';
-        this.inputTarget.style.height = Math.min(this.inputTarget.scrollHeight, 100) + 'px';
-    }
-
-    // ══════ Marcar como leído ══════
-    async markRead(convId) {
-        try {
-            await window.apiFetch(`/api/chat/conversations/${convId}/read`, {
-                method: 'POST',
-                body: JSON.stringify({ user_code: this.getUserCode() }),
-            });
-        } catch (e) {}
-    }
-
-    // �═════ Nuevo DM ══════
-    newDm() {
-        // Remember which control opened the modal so we can restore focus.
-        this._modalTrigger = document.activeElement;
-        this.newDmModalTarget.classList.remove('hidden');
-        this.loadUsers('');
-        setTimeout(() => this.userSearchTarget.focus(), 100);
-    }
-
-    closeNewDm() {
-        this.newDmModalTarget.classList.add('hidden');
-        // Restore focus to the control that opened the modal.
-        const restoreTo = this._modalTrigger && document.contains(this._modalTrigger)
-            ? this._modalTrigger
-            : this.toggleTarget;
-        restoreTo.focus();
-        this._modalTrigger = null;
-    }
-
-    async loadUsers(q) {
-        try {
-            const r = await window.apiFetch('/api/chat/users?user_code=' + this.getUserCode() + (q ? '&q=' + encodeURIComponent(q) : ''));
-            if (r.ok && r.data) {
-                this.users = Array.isArray(r.data) ? r.data : (r.data.users || []);
-                this.renderUsers();
-            }
-        } catch (e) {
-            console.error('[chat-widget] load users error', e);
-        }
-    }
-
-    searchUsers(event) {
-        this.loadUsers(event.target.value);
-    }
-
-    renderUsers() {
-        if (this.users.length === 0) {
-            this.usersTarget.innerHTML = '<p class="chat-widget-empty-mini">Sin usuarios encontrados</p>';
-            return;
-        }
-        this.usersTarget.innerHTML = this.users.map(u => {
-            const initials = (u.name || u.code || '?').slice(0, 2).toUpperCase();
-            return `
-                <div class="chat-widget-user" data-code="${u.code}">
-                    <div class="chat-widget-user-avatar" style="background: ${u.color || 'var(--violet-elev)'};">${this.escapeHtml(initials)}</div>
-                    <div class="chat-widget-user-info">
-                        <div class="chat-widget-user-name">${this.escapeHtml(u.name)}</div>
-                        <div class="chat-widget-user-code">${this.escapeHtml(u.code)}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        this.usersTarget.querySelectorAll('.chat-widget-user').forEach(el => {
-            el.addEventListener('click', () => this.startDmWith(el.dataset.code));
-        });
-    }
-
-    async startDmWith(userCode) {
-        try {
-            const r = await window.apiFetch('/api/chat/conversations', {
-                method: 'POST',
-                body: JSON.stringify({
-                    user_code: this.getUserCode(),
-                    other_code: userCode,
-                }),
-            });
-            if (r.ok && r.data) {
-                const conv = r.data.conversation || r.data;
-                this.closeNewDm();
-                await this.loadConversations();
-                if (conv && conv.id) this.openConv(conv.id);
-            }
-        } catch (e) {
-            console.error('[chat-widget] start DM error', e);
-        }
-    }
-
-    // ══════ Tabs ══════
-    switchTab(event) {
-        this.activeTab = event.currentTarget.dataset.tab;
-        this.element.querySelectorAll('.chat-widget-tab').forEach(t =>
-            t.classList.toggle('active', t.dataset.tab === this.activeTab)
-        );
-        this.renderList();
-    }
-
-    // ══════ Refrescar ══════
-    refresh() {
-        this.loadConversations();
-        if (this.activeConv) {
-            this.loadMessages(this.activeConv.id);
-        }
-    }
-
-    // ══════ Polling ══════
-    startPolling() {
-        this.stopPolling();
-        this.pollTimer = setInterval(() => {
-            // TNSVT Sprint J.3 — Detectar nuevos mensajes para reproducir sonido
-            const beforeCount = this.conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
-            this.loadConversations().then(() => {
-                const afterCount = this.conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
-                if (afterCount > beforeCount && !this.openValue) {
-                    // Hay mensajes nuevos y el panel está cerrado → reproducir sonido
-                    this.playNotificationSound();
-                }
-                if (this.activeConv) this.loadMessages(this.activeConv.id);
-            });
-        }, this.pollIntervalValue);
-    }
-
-    stopPolling() {
-        if (this.pollTimer) {
-            clearInterval(this.pollTimer);
-            this.pollTimer = null;
-        }
-    }
-
-    // ══════ Unread badge ══════
-    updateUnreadBadge() {
-        const total = this.conversations.reduce((sum, c) => sum + (c.unread_count || 0), 0);
-        if (this.hasBadgeTarget) {
-            if (total > 0) {
-                this.badgeTarget.textContent = total > 99 ? '99+' : total;
-                this.badgeTarget.classList.remove('hidden');
-            } else {
-                this.badgeTarget.classList.add('hidden');
-            }
-        }
-    }
-
-    // ══════ Bubbles (Messenger-style) ══════
-    renderBubbles() {
-        if (!this.hasBubblesTarget) return;
-        // Show up to 3 most relevant conversations as bubbles: unread first, then recent
-        const sorted = [...this.conversations].sort((a,b) => (b.unread_count||0) - (a.unread_count||0) || new Date(b.last_message?.created_at||0) - new Date(a.last_message?.created_at||0));
-        const toShow = sorted.filter(c => !this.dismissedBubbles.has(String(c.id))).slice(0, 3);
-        if (!toShow.length) { this.bubblesTarget.innerHTML = ''; return; }
-        this.bubblesTarget.innerHTML = toShow.map(c => {
-            const initials = (c.title || c.other_user_name || '?').slice(0,2).toUpperCase();
-            const bg = c.other_user_color || 'var(--violet-elev)';
-            const unread = c.unread_count || 0;
-            return `<div class="chat-bubble" data-id="${c.id}" style="background:${bg};" title="${this.escapeHtml(c.title||c.other_user_name)}">
-                ${this.escapeHtml(initials)}
-                ${unread ? `<span class="chat-bubble-badge">${unread>9?'9+':unread}</span>` : ''}
-                <button class="chat-bubble-close" data-close="${c.id}"><span class="material-symbols-elev" style="font-size:10px;">close</span></button>
-            </div>`;
-        }).join('');
-        this.bubblesTarget.querySelectorAll('.chat-bubble').forEach(el => {
-            const id = parseInt(el.dataset.id,10);
-            el.addEventListener('click', (e) => {
-                if (e.target.closest('[data-close]')) return;
-                this.openPanel();
-                this.openConv(id);
-            });
-        });
-        this.bubblesTarget.querySelectorAll('[data-close]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.dismissedBubbles.add(String(btn.dataset.close));
-                this.renderBubbles();
-            });
-        });
-    }
-
-    // �═════ Helpers ══════
-    getUserCode() {
-        return (window.TNSVT_USER && window.TNSVT_USER.code) || 'DEMO';
-    }
-
-    escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
-    }
-
-    relativeTime(iso) {
-        if (!iso) return '';
-        try {
-            const d = new Date(iso);
-            const now = new Date();
-            const diff = (now - d) / 1000;
-            if (diff < 60) return 'ahora';
-            if (diff < 3600) return Math.floor(diff / 60) + 'm';
-            if (diff < 86400) return Math.floor(diff / 3600) + 'h';
-            if (diff < 604800) return Math.floor(diff / 86400) + 'd';
-            return d.toLocaleDateString();
-        } catch (e) {
-            return '';
-        }
-    }
-
-    convStatus(conv) {
-        if (!conv) return '';
-        if (conv.is_group) {
-            const n = conv.member_count || conv.members?.length;
-            return n ? 'Grupo · ' + n : 'Grupo';
-        }
-        const last = conv.last_message?.created_at;
-        if (!last) return 'Sin mensajes';
-        const diff = (Date.now() - new Date(last).getTime()) / 1000;
-        if (diff < 300) return 'activo ahora';
-        return 'últ. actividad ' + this.relativeTime(last);
-    }
+  }
+  async _signThenSet(url, mediaEl) {
+    const r = await window.apiFetch('/api/chat/attachment/sign', {
+      method: 'POST',
+      body: { user_code: this.knownUserCode, conversation_id: this.activeConvId, url },
+    });
+    mediaEl.src = r.ok ? r.data.signed_url : url;
+  }
+  async _signThenOpen(url, name) {
+    const r = await window.apiFetch('/api/chat/attachment/sign', {
+      method: 'POST',
+      body: { user_code: this.knownUserCode, conversation_id: this.activeConvId, url },
+    });
+    if (r.ok) window.open(r.data.signed_url, '_blank');
+  }
 }

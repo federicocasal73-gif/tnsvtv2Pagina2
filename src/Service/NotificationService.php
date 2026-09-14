@@ -21,8 +21,22 @@ class NotificationService
         string $content,
         array $metadata = [],
         ?string $link = null,
-        bool $sendPush = true
-    ): Notification {
+        bool $sendPush = true,
+        bool $persist = true
+    ): ?Notification {
+        if (!$persist) {
+            // Ephemeral notification (e.g. typing): no DB row, push only.
+            if ($sendPush && $this->push->isConfigured()) {
+                try {
+                    $title = $this->titleForType($type);
+                    $this->push->sendToUser($user, $title, $content, $metadata);
+                } catch (\Throwable $e) {
+                    $this->logger->warning('[NOTIF] push failed: ' . $e->getMessage());
+                }
+            }
+            return null;
+        }
+
         $notif = new Notification();
         $notif->setUser($user);
         $notif->setType($type);

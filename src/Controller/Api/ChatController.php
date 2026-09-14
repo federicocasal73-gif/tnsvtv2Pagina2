@@ -6,16 +6,21 @@ use App\Entity\Conversation;
 use App\Entity\ConversationParticipant;
 use App\Entity\Message;
 use App\Entity\User;
+use App\Message\ChatMessageSent;
 use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Service\ChatAttachmentSigner;
 use App\Service\ImageValidationService;
+use App\Service\MercurePublisher;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/chat')]
@@ -31,6 +36,9 @@ class ChatController extends AbstractController
         private UserRepository $userRepository,
         private ImageValidationService $imageValidation,
         private NotificationService $notifier,
+        private MercurePublisher $mercure,
+        private MessageBusInterface $bus,
+        private ChatAttachmentSigner $signer,
     ) {
         $this->avatarDir = dirname(__DIR__, 3) . '/public/uploads/avatars';
     }
@@ -227,8 +235,16 @@ class ChatController extends AbstractController
         $limit = max(1, min(100, (int) $request->query->get('limit', 50)));
         $beforeId = $request->query->get('before_id');
         $beforeId = $beforeId !== null ? (int) $beforeId : null;
+        $afterId = $request->query->get('after_id');
+        $afterId = $afterId !== null ? (int) $afterId : null;
 
-        $messages = $this->messageRepository->findByConversation($conv, $limit, $beforeId);
+        if ($afterId !== null) {
+            // Delta mode: only messages newer than what the client already has.
+            // Returns ASC so the client can append in order.
+            $messages = $this->messageRepository->findNewerThan($conv, $afterId);
+        } else {
+            $messages = $this->messageRepository->findByConversation($conv, $limit, $beforeId);
+        }
         return $this->json(array_map(fn(Message $m) => $this->serializeMessage($m, $conv), $messages));
     }
 
@@ -268,6 +284,21 @@ class ChatController extends AbstractController
 
         $this->em->persist($msg);
         $this->em->flush();
+
+        // Real-time push via Mercure synchronously (so SSE listeners in
+        // already-open tabs see the new message instantly) and FCM via
+        // the async messenger handler for background participants.
+        try {
+            $this->mercure->publishChatMessage($conv->getId(), [
+                'event' => 'message',
+                'id' => $msg->getId(),
+                'conversation_id' => $conv->getId(),
+                'message' => $this->serializeMessage($msg),
+            ]);
+        } catch (\Throwable $e) {
+            // Don't fail the send if Mercure is down — FCM still fires async.
+        }
+        $this->bus->dispatch(new ChatMessageSent($msg->getId(), $conv->getId(), $me->getId()));
 
         // DMs: notify the other participant(s) (not the group)
         if ($conv->getType() === Conversation::TYPE_DM) {
@@ -417,6 +448,13 @@ class ChatController extends AbstractController
         if (!$conv) return $this->json(['error' => 'Conversación no encontrada'], 404);
         if (!$this->isParticipant($conv, $me)) return $this->json(['error' => 'No autorizado'], 403);
 
+        // DM: any participant may remove the conversation (cascade deletes
+        // their own view). Group: admin-only, otherwise 403 — removing a
+        // group nukes everyone's messages.
+        if ($conv->getType() === Conversation::TYPE_GROUP && !$me->getIsAdmin()) {
+            return $this->json(['error' => 'Solo admins pueden eliminar grupos'], 403);
+        }
+
         $this->em->remove($conv);
         $this->em->flush();
 
@@ -437,19 +475,21 @@ class ChatController extends AbstractController
         if (!$conv) return $this->json(['error' => 'Conversación no encontrada'], 404);
         if (!$this->isParticipant($conv, $me)) return $this->json(['error' => 'No autorizado'], 403);
 
-        // Notify other participants via push
-        foreach ($conv->getParticipants() as $p) {
-            $other = $p->getUser();
-            if ($other && $other->getId() !== $me->getId()) {
-                $this->notifier->notify(
-                    $other,
-                    'typing',
-                    sprintf('%s está escribiendo…', $me->getName()),
-                    ['conversation_id' => (string) $conv->getId(), 'sender_code' => (string) $me->getCode()],
-                    'chat:' . $conv->getId(),
-                    false
-                );
-            }
+        // Ephemeral: publish to Mercure topic /chat/{id}/typing only.
+        // No DB row, no FCM push — clients ignore events older than 3s.
+        try {
+            $this->mercure->publishBroadcast(
+                sprintf('/chat/%d/typing', $conv->getId()),
+                [
+                    'event' => 'typing',
+                    'conversation_id' => $conv->getId(),
+                    'sender_code' => $me->getCode(),
+                    'sender_name' => $me->getName(),
+                    'sent_at' => time(),
+                ]
+            );
+        } catch (\Throwable $e) {
+            // Realtime is best-effort; clients will recover on the next message.
         }
 
         return $this->json(['success' => true]);
@@ -679,5 +719,68 @@ class ChatController extends AbstractController
         }
 
         return $this->json($members);
+    }
+
+    /**
+     * Generate a signed URL for a chat attachment. Replaces the old scheme
+     * where /uploads/chat/<file> was world-readable.
+     * Clients should call this and store the returned signed_url alongside
+     * the message instead of the raw /uploads/chat/ path.
+     */
+    #[Route('/attachment/sign', name: 'api_chat_attachment_sign', methods: ['POST'])]
+    public function signAttachment(Request $request): JsonResponse
+    {
+        $me = $this->resolveUser($request);
+        if (!$me) return $this->json(['error' => 'user_code requerido'], 400);
+
+        $data = json_decode($request->getContent(), true);
+        $url = trim((string) ($data['url'] ?? ''));
+        $convId = (int) ($data['conversation_id'] ?? 0);
+        if ($url === '' || $convId === 0) {
+            return $this->json(['error' => 'url y conversation_id requeridos'], 400);
+        }
+        // Only allow signing for files in our chat upload directory.
+        if (!str_starts_with($url, '/uploads/chat/')) {
+            return $this->json(['error' => 'url inválida'], 400);
+        }
+        $conv = $this->conversationRepository->find($convId);
+        if (!$conv || !$this->isParticipant($conv, $me)) {
+            return $this->json(['error' => 'No autorizado'], 403);
+        }
+        $token = $this->signer->sign($url, $me->getCode());
+        return $this->json([
+            'signed_url' => '/api/chat/attachment?token=' . urlencode($token),
+            'expires_in' => 86400,
+        ]);
+    }
+
+    /**
+     * Serve a chat attachment if the requester has a valid signed token.
+     * No public access: replaces the world-readable /uploads/chat/ scheme.
+     */
+    #[Route('/attachment', name: 'api_chat_attachment_get', methods: ['GET'])]
+    public function getAttachment(Request $request): Response
+    {
+        $token = (string) $request->query->get('token', '');
+        $verified = $this->signer->verify($token);
+        if (!$verified['ok']) {
+            return new Response('Forbidden', 403);
+        }
+        $url = $verified['url'];
+        if (!str_starts_with($url, '/uploads/chat/')) {
+            return new Response('Forbidden', 403);
+        }
+        $rel = ltrim(substr($url, strlen('/uploads/chat/')), '/');
+        if (str_contains($rel, '..') || str_contains($rel, '/') || str_contains($rel, '\\')) {
+            return new Response('Forbidden', 403);
+        }
+        $path = dirname(__DIR__, 3) . '/public/uploads/chat/' . $rel;
+        if (!is_file($path)) {
+            return new Response('Not Found', 404);
+        }
+        return new BinaryFileResponse($path, 200, [
+            'Cache-Control' => 'private, max-age=3600',
+            'Content-Disposition' => 'inline; filename="' . addslashes($rel) . '"',
+        ]);
     }
 }

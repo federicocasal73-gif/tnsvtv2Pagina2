@@ -1,12 +1,12 @@
 {# ────────────────────────────────────────────────────────────
- # TNSVT Sprint B.2 — Widget de chat flotante
- # Inspirado en Intercom/Drift pero conectado al sistema real
- # Muestra conversaciones + mensajes sin necesidad de ir a /chat
+ # TNSVT chat flotante — versión 2 con realtime, typing real,
+ # optimistic UI, retry offline, signed attachments.
  # ──────────────────────────────────────────────────────────── #}
 
 <div class="chat-widget"
      data-controller="chat-widget"
-     data-chat-widget-open-value="false">
+     data-chat-widget-open-value="false"
+     data-action="keydown@window->chat-widget#onGlobalKeydown">
 
     {# ─── Bubbles stack (Messenger-style, above FAB) ─── #}
     <div class="chat-widget-bubbles" data-chat-widget-target="bubbles" aria-label="Conversaciones recientes"></div>
@@ -19,7 +19,7 @@
             aria-label="Abrir chat"
             aria-expanded="false">
         <span class="material-symbols-elev chat-widget-toggle-icon" data-chat-widget-target="toggleIcon">chat_bubble</span>
-        <span class="chat-widget-toggle-badge hidden" data-chat-widget-target="badge">0</span>
+        <span class="chat-widget-toggle-badge hidden" data-chat-widget-target="badge" data-chat-widget-bubble-badge>0</span>
         <span class="chat-widget-toggle-pulse"></span>
     </button>
 
@@ -43,15 +43,9 @@
                 </button>
                 <button type="button"
                         class="chat-widget-header-btn"
-                        data-action="chat-widget#newDm"
+                        data-action="chat-widget#showNewDm"
                         aria-label="Nuevo DM (Ctrl+M)">
                     <span class="material-symbols-elev">add_comment</span>
-                </button>
-                <button type="button"
-                        class="chat-widget-header-btn"
-                        data-action="chat-widget#refresh"
-                        aria-label="Refrescar">
-                    <span class="material-symbols-elev">refresh</span>
                 </button>
                 <a href="{{ path('sanctum_chat') }}" class="chat-widget-header-btn" aria-label="Abrir chat completo">
                     <span class="material-symbols-elev">open_in_new</span>
@@ -71,7 +65,7 @@
             <input type="text"
                    placeholder="Buscar conversación..."
                    data-chat-widget-target="search"
-                   data-action="input->chat-widget#search">
+                   data-action="input->chat-widget#onSearch">
         </div>
 
         {# ─── Tabs ─── #}
@@ -79,15 +73,18 @@
             <button type="button"
                     class="chat-widget-tab active"
                     data-tab="all"
-                    data-action="chat-widget#switchTab">Todos</button>
+                    data-chat-widget-target="tabBtn"
+                    data-action="click->chat-widget#switchTab">Todos</button>
             <button type="button"
                     class="chat-widget-tab"
                     data-tab="unread"
-                    data-action="chat-widget#switchTab">No leídos</button>
+                    data-chat-widget-target="tabBtn"
+                    data-action="click->chat-widget#switchTab">No leídos</button>
             <button type="button"
                     class="chat-widget-tab"
                     data-tab="groups"
-                    data-action="chat-widget#switchTab">Grupos</button>
+                    data-chat-widget-target="tabBtn"
+                    data-action="click->chat-widget#switchTab">Grupos</button>
         </div>
 
         {# ─── Lista de conversaciones ─── #}
@@ -116,14 +113,37 @@
                 </div>
             </header>
 
-            <div class="chat-widget-messages" data-chat-widget-target="messages">
+            <div class="chat-widget-messages"
+                 data-chat-widget-target="messages"
+                 data-action="click->chat-widget#onMessagesClick">
                 <div class="chat-widget-empty">
                     <span class="material-symbols-elev">chat</span>
                     <p>Cargando mensajes...</p>
                 </div>
             </div>
 
-            <div class="chat-widget-composer">
+            <div class="chat-widget-typing-indicator hidden" data-chat-widget-target="typingIndicator" aria-live="polite"></div>
+
+            <div class="chat-widget-scroll-pill hidden"
+                 data-chat-widget-target="scrollToBottom"
+                 data-action="click->chat-widget#scrollToBottomClicked">
+                <span class="material-symbols-elev">arrow_downward</span>
+                <span>Nuevos mensajes</span>
+            </div>
+
+            <div class="chat-widget-composer"
+                 data-action="dragover->chat-widget#dragOver dragleave->chat-widget#dragLeave drop->chat-widget#drop">
+                <input type="file"
+                       class="chat-widget-file-input hidden"
+                       data-chat-widget-target="fileInput"
+                       data-action="change->chat-widget#onAttachmentChosen"
+                       accept="image/*,video/mp4,video/webm,audio/*,application/pdf">
+                <button type="button"
+                        class="chat-widget-attach-btn"
+                        data-action="chat-widget#pickAttachment"
+                        aria-label="Adjuntar archivo">
+                    <span class="material-symbols-elev">attach_file</span>
+                </button>
                 <textarea
                     data-chat-widget-target="input"
                     data-action="keydown->chat-widget#keydown input->chat-widget#onInputChange"
@@ -133,8 +153,7 @@
                 <button type="button"
                         class="chat-widget-send-btn"
                         data-chat-widget-target="sendBtn"
-                        data-action="chat-widget#send"
-                        disabled>
+                        data-action="chat-widget#send">
                     <span class="material-symbols-elev">send</span>
                 </button>
             </div>
@@ -143,8 +162,7 @@
             </div>
         </div>
 
-        {# ─── Modal Nuevo DM — unified tnsvt-modal (Phase 12, F2) ─── #}
-        {# 'hidden' class kept because chat_widget_controller.js toggles it via classList (line 121). #}
+        {# ─── Modal Nuevo DM ─── #}
         <div class="tnsvt-modal-overlay hidden"
              data-chat-widget-target="newDmModal"
              role="dialog"
@@ -158,7 +176,7 @@
                     </h2>
                     <button type="button"
                             class="tnsvt-modal__close"
-                            data-action="chat-widget#closeNewDm"
+                            data-action="chat-widget#hideNewDm"
                             aria-label="Cerrar">
                         <span class="material-symbols-elev" aria-hidden="true">close</span>
                     </button>
@@ -168,7 +186,8 @@
                            class="form-input"
                            style="width:100%;margin-bottom:0.75rem;"
                            placeholder="Buscar usuario..."
-                           data-chat-widget-target="userSearch">
+                           data-chat-widget-target="userSearch"
+                           data-action="input->chat-widget#onUserSearchInput">
                     <div data-chat-widget-target="users">
                         <p class="chat-widget-empty-mini">Busca un usuario para iniciar...</p>
                     </div>

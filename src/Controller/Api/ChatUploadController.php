@@ -68,7 +68,13 @@ class ChatUploadController extends AbstractController
             $ext
         );
         $originalSize = $file->getSize();
+        // Sanitize the user-supplied name: strip control chars and collapse
+        // any path components so a malicious filename can't smuggle a path
+        // or break the JSON serialization. The widget already escapes with
+        // escapeHtml, but defense in depth.
         $originalName = $file->getClientOriginalName();
+        $safeName = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '', (string) $originalName);
+        $safeName = mb_substr((string) $safeName, 0, 200) ?: 'archivo';
 
         $file->move($this->uploadDir, $filename);
         $url = '/uploads/chat/' . $filename;
@@ -78,7 +84,7 @@ class ChatUploadController extends AbstractController
             'url' => $url,
             'mime' => $mime,
             'size' => $originalSize,
-            'name' => $originalName,
+            'name' => $safeName,
         ], 201);
     }
 }

@@ -44,5 +44,10 @@ services:
         arguments:
             $uploadDir: '%kernel.project_dir%/public/uploads/link-previews/favicons'
 
+    # HMAC sign/verify for chat attachment download URLs.
+    App\Service\ChatAttachmentSigner:
+        arguments:
+            $secret: '%env(APP_SECRET)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
