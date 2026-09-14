@@ -7,6 +7,8 @@ use App\Entity\ConversationParticipant;
 use App\Entity\Message;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -72,9 +74,21 @@ class ConversationRepository extends ServiceEntityRepository
 
         $lastMsgByConv = [];
         foreach ($lastMessageData as $row) {
-            $cid = is_array($row) ? ($row['conv_id'] ?? null) : (method_exists($row, 'getConversation') ? $row->getConversation()?->getId() : null);
-            $msg = is_array($row) ? ($row[0] ?? null) : $row;
-            if ($cid && !isset($lastMsgByConv[$cid])) {
+            if (is_array($row)) {
+                // HYDRATE_ARRAY: payload is [Message, 'conv_id' => ?int].
+                // The Message object is at numeric index 0. Be defensive:
+                // Doctrine may return ['conv_id' => null] for the rare
+                // orphan row, which previously caused "Cannot index into a
+                // null array" downstream.
+                $rawCid = $row['conv_id'] ?? null;
+                $cid = is_int($rawCid) ? $rawCid : (is_numeric($rawCid) ? (int) $rawCid : null);
+                $msg = $row[0] ?? null;
+            } else {
+                $rawConvId = method_exists($row, 'getConversation') ? $row->getConversation()?->getId() : null;
+                $cid = is_int($rawConvId) ? $rawConvId : (is_numeric($rawConvId) ? (int) $rawConvId : null);
+                $msg = $row;
+            }
+            if ($cid !== null && !isset($lastMsgByConv[$cid])) {
                 $lastMsgByConv[$cid] = $msg;
             }
         }
@@ -119,12 +133,20 @@ class ConversationRepository extends ServiceEntityRepository
         }
 
         // Subtract read-before-lastReadAt only for conversations that have a
-        // marker. One batch query grouped by conversation with CASE WHEN.
+        // marker. One batch query grouped by conversation.
+        //
+        // Doctrine DBAL 4 changed the type parameter contract: integer params
+        // MUST use \Doctrine\DBAL\ParameterType::INTEGER — the older
+        // \PDO::PARAM_INT constant is rejected at runtime. Using the
+        // PDO constant is what was 500ing /api/chat/conversations for
+        // admin users on production (lastReadAt marker path).
         $withMarker = array_filter($lastReadByConv, fn($lr) => $lr !== null);
         if ($withMarker !== []) {
             $markerIds = array_keys($withMarker);
-            /** @var array<int<0, max>|string, \Doctrine\DBAL\ArrayParameterType|\Doctrine\DBAL\ParameterType> $types */
-            $types = ['user_id' => \PDO::PARAM_INT, 'ids' => \Doctrine\DBAL\ArrayParameterType::INTEGER];
+            $types = [
+                'user_id' => ParameterType::INTEGER,
+                'ids' => ArrayParameterType::INTEGER,
+            ];
             $rows = $em->getConnection()->executeQuery(
                 'SELECT m.conversation_id AS cid, COUNT(*) AS read_before
                    FROM messages m
@@ -140,6 +162,7 @@ class ConversationRepository extends ServiceEntityRepository
             )->fetchAllAssociative();
 
             foreach ($rows as $row) {
+                if (!isset($row['cid'], $row['read_before'])) continue;
                 $cid = (int) $row['cid'];
                 $unreadByConv[$cid] = max(0, ($unreadByConv[$cid] ?? 0) - (int) $row['read_before']);
             }
