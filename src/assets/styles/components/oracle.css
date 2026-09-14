@@ -52,3 +52,34 @@
 .gauge-container {
     filter: drop-shadow(0 0 10px rgba(242, 202, 80, 0.3));
 }
+
+
+/* ─── L42: header sigil mark ─── */
+.oracle-sigil {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 0.75rem;
+}
+.oracle-sigil .sigil-pulse {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(242, 202, 80, 0.35);
+    animation: pulse-aura 3s ease-in-out infinite;
+}
+.oracle-sigil .sigil-core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-elev, #f2ca50), #ffe088);
+    box-shadow: 0 0 18px rgba(242, 202, 80, 0.55);
+    animation: pulse-gold 2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    .oracle-sigil .sigil-pulse, .oracle-sigil .sigil-core { animation: none; }
+}

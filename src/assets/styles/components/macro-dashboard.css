@@ -777,3 +777,15 @@
 @media (prefers-reduced-motion: reduce) {
     .discipline-rule, .discipline-rule:hover { transition: none; transform: none; }
 }
+
+
+/* ─── L36: NTW timeline scrolls horizontally on mobile ─── */
+@media (max-width: 640px) {
+    .macro-card:has(#timeline-svg) > div.relative {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    #timeline-svg {
+        min-width: 560px;
+    }
+}

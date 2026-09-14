@@ -1683,7 +1683,7 @@
                             const pnlCls = t.pnl >= 0 ? 'pnl-pos' : 'pnl-neg';
                             const pnlSign = t.pnl >= 0 ? '+' : '';
                             return `
-                                <tr>
+                                <tr data-trade-id="${t.id ?? ''}" tabindex="0">
                                     <td class="font-mono text-xs text-[var(--outline-elev)]">${hora}</td>
                                     <td class="font-semibold">${escapeHtml(t.asset || '')}</td>
                                     <td><span class="px-1.5 py-0.5 rounded text-xs ${t.direction === 'BUY' ? 'bg-green-500/15 text-green-300' : 'bg-red-500/15 text-red-300'}">${escapeHtml(t.direction || '')}</span></td>
@@ -1694,8 +1694,41 @@
                         }).join('')}
                     </tbody>
                 </table>
+                <div id="cal-trade-preview" class="cal-trade-preview" hidden></div>
             `;
         }
+        // P8: hover/focus preview with entry/SL/TP/ratio/notes.
+        // Full record preferred from the _tradesById cache, fallback to
+        // the day payload embedded above.
+        const previewEl = document.getElementById('cal-trade-preview');
+        const showPreview = (row, anchorRect) => {
+            if (!previewEl) return;
+            const id = row.dataset.tradeId;
+            const cached = (id && window._tradesById && window._tradesById[id]) || null;
+            const dayTrade = (dayData.trades || []).find(x => String(x.id) === String(id)) || {};
+            const t = Object.assign({}, dayTrade, cached || {});
+            const rows = [
+                ['Entry', t.entry], ['SL', t.sl], ['TP', t.tp], ['R:R', t.ratio],
+            ].filter(([, v]) => v !== null && v !== undefined && v !== '');
+            const notes = (t.notes || '').trim();
+            previewEl.innerHTML = `
+                <p class="cal-trade-preview-title">${escapeHtml(t.asset || '')} ${escapeHtml(t.direction || t.dir || '')}</p>
+                ${rows.map(([k, v]) => `<p><span>${k}</span><strong>${escapeHtml(String(v))}</strong></p>`).join('')}
+                ${notes ? `<p class="cal-trade-preview-notes">${escapeHtml(notes.slice(0, 140))}</p>` : ''}
+            `;
+            previewEl.hidden = false;
+            const bodyRect = body.getBoundingClientRect();
+            let left = anchorRect.right - bodyRect.left + 8;
+            previewEl.style.left = Math.min(left, Math.max(8, bodyRect.width - 220)) + 'px';
+            previewEl.style.top = Math.max(0, anchorRect.top - bodyRect.top - 10) + 'px';
+        };
+        const hidePreview = () => { if (previewEl) previewEl.hidden = true; };
+        body.querySelectorAll('.cal-trades-table tbody tr').forEach(row => {
+            row.addEventListener('mouseenter', () => showPreview(row, row.getBoundingClientRect()));
+            row.addEventListener('mouseleave', hidePreview);
+            row.addEventListener('focus', () => showPreview(row, row.getBoundingClientRect()));
+            row.addEventListener('blur', hidePreview);
+        });
         const modal = document.getElementById('cal-day-modal');
         if (typeof calDayModal !== 'undefined' && calDayModal) {
             calDayModal.open();
