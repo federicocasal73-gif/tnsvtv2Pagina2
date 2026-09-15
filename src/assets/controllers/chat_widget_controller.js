@@ -85,6 +85,7 @@ export default class extends Controller {
   async openPanel() {
     this.openValue = true;
     this.panelTarget.classList.remove('hidden');
+    this.panelTarget.style.display = 'flex';
     this.panelTarget.classList.add('is-open');
     this.toggleIconTarget.textContent = 'close';
     this._moveFocusIntoPanel();
@@ -95,6 +96,7 @@ export default class extends Controller {
   close() {
     this.openValue = false;
     this.panelTarget.classList.add('hidden');
+    this.panelTarget.style.display = 'none';
     this.panelTarget.classList.remove('is-open');
     this.toggleIconTarget.textContent = 'chat_bubble';
     this.stopPoll();
@@ -162,6 +164,7 @@ export default class extends Controller {
   async openConv(id) {
     this.activeConvId = id;
     this.lastMessageId = 0;
+    this.convPanelTarget.classList.remove('hidden');
     this.convPanelTarget.classList.add('is-open');
     const conv = (this.conversations || []).find((c) => c.id === id);
     this.convNameTarget.textContent = conv?.other_user_name || conv?.title || 'Conversación';
@@ -176,6 +179,7 @@ export default class extends Controller {
   backToList() {
     this.activeConvId = null;
     this.lastMessageId = 0;
+    this.convPanelTarget?.classList.add('hidden');
     this.convPanelTarget?.classList.remove('is-open');
     this.closeMercure();
     this.closeTypingEventSource();
