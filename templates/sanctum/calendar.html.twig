@@ -329,7 +329,16 @@
         loadEvents();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // Boot guard: this IIFE re-runs on every Turbo visit (scripts in the
+    // replaced <main> execute again), while DOMContentLoaded only fires
+    // on full page loads. Without the guard + turbo:load hook, Turbo
+    // visits left the server placeholder ("Cargando eventos del día...")
+    // stuck forever. Timers/pollers from the previous visit are stopped
+    // first so they don't stack (each kept fetching every 5min).
+    let _booted = false;
+    function boot() {
+        if (_booted) return;
+        _booted = true;
         restoreState();
         if (!dateInput.value) {
             const now = new Date();
@@ -351,10 +360,17 @@
 
         loadEvents();
         // Refresh every 5 minutes for countdowns
-        apiPoller(loadEvents, 5 * 60 * 1000);
+        if (window.__calPoller && typeof window.__calPoller.stop === 'function') {
+            try { window.__calPoller.stop(); } catch (_) {}
+        }
+        if (window.__calClock) {
+            try { clearInterval(window.__calClock); } catch (_) {}
+            window.__calClock = null;
+        }
+        window.__calPoller = apiPoller(loadEvents, 5 * 60 * 1000);
         // Tick the AHORA clock label every minute so the now-line moves
         // smoothly without re-fetching events. Cheap DOM-only update.
-        setInterval(() => {
+        window.__calClock = setInterval(() => {
             const label = document.querySelector('.cal-now-line-pill');
             if (!label) return;
             const t = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
@@ -363,7 +379,13 @@
             label.textContent = 'AHORA · ' + t;
             if (dot) label.prepend(dot);
         }, 60 * 1000);
-    });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+    document.addEventListener('turbo:load', boot);
 })();
 </script>
 {% endblock %}
