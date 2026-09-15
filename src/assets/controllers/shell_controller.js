@@ -79,10 +79,8 @@ export default class extends Controller {
             () => this.paintNavIndicator(), 100);
 
         this._applyPersistedSidebarState();
-        this._wireSidebarToggle();
         this._wireSectionToggles();
         this._wireSidebarLinks();
-        this._wireLogout();
         this._wireThemeToggle();
         this._wireNotifPoll();
 
@@ -102,21 +100,36 @@ export default class extends Controller {
         // with the bound function reference lets GC drop it.
         if (this._onThemeChange) {
             document.documentElement.removeEventListener('theme:change', this._onThemeChange);
+            this._onThemeChange = null;
         }
         if (this._onResize) {
             window.removeEventListener('resize', this._onResize);
+            this._onResize = null;
+        }
+        // turbo:render / turbo:load re-highlight listeners (see
+        // _wireSidebarLinks). Without cleanup they stack once per mount.
+        if (this._onTurboRender) {
+            document.removeEventListener('turbo:render', this._onTurboRender);
+            this._onTurboRender = null;
+        }
+        if (this._onTurboLoad) {
+            document.removeEventListener('turbo:load', this._onTurboLoad);
+            this._onTurboLoad = null;
         }
     }
 
-    // ─── Action: data-action="click->shell-init#toggleSidebar" ──
+    // ─── Action: data-action="click->shell#toggleSidebar" ──
+    // NOTE: no imperative addEventListener here on purpose — the template
+    // already declares data-action, and a second listener would fire the
+    // toggle twice per click (net effect zero = "stuck" sidebar).
     toggleSidebar() {
         if (!this._hasSidebarOrToggle()) return;
         const collapsed = !this.sidebarTarget.classList.contains('sidebar-manual-collapsed');
         this.applySidebarCollapsed(collapsed);
     }
 
-    // Action: data-action="click->shell-init#toggleSection" (also
-    // keydown with Enter/Space on the section title).
+    // Action: data-action="click->shell#toggleSection" (also
+    // keydown with Enter/Space on the section title, wired below).
     toggleSection(event) {
         const title = event.currentTarget;
         const collapsed = title.classList.toggle('is-collapsed');
@@ -129,7 +142,7 @@ export default class extends Controller {
         this.paintNavIndicator();
     }
 
-    // Action: data-action="click->shell-init#toggleTheme"
+    // Action: data-action="click->shell#toggleTheme"
     toggleTheme() {
         if (!window.tnsvtTheme) return;
         const cur = window.tnsvtTheme.get();
@@ -140,7 +153,7 @@ export default class extends Controller {
         this.paintTheme();
     }
 
-    // Action: data-action="click->shell-init#logout"
+    // Action: data-action="click->shell#logout"
     async logout(event) {
         event.preventDefault();
         if (!await window.apiConfirm('¿Cerrar sesión?', {
@@ -150,7 +163,7 @@ export default class extends Controller {
         window.location.href = '/';
     }
 
-    // Action: data-action="click->shell-init#markActiveNav"
+    // Action: data-action="click->shell#markActiveNav"
     //     Actually, markActiveNav runs once in connect(); this is a manual
     //     re-runnable for late Turbo navigations.
     markActiveNav() {
@@ -188,10 +201,9 @@ export default class extends Controller {
         } catch (_) { /* localStorage disabled — ignore */ }
     }
 
-    _wireSidebarToggle() {
-        if (!this.hasSidebarToggleTarget) return;
-        this.sidebarToggleTarget.addEventListener('click', () => this.toggleSidebar());
-    }
+    // NOTE: no _wireSidebarToggle() on purpose — the template declares
+    // data-action="click->shell#toggleSidebar" and a second imperative
+    // listener would fire the toggle twice per click (net zero).
 
     applySidebarCollapsed(collapsed) {
         if (!this._hasSidebarOrToggle()) return;
@@ -254,7 +266,10 @@ export default class extends Controller {
         const titles = this.element.querySelectorAll('#sanctum-sidebar [data-section-toggle]');
         titles.forEach((title) => {
             title.setAttribute('aria-expanded', 'true');
-            title.addEventListener('click', (ev) => this.toggleSection({ currentTarget: title, originalEvent: ev }));
+            // NOTE: click is handled by data-action="click->shell#toggleSection"
+            // in the template — do NOT add another click listener here or
+            // sections toggle twice per click. keydown has no declarative
+            // equivalent, so it stays imperative.
             title.addEventListener('keydown', (ev) => {
                 if (ev.key === 'Enter' || ev.key === ' ') {
                     ev.preventDefault();
@@ -267,23 +282,26 @@ export default class extends Controller {
     _wireSidebarLinks() {
         // Re-run active-nav highlight on every Turbo navigation. The link
         // itself is plain `<a>` so Turbo intercepts the click; we only need
-        // to keep the indicator pointing at the right one.
-        document.addEventListener('turbo:render', () => this.markActiveNav());
-        document.addEventListener('turbo:load', () => this.markActiveNav());
+        // to keep the indicator pointing at the right one. Bound refs are
+        // stored so disconnect() can remove them (no stacking).
+        this._onTurboRender = () => this.markActiveNav();
+        this._onTurboLoad = () => this.markActiveNav();
+        document.addEventListener('turbo:render', this._onTurboRender);
+        document.addEventListener('turbo:load', this._onTurboLoad);
     }
 
     // ─── Logout ──────────────────────────────────────────────
-
-    _wireLogout() {
-        if (!this.hasLogoutBtnTarget) return;
-        this.logoutBtnTarget.addEventListener('click', (ev) => this.logout(ev));
-    }
+    // NOTE: no _wireLogout() on purpose — the template declares
+    // data-action="click->shell#logout". A second listener would show
+    // the confirm modal twice.
 
     // ─── Theme ──────────────────────────────────────────────
 
     _wireThemeToggle() {
         if (!this.hasThemeToggleBtnTarget) return;
-        this.themeToggleBtnTarget.addEventListener('click', () => this.toggleTheme());
+        // NOTE: click is handled by data-action="click->shell#toggleTheme"
+        // in the template — do NOT add another click listener here or the
+        // theme would advance two steps per click.
         this._onThemeChange = () => this.paintTheme();
         document.documentElement.addEventListener('theme:change', this._onThemeChange);
         // theme.js loads deferred; tnsvtTheme may not be ready yet. Retry
