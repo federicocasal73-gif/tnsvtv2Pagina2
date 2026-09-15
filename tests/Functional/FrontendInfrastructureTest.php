@@ -61,6 +61,13 @@ class FrontendInfrastructureTest extends ApiTestCase
 
         $this->assertStringContainsString('manifest.json', $content, 'shell.html.twig must link to manifest.json');
         $this->assertStringContainsString('apple-mobile-web-app', $content, 'PWA meta tags required for iOS');
-        $this->assertStringContainsString('data-controller="pwa"', $content, 'pwa_controller must be initialized on body');
+        // data-controller may list multiple controllers (e.g. "pwa shell-init"
+        // after the F10 C11 shell-init migration). Match the pwa token inside
+        // the attribute, not a fully literal string.
+        $this->assertMatchesRegularExpression(
+            '/data-controller="[^"]*\bpwa\b/',
+            $content,
+            'pwa_controller must be initialized on body'
+        );
     }
 }

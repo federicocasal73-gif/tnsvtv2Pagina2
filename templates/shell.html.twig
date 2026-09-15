@@ -52,7 +52,7 @@
 </head>
 
 <body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased relative"
-      data-controller="pwa"
+      data-controller="pwa shell"
       {% if app.user %}data-user-code="{{ app.user.code }}" data-user-tier="{{ app.user.tier|default('INITIATE') }}"{% endif %}>
 
 <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
@@ -70,8 +70,19 @@
 {% block gateway_emblem %}{% endblock %}
 
 <div class="sanctum-layout">
-    <aside id="sanctum-sidebar" class="sanctum-sidebar" aria-label="Menú principal" data-turbo-permanent>
-        <button type="button" id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Colapsar menú" aria-expanded="true" aria-controls="sanctum-sidebar">
+    <aside id="sanctum-sidebar"
+           data-shell-target="sidebar"
+           class="sanctum-sidebar"
+           aria-label="Menú principal"
+           data-turbo-permanent>
+        <button type="button"
+                id="sidebar-toggle"
+                data-shell-target="sidebarToggle"
+                data-action="click->shell#toggleSidebar"
+                class="sidebar-toggle-btn"
+                aria-label="Colapsar menú"
+                aria-expanded="true"
+                aria-controls="sanctum-sidebar">
             <span class="material-symbols-elev" aria-hidden="true">chevron_left</span>
         </button>
         <div class="sidebar-brand">
@@ -87,13 +98,20 @@
         </div>
 
         <nav class="sanctum-nav">
-            <span class="sanctum-nav-indicator" id="sanctum-nav-indicator" aria-hidden="true"></span>
+            <span class="sanctum-nav-indicator"
+                  data-shell-target="navIndicator"
+                  id="sanctum-nav-indicator"
+                  aria-hidden="true"></span>
             <a href="{{ path('sanctum_dashboard') }}" class="sanctum-link" data-page="dashboard">
                 <span class="material-symbols-elev">dashboard</span>
                 <span class="sanctum-link-label">Inicio</span>
             </a>
 
-            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Trading</div>
+            <div class="sanctum-section-title"
+                 data-shell-target="sidebarSection"
+                 data-section-toggle
+                 data-action="click->shell#toggleSection"
+                 role="button" tabindex="0" title="Colapsar sección">Trading</div>
             <a href="{{ path('sanctum_journal') }}" class="sanctum-link" data-page="journal">
                 <span class="material-symbols-elev">edit_note</span>
                 <span class="sanctum-link-label">Journal</span>
@@ -107,7 +125,11 @@
                 <span class="sanctum-link-label">Leaderboard</span>
             </a>
 
-            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Mente &amp; Macro</div>
+            <div class="sanctum-section-title"
+                 data-shell-target="sidebarSection"
+                 data-section-toggle
+                 data-action="click->shell#toggleSection"
+                 role="button" tabindex="0" title="Colapsar sección">Mente &amp; Macro</div>
             <a href="{{ path('macro_dashboard') }}" class="sanctum-link" data-page="macro">
                 <span class="material-symbols-elev">event_upcoming</span>
                 <span class="sanctum-link-label">Macroeconomía</span>
@@ -129,13 +151,21 @@
                 <span class="sanctum-link-label">Frecuencias</span>
             </a>
 
-            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Formación</div>
+            <div class="sanctum-section-title"
+                 data-shell-target="sidebarSection"
+                 data-section-toggle
+                 data-action="click->shell#toggleSection"
+                 role="button" tabindex="0" title="Colapsar sección">Formación</div>
             <a href="{{ path('sanctum_campus') }}" class="sanctum-link" data-page="campus">
                 <span class="material-symbols-elev">school</span>
                 <span class="sanctum-link-label">Campus</span>
             </a>
 
-            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Mi cuenta</div>
+            <div class="sanctum-section-title"
+                 data-shell-target="sidebarSection"
+                 data-section-toggle
+                 data-action="click->shell#toggleSection"
+                 role="button" tabindex="0" title="Colapsar sección">Mi cuenta</div>
             <a href="{{ path('sanctum_profile') }}" class="sanctum-link" data-page="profile">
                 <span class="material-symbols-elev">person</span>
                 <span class="sanctum-link-label">Perfil</span>
@@ -147,11 +177,17 @@
             <a href="{{ path('sanctum_notifications') }}" class="sanctum-link" data-page="notifications">
                 <span class="material-symbols-elev">notifications_active</span>
                 <span class="sanctum-link-label">Notificaciones</span>
-                <span id="bell-badge" class="sanctum-bell-badge hidden">0</span>
+                <span id="bell-badge"
+                      data-shell-target="bellBadge"
+                      class="sanctum-bell-badge hidden">0</span>
             </a>
 
             {% if is_granted('ROLE_ADMIN') %}
-            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Admin</div>
+            <div class="sanctum-section-title"
+                 data-shell-target="sidebarSection"
+                 data-section-toggle
+                 data-action="click->shell#toggleSection"
+                 role="button" tabindex="0" title="Colapsar sección">Admin</div>
             <a href="{{ path('sanctum_users') }}" class="sanctum-link" data-page="users">
                 <span class="material-symbols-elev">group</span>
                 <span class="sanctum-link-label">Usuarios</span>
@@ -178,7 +214,11 @@
             </a>
             {% endif %}
 
-            <div class="sanctum-section-title" data-section-toggle role="button" tabindex="0" title="Colapsar sección">Comunidad</div>
+            <div class="sanctum-section-title"
+                 data-shell-target="sidebarSection"
+                 data-section-toggle
+                 data-action="click->shell#toggleSection"
+                 role="button" tabindex="0" title="Colapsar sección">Comunidad</div>
             <a href="{{ path('sanctum_feed') }}" class="sanctum-link" data-page="feed">
                 <span class="material-symbols-elev">forum</span>
                 <span class="sanctum-link-label">Feed</span>
@@ -200,15 +240,24 @@
         <div class="sidebar-user-card">
             <div class="glass-card-elev p-3">
                 <div class="flex items-center gap-3">
-                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-[var(--on-primary-elev)] font-bold">
+                    <div id="user-avatar"
+                         data-shell-target="userAvatar"
+                         class="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center text-[var(--on-primary-elev)] font-bold">
                         {{ app.user ? (app.user.name|default(app.user.code)|slice(0, 1)|upper) : '?' }}
                     </div>
                     <div class="sidebar-user-meta">
-                        <p id="user-name" class="text-sm font-medium text-[var(--on-surface-elev)] truncate">{{ app.user ? (app.user.name|default(app.user.code)) : 'Invitado' }}</p>
-                        <span id="user-tier" class="tier-badge-elev tier-initiate">{{ app.user ? (app.user.tier|default('INITIATE')) : '—' }}</span>
+                        <p id="user-name"
+                           data-shell-target="userName"
+                           class="text-sm font-medium text-[var(--on-surface-elev)] truncate">{{ app.user ? (app.user.name|default(app.user.code)) : 'Invitado' }}</p>
+                        <span id="user-tier"
+                              data-shell-target="userTier"
+                              class="tier-badge-elev tier-initiate">{{ app.user ? (app.user.tier|default('INITIATE')) : '—' }}</span>
                     </div>
                 </div>
-                <button id="logout-btn" class="mt-2 w-full text-xs py-1 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-variant-elev)] hover:bg-[var(--glass-bg-strong-elev)]">
+                <button id="logout-btn"
+                        data-shell-target="logoutBtn"
+                        data-action="click->shell#logout"
+                        class="mt-2 w-full text-xs py-1 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-variant-elev)] hover:bg-[var(--glass-bg-strong-elev)]">
                     Cerrar sesión
                 </button>
             </div>
@@ -239,7 +288,10 @@
             <div class="notif-wrap" data-notification-bell-target="wrap">
                 <button type="button" class="ui-btn ui-btn ghost relative" title="Notificaciones" aria-label="Notificaciones" aria-haspopup="menu" aria-expanded="false" data-notification-bell-target="button" data-action="notification-bell#toggle">
                     <span class="material-symbols-elev relative" aria-hidden="true">notifications</span>
-                    <span id="header-notif-badge" class="hidden" data-notification-bell-target="count">0</span>
+                    <span id="header-notif-badge"
+                      data-shell-target="headerNotifBadge"
+                      class="hidden"
+                      data-notification-bell-target="count">0</span>
                 </button>
                 <div class="notif-popover hidden" data-notification-bell-target="popover" role="menu" aria-label="Notificaciones recientes">
                     <div class="notif-popover-header">
@@ -251,8 +303,18 @@
                 </div>
             </div>
 
-            <button type="button" id="theme-toggle-btn" class="ui-btn ui-btn ghost relative" title="Cambiar tema claro/oscuro" aria-label="Cambiar tema claro/oscuro" aria-live="polite">
-                <span class="material-symbols-elev" id="theme-toggle-icon" aria-hidden="true">dark_mode</span>
+            <button type="button"
+                        id="theme-toggle-btn"
+                        data-shell-target="themeToggleBtn"
+                        data-action="click->shell#toggleTheme"
+                        class="ui-btn ui-btn ghost relative"
+                        title="Cambiar tema claro/oscuro"
+                        aria-label="Cambiar tema claro/oscuro"
+                        aria-live="polite">
+                <span class="material-symbols-elev"
+                      id="theme-toggle-icon"
+                      data-shell-target="themeIcon"
+                      aria-hidden="true">dark_mode</span>
             </button>
 
             <div class="protocol-overlay" data-protocol-target="overlay" role="dialog" aria-modal="true" aria-labelledby="protocol-title" tabindex="-1" hidden>
@@ -409,279 +471,6 @@
     {{ importmap('divine_overlay') }}
     {{ importmap('onboarding') }}
 {% endblock %}
-
-<script>
-(function() {
-      // Active nav highlight: match both exact path and data-page prefix so
-      // that /sanctum/guardian/anything still marks Guardian as active, etc.
-      (function markActiveNav() {
-          const path = window.location.pathname.replace(/\/+$/, '') || '/';
-          const links = document.querySelectorAll('#sanctum-sidebar .sanctum-link[data-page]');
-          let bestMatch = null;
-          let bestLen = -1;
-          links.forEach(a => {
-              const href = (a.getAttribute('href') || '').replace(/\/+$/, '') || '/';
-              if (path === href || path.startsWith(href + '/') || href === '/' && path.startsWith('/')) {
-                  if (href.length > bestLen) {
-                      bestMatch = a;
-                      bestLen = href.length;
-                  }
-              }
-          });
-          if (bestMatch) {
-              bestMatch.classList.add('active');
-              bestMatch.setAttribute('aria-current', 'page');
-          }
-          // Scroll the active item into view inside the .sanctum-nav
-          // scroll container (only if it would be clipped). We do this on
-          // load so the active page is visible even on a long menu where
-          // the active section sits past the viewport.
-          if (bestMatch) {
-              requestAnimationFrame(() => {
-                  const nav = bestMatch.closest('.sanctum-nav');
-                  if (!nav) return;
-                  const navRect = nav.getBoundingClientRect();
-                  const itemRect = bestMatch.getBoundingClientRect();
-                  if (itemRect.top < navRect.top || itemRect.bottom > navRect.bottom) {
-                      bestMatch.scrollIntoView({ block: 'center' });
-                  }
-                  // Position the sliding active-state indicator over
-                  // the active link. Indicator sits absolutely inside
-                  // .sanctum-nav; CSS transitions handle the slide.
-                  const indicator = document.getElementById('sanctum-nav-indicator');
-                  if (indicator) {
-                      const top = bestMatch.offsetTop;
-                      const height = bestMatch.offsetHeight;
-                      indicator.style.transform = 'translateY(' + top + 'px)';
-                      indicator.style.height = height + 'px';
-                      indicator.style.opacity = '1';
-                  }
-              });
-          }
-      })();
-
-    // Load user info from session via /api/auth/check (using robust helper)
-    if (window.apiFetch) {
-        apiFetch('/api/auth/check').then(r => {
-            if (r.ok && r.data && r.data.user) {
-                const u = r.data.user;
-                window.TNSVT_USER = u;
-                window.dispatchEvent(new CustomEvent('tnsvt:user-loaded', { detail: u }));
-                const code = (u.code || '??').slice(0, 2);
-                const avatarEl = document.getElementById('user-avatar');
-                const nameEl = document.getElementById('user-name');
-                if (avatarEl) avatarEl.textContent = code;
-                if (nameEl) nameEl.textContent = u.name || u.code;
-                const tierEl = document.getElementById('user-tier');
-                if (tierEl) {
-                    tierEl.textContent = (u.tier || 'INITIATE');
-                    tierEl.className = 'tier-badge-elev tier-' + (u.tier || 'INITIATE').toLowerCase().replace(/_/g, '-');
-                }
-            } else if (r.status === 401) {
-                const nameEl = document.getElementById('user-name');
-                if (nameEl) nameEl.textContent = 'Sin sesión';
-                window.TNSVT_USER = null;
-            } else if (!r.ok) {
-                const nameEl = document.getElementById('user-name');
-                if (nameEl) nameEl.textContent = '—';
-            }
-        });
-    }
-
-    // Logout
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) logoutBtn.addEventListener('click', async function() {
-        if (await apiConfirm('¿Cerrar sesión?', { title: 'Cerrar sesión', variant: 'danger' })) {
-            apiFetch('/api/auth/logout', { method: 'POST', silent: true }).then(() => location.href = '/');
-        }
-    });
-
-    // Theme toggle (Fase E): cycles dark → light → auto, persists via
-    // window.tnsvtTheme (localStorage) and server-side theme_preference.
-    // NOTE: theme.js loads with `defer`, so window.tnsvtTheme may not exist
-    // yet when this inline script runs — retry until ready (max ~3s).
-    (function initThemeToggle(attempts) {
-        const btn = document.getElementById('theme-toggle-btn');
-        const icon = document.getElementById('theme-toggle-icon');
-        if (!btn) return;
-        if (!window.tnsvtTheme) {
-            if ((attempts || 0) < 30) {
-                setTimeout(() => initThemeToggle((attempts || 0) + 1), 100);
-            }
-            return;
-        }
-        function paint() {
-            const cur = window.tnsvtTheme.get();
-            const dark = window.tnsvtTheme.isDark();
-            if (icon) icon.textContent = dark ? 'dark_mode' : 'light_mode';
-            btn.setAttribute('aria-label', 'Tema actual: ' + cur + '. Activar para cambiar.');
-            btn.title = 'Tema: ' + cur + ' (click para cambiar)';
-        }
-        btn.addEventListener('click', () => {
-            const cur = window.tnsvtTheme.get();
-            const next = cur === 'dark' ? 'light' : cur === 'light' ? 'auto' : 'dark';
-            window.tnsvtTheme.set(next);
-            const meta = document.querySelector('meta[name="theme-color"]');
-            if (meta) meta.setAttribute('content', window.tnsvtTheme.isDark() ? '#050308' : '#f5f1e8');
-            paint();
-        });
-        document.documentElement.addEventListener('theme:change', paint);
-        paint();
-    })();
-
-    // Notification badge in sidebar + topbar (poll every 60s)
-    var _notifPrev = 0;
-    var _notifFirstLoad = true;
-    function _triggerBadgePop(el) {
-        if (!el || _notifFirstLoad) return;
-        el.classList.remove('is-popping');
-        // Force reflow so the animation restarts on each new poll.
-        void el.offsetWidth;
-        el.classList.add('is-popping');
-        setTimeout(function () { el.classList.remove('is-popping'); }, 600);
-    }
-    function refreshNotifBadge() {
-        if (!window.TNSVT_USER) return;
-        var doPaint = function(data) {
-                var n = (data && data.count) || 0;
-                var label = n > 99 ? '99+' : n;
-                var badge = document.getElementById('bell-badge');
-                if (badge) {
-                    badge.textContent = label;
-                    badge.classList.toggle('hidden', n === 0);
-                    if (n > _notifPrev) _triggerBadgePop(badge);
-                }
-                var headerBadge = document.getElementById('header-notif-badge');
-                if (headerBadge) {
-                    headerBadge.textContent = label;
-                    headerBadge.classList.toggle('hidden', n === 0);
-                    if (n > _notifPrev) _triggerBadgePop(headerBadge);
-                }
-                _notifPrev = n;
-                _notifFirstLoad = false;
-            };
-        if (window.apiFetch) {
-            apiFetch('/api/notifications/count', {silent: true, redirectOn401: false}).then(function(r) {
-                if (r.ok && r.data) { doPaint(r.data); return; }
-                fetch('/notifications/unread-count')
-                    .then(function(fr) { return fr.ok ? fr.json() : { count: 0 }; })
-                    .then(doPaint).catch(function() {});
-            }).catch(function() {});
-        } else {
-            fetch('/notifications/unread-count')
-                .then(function(fr) { return fr.ok ? fr.json() : { count: 0 }; })
-                .then(doPaint).catch(function() {});
-        }
-    }
-    refreshNotifBadge();
-    apiPoller(refreshNotifBadge, 60000);
-})();
-</script>
-
-<script>
-// Rail tooltip (sidebar collapsed ≤1024px)
-(function() {
-    const RAIL_BP = 1024;
-    var tip = document.createElement('div');
-    tip.id = 'sanctum-rail-tooltip';
-    document.body.appendChild(tip);
-
-    function show(link) {
-        if (window.innerWidth > RAIL_BP) return;
-        var label = link.querySelector('.sanctum-link-label');
-        if (!label) return;
-        tip.textContent = label.textContent;
-        tip.classList.add('visible');
-        var r = link.getBoundingClientRect();
-        tip.style.left = (r.right + 12) + 'px';
-        tip.style.top = Math.round(r.top + r.height / 2) + 'px';
-    }
-    function hide() { tip.classList.remove('visible'); }
-
-    document.querySelectorAll('#sanctum-sidebar .sanctum-link').forEach(function(link) {
-        link.addEventListener('mouseenter', function() { show(link); });
-        link.addEventListener('mouseleave', hide);
-        link.addEventListener('focus', function() { show(link); });
-        link.addEventListener('blur', hide);
-    });
-    window.addEventListener('resize', hide);
-})();
-</script>
-
-<script>
-// Manual sidebar collapse/expand (user-driven, persisted in localStorage).
-(function() {
-    var btn = document.getElementById('sidebar-toggle');
-    var aside = document.getElementById('sanctum-sidebar');
-    if (!btn || !aside) return;
-    var KEY = 'tnsvt_sidebar_collapsed';
-    var HINT_KEY = 'tnsvt_sidebar_hint_shown';
-    function apply(collapsed) {
-        aside.classList.toggle('sidebar-manual-collapsed', collapsed);
-        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-        btn.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Colapsar menú');
-        var icon = btn.querySelector('.material-symbols-elev');
-        if (icon) icon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
-        try { localStorage.setItem(KEY, collapsed ? '1' : '0'); } catch (_) {}
-        // H7: first time the user collapses, show a brief toast so they
-        // know the state is remembered across sessions/tabs.
-        if (collapsed) {
-            try {
-                if (!localStorage.getItem(HINT_KEY)) {
-                    localStorage.setItem(HINT_KEY, '1');
-                    if (window.apiToast) {
-                        window.apiToast('Menú colapsado. Tu preferencia está guardada.', 'info');
-                    }
-                }
-            } catch (_) {}
-        }
-    }
-    try {
-        if (localStorage.getItem(KEY) === '1') apply(true);
-    } catch (_) {}
-    btn.addEventListener('click', function () {
-        // Note: apply() inverts — it receives the CURRENT state.
-        apply(!aside.classList.contains('sidebar-manual-collapsed'));
-    });
-    // L10: sync collapse state across tabs.
-    window.addEventListener('storage', function (e) {
-        if (e.key === KEY) {
-            apply(e.newValue === '1');
-        }
-    });
-
-    // ─── L8: collapsible nav sections ───
-    // Clicking a section title hides its links until the next title.
-    // State persists per-session only (not synced); the active link's
-    // section is never auto-collapsed on load.
-    function repositionIndicator() {
-        var active = document.querySelector('#sanctum-sidebar .sanctum-link.active');
-        var indicator = document.getElementById('sanctum-nav-indicator');
-        if (!active || !indicator) return;
-        indicator.style.transform = 'translateY(' + active.offsetTop + 'px)';
-        indicator.style.height = active.offsetHeight + 'px';
-        indicator.style.opacity = '1';
-    }
-    window.__repositionNavIndicator = repositionIndicator;
-    document.querySelectorAll('#sanctum-sidebar [data-section-toggle]').forEach(function (title) {
-        function toggle() {
-            var collapsed = title.classList.toggle('is-collapsed');
-            title.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-            var el = title.nextElementSibling;
-            while (el && !el.classList.contains('sanctum-section-title')) {
-                if (el.classList.contains('sanctum-link')) el.hidden = collapsed;
-                el = el.nextElementSibling;
-            }
-            repositionIndicator();
-        }
-        title.setAttribute('aria-expanded', 'true');
-        title.addEventListener('click', toggle);
-        title.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-        });
-    });
-})();
-</script>
 
 {# ─── Photo lightbox (singleton) ─── #}
 {% include '_partials/lightbox.html.twig' %}
