@@ -144,22 +144,38 @@ summary:focus-visible {
 }
 
 /* Skip link for keyboard users (target a11y.js-driven feature later) */
+/* Visually hidden with the clip pattern (NOT top:-40px, which leaks when
+   the link is taller than 40px) — revealed only on keyboard focus. */
 .skip-link {
     position: absolute;
-    top: -40px;
-    left: var(--space-3);
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
     z-index: var(--z-modal-critical);
-    padding: var(--space-2) var(--space-4);
     background: var(--gold-elev);
     color: var(--on-primary-elev);
     border-radius: var(--radius-md);
     font-family: var(--font-display-elev);
     font-weight: 600;
     text-decoration: none;
-    transition: top var(--duration-fast) var(--ease-standard);
 }
 .skip-link:focus-visible {
+    width: auto;
+    height: auto;
+    padding: var(--space-2) var(--space-4);
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
     top: var(--space-3);
+    left: var(--space-3);
 }
 
 /* Forced-colors (Windows High Contrast) fallback */
