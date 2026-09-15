@@ -33,7 +33,7 @@ export default class extends Controller {
     static targets = [
         'message',
         'stateLocked', 'stateList', 'stateEmpty', 'stateEditing',
-        'passInput', 'unlockBtn', 'fingerprintBtn', 'lockSubtitle',
+        'passInput', 'unlockBtn', 'fingerprintBtn', 'lockSubtitle', 'resetLockedBtn',
         'newBtn', 'exportBtn', 'lockBtn', 'resetBtn', 'listSummary', 'entriesGrid',
         'writeFirstBtn', 'lockEmptyBtn',
         'editorWrap', 'editorTitle', 'editorTitleInput', 'editorTextarea',
@@ -579,6 +579,11 @@ export default class extends Controller {
             this.fingerprintBtnTarget.addEventListener('click', () => {
                 this.showMessage('Huella biométrica requiere WebAuthn — próxima iteración', 'error');
             });
+        }
+        // Forgot-key escape hatch: reachable from the locked state itself,
+        // otherwise a user who forgot the key is trapped with no reset path.
+        if (this.hasResetLockedBtnTarget) {
+            this.resetLockedBtnTarget.addEventListener('click', () => this.resetDiary());
         }
 
         if (this.hasNewBtnTarget) this.newBtnTarget.addEventListener('click', () => this.startNew());
