@@ -8,23 +8,23 @@
 {% block stylesheets %}{% endblock %}
 
 {% block content %}
-<div class="chat-layout">
+<div class="chat-layout" data-controller="chat">
 
     {# ─── Lista conversaciones ─── #}
     <aside class="chat-pane chat-list-pane">
         <div class="chat-pane-header">
-            <div class="chat-tabs" id="chat-tabs">
+            <div class="chat-tabs" id="chat-tabs" data-chat-target="tabs">
                 <button class="chat-tab active" data-tab="all"    type="button">Todos</button>
                 <button class="chat-tab"        data-tab="unread" type="button">No leídos</button>
                 <button class="chat-tab"        data-tab="groups" type="button">Grupos</button>
             </div>
-            <input type="text" class="chat-search" id="chat-search" placeholder="Buscar..." />
-            <button type="button" class="chat-new-dm-btn" id="chat-new-dm-btn">
+            <input type="text" class="chat-search" id="chat-search" data-chat-target="search" placeholder="Buscar..." />
+            <button type="button" class="chat-new-dm-btn" id="chat-new-dm-btn" data-chat-target="newDmBtn">
                 <span class="material-symbols-elev icon-size-sm">add_comment</span>
                 Nuevo DM
             </button>
         </div>
-        <div class="chat-list" id="chat-list">
+        <div class="chat-list" id="chat-list" data-chat-target="list">
             <div class="skeleton-stack" aria-hidden="true">
                 <div class="skeleton skeleton-row"><span class="skeleton skeleton-avatar"></span><span class="skeleton-lines"><span class="skeleton skeleton-line w-3-4"></span><span class="skeleton skeleton-line w-1-2"></span></span></div>
                 <div class="skeleton skeleton-row"><span class="skeleton skeleton-avatar"></span><span class="skeleton-lines"><span class="skeleton skeleton-line w-3-4"></span><span class="skeleton skeleton-line w-1-2"></span></span></div>
@@ -35,23 +35,23 @@
 
     {# ─── Panel de mensajes ─── #}
     <section class="chat-pane">
-        <div class="chat-conv-header" id="chat-conv-header" style="display:none;">
-            <div class="chat-conv-avatar" id="chat-conv-avatar">C</div>
+        <div class="chat-conv-header" id="chat-conv-header" data-chat-target="convHeader" style="display:none;">
+            <div class="chat-conv-avatar" id="chat-conv-avatar" data-chat-target="convAvatar">C</div>
             <div>
-                <div class="chat-conv-header-name" id="chat-conv-name">Conversación</div>
-                <div class="chat-conv-header-status" id="chat-conv-status">—</div>
+                <div class="chat-conv-header-name" id="chat-conv-name" data-chat-target="convName">Conversación</div>
+                <div class="chat-conv-header-status" id="chat-conv-status" data-chat-target="convStatus">—</div>
             </div>
         </div>
-        <div class="chat-messages" id="chat-messages">
-            <div class="chat-empty" id="chat-empty-default">
+        <div class="chat-messages" id="chat-messages" data-chat-target="messages">
+            <div class="chat-empty" id="chat-empty-default" data-chat-target="emptyDefault">
                 <span class="material-symbols-elev chat-empty-icon">forum</span>
                 <p>Selecciona una conversación para empezar.</p>
             </div>
         </div>
-        <div class="chat-composer" id="chat-composer" style="display:none;">
-            <textarea id="chat-input" class="chat-composer-textarea"
+        <div class="chat-composer" id="chat-composer" data-chat-target="composer" style="display:none;">
+            <textarea id="chat-input" data-chat-target="input" class="chat-composer-textarea"
                       placeholder="Escribe un mensaje..." rows="1"></textarea>
-            <button id="chat-send" class="chat-send-btn" disabled>
+            <button id="chat-send" data-chat-target="send" class="chat-send-btn" disabled>
                 <span class="material-symbols-elev icon-size-sm">send</span>
                 Enviar
             </button>
@@ -61,391 +61,25 @@
 </div>
 
 {# ─── Modal: Nuevo DM — unified tnsvt-modal (Phase 12, F2) ─── #}
-<div class="tnsvt-modal-overlay" id="chat-new-dm-modal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title" hidden>
+<div class="tnsvt-modal-overlay" id="chat-new-dm-modal" data-chat-target="newDmModal" role="dialog" aria-modal="true" aria-labelledby="chat-modal-title" hidden>
     <div class="tnsvt-modal">
         <div class="tnsvt-modal__header">
             <h2 id="chat-modal-title" class="tnsvt-modal__title">
                 <span class="material-symbols-elev">person_add</span>
                 <span>Nuevo mensaje directo</span>
             </h2>
-            <button type="button" class="tnsvt-modal__close" id="chat-modal-close" aria-label="Cerrar">
+            <button type="button" class="tnsvt-modal__close" id="chat-modal-close" data-chat-target="modalClose" aria-label="Cerrar">
                 <span class="material-symbols-elev" aria-hidden="true">close</span>
             </button>
         </div>
         <div class="tnsvt-modal__body">
-            <input type="text" id="chat-dm-search" class="form-input" style="width:100%;margin-bottom:0.75rem;"
+            <input type="text" id="chat-dm-search" data-chat-target="dmSearch" class="form-input" style="width:100%;margin-bottom:0.75rem;"
                    placeholder="Buscar por código o nombre..." autocomplete="off" />
-            <div id="chat-dm-results">
+            <div id="chat-dm-results" data-chat-target="dmResults">
                 <p class="chat-list-empty">Escribí un código o nombre para buscar...</p>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-(function() {
-    'use strict';
-
-    // ══════ F5 — Chat ══════
-    const state = { tab: 'all', search: '', activeConvId: null, conversations: [] };
-    const $list = document.getElementById('chat-list');
-    const $convHeader = document.getElementById('chat-conv-header');
-    const $messages = document.getElementById('chat-messages');
-    const $input = document.getElementById('chat-input');
-    const $send = document.getElementById('chat-send');
-    const $composer = document.getElementById('chat-composer');
-    const $empty = document.getElementById('chat-empty-default');
-
-    function esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    }
-    function initials(name) {
-        return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
-    }
-    function relTime(iso) {
-        try {
-            const d = new Date(iso);
-            const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-            if (diff < 60)   return 'ahora';
-            if (diff < 3600) return Math.floor(diff / 60) + 'm';
-            if (diff < 86400) return Math.floor(diff / 3600) + 'h';
-            return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
-        } catch (e) { return ''; }
-    }
-    function fmtTime(iso) {
-        try {
-            const d = new Date(iso);
-            return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-        } catch (e) { return ''; }
-    }
-
-    async function loadConversations() {
-        if (!$list) return;
-        try {
-            const r = await apiFetch('/api/chat/conversations', { silent: true });
-            if (!r.ok || !r.data) {
-                $list.innerHTML = '';
-                apiEmpty($list, { icon: 'forum', message: 'Sin conversaciones', size: 'compact' });
-                return;
-            }
-            const items = Array.isArray(r.data) ? r.data : (r.data.conversations || []);
-            state.conversations = items;
-            renderConversations();
-        } catch (e) {
-            $list.innerHTML = '<p class="chat-list-empty">Sin conexión</p>';
-        }
-    }
-
-    function renderConversations() {
-        let items = state.conversations.slice();
-        if (state.tab === 'groups') {
-            items = items.filter(c => c.is_group === true || c.type === 'group');
-        }
-        if (state.tab === 'unread') {
-            items = items.filter(c => (c.unread || 0) > 0);
-        }
-        if (state.search) {
-            const q = state.search.toLowerCase();
-            // L87: match names/titles AND last-message bodies.
-            const bodyOf = (c) => {
-                const lm = c.last_message_preview ?? c.last_message ?? c.lastMessage ?? '';
-                if (typeof lm === 'string') return lm;
-                if (lm && typeof lm === 'object') return lm.content || lm.text || lm.message || '';
-                return '';
-            };
-            items = items.filter(c =>
-                (c.name || c.title || '').toLowerCase().includes(q)
-                || bodyOf(c).toLowerCase().includes(q)
-            );
-        }
-
-        if (items.length === 0) {
-            $list.innerHTML = '';
-            apiEmpty($list, { icon: 'search_off', message: `No hay conversaciones${state.search ? ' que coincidan con la búsqueda' : ''}.`, size: 'compact' });
-            return;
-        }
-
-        $list.innerHTML = items.map(c => {
-            const id = c.id || c.conversation_id;
-            const name = c.name || c.title || 'Conversación';
-            const isActive = String(state.activeConvId) === String(id);
-            const unread = c.unread || 0;
-            const preview = c.last_message_preview || c.last_message || (c.lastMessage || '');
-            const time = c.last_message_at || c.last_message_time || c.updated_at || '';
-            return `
-                <div class="chat-conv ${isActive ? 'active' : ''}" data-id="${esc(id)}">
-                    <div class="chat-conv-avatar">${esc(initials(name))}</div>
-                    <div class="chat-conv-body">
-                        <div class="chat-conv-name">${esc(name)}</div>
-                        <div class="chat-conv-preview">${esc(preview.slice(0, 60))}</div>
-                    </div>
-                    <div class="chat-conv-meta">
-                        <span class="chat-conv-time">${esc(relTime(time))}</span>
-                        ${unread > 0 ? `<span class="chat-conv-unread">${unread}</span>` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        $list.querySelectorAll('.chat-conv').forEach(el => {
-            el.addEventListener('click', () => openConversation(el.dataset.id));
-        });
-    }
-
-    async function openConversation(id) {
-        state.activeConvId = id;
-        renderConversations();
-        const conv = state.conversations.find(c => String(c.id || c.conversation_id) === String(id));
-        if (conv) {
-            document.getElementById('chat-conv-name').textContent = conv.name || conv.title || 'Conversación';
-            document.getElementById('chat-conv-avatar').textContent = initials(conv.name || conv.title || 'C');
-            // L85 (full page): derive status from real data.
-            const statusEl = document.getElementById('chat-conv-status');
-            if (statusEl) {
-                const last = conv.last_message?.created_at || conv.lastMessage?.created_at
-                    || conv.updated_at || conv.last_message_at;
-                if (conv.is_group || conv.type === 'group') {
-                    const n = conv.member_count || conv.members?.length;
-                    statusEl.textContent = n ? 'Grupo · ' + n : 'Grupo';
-                } else if (last) {
-                    const diff = (Date.now() - new Date(last).getTime()) / 1000;
-                    statusEl.textContent = diff < 300 ? 'activo ahora' : 'últ. actividad ' + fmtTime(last);
-                } else {
-                    statusEl.textContent = 'Sin mensajes';
-                }
-            }
-        }
-        $convHeader.style.display = 'flex';
-        $composer.style.display = 'flex';
-        $empty.style.display = 'none';
-        $messages.innerHTML = '<div class="skeleton-stack" aria-hidden="true"><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div></div>';
-        try {
-            const r = await apiFetch(`/api/chat/conversations/${id}/messages`, { silent: true });
-            if (!r.ok || !r.data) {
-                $messages.innerHTML = '<p class="chat-list-empty">Sin mensajes</p>';
-                return;
-            }
-            const items = Array.isArray(r.data) ? r.data : (r.data.messages || []);
-            renderMessages(items, id);
-            // Mark as read
-            apiFetch(`/api/chat/conversations/${id}/read`, { method: 'POST' }, { silent: true });
-            // Update unread in state
-            const c = state.conversations.find(c => String(c.id || c.conversation_id) === String(id));
-            if (c) c.unread = 0;
-        } catch (e) {
-            $messages.innerHTML = '<p class="chat-list-empty">Error al cargar mensajes</p>';
-        }
-    }
-
-    function renderMessages(items, convId) {
-        if (items.length === 0) {
-            $messages.innerHTML = '<p class="chat-list-empty">Sin mensajes — escribí el primero.</p>';
-            return;
-        }
-        const me = window.TNSVT_USER ? window.TNSVT_USER.code : null;
-        const QUICK = ['❤️', '👍', '🔥', '👏', '😮'];
-        $messages.innerHTML = items.map(m => {
-            const mine = me && (m.author_code === me || m.sender_code === me || m.from_code === me);
-            const authorName = m.author || m.author_name || m.sender_name || m.from_name || (mine ? 'Vos' : '—');
-            // F14: read receipts — ✓✓ gold when someone else read it, ✓ gray otherwise.
-            const readers = Array.isArray(m.read_by) ? m.read_by : [];
-            const receipt = mine
-                ? (readers.length > 0
-                    ? `<span class="chat-read is-read" title="Leído por ${esc(readers.join(', '))}">✓✓</span>`
-                    : `<span class="chat-read" title="Enviado">✓</span>`)
-                : '';
-            // F14: reaction chips (highlight mine) + hover quick-pick bar.
-            const reacts = (m.reactions && typeof m.reactions === 'object') ? m.reactions : {};
-            const chips = Object.entries(reacts)
-                .filter(([, codes]) => Array.isArray(codes) && codes.length > 0)
-                .map(([emoji, codes]) => {
-                    const own = me && codes.includes(me);
-                    return `<button type="button" class="chat-react-chip${own ? ' is-own' : ''}" data-react="${esc(emoji)}" data-id="${m.id}" title="${esc(codes.join(', '))}">${esc(emoji)} ${codes.length}</button>`;
-                }).join('');
-            const picker = QUICK.map(e =>
-                `<button type="button" class="chat-react-pick" data-react="${esc(e)}" data-id="${m.id}" aria-label="Reaccionar ${esc(e)}">${esc(e)}</button>`
-            ).join('');
-            return `
-                <div class="chat-msg ${mine ? 'own' : ''}" data-id="${esc(m.id || '')}">
-                    <div class="chat-msg-avatar">${esc(initials(authorName))}</div>
-                    <div>
-                        <div class="chat-msg-bubble">
-                            <div class="chat-msg-content">${esc(m.text || m.content || m.message || '')}</div>
-                            ${m.photo ? `<img class="chat-msg-photo lightbox-trigger" data-lightbox-group="chat-msg" data-lightbox-name="${esc(m.user || 'adjunto')}" style="display:block;width:auto;height:auto;max-width:240px;max-height:320px;border-radius:0.5rem;margin-top:0.4rem;cursor:zoom-in;" src="${esc(m.photo)}" alt="${esc(m.user || '')}" loading="lazy" decoding="async" />` : ''}
-                            ${chips ? `<div class="chat-react-row">${chips}</div>` : ''}
-                            <div class="chat-react-bar" aria-label="Reaccionar">${picker}</div>
-                        </div>
-                        <div class="chat-msg-meta">${esc(authorName)}${m.date || m.created_at ? ' · ' + esc(fmtTime(m.date || m.created_at)) : ''} ${receipt}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        $messages.scrollTop = $messages.scrollHeight;
-        // Wire reaction buttons (chips toggle, picker adds).
-        $messages.querySelectorAll('[data-react][data-id]').forEach(btn => {
-            btn.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                sendReaction(state.activeConvId, btn.dataset.id, btn.dataset.react);
-            });
-        });
-    }
-
-    async function sendReaction(convId, msgId, emoji) {
-        if (!convId || !msgId || !emoji) return;
-        try {
-            await apiFetch(`/api/chat/conversations/${convId}/messages/${msgId}/react`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ emoji }),
-                silent: true,
-            });
-            if (state.activeConvId) openConversation(state.activeConvId);
-        } catch (e) { /* silent: toggle is best-effort */ }
-    }
-
-    function updateSend() {
-        $send.disabled = !($input.value.trim().length > 0 && state.activeConvId);
-    }
-
-    $input.addEventListener('input', updateSend);
-    $input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            if (!$send.disabled) $send.click();
-        }
-    });
-
-    $send.addEventListener('click', async () => {
-        const text = $input.value.trim();
-        if (!text || !state.activeConvId) return;
-        $send.disabled = true;
-        try {
-            const r = await apiFetch(`/api/chat/conversations/${state.activeConvId}/messages`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: text })
-            });
-            if (r.ok && r.data) {
-                $input.value = '';
-                await openConversation(state.activeConvId);
-            } else {
-                apiToast(r.data && r.data.error ? r.data.error : 'Error al enviar', 'error');
-            }
-        } catch (e) {
-            console.error('[chat] send error', e);
-            apiToast('Error de red al enviar', 'error');
-        } finally {
-            updateSend();
-        }
-    });
-
-    // ─── Tabs ───
-    document.querySelectorAll('#chat-tabs .chat-tab').forEach(t => {
-        t.addEventListener('click', () => {
-            document.querySelectorAll('#chat-tabs .chat-tab').forEach(x => x.classList.toggle('active', x === t));
-            state.tab = t.dataset.tab;
-            const url = new URL(location.href);
-            if (state.tab && state.tab !== 'all') url.searchParams.set('tab', state.tab);
-            else url.searchParams.delete('tab');
-            history.replaceState(null, '', url);
-            renderConversations();
-        });
-    });
-
-    // ─── Search ───
-    let searchTimer = null;
-    const $chatSearch = document.getElementById('chat-search');
-    $chatSearch.addEventListener('input', e => {
-        state.search = e.target.value;
-        const url = new URL(location.href);
-        if (state.search) url.searchParams.set('q', state.search);
-        else url.searchParams.delete('q');
-        history.replaceState(null, '', url);
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(renderConversations, 150);
-    });
-
-    // Restore tab + search from URL
-    const _chatParams = new URLSearchParams(location.search);
-    const _chatTab = _chatParams.get('tab');
-    if (_chatTab && ['all', 'unread', 'groups'].includes(_chatTab)) {
-        document.querySelectorAll('#chat-tabs .chat-tab').forEach(x => {
-            const active = x.dataset.tab === _chatTab;
-            x.classList.toggle('active', active);
-            if (active) state.tab = _chatTab;
-        });
-    }
-    const _chatQ = _chatParams.get('q');
-    if (_chatQ) {
-        $chatSearch.value = _chatQ;
-        state.search = _chatQ;
-    }
-
-    // ─── New DM modal ───
-    const $modal = document.getElementById('chat-new-dm-modal');
-    const chatDmModal = apiSetupModal($modal, {
-        open() {
-            document.getElementById('chat-dm-search').value = '';
-            document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
-        }
-    });
-    document.getElementById('chat-new-dm-btn').addEventListener('click', () => {
-        chatDmModal.open();
-    });
-    document.getElementById('chat-modal-close').addEventListener('click', () => chatDmModal.close());
-
-    let dmTimer = null;
-    document.getElementById('chat-dm-search').addEventListener('input', e => {
-        const q = e.target.value.trim();
-        clearTimeout(dmTimer);
-        if (!q) {
-            document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
-            return;
-        }
-        dmTimer = setTimeout(async () => {
-            try {
-                const r = await apiFetch(`/api/chat/users?search=${encodeURIComponent(q)}`, { silent: true });
-                if (!r.ok || !r.data) return;
-                const users = Array.isArray(r.data) ? r.data : (r.data.users || []);
-                if (users.length === 0) {
-                    document.getElementById('chat-dm-results').innerHTML = '<p class="chat-list-empty">Sin resultados</p>';
-                    return;
-                }
-                document.getElementById('chat-dm-results').innerHTML = users.slice(0, 8).map(u => `
-                    <div class="chat-user-result" data-code="${esc(u.code)}" data-name="${esc(u.name || u.code)}">
-                        <div class="chat-conv-avatar">${esc(initials(u.name || u.code))}</div>
-                        <div>
-                            <div style="font-weight:600;">${esc(u.name || u.code)}</div>
-                            <div style="font-size:0.7rem;color:var(--outline-elev);">${esc(u.code)}</div>
-                        </div>
-                    </div>
-                `).join('');
-                document.querySelectorAll('#chat-dm-results .chat-user-result').forEach(el => {
-                    el.addEventListener('click', async () => {
-                        const code = el.dataset.code;
-                        try {
-                            const cr = await apiFetch('/api/chat/conversations', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ code, name: el.dataset.name })
-                            });
-                            if (cr.ok && cr.data) {
-                                chatDmModal.close();
-                                await loadConversations();
-                                const newId = cr.data.id || cr.data.conversation_id || code;
-                                openConversation(newId);
-                            }
-                        } catch (e) { console.error(e); }
-                    });
-                });
-            } catch (e) { console.error(e); }
-        }, 250);
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadConversations();
-        apiPoller(loadConversations, 30 * 1000);
-    });
-})();
-</script>
 {% endblock %}
