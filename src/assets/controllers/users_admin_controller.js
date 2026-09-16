@@ -26,6 +26,27 @@ export default class extends Controller {
             });
         }
 
+        // ─── Modal: Agregar adepto → POST /api/admin/users ───
+        const addBtn = document.getElementById('add-user-btn');
+        const modal = document.getElementById('add-user-modal');
+        if (addBtn && modal && typeof window.apiSetupModal === 'function') {
+            this._addUserModal = window.apiSetupModal(modal, {
+                open: () => {
+                    const codeEl = document.getElementById('add-user-code');
+                    const nameEl = document.getElementById('add-user-name');
+                    if (codeEl) codeEl.value = '';
+                    if (nameEl) nameEl.value = '';
+                },
+            });
+            addBtn.addEventListener('click', () => this._addUserModal.open());
+            const closeBtn = document.getElementById('add-user-close');
+            if (closeBtn) closeBtn.addEventListener('click', () => this._addUserModal.close());
+            const cancelBtn = document.getElementById('add-user-cancel');
+            if (cancelBtn) cancelBtn.addEventListener('click', () => this._addUserModal.close());
+            const submitBtn = document.getElementById('add-user-submit');
+            if (submitBtn) submitBtn.addEventListener('click', () => this.createUser());
+        }
+
         document.addEventListener('click', (e) => {
             if (!e.target.matches('[data-action="toggle-user"]')) return;
             this.toggleUser(e.target);
@@ -37,14 +58,17 @@ export default class extends Controller {
         if (!grid) return;
 
         try {
-            const r = await fetch('/sanctum/api/users');
+            // apiFetch (not raw fetch): 30s timeout so a hung request
+            // (e.g. PHP session lock) aborts instead of leaving the
+            // server placeholder "Cargando..." stuck forever.
+            const r = await window.apiFetch('/sanctum/api/users');
             if (!r.ok) throw new Error('HTTP ' + r.status);
-            const data = await r.json();
-            if (!data.success) throw new Error(data.error || 'unknown');
+            const data = r.data;
+            if (!data || !data.success) throw new Error((data && data.error) || 'unknown');
             this.allUsers = data.users;
             this.renderUsers();
         } catch (e) {
-            grid.innerHTML = `<p class="col-span-full text-red-400 text-center py-8">Error: ${e.message}</p>`;
+            grid.innerHTML = `<p class="col-span-full text-red-400 text-center py-8">Error: ${this.escapeHtml(e.message)}</p>`;
         }
     }
 
@@ -65,12 +89,17 @@ export default class extends Controller {
 
         grid.innerHTML = filtered.map(u => {
             const initials = (u.code || '??').substring(0, 2).toUpperCase();
-            const roleClass = u.isAdmin ? 'ADMIN' : 'USER';
-            const avatarClass = u.isAdmin ? 'admin' : 'user';
+            // Backend sends `roles`, not `isAdmin` — derive it, otherwise
+            // every admin rendered as USER.
+            const isAdmin = Array.isArray(u.roles) && u.roles.includes('ROLE_ADMIN');
+            const roleClass = isAdmin ? 'ADMIN' : 'USER';
+            const avatarClass = isAdmin ? 'admin' : 'user';
             const statusClass = u.active ? 'active' : 'inactive';
             const statusText = u.active ? 'Active' : 'Inactive';
             const statusDotClass = u.active ? 'online' : 'offline';
             const tier = u.tier || 'INITIATE';
+            // Backend sends `last_login` (snake_case).
+            const lastLogin = u.last_login ? String(u.last_login).substring(5, 16).replace('T', ' ') : '—';
 
             return `
             <div class="user-card ${u.active ? '' : 'inactive'}">
@@ -93,9 +122,7 @@ export default class extends Controller {
                     </div>
                 </div>
                 <div class="flex items-center justify-between mt-3 pt-3 border-t border-[var(--outline-variant-elev)] text-xs text-[var(--outline-elev)]">
-                    <span>$${parseFloat(u.walletBalance || 0).toFixed(2)}</span>
-                    <span>${u.coins || 0} coins</span>
-                    <span>${u.lastLogin ? u.lastLogin.substring(5, 16).replace('T', ' ') : '—'}</span>
+                    <span>Último acceso: ${this.escapeHtml(lastLogin)}</span>
                 </div>
                 <div class="mt-2 flex justify-end">
                     <button class="text-xs px-2 py-1 rounded ${u.active ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' : 'bg-green-900/30 text-green-400 hover:bg-green-900/50'} transition-colors" data-user-code="${this.escapeHtml(u.code || '')}" data-action="toggle-user">
@@ -111,12 +138,12 @@ export default class extends Controller {
         if (!code) return;
         btn.disabled = true;
         try {
-            const r = await fetch('/sanctum/api/users/' + encodeURIComponent(code) + '/active', { method: 'PATCH' });
-            const data = await r.json();
-            if (data.success) {
+            const r = await window.apiFetch('/sanctum/api/users/' + encodeURIComponent(code) + '/active', { method: 'PATCH' });
+            const data = r.data;
+            if (r.ok && data && data.success) {
                 this.loadUsers();
             } else {
-                if (window.apiToast) window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');
+                if (window.apiToast) window.apiToast('Error: ' + ((data && data.error) || 'desconocido'), 'error');
                 btn.disabled = false;
             }
         } catch (err) {
@@ -127,5 +154,38 @@ export default class extends Controller {
 
     escapeHtml(s) {
         return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async createUser() {
+        const codeEl = document.getElementById('add-user-code');
+        const nameEl = document.getElementById('add-user-name');
+        const submitBtn = document.getElementById('add-user-submit');
+        const code = (codeEl ? codeEl.value : '').trim().toUpperCase();
+        const name = (nameEl ? nameEl.value : '').trim();
+        if (!code || !name) {
+            if (window.apiToast) window.apiToast('Código y nombre son requeridos', 'warning');
+            return;
+        }
+        if (submitBtn) submitBtn.disabled = true;
+        try {
+            // Session cookie authenticates (same firewall as the page);
+            // X-Game-Code rides along harmlessly via apiFetch.
+            const r = await window.apiFetch('/api/admin/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, name }),
+            });
+            if (r.ok && r.data && r.data.id) {
+                if (window.apiToast) window.apiToast(`Adepto ${code} creado`, 'success');
+                if (this._addUserModal) this._addUserModal.close();
+                this.loadUsers();
+            } else {
+                if (window.apiToast) window.apiToast('Error: ' + ((r.data && r.data.error) || 'desconocido'), 'error');
+            }
+        } catch (err) {
+            if (window.apiToast) window.apiToast('Error: ' + err.message, 'error');
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
     }
 }

@@ -103,12 +103,44 @@
                 <button id="refresh-btn" class="ui-btn ui-btn secondary text-xs">
                     <span class="material-symbols-elev align-middle icon-size-xs">refresh</span>
                 </button>
+                <button id="add-user-btn" class="ui-btn ui-btn primary text-xs">
+                    <span class="material-symbols-elev align-middle icon-size-xs">person_add</span>
+                    Agregar adepto
+                </button>
             </div>
         </div>
 
         {# User grid #}
-        <div id="users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-controller="users_admin">
+        <div id="users-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-controller="users-admin">
             <p class="col-span-full text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando adeptos...</p>
+        </div>
+    </div>
+
+    {# ─── Modal: Agregar adepto → POST /api/admin/users ─── #}
+    <div class="tnsvt-modal-overlay hidden" id="add-user-modal" role="dialog" aria-modal="true" aria-labelledby="add-user-title">
+        <div class="tnsvt-modal">
+            <header class="tnsvt-modal__header">
+                <h2 id="add-user-title" class="tnsvt-modal__title">
+                    <span class="material-symbols-elev">person_add</span>
+                    <span>Agregar adepto</span>
+                </h2>
+                <button type="button" class="tnsvt-modal__close" id="add-user-close" aria-label="Cerrar">
+                    <span class="material-symbols-elev" aria-hidden="true">close</span>
+                </button>
+            </header>
+            <div class="tnsvt-modal__body">
+                <label class="oracle-label block mb-1" for="add-user-code">Código</label>
+                <input id="add-user-code" type="text" placeholder="Ej: JUAN01" autocomplete="off"
+                       class="w-full px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)] mb-3" />
+                <label class="oracle-label block mb-1" for="add-user-name">Nombre</label>
+                <input id="add-user-name" type="text" placeholder="Nombre del adepto" autocomplete="off"
+                       class="w-full px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
+                <p class="text-xs text-[var(--outline-elev)] mt-3">Se crea activo con rol USER. Después podés cambiarle el tier desde su tarjeta.</p>
+            </div>
+            <footer class="tnsvt-modal__footer">
+                <button type="button" class="ui-btn ui-btn ghost" id="add-user-cancel">Cancelar</button>
+                <button type="button" class="ui-btn ui-btn primary" id="add-user-submit">Crear adepto</button>
+            </footer>
         </div>
     </div>
 {% endblock %}

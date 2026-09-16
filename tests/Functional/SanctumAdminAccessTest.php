@@ -153,4 +153,70 @@ class SanctumAdminAccessTest extends ApiTestCase
         $data = json_decode($response->getContent(), true);
         $this->assertSame('Invalid tier', $data['error'] ?? null);
     }
+
+    public function testAdminCanCreateUserViaSession(): void
+    {
+        // Browser path: session cookie (loginUser), no JWT header.
+        $admin = $this->createAdmin(['code' => 'ADMCRT']);
+        $this->loginAs($admin);
+
+        $this->client->request(
+            'POST',
+            '/api/admin/users',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['code' => 'NEWBIE01', 'name' => 'Newbie']),
+        );
+
+        $response = $this->client->getResponse();
+        $body = $response->getContent();
+        $this->assertSame(201, $response->getStatusCode(), 'Response: ' . $body);
+        $data = json_decode($body, true);
+        $this->assertSame('NEWBIE01', $data['code'] ?? null);
+
+        $this->em->clear();
+        $created = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'NEWBIE01']);
+        $this->assertNotNull($created, 'User must have been persisted');
+        $this->assertTrue($created->isActive());
+    }
+
+    public function testCreateUserDuplicateCodeReturns409(): void
+    {
+        $admin = $this->createAdmin(['code' => 'ADMCRT2']);
+        $this->createUser(['code' => 'DUPE01', 'name' => 'Existing']);
+        $this->loginAs($admin);
+
+        $this->client->request(
+            'POST',
+            '/api/admin/users',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['code' => 'dupe01', 'name' => 'Duplicate']),
+        );
+
+        $this->assertSame(409, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testRegularUserCannotCreateUser(): void
+    {
+        $user = $this->createUser(['code' => 'EVILCRT', 'name' => 'Evil Creator']);
+        $token = static::getContainer()->get(JwtService::class)->createToken($user);
+
+        $this->client->request(
+            'POST',
+            '/api/admin/users',
+            [],
+            [],
+            ['HTTP_AUTHORIZATION' => 'Bearer ' . $token, 'CONTENT_TYPE' => 'application/json'],
+            json_encode(['code' => 'SHOULDNOT', 'name' => 'Should Not Exist']),
+        );
+
+        $this->assertSame(403, $this->client->getResponse()->getStatusCode());
+
+        $this->em->clear();
+        $ghost = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'SHOULDNOT']);
+        $this->assertNull($ghost, 'User must NOT have been created');
+    }
 }
