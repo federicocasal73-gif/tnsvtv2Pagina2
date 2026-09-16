@@ -4,6 +4,8 @@ namespace App\Controller\Sanctum;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Service\PurgeBlockedException;
+use App\Service\UserPurgeService;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -114,7 +116,7 @@ class UsersController extends AbstractController
     }
 
     #[Route('/{code}', name: 'sanctum_api_users_delete', methods: ['DELETE'])]
-    public function delete(string $code): JsonResponse
+    public function delete(string $code, Request $request, UserPurgeService $purge): JsonResponse
     {
         if ($err = $this->requireAdmin()) return $err;
 
@@ -125,6 +127,18 @@ class UsersController extends AbstractController
         $me = $this->getUser();
         if ($me instanceof User && $me->getId() === $user->getId()) {
             return $this->json(['success' => false, 'error' => 'No podés eliminar tu propio usuario'], 400);
+        }
+
+        // ?force=1 → purgado total via UserPurgeService (transacción única
+        // con rollback; bloqueos de negocio llegan como 409 explicados).
+        if ($request->query->get('force')) {
+            try {
+                $deleted = $purge->purge($user);
+            } catch (PurgeBlockedException $e) {
+                return $this->json(['success' => false, 'error' => $e->getMessage()], 409);
+            }
+
+            return $this->json(['success' => true, 'deleted' => $code, 'purged' => $deleted]);
         }
 
         // ~30 tables reference users. Fresh adepts (no activity) delete

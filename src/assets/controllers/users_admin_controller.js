@@ -168,16 +168,19 @@ export default class extends Controller {
         if (!code) return;
         const ok = window.apiConfirm
             ? await window.apiConfirm(
-                `¿Borrar DEFINITIVAMENTE al adepto ${code}? Se pierde su usuario. Si tiene trades, mensajes u otros datos asociados, el servidor lo va a rechazar y conviene desactivarlo.`,
-                { title: 'Eliminar adepto', confirmLabel: 'Sí, eliminar', cancelLabel: 'Cancelar', variant: 'danger' }
+                `¿PURGAR TOTALMENTE al adepto ${code}?\n\nSe borra el usuario + TODO lo suyo: mensajes, diario, journal, frecuencias, tareas, notificaciones, wallet, campus, clanes y archivos. IRREVERSIBLE. Si lidera un clan con miembros o es el último admin, se rechaza.`,
+                { title: 'Purgado total', confirmLabel: 'Sí, purgar todo', cancelLabel: 'Cancelar', variant: 'danger' }
               )
             : true;
         if (!ok) return;
         btn.disabled = true;
         try {
-            const r = await window.apiFetch('/sanctum/api/users/' + encodeURIComponent(code), { method: 'DELETE' });
+            const r = await window.apiFetch('/sanctum/api/users/' + encodeURIComponent(code) + '?force=1', { method: 'DELETE' });
             if (r.ok && r.data && r.data.success) {
-                if (window.apiToast) window.apiToast(`Adepto ${code} eliminado`, 'success');
+                const n = r.data.purged
+                    ? Object.values(r.data.purged).reduce((a, b) => a + (typeof b === 'number' ? b : 0), 0)
+                    : 0;
+                if (window.apiToast) window.apiToast(`Adepto ${code} purgado (${n} filas)`, 'success');
                 this.loadUsers();
             } else {
                 if (window.apiToast) window.apiToast('Error: ' + ((r.data && r.data.error) || 'desconocido'), 'error');
