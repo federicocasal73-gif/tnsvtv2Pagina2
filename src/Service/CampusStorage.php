@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  */
 class CampusStorage
 {
-    public const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+    public const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
     public const ALLOWED_MIMES = [
         'image/jpeg'             => ['jpg', 'jpeg'],
@@ -25,6 +25,11 @@ class CampusStorage
         'application/pdf'        => ['pdf'],
         'application/msword'     => ['doc'],
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['docx'],
+        'application/vnd.ms-excel' => ['xls'],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['xlsx'],
+        'text/csv'               => ['csv'],
+        'application/vnd.ms-powerpoint' => ['ppt'],
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation' => ['pptx'],
         'text/plain'             => ['txt'],
     ];
 
@@ -141,7 +146,7 @@ class CampusStorage
             throw new \InvalidArgumentException('Archivo inválido');
         }
         if ($file->getSize() > self::MAX_FILE_SIZE) {
-            throw new \InvalidArgumentException('Archivo demasiado grande (máx 20MB)');
+            throw new \InvalidArgumentException('Archivo demasiado grande (máx 50MB)');
         }
 
         // Detectamos mime con prioridad: server-detected > client-provided.

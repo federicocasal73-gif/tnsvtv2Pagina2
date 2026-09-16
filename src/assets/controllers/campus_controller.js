@@ -672,34 +672,160 @@ export default class extends Controller {
                 <div class="campus-assignment-footer">
                     ${a.due_date ? `<span class="campus-assignment-due"><span class="material-symbols-elev">schedule</span> Vence: ${this.escapeHtml(new Date(a.due_date).toLocaleDateString())}</span>` : ''}
                     ${a.estimated_minutes ? `<span class="campus-assignment-time"><span class="material-symbols-elev">timer</span> ~${a.estimated_minutes} min</span>` : ''}
-                    ${(!sub || sub.status === 'revision') ? `<button type="button" class="ui-btn ui-btn-primary ui-btn-size-sm" data-action="click->campus#openSubmitAssignment" data-assignment-id="${a.id}"><span class="material-symbols-elev ui-btn-icon">upload</span> ${sub ? 'Reentregar' : 'Entregar'}</button>` : ''}
+                    ${(!sub || sub.status === 'revision') ? `<button type="button" class="ui-btn ui-btn-primary ui-btn-size-sm" data-action="click->campus#openSubmitAssignment" data-assignment-id="${a.id}" data-assignment-title="${this.escapeHtml(a.title || 'Tarea')}"><span class="material-symbols-elev ui-btn-icon">upload</span> ${sub ? 'Reentregar' : 'Entregar'}</button>` : ''}
                 </div>
                 ${sub && sub.comments ? `<p class="campus-assignment-my-comments">Tu entrega: ${this.escapeHtml(sub.comments)}</p>` : ''}
+                ${sub && Array.isArray(sub.files) && sub.files.length > 0 ? `<ul class="campus-assignment-files">${sub.files.map(f => `<li><a href="${this.escapeHtml(f.url || '#')}" target="_blank" rel="noopener"><span class="material-symbols-elev">attach_file</span> ${this.escapeHtml(f.name || 'archivo')}</a></li>`).join('')}</ul>` : ''}
             </article>
         `;
     }
 
+    // ─── Entrega de tarea con archivos ───
+    // Mirror de CampusStorage::ALLOWED_MIMES + MAX_FILE_SIZE (el servidor
+    // es la autoridad y responde 400; esto solo falla rápido y lindo).
+    static SUBMIT_MAX_BYTES = 50 * 1024 * 1024;
+    static SUBMIT_ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf',
+        'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'txt'];
+
     async openSubmitAssignment(event) {
-        const assignmentId = parseInt(event.currentTarget?.dataset?.assignmentId, 10);
+        const btn = event.currentTarget;
+        const assignmentId = parseInt(btn?.dataset?.assignmentId, 10);
         if (!assignmentId) return;
-        const comments = prompt('Comentarios de tu entrega (opcional):', '') ?? null;
-        if (comments === null) return;
+        const title = btn?.dataset?.assignmentTitle || 'Entregar tarea';
+        this.openSubmitModal(assignmentId, title);
+    }
+
+    openSubmitModal(assignmentId, title) {
+        this.closeSubmitModal();
+        const accept = this.constructor.SUBMIT_ALLOWED_EXTS.map(e => '.' + e).join(',');
+        const overlay = document.createElement('div');
+        overlay.className = 'tnsvt-modal-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-label', 'Entregar tarea');
+        overlay.id = 'campus-submit-modal';
+        overlay.innerHTML = `
+            <div class="tnsvt-modal tnsvt-modal--wide" style="max-width: 560px; width: 92%;">
+                <header class="tnsvt-modal__header">
+                    <h2 class="tnsvt-modal__title">
+                        <span class="material-symbols-elev">upload</span>
+                        <span>${this.escapeHtml(title)}</span>
+                    </h2>
+                    <button type="button" class="tnsvt-modal__close" data-submit-close aria-label="Cerrar">
+                        <span class="material-symbols-elev" aria-hidden="true">close</span>
+                    </button>
+                </header>
+                <div class="tnsvt-modal__body">
+                    <label class="oracle-label block mb-1">Comentarios (opcional)</label>
+                    <textarea data-submit-comments rows="3" class="w-full px-3 py-2 rounded bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.1)] text-[var(--on-surface-elev)] text-sm" placeholder="Contanos brevemente qué entregás..."></textarea>
+                    <label class="oracle-label block mb-1 mt-3">Archivos (máx 50 MB c/u: Excel, PDF, Word, PowerPoint, imágenes, txt, csv)</label>
+                    <input type="file" multiple accept="${accept}" data-submit-files
+                           class="w-full text-sm text-[var(--on-surface-elev)]" />
+                    <ul data-submit-list class="mt-2 space-y-1 text-sm"></ul>
+                    <p data-submit-status class="text-xs text-[var(--outline-elev)] mt-2" aria-live="polite"></p>
+                </div>
+                <footer class="tnsvt-modal__footer">
+                    <button type="button" class="ui-btn ui-btn ghost" data-submit-close>Cancelar</button>
+                    <button type="button" class="ui-btn ui-btn primary" data-submit-send>Enviar entrega</button>
+                </footer>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const input = overlay.querySelector('[data-submit-files]');
+        const list = overlay.querySelector('[data-submit-list]');
+        const status = overlay.querySelector('[data-submit-status]');
+        const sendBtn = overlay.querySelector('[data-submit-send]');
+        let picked = [];
+
+        const renderPicked = () => {
+            list.innerHTML = picked.map((f, i) => `
+                <li class="flex items-center justify-between gap-2 px-2 py-1 rounded bg-[rgba(255,255,255,0.04)]">
+                    <span class="truncate">${this.escapeHtml(f.name)} <span class="text-[var(--outline-elev)]">(${(f.size / 1024).toFixed(0)} KB)</span></span>
+                    <button type="button" data-pick-remove="${i}" class="text-[var(--outline-elev)] hover:text-red-400" aria-label="Quitar">✕</button>
+                </li>`).join('');
+            list.querySelectorAll('[data-pick-remove]').forEach(b => {
+                b.addEventListener('click', () => {
+                    picked.splice(parseInt(b.dataset.pickRemove, 10), 1);
+                    renderPicked();
+                });
+            });
+        };
+
+        const extOf = (name) => (name.split('.').pop() || '').toLowerCase();
+        input.addEventListener('change', () => {
+            for (const f of Array.from(input.files || [])) {
+                if (f.size > this.constructor.SUBMIT_MAX_BYTES) {
+                    if (window.apiToast) window.apiToast(`"${f.name}" excede 50 MB`, 'error');
+                    continue;
+                }
+                if (!this.constructor.SUBMIT_ALLOWED_EXTS.includes(extOf(f.name))) {
+                    if (window.apiToast) window.apiToast(`"${f.name}": tipo no permitido`, 'error');
+                    continue;
+                }
+                picked.push(f);
+            }
+            input.value = '';
+            renderPicked();
+        });
+
+        overlay.querySelectorAll('[data-submit-close]').forEach(b =>
+            b.addEventListener('click', () => this.closeSubmitModal()));
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) this.closeSubmitModal();
+        });
+        sendBtn.addEventListener('click', () => this.sendSubmitAssignment(
+            assignmentId, overlay, picked, sendBtn, status));
+    }
+
+    closeSubmitModal() {
+        document.getElementById('campus-submit-modal')?.remove();
+    }
+
+    async sendSubmitAssignment(assignmentId, overlay, picked, sendBtn, status) {
+        const comments = (overlay.querySelector('[data-submit-comments]')?.value || '').trim();
+        sendBtn.disabled = true;
+        const say = (t) => { if (status) status.textContent = t; };
         try {
+            const filesMeta = [];
+            for (let i = 0; i < picked.length; i++) {
+                const f = picked[i];
+                say(`Subiendo ${i + 1}/${picked.length}: ${f.name}...`);
+                const fd = new FormData();
+                fd.append('file', f, f.name);
+                const up = await window.apiFetch('/api/campus/upload', {
+                    method: 'POST',
+                    body: fd,
+                    silent: true,
+                });
+                if (!up.ok || !up.data || !up.data.success) {
+                    throw new Error((up.data && up.data.error) || `No se pudo subir ${f.name}`);
+                }
+                filesMeta.push({
+                    storage_name: up.data.storage_name,
+                    name: up.data.name,
+                    mime: up.data.mime,
+                    size: up.data.size,
+                });
+            }
+            say(filesMeta.length ? 'Registrando entrega...' : 'Enviando...');
             const r = await window.apiFetch(`/api/campus/assignments/${assignmentId}/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ comments, files: [] }),
+                body: JSON.stringify({ comments: comments || null, files: filesMeta }),
             });
-            if (r.ok) {
-                if (window.apiToast) window.apiToast('Entrega enviada', 'success');
-                const lessonId = this.currentLessonId;
-                if (lessonId) await this.loadLesson(lessonId);
-            } else {
-                const msg = (r.data && (r.data.error || r.data.message)) || 'No se pudo enviar';
-                if (window.apiToast) window.apiToast(msg, 'error');
+            if (!r.ok || !r.data || r.data.success === false) {
+                throw new Error((r.data && (r.data.error || r.data.message)) || 'No se pudo enviar');
             }
+            if (window.apiToast) window.apiToast('Entrega enviada', 'success');
+            this.closeSubmitModal();
+            const lessonId = this.currentLessonId;
+            if (lessonId) await this.loadLesson(lessonId);
         } catch (e) {
             console.error('[campus] submit assignment error', e);
+            say('');
+            if (window.apiToast) window.apiToast(e.message || 'Error al entregar', 'error');
+            sendBtn.disabled = false;
         }
     }
 

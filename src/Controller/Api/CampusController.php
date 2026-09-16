@@ -437,7 +437,11 @@ class CampusController extends AbstractController
             return $this->json(['error' => 'JSON inválido'], 400);
         }
 
-        $files = $this->storage->validateClientFiles($data['files'] ?? [], $me);
+        try {
+            $files = $this->storage->validateClientFiles($data['files'] ?? [], $me);
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], 400);
+        }
 
         try {
             $existingSubmissions = $this->submissionRepo->findBy([
