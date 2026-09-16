@@ -64,7 +64,14 @@ export default class extends Controller {
 
         this.wire();
         this.restoreUrlState();
-        this.loadConversations();
+        // Wait for the shell to hydrate window.TNSVT_USER before the first
+        // load: without it apiFetch sends no X-Game-Code and the API answers
+        // 400 'user_code requerido'. Same pattern as chat-widget/feed.
+        if (window.TNSVT_USER?.code) {
+            this.loadConversations();
+        } else {
+            window.addEventListener('tnsvt:user-loaded', () => this.loadConversations(), { once: true });
+        }
         if (typeof window.apiPoller === 'function') {
             this._poller = window.apiPoller(() => this.loadConversations(), 30 * 1000);
         }
@@ -135,6 +142,9 @@ export default class extends Controller {
 
     async loadConversations() {
         if (!this.hasListTarget) return;
+        // No credentials yet (shell still hydrating user): skip silently
+        // instead of firing a request that can only answer 400.
+        if (!this.me()) return;
         try {
             const r = await window.apiFetch('/api/chat/conversations', { silent: true });
             if (!r.ok || !r.data) {
