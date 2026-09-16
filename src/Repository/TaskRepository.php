@@ -60,6 +60,7 @@ class TaskRepository extends ServiceEntityRepository
      *     status?: string|null,
      *     priority?: string|null,
      *     type?: string|null,
+     *     scope?: string|null,
      *     assigned_to?: string|null,
      *     assigned_by?: string|null,
      *     search?: string|null,
@@ -85,6 +86,10 @@ class TaskRepository extends ServiceEntityRepository
         }
         if (!empty($filters['type'])) {
             $qb->andWhere('t.type = :type')->setParameter('type', $filters['type']);
+        }
+        if (!empty($filters['scope'])
+            && in_array($filters['scope'], [Task::SCOPE_PERSONAL, Task::SCOPE_GLOBAL], true)) {
+            $qb->andWhere('t.scope = :scope')->setParameter('scope', $filters['scope']);
         }
         if (!empty($filters['assigned_to'])) {
             $qb->andWhere('a.code = :assigned_to')->setParameter('assigned_to', $filters['assigned_to']);

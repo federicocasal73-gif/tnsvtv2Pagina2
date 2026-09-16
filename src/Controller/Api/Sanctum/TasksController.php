@@ -187,6 +187,13 @@ class TasksController extends AbstractController
         $task->setOrden((int)($data['orden'] ?? $this->taskRepository->getMaxOrden() + 1));
         $task->setActive($data['active'] ?? true);
 
+        // Hybrid model: only admins may publish global (daily tips for
+        // everyone). Anything else falls back to personal silently.
+        $scope = $data['scope'] ?? Task::SCOPE_PERSONAL;
+        $task->setScope(in_array($scope, [Task::SCOPE_PERSONAL, Task::SCOPE_GLOBAL], true)
+            ? $scope
+            : Task::SCOPE_PERSONAL);
+
         if (!empty($data['due_date'])) {
             try { $task->setDueDate(new \DateTimeImmutable($data['due_date'])); }
             catch (\Throwable) { return $this->json(['success' => false, 'error' => 'due_date inválido'], 400); }
@@ -280,6 +287,10 @@ class TasksController extends AbstractController
         }
         if (isset($data['active']) && $isAdmin) {
             $task->setActive((bool) $data['active']); $changed[] = 'active';
+        }
+        if (isset($data['scope']) && $isAdmin
+            && in_array($data['scope'], [Task::SCOPE_PERSONAL, Task::SCOPE_GLOBAL], true)) {
+            $task->setScope($data['scope']); $changed[] = 'scope';
         }
 
         if ($changed) $task->touch();
@@ -632,6 +643,9 @@ class TasksController extends AbstractController
             'assigned_to'  => $request->query->get('assigned_to'),
             'assigned_by'  => $request->query->get('assigned_by'),
             'search'       => $request->query->get('search'),
+            'scope'        => in_array($request->query->get('scope'), ['personal', 'global'], true)
+                ? $request->query->get('scope')
+                : null,
             'due_before'   => $request->query->get('due_before'),
             'due_after'    => $request->query->get('due_after'),
             'overdue_only' => $request->query->get('overdue_only') === '1',

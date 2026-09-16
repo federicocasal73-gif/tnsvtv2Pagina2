@@ -25,7 +25,7 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = [
         // List
-        'tabMine', 'tabCreated', 'tabAll',
+        'tabMine', 'tabCreated', 'tabAll', 'tabToday',
         'searchInput', 'statusFilter', 'priorityFilter', 'sortSelect',
         'list', 'listCount',
         'countPending', 'countInProgress', 'countSubmitted', 'countApproved', 'countOverdue',
@@ -81,8 +81,11 @@ export default class extends Controller {
         if (this.currentView === view) return;
         this.currentView = view;
 
-        // Update tab visuals
-        [this.tabMineTarget, this.tabCreatedTarget, this.tabAllTarget].forEach(t => {
+        // Update tab visuals (tabAll only exists for admins)
+        ['tabMine', 'tabToday', 'tabCreated', 'tabAll'].forEach(name => {
+            const getter = 'has' + name.charAt(0).toUpperCase() + name.slice(1) + 'Target';
+            if (!this[getter]) return;
+            const t = this[name + 'Target'];
             if (t) t.classList.toggle('is-active', t.dataset.view === view);
         });
 
@@ -136,7 +139,9 @@ export default class extends Controller {
             ? `/api/tasks/created-by-me?${params}`
             : this.currentView === 'all'
                 ? `/api/tasks?${params}`
-                : `/api/tasks/mine?${params}`;
+                : this.currentView === 'today'
+                    ? `/api/tasks?scope=global&${params}`
+                    : `/api/tasks/mine?${params}`;
 
         try {
             const r = await fetch(url, {
@@ -173,6 +178,7 @@ export default class extends Controller {
                     <span class="task-card-when">${this.formatRelative(t.due_date)}</span>
                 </div>
                 <h3 class="task-card-title">${this.escape(t.title)}</h3>
+                ${t.scope === 'global' ? '<span class="status-pill size-sm" style="background: var(--glass-bg-strong-elev); color: var(--gold-elev); border: 1px solid var(--gold-container-elev);">Para todos</span>' : ''}
                 ${t.description ? `<p class="task-card-desc">${this.escape(t.description)}</p>` : ''}
                 <div class="task-card-meta">
                     ${t.assigned_to ? `<span><span class="material-symbols-elev">person</span> ${this.escape(t.assigned_to)}</span>` : ''}
@@ -577,6 +583,7 @@ export default class extends Controller {
             assigned_to: fd.get('assigned_to'),
             priority: fd.get('priority') || 'normal',
             type: fd.get('type') || 'general',
+            scope: fd.get('scope') === 'global' ? 'global' : 'personal',
             estimated_minutes: fd.get('estimated_minutes') ? parseInt(fd.get('estimated_minutes'), 10) : null,
             due_date: fd.get('due_date') ? new Date(fd.get('due_date')).toISOString() : null,
         };

@@ -51,8 +51,12 @@ class Task
     public const PRIORITY_URGENT = 'urgent';
 
     public const TYPE_GENERIC = 'general';
+    public const TYPE_ACADECIC = 'academic'; // sic: historical typo, kept for BC
     public const TYPE_ACADEMIC = 'academic';
     public const TYPE_PERSONAL = 'personal';
+
+    public const SCOPE_PERSONAL = 'personal';
+    public const SCOPE_GLOBAL = 'global';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -73,6 +77,9 @@ class Task
 
     #[ORM\Column(length: 32, options: ['default' => self::TYPE_GENERIC])]
     private string $type = self::TYPE_GENERIC;
+
+    #[ORM\Column(length: 16, options: ['default' => self::SCOPE_PERSONAL])]
+    private string $scope = self::SCOPE_PERSONAL;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'assigned_to_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
@@ -148,6 +155,9 @@ class Task
     public function setPriority(string $priority): static { $this->priority = $priority; return $this; }
     public function getType(): string { return $this->type; }
     public function setType(string $type): static { $this->type = $type; return $this; }
+
+    public function getScope(): string { return $this->scope; }
+    public function setScope(string $scope): static { $this->scope = $scope; return $this; }
     public function getAssignedTo(): ?User { return $this->assignedTo; }
     public function setAssignedTo(?User $u): static { $this->assignedTo = $u; return $this; }
     public function getAssignedBy(): ?User { return $this->assignedBy; }
@@ -261,23 +271,24 @@ class Task
     {
         return [
             'id' => $this->getId(),
-            'title' => $this->getTitle(),
-            'description' => $this->getDescription(),
-            'status' => $this->getStatus(),
-            'status_label' => $this->getStatusLabel(),
-            'priority' => $this->getPriority(),
-            'priority_label' => $this->getPriorityLabel(),
-            'type' => $this->getType(),
-            'assigned_to' => $this->getAssignedTo()?->getCode(),
-            'assigned_by' => $this->getAssignedBy()?->getCode(),
+            'title' => self::safeStr($this->getTitle()),
+            'description' => self::safeStr($this->getDescription()),
+            'status' => self::safeStr($this->getStatus()),
+            'status_label' => self::safeStr($this->getStatusLabel()),
+            'priority' => self::safeStr($this->getPriority()),
+            'priority_label' => self::safeStr($this->getPriorityLabel()),
+            'type' => self::safeStr($this->getType()),
+            'scope' => self::safeStr($this->getScope()),
+            'assigned_to' => self::safeStr($this->getAssignedTo()?->getCode()),
+            'assigned_by' => self::safeStr($this->getAssignedBy()?->getCode()),
             'course_id' => $this->getCourse()?->getId(),
             'lesson_id' => $this->getLesson()?->getId(),
             'due_date' => $this->getDueDate()?->format('c'),
             'is_overdue' => $this->isOverdue(),
             'estimated_minutes' => $this->getEstimatedMinutes(),
-            'instructions' => $this->getInstructions(),
-            'links' => $this->getLinks() ?? [],
-            'attachments' => $this->getAttachments() ?? [],
+            'instructions' => self::safeStr($this->getInstructions()),
+            'links' => self::safeArr($this->getLinks()),
+            'attachments' => self::safeArr($this->getAttachments()),
             'orden' => $this->getOrden(),
             'active' => $this->isActive(),
             'created_at' => $this->getCreatedAt()->format('c'),
@@ -287,5 +298,30 @@ class Task
             'comments_count' => $this->getComments()->count(),
             'has_feedback' => $this->getFeedback() !== null,
         ];
+    }
+
+    /**
+     * Prod data sometimes carries Windows-1252/legacy bytes (pasted from
+     * Word/WhatsApp into latin1-era columns). One bad string makes
+     * json_encode fail and 500s the ENTIRE list. Scrub on read so a
+     * single rotten row can never take the endpoint down.
+     */
+    private static function safeStr(?string $v): ?string
+    {
+        if ($v === null || $v === '') return $v;
+        if (function_exists('mb_convert_encoding')) {
+            $clean = @mb_convert_encoding($v, 'UTF-8', 'UTF-8');
+            if (is_string($clean)) return $clean;
+        }
+        return $v;
+    }
+
+    private static function safeArr(?array $v): array
+    {
+        if (!is_array($v)) return [];
+        array_walk_recursive($v, function (&$item) {
+            if (is_string($item)) $item = self::safeStr($item) ?? '';
+        });
+        return $v;
     }
 }

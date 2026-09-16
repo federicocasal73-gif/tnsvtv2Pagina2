@@ -81,6 +81,13 @@
                 <span>Notificar al alumno por email/push</span>
             </label>
 
+            {% if is_granted('ROLE_ADMIN') %}
+            <label class="task-field task-field-checkbox" title="Visible para todos los adeptos (tips del día)">
+                <input type="checkbox" name="scope" value="global" />
+                <span>Visible para todos <span class="text-xs text-[var(--outline-elev)]">(tip global del día)</span></span>
+            </label>
+            {% endif %}
+
             <footer class="task-new-actions">
                 <a href="/sanctum/tasks" class="ui-btn ui-btn ghost ui-btn-size-md">Cancelar</a>
                 <button type="submit" class="ui-btn ui-btn primary ui-btn-size-md">
