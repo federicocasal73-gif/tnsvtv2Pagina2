@@ -492,9 +492,12 @@ export default class extends Controller {
     this._uTimer = setTimeout(() => this.loadUsers(), 200);
   }
   async loadUsers() {
+    // Backend returns a bare JSON array (not {users: [...]}); accept both.
+    if (!this.knownUserCode) return;
     const r = await window.apiFetch(`/api/chat/users?user_code=${this.knownUserCode}&q=${encodeURIComponent(this.userSearchTarget.value || '')}`, { silent: true });
     if (!r.ok || !r.data) return;
-    this.usersTarget.innerHTML = (r.data.users || [])
+    const users = Array.isArray(r.data) ? r.data : (r.data.users || []);
+    this.usersTarget.innerHTML = users
       .filter((u) => u.code !== this.knownUserCode)
       .map((u) => `<button class="chat-widget-user-item" data-user-code="${this.esc(u.code)}"><span class="chat-widget-user-name">${this.esc(u.name)}</span><span class="chat-widget-user-meta">${this.esc(u.code)} · ${u.online ? '🟢' : 'off'}</span></button>`)
       .join('');
@@ -507,10 +510,15 @@ export default class extends Controller {
       method: 'POST',
       body: { user_code: this.knownUserCode, other_code: code },
     });
-    if (r.ok) {
+    // Backend answers 201 with the serialized conversation ({id, ...}),
+    // not nested under `conversation`. Accept both shapes.
+    const convId = r?.data?.id ?? r?.data?.conversation?.id ?? r?.data?.conversation_id;
+    if (r.ok && convId) {
       this.hideNewDm();
       await this.loadConversations();
-      this.openConv(r.data.conversation?.id);
+      this.openConv(convId);
+    } else if (window.apiToast) {
+      window.apiToast(r?.data?.error || 'No se pudo crear la conversación', 'error');
     }
   }
 

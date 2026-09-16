@@ -221,6 +221,29 @@ class ChatAdminConversationsTest extends ApiTestCase
     }
 
     /**
+     * Locks the API contract the JS relies on: POST conversations answers
+     * 201 with the serialized conversation ({id, ...}) at top level —
+     * the widget used to read r.data.conversation.id and broke.
+     */
+    public function testCreateDmReturnsTopLevelId(): void
+    {
+        $this->createUser(['code' => 'DMA', 'name' => 'DM A']);
+        $this->createUser(['code' => 'DMB', 'name' => 'DM B']);
+
+        $r = $this->jsonRequest('POST', '/api/chat/conversations', [
+            'user_code' => 'DMA',
+            'other_code' => 'DMB',
+        ]);
+        $this->assertSame(201, $r['status'], 'Body: ' . json_encode($r['data']));
+        $this->assertArrayHasKey('id', $r['data']);
+        $this->assertIsInt($r['data']['id']);
+
+        $list = $this->jsonRequest('GET', '/api/chat/conversations?user_code=DMA');
+        $this->assertSame(200, $list['status']);
+        $this->assertCount(1, $list['data']);
+    }
+
+    /**
      * Sending a text message must return 201 and persist, even if the
      * post-save side effects (Mercure/bus/notifier) blow up — those are
      * best-effort and must never turn a saved message into a 500.

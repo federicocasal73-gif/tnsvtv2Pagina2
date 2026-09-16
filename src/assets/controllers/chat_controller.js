@@ -410,7 +410,11 @@ export default class extends Controller {
     // ─── New DM modal ──────────────────────────────────────────
 
     openNewDmModal() {
-        if (this._dmModal) this._dmModal.open();
+        if (this._dmModal) {
+            this._dmModal.open();
+        } else if (window.apiToast) {
+            window.apiToast('El diálogo no está disponible, recargá la página', 'error');
+        }
     }
 
     onDmSearchInput(e) {

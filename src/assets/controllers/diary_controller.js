@@ -226,6 +226,17 @@ export default class extends Controller {
         }
         try {
             this.masterKey = await this.deriveKey(pass);
+            // Defensive: deriveKey must resolve a usable AES-GCM CryptoKey.
+            // If WebCrypto is unavailable or returned something unexpected,
+            // fail here with an actionable message instead of crashing later
+            // inside exportKey ('parameter 2 is not of type CryptoKey').
+            if (!this.masterKey || this.masterKey.type !== 'secret') {
+                console.error('[diary] deriveKey did not return a CryptoKey',
+                    { hasSubtle: !!window.crypto?.subtle, keyType: this.masterKey?.type });
+                this.masterKey = null;
+                this.showMessage('Tu navegador no pudo derivar la clave. Recargá la página con Ctrl+Shift+R y probá de nuevo.', 'error');
+                return;
+            }
             const r = await window.apiFetch('/api/diary/setup', { silent: true });
             const data = (r.ok && r.data) ? r.data : null;
             const storedToken = (data && data.setup_token) || null;
