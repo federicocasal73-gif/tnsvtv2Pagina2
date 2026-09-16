@@ -203,4 +203,55 @@ class ChatAdminConversationsTest extends ApiTestCase
         $this->assertArrayHasKey('last_message', $r['data'][0]);
         $this->assertNull($r['data'][0]['last_message']);
     }
+
+    /**
+     * The page calls /api/chat/users?q=… (the widget too). Asserts the `q`
+     * param actually filters instead of returning everyone.
+     */
+    public function testUserSearchFiltersByQParam(): void
+    {
+        $this->createUser(['code' => 'SEARCHABLE1', 'name' => 'Buscar Este']);
+        $this->createUser(['code' => 'ZZZOTHER', 'name' => 'Otro Usuario']);
+
+        $r = $this->jsonRequest('GET', '/api/chat/users?user_code=SEARCHABLE1&q=buscar');
+        $this->assertSame(200, $r['status'], 'Body: ' . json_encode($r['data']));
+        $codes = array_column($r['data'], 'code');
+        $this->assertContains('SEARCHABLE1', $codes);
+        $this->assertNotContains('ZZZOTHER', $codes);
+    }
+
+    /**
+     * Sending a text message must return 201 and persist, even if the
+     * post-save side effects (Mercure/bus/notifier) blow up — those are
+     * best-effort and must never turn a saved message into a 500.
+     */
+    public function testSendMessageReturns201AndPersists(): void
+    {
+        $a = $this->createUser(['code' => 'SENDA', 'name' => 'Sender A']);
+        $b = $this->createUser(['code' => 'SENDB', 'name' => 'Sender B']);
+
+        $conv = new Conversation();
+        $conv->setType(Conversation::TYPE_DM);
+        $this->em->persist($conv);
+        foreach ([$a, $b] as $u) {
+            $p = new ConversationParticipant();
+            $p->setConversation($conv);
+            $p->setUser($u);
+            $this->em->persist($p);
+        }
+        $this->em->flush();
+        $this->em->clear();
+        $convId = $conv->getId();
+
+        $r = $this->jsonRequest('POST', "/api/chat/conversations/{$convId}/messages", [
+            'user_code' => 'SENDA',
+            'content' => 'Hola desde el test',
+        ]);
+        $this->assertSame(201, $r['status'], 'Body: ' . json_encode($r['data']));
+        $this->assertSame('Hola desde el test', $r['data']['content'] ?? null);
+
+        $list = $this->jsonRequest('GET', "/api/chat/conversations/{$convId}/messages?user_code=SENDB");
+        $this->assertSame(200, $list['status']);
+        $this->assertCount(1, $list['data']);
+    }
 }

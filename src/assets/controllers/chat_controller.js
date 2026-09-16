@@ -417,7 +417,7 @@ export default class extends Controller {
 
     async searchDmUsers(q) {
         try {
-            const r = await window.apiFetch(`/api/chat/users?search=${encodeURIComponent(q)}`, { silent: true });
+            const r = await window.apiFetch(`/api/chat/users?q=${encodeURIComponent(q)}`, { silent: true });
             if (!r.ok || !r.data || !this.hasDmResultsTarget) return;
             const users = Array.isArray(r.data) ? r.data : (r.data.users || []);
             if (users.length === 0) {

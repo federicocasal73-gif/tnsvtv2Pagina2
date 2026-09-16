@@ -15,6 +15,7 @@ use App\Service\ImageValidationService;
 use App\Service\MercurePublisher;
 use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,6 +40,7 @@ class ChatController extends AbstractController
         private MercurePublisher $mercure,
         private MessageBusInterface $bus,
         private ChatAttachmentSigner $signer,
+        private LoggerInterface $logger,
     ) {
         $this->avatarDir = dirname(__DIR__, 3) . '/public/uploads/avatars';
     }
@@ -297,8 +299,15 @@ class ChatController extends AbstractController
             ]);
         } catch (\Throwable $e) {
             // Don't fail the send if Mercure is down — FCM still fires async.
+            $this->logger->warning('[CHAT] mercure publish failed, continuing: ' . $e->getMessage());
         }
-        $this->bus->dispatch(new ChatMessageSent($msg->getId(), $conv->getId(), $me->getId()));
+        // Best-effort side effects below: the message is already persisted,
+        // so none of them may turn this response into a 500.
+        try {
+            $this->bus->dispatch(new ChatMessageSent($msg->getId(), $conv->getId(), $me->getId()));
+        } catch (\Throwable $e) {
+            $this->logger->error('[CHAT] bus dispatch failed after persist, msg_id=' . $msg->getId() . ': ' . $e->getMessage());
+        }
 
         // DMs: notify the other participant(s) (not the group)
         if ($conv->getType() === Conversation::TYPE_DM) {
@@ -307,13 +316,17 @@ class ChatController extends AbstractController
                 if ($other && $other->getId() !== $me->getId()) {
                     $preview = $content !== '' ? mb_substr($content, 0, 80)
                         : (!empty($attachment) ? '📎 ' . ($attachment['name'] ?? 'Archivo') : '📷 Foto');
-                    $this->notifier->notify(
-                        $other,
-                        'dm',
-                        sprintf('%s: %s', $me->getName(), $preview),
-                        ['conversation_id' => (string) $conv->getId(), 'sender_code' => (string) $me->getCode()],
-                        'chat:' . $conv->getId()
-                    );
+                    try {
+                        $this->notifier->notify(
+                            $other,
+                            'dm',
+                            sprintf('%s: %s', $me->getName(), $preview),
+                            ['conversation_id' => (string) $conv->getId(), 'sender_code' => (string) $me->getCode()],
+                            'chat:' . $conv->getId()
+                        );
+                    } catch (\Throwable $e) {
+                        $this->logger->error('[CHAT] dm notify failed after persist, msg_id=' . $msg->getId() . ': ' . $e->getMessage());
+                    }
                 }
             }
         }
