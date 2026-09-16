@@ -219,4 +219,66 @@ class SanctumAdminAccessTest extends ApiTestCase
         $ghost = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'SHOULDNOT']);
         $this->assertNull($ghost, 'User must NOT have been created');
     }
+
+    public function testAdminCanDeleteFreshUser(): void
+    {
+        $admin = $this->createAdmin(['code' => 'ADMDEL']);
+        $this->createUser(['code' => 'DOOMED01', 'name' => 'Doomed']);
+        $this->loginAs($admin);
+
+        $this->client->request('DELETE', '/sanctum/api/users/DOOMED01');
+
+        $response = $this->client->getResponse();
+        $this->assertSame(200, $response->getStatusCode(), 'Response: ' . $response->getContent());
+
+        $this->em->clear();
+        $gone = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'DOOMED01']);
+        $this->assertNull($gone, 'User must have been deleted');
+    }
+
+    public function testDeleteMissingUserReturns404(): void
+    {
+        $admin = $this->createAdmin(['code' => 'ADMDEL2']);
+        $this->loginAs($admin);
+
+        $this->client->request('DELETE', '/sanctum/api/users/NOEXISTE99');
+
+        $this->assertSame(404, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testAdminCannotDeleteSelf(): void
+    {
+        $admin = $this->createAdmin(['code' => 'ADMSELF']);
+        $this->loginAs($admin);
+
+        $this->client->request('DELETE', '/sanctum/api/users/ADMSELF');
+
+        $response = $this->client->getResponse();
+        $this->assertSame(400, $response->getStatusCode(), 'Response: ' . $response->getContent());
+
+        $this->em->clear();
+        $stillThere = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'ADMSELF']);
+        $this->assertNotNull($stillThere, 'Admin must NOT have deleted themselves');
+    }
+
+    public function testRegularUserCannotDeleteUser(): void
+    {
+        $user = $this->createUser(['code' => 'EVILDEL', 'name' => 'Evil Deleter']);
+        $victim = $this->createUser(['code' => 'VICTIMDEL', 'name' => 'Victim Del']);
+        $token = static::getContainer()->get(JwtService::class)->createToken($user);
+
+        $this->client->request(
+            'DELETE',
+            '/sanctum/api/users/VICTIMDEL',
+            [],
+            [],
+            ['HTTP_AUTHORIZATION' => 'Bearer ' . $token],
+        );
+
+        $this->assertSame(403, $this->client->getResponse()->getStatusCode());
+
+        $this->em->clear();
+        $survivor = $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'VICTIMDEL']);
+        $this->assertNotNull($survivor, 'Victim must remain');
+    }
 }

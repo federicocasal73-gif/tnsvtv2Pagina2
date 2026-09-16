@@ -4,6 +4,7 @@ namespace App\Controller\Sanctum;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -110,5 +111,35 @@ class UsersController extends AbstractController
         $this->em->flush();
 
         return $this->json(['success' => true, 'active' => $user->isActive()]);
+    }
+
+    #[Route('/{code}', name: 'sanctum_api_users_delete', methods: ['DELETE'])]
+    public function delete(string $code): JsonResponse
+    {
+        if ($err = $this->requireAdmin()) return $err;
+
+        $user = $this->userRepository->findOneBy(['code' => $code]);
+        if (!$user) return $this->json(['success' => false, 'error' => 'Not found'], 404);
+
+        // Never let an admin delete themselves (would lock them out).
+        $me = $this->getUser();
+        if ($me instanceof User && $me->getId() === $user->getId()) {
+            return $this->json(['success' => false, 'error' => 'No podés eliminar tu propio usuario'], 400);
+        }
+
+        // ~30 tables reference users. Fresh adepts (no activity) delete
+        // cleanly; users with history hit FK constraints — catch that and
+        // answer 409 suggesting deactivate instead of a raw 500.
+        try {
+            $this->em->remove($user);
+            $this->em->flush();
+        } catch (ForeignKeyConstraintViolationException $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'El adepto tiene datos asociados (trades, mensajes, etc.). Desactivalo en su lugar.',
+            ], 409);
+        }
+
+        return $this->json(['success' => true, 'deleted' => $code]);
     }
 }

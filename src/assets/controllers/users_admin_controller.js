@@ -51,6 +51,10 @@ export default class extends Controller {
             if (!e.target.matches('[data-action="toggle-user"]')) return;
             this.toggleUser(e.target);
         });
+        document.addEventListener('click', (e) => {
+            if (!e.target.matches('[data-action="delete-user"]')) return;
+            this.deleteUser(e.target);
+        });
     }
 
     async loadUsers() {
@@ -124,9 +128,12 @@ export default class extends Controller {
                 <div class="flex items-center justify-between mt-3 pt-3 border-t border-[var(--outline-variant-elev)] text-xs text-[var(--outline-elev)]">
                     <span>Último acceso: ${this.escapeHtml(lastLogin)}</span>
                 </div>
-                <div class="mt-2 flex justify-end">
+                <div class="mt-2 flex justify-end gap-2">
                     <button class="text-xs px-2 py-1 rounded ${u.active ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' : 'bg-green-900/30 text-green-400 hover:bg-green-900/50'} transition-colors" data-user-code="${this.escapeHtml(u.code || '')}" data-action="toggle-user">
                         ${u.active ? 'Desactivar' : 'Activar'}
+                    </button>
+                    <button class="text-xs px-2 py-1 rounded bg-red-950/40 text-red-300 border border-red-900/40 hover:bg-red-900/50 transition-colors" data-user-code="${this.escapeHtml(u.code || '')}" data-action="delete-user" title="Borrar definitivamente">
+                        Eliminar
                     </button>
                 </div>
             </div>`;
@@ -154,6 +161,32 @@ export default class extends Controller {
 
     escapeHtml(s) {
         return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    async deleteUser(btn) {
+        const code = btn.dataset.userCode;
+        if (!code) return;
+        const ok = window.apiConfirm
+            ? await window.apiConfirm(
+                `¿Borrar DEFINITIVAMENTE al adepto ${code}? Se pierde su usuario. Si tiene trades, mensajes u otros datos asociados, el servidor lo va a rechazar y conviene desactivarlo.`,
+                { title: 'Eliminar adepto', confirmLabel: 'Sí, eliminar', cancelLabel: 'Cancelar', variant: 'danger' }
+              )
+            : true;
+        if (!ok) return;
+        btn.disabled = true;
+        try {
+            const r = await window.apiFetch('/sanctum/api/users/' + encodeURIComponent(code), { method: 'DELETE' });
+            if (r.ok && r.data && r.data.success) {
+                if (window.apiToast) window.apiToast(`Adepto ${code} eliminado`, 'success');
+                this.loadUsers();
+            } else {
+                if (window.apiToast) window.apiToast('Error: ' + ((r.data && r.data.error) || 'desconocido'), 'error');
+                btn.disabled = false;
+            }
+        } catch (err) {
+            if (window.apiToast) window.apiToast('Error: ' + err.message, 'error');
+            btn.disabled = false;
+        }
     }
 
     async createUser() {
