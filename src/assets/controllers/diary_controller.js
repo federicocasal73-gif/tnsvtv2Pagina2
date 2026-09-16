@@ -203,7 +203,7 @@ export default class extends Controller {
 
     async checkSetupAndLoad() {
         try {
-            const r = await window.apiFetch('/api/diary/setup', { silent: true });
+            const r = await window.apiFetch('/api/diary/setup', { silent: true, cache: 'no-store' });
             const data = (r.ok && r.data) ? r.data : null;
             const hasSetup = !!(data && data.setup_token);
             if (this.hasLockSubtitleTarget) {
@@ -219,9 +219,17 @@ export default class extends Controller {
 
     async unlockOrSetup() {
         if (!this.hasPassInputTarget) return;
+        // Anti-double-submit: two concurrent runs interleave at the awaits
+        // and one can null masterKey while the other is between derive and
+        // exportKey → 'parameter 2 is not of type CryptoKey'. Serialize.
+        if (this._unlocking) return;
+        this._unlocking = true;
+        if (this.hasUnlockBtnTarget) this.unlockBtnTarget.disabled = true;
         const pass = this.passInputTarget.value;
         if (!pass || pass.length < 8) {
             this.showMessage('La clave debe tener al menos 8 caracteres', 'error');
+            this._unlocking = false;
+            if (this.hasUnlockBtnTarget) this.unlockBtnTarget.disabled = false;
             return;
         }
         try {
@@ -237,7 +245,7 @@ export default class extends Controller {
                 this.showMessage('Tu navegador no pudo derivar la clave. Recargá la página con Ctrl+Shift+R y probá de nuevo.', 'error');
                 return;
             }
-            const r = await window.apiFetch('/api/diary/setup', { silent: true });
+            const r = await window.apiFetch('/api/diary/setup', { silent: true, cache: 'no-store' });
             const data = (r.ok && r.data) ? r.data : null;
             const storedToken = (data && data.setup_token) || null;
             const computedToken = await this.tokenFromKey(this.masterKey);
@@ -269,6 +277,9 @@ export default class extends Controller {
             console.error(e);
             this.masterKey = null;
             this.showMessage('Error: ' + (e.message || 'desconocido'), 'error');
+        } finally {
+            this._unlocking = false;
+            if (this.hasUnlockBtnTarget) this.unlockBtnTarget.disabled = false;
         }
     }
 
