@@ -368,8 +368,12 @@ export default class extends Controller {
     }
 
     globalMiniPlayerMounted() {
-        return typeof document !== 'undefined'
-            && !!document.querySelector('[data-controller~="frequency-mini-player"]');
+        // Recognises both the legacy `frequency-mini-player` controller
+        // and the newer `sonic-sanctuary` (which replaced it). If either is
+        // mounted in the shell, the hub trusts the global player to own
+        // the AudioContext and skips its local fallback (avoids double audio).
+        if (typeof document === 'undefined') return false;
+        return !!document.querySelector('[data-controller~="frequency-mini-player"], [data-controller~="sonic-sanctuary"]');
     }
 
     stopTimer() {
