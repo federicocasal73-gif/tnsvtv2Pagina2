@@ -125,7 +125,7 @@ class MusicController extends AbstractController
     // ENDPOINTS PÚBLICOS
     // ========================================================================
 
-    #[Route('', name: 'api_music_current', methods: ['GET'])]
+    #[Route('/current', name: 'api_music_current', methods: ['GET'])]
     public function current(): JsonResponse
     {
         $playlist = $this->readPlaylist();
