@@ -3,7 +3,6 @@
 namespace App\Controller\Api;
 
 use App\Controller\Api\Admin\RequireAdminTrait;
-use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -33,7 +32,6 @@ class MusicController extends AbstractController
     private const PLAYLIST_VERSION = 2;
 
     public function __construct(
-        private UserRepository $userRepository,
         private TokenStorageInterface $tokenStorage,
     ) {}
 
@@ -317,7 +315,7 @@ class MusicController extends AbstractController
     #[Route('/playlist/add-upload', name: 'api_admin_music_add_upload', methods: ['POST'])]
     public function addUpload(Request $request): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) return $denied;
+        if ($denied = $this->requireAdmin()) return $denied;
         $file = $request->files->get('file');
         if (!$file) return $this->json(['error' => 'Subí un archivo de audio'], Response::HTTP_BAD_REQUEST);
         if (!$file->isValid()) return $this->json(['error' => 'Archivo inválido'], Response::HTTP_BAD_REQUEST);
@@ -353,7 +351,7 @@ class MusicController extends AbstractController
     #[Route('/playlist/add-external', name: 'api_admin_music_add_external', methods: ['POST'])]
     public function addExternal(Request $request): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) return $denied;
+        if ($denied = $this->requireAdmin()) return $denied;
         $data = json_decode($request->getContent(), true) ?? [];
         $url = trim((string) ($data['url'] ?? ''));
         $label = trim((string) ($data['label'] ?? ''));
@@ -390,7 +388,7 @@ class MusicController extends AbstractController
     #[Route('/playlist/{id}', name: 'api_admin_music_remove', methods: ['DELETE'], requirements: ['id' => '[A-Za-z0-9_-]+'])]
     public function remove(string $id): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) return $denied;
+        if ($denied = $this->requireAdmin()) return $denied;
         $playlist = $this->readPlaylist();
         $found = $this->findTrack($playlist, $id);
         if (!$found) return $this->json(['error' => 'Track no encontrado'], Response::HTTP_NOT_FOUND);
@@ -419,7 +417,7 @@ class MusicController extends AbstractController
     #[Route('/playlist/reorder', name: 'api_admin_music_reorder', methods: ['POST'])]
     public function reorder(Request $request): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) return $denied;
+        if ($denied = $this->requireAdmin()) return $denied;
         $data = json_decode($request->getContent(), true) ?? [];
         $order = $data['order'] ?? null;
         if (!is_array($order) || count($order) === 0) {
@@ -456,7 +454,7 @@ class MusicController extends AbstractController
     #[Route('/playlist/active', name: 'api_admin_music_set_active', methods: ['POST'])]
     public function setActive(Request $request): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) return $denied;
+        if ($denied = $this->requireAdmin()) return $denied;
         $data = json_decode($request->getContent(), true) ?? [];
         $id = $data['id'] ?? null;
         $playlist = $this->readPlaylist();
@@ -473,7 +471,7 @@ class MusicController extends AbstractController
     #[Route('/playlist/loop', name: 'api_admin_music_set_loop', methods: ['POST'])]
     public function setLoop(Request $request): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) return $denied;
+        if ($denied = $this->requireAdmin()) return $denied;
         $data = json_decode($request->getContent(), true) ?? [];
         $loop = $data['loop'] ?? 'all';
         if (!in_array($loop, ['all', 'one', 'off'], true)) {
@@ -488,7 +486,7 @@ class MusicController extends AbstractController
     #[Route('/playlist', name: 'api_admin_music_clear', methods: ['DELETE'])]
     public function clearAll(): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) return $denied;
+        if ($denied = $this->requireAdmin()) return $denied;
         $dir = $this->audioDir();
         // Borrar todos los archivos de tracks locales
         foreach (glob($dir . '/track-*.*') as $f) @unlink($f);

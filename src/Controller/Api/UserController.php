@@ -19,14 +19,13 @@ class UserController extends AbstractController
     use RequireAdminTrait;
 
     public function __construct(
-        private UserRepository $userRepository,
         private TokenStorageInterface $tokenStorage,
     ) {}
 
     #[Route('', name: 'api_admin_users_list', methods: ['GET'])]
     public function list(UserRepository $userRepository): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) {
+        if ($denied = $this->requireAdmin()) {
             return $denied;
         }
 
@@ -48,7 +47,7 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'api_admin_users_get', methods: ['GET'])]
     public function get(User $user): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) {
+        if ($denied = $this->requireAdmin()) {
             return $denied;
         }
 
@@ -65,7 +64,7 @@ class UserController extends AbstractController
     #[Route('', name: 'api_admin_users_create', methods: ['POST'])]
     public function create(Request $request, UserRepository $userRepository, EntityManagerInterface $em): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) {
+        if ($denied = $this->requireAdmin()) {
             return $denied;
         }
 
@@ -102,7 +101,7 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'api_admin_users_update', methods: ['PUT'])]
     public function update(Request $request, User $user, EntityManagerInterface $em): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) {
+        if ($denied = $this->requireAdmin()) {
             return $denied;
         }
 
@@ -132,7 +131,7 @@ class UserController extends AbstractController
     #[Route('/{id}/toggle-active', name: 'api_admin_users_toggle', methods: ['PUT'])]
     public function toggleActive(User $user, EntityManagerInterface $em): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) {
+        if ($denied = $this->requireAdmin()) {
             return $denied;
         }
 
@@ -156,7 +155,7 @@ class UserController extends AbstractController
     #[Route('/{id}', name: 'api_admin_users_delete', methods: ['DELETE'])]
     public function delete(User $user, EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
     {
-        if ($denied = $this->requireAdmin($this->userRepository, $this->tokenStorage)) {
+        if ($denied = $this->requireAdmin()) {
             return $denied;
         }
 

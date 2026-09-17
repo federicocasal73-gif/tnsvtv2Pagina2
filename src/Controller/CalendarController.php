@@ -101,36 +101,9 @@ class CalendarController extends AbstractController
     ];
 
     #[Route('/calendar/widget', name: 'app_calendar_widget', methods: ['GET'])]
-    public function widget(\Symfony\Component\HttpFoundation\Request $request): Response
+    public function widget(): Response
     {
-        $cacheFile = sys_get_temp_dir() . '/tnsvt_calendar_cache.json';
-        $cacheTtl = 900;
-
-        $tz = $this->parseTimezone($request->query->get('tz'));
-        $countriesFilter = $this->parseCountriesFilter($request->query->get('countries'));
-        $impactFilter = $this->parseImpactFilter($request->query->get('impact'));
-
-        $events = $this->loadFromCache($cacheFile, $cacheTtl);
-        if ($events === null) {
-            $events = $this->fetchFromTradingView();
-        }
-        if ($events === null || count($events) < 3) {
-            $events = $this->mergeWithFallback($events);
-        }
-
-        $this->saveToCache($cacheFile, $events);
-
-        $filtered = $this->applyFilters($events, $countriesFilter, $impactFilter);
-        $filtered = $this->applyTimezone($filtered, $tz);
-
-        return $this->render('calendar/widget.html.twig', [
-            'events' => $filtered,
-            'has_data' => count($filtered) > 0,
-            'total_count' => count($events),
-            'filtered_count' => count($filtered),
-            'countries' => $countriesFilter,
-            'impact' => $impactFilter,
-        ]);
+        throw $this->createNotFoundException('Widget legacy removed. Use /api/calendar/events or /calendar.');
     }
 
     #[Route('/api/calendar/events', name: 'app_calendar_api_events', methods: ['GET'])]

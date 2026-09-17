@@ -11,6 +11,7 @@ export default class extends Controller {
     'input', 'sendBtn', 'newDmModal', 'userSearch', 'users',
     'charCount', 'charCountValue', 'soundIcon',
     'typingIndicator', 'unreadPill', 'scrollToBottom',
+    'fileInput', 'composerEl',
   ];
   static values = {
     open: { type: Boolean, default: false },
