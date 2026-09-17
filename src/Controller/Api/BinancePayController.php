@@ -65,7 +65,13 @@ class BinancePayController extends AbstractController
         }
 
         $merchantTradeNo = 'tnsvt_bn_' . $user->getCode() . '_' . time();
-        $serverUrl = $_ENV['APP_SERVER_URL'] ?? 'http://192.168.1.2:8000';
+        // APP_BASE_URL is the canonical public-facing URL set per env (.env / .env.local).
+        // We log a warning if it's missing so misconfigured deploys fail loud, not silent.
+        $serverUrl = $_ENV['APP_BASE_URL'] ?? $_ENV['APP_SERVER_URL'] ?? '';
+        if ($serverUrl === '') {
+            $this->logger->warning('APP_BASE_URL / APP_SERVER_URL not set; Binance Pay returnUrl will use placeholder.');
+            $serverUrl = 'https://example.invalid';
+        }
         $returnUrl = rtrim($serverUrl, '/') . '/?pg=ok';
 
         $order = $this->bn->createOrder(
@@ -121,13 +127,16 @@ class BinancePayController extends AbstractController
         }
 
         $data = json_decode($payload, true);
-        if (!$data) {
+        if (!is_array($data)) {
             return new JsonResponse(['error' => 'invalid json'], 400);
         }
 
-        $bizStatus = $data['bizStatus'] ?? $data['data']['bizStatus'] ?? '';
-        $merchantTradeNo = $data['data']['merchantTradeNo'] ?? '';
-        $status = $data['data']['status'] ?? '';
+        // Binance Pay nests the actual payload under "data" in some payloads;
+        // be defensive so a missing key doesn't blow up the webhook.
+        $inner = is_array($data['data'] ?? null) ? $data['data'] : [];
+        $bizStatus = $data['bizStatus'] ?? $inner['bizStatus'] ?? '';
+        $merchantTradeNo = $inner['merchantTradeNo'] ?? '';
+        $status = $inner['status'] ?? '';
 
         $this->logger->info("[BN] Webhook received: merchantTradeNo=$merchantTradeNo bizStatus=$bizStatus status=$status");
 

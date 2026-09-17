@@ -255,15 +255,24 @@ class MercadoPagoController extends AbstractController
 
     /**
      * Obtiene la tasa USD->ARS desde el endpoint de rates.
+     * Uses APP_BASE_URL so it works on dev, staging and prod (not 127.0.0.1 only).
      */
     private function getDolarRate(): float
     {
+        $baseUrl = $_ENV['APP_BASE_URL'] ?? $_ENV['APP_SERVER_URL'] ?? '';
+        if ($baseUrl === '') {
+            $this->logger->warning('[MP] APP_BASE_URL not set; skipping dolar rate fetch.');
+            return 0;
+        }
+        $url = rtrim($baseUrl, '/') . '/api/wallet/rates';
         try {
-            $resp = @file_get_contents('http://127.0.0.1:8000/api/wallet/rates', false, stream_context_create(['http' => ['timeout' => 3]]));
+            $resp = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 3]]));
             if ($resp) {
                 $data = json_decode($resp, true);
-                if (isset($data['blue']['sell'])) return (float) $data['blue']['sell'];
-                if (isset($data['oficial']['sell'])) return (float) $data['oficial']['sell'];
+                if (is_array($data)) {
+                    if (isset($data['blue']['sell'])) return (float) $data['blue']['sell'];
+                    if (isset($data['oficial']['sell'])) return (float) $data['oficial']['sell'];
+                }
             }
         } catch (\Throwable $e) {
             $this->logger->warning('[MP] Error fetching dolar rate: ' . $e->getMessage());

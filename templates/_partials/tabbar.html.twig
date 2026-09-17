@@ -7,15 +7,15 @@
         <span class="material-symbols-elev">home_max</span>
         <span class="tabbar-label">Gateway</span>
     </a>
-    <a href="/feed" class="tabbar-item {{ app.request.pathinfo starts with '/feed' ? 'active' : '' }}" data-tab="conclave">
+    <a href="{{ path('sanctum_feed') }}" class="tabbar-item {{ app.request.pathinfo starts with '/feed' ? 'active' : '' }}" data-tab="conclave">
         <span class="material-symbols-elev">group</span>
         <span class="tabbar-label">Cónclave</span>
     </a>
-    <a href="/journal" class="tabbar-item {{ app.request.pathinfo starts with '/journal' ? 'active' : '' }}" data-tab="journal">
+    <a href="{{ path('sanctum_journal') }}" class="tabbar-item {{ app.request.pathinfo starts with '/journal' ? 'active' : '' }}" data-tab="journal">
         <span class="material-symbols-elev">auto_stories</span>
         <span class="tabbar-label">Journal</span>
     </a>
-    <a href="/macro" class="tabbar-item {{ app.request.pathinfo starts with '/macro' ? 'active' : '' }}" data-tab="macro">
+    <a href="{{ path('macro_dashboard') }}" class="tabbar-item {{ app.request.pathinfo starts with '/macro' ? 'active' : '' }}" data-tab="macro">
         <span class="material-symbols-elev">public</span>
         <span class="tabbar-label">Macro</span>
     </a>

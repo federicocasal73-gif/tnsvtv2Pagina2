@@ -238,9 +238,17 @@ class SanctumModuleController extends AbstractController
 
     // ──── PUBLIC PROFILE ────
 
-    #[Route('/u/{code}', name: 'sanctum_profile_public', methods: ['GET'])]
+    #[Route('/u/{code}', name: 'sanctum_profile_public', methods: ['GET'], requirements: ['code' => '[A-Za-z0-9_-]{2,50}'])]
     public function profilePublic(string $code): Response
     {
+        // Reserved words that would otherwise be ambiguous with future routes
+        // (e.g. /u/new for "create connection", /u/search for user search).
+        // Match the admin route's defence in CampusAdminPageController.
+        $reserved = ['new', 'search', 'export', 'import', 'edit', 'create', 'delete'];
+        if (in_array(strtolower($code), $reserved, true)) {
+            throw $this->createNotFoundException(sprintf('"%s" is a reserved URL segment.', $code));
+        }
+
         return $this->render('sanctum/profile_public.html.twig');
     }
 }

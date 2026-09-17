@@ -12,7 +12,7 @@
      data-tasks-user-code-value="{{ app.user ? app.user.code : '' }}">
 
     <nav class="campus-breadcrumb" aria-label="Ruta">
-        <a href="/sanctum/tasks" data-action="click->tasks#backToList">← Volver a Tareas</a>
+        <a href="{{ path('sanctum_tasks') }}" data-action="click->tasks#backToList">← Volver a Tareas</a>
         <span class="campus-breadcrumb-sep">›</span>
         <span>Nueva tarea</span>
     </nav>
@@ -89,7 +89,7 @@
             {% endif %}
 
             <footer class="task-new-actions">
-                <a href="/sanctum/tasks" class="ui-btn ui-btn ghost ui-btn-size-md">Cancelar</a>
+                <a href="{{ path('sanctum_tasks') }}" class="ui-btn ui-btn ghost ui-btn-size-md">Cancelar</a>
                 <button type="submit" class="ui-btn ui-btn primary ui-btn-size-md">
                     <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">add_task</span>
                     <span class="ui-btn-label">Crear tarea</span>

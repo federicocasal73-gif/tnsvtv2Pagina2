@@ -53,6 +53,10 @@ class NotificationController extends AbstractController
     {
         $user = $this->getCurrentUser($request);
         if (!$user) {
+            // Intentionally return [] (not 401) for anonymous visitors so the
+            // notification widget on the public shell doesn't break the page.
+            // The mutating endpoints (markRead / markAllRead / delete) below
+            // do return 401 — that's the correct pattern.
             return $this->json([]);
         }
 

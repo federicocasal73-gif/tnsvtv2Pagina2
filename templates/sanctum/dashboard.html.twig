@@ -35,7 +35,7 @@
                     Para hoy
                     <span class="status-pill size-sm" data-upcoming-tasks-target="count">—</span>
                 </h3>
-                <a href="/sanctum/tasks" style="font-size:0.8rem; color: var(--gold-elev);">Ver todas →</a>
+                <a href="{{ path('sanctum_tasks') }}" style="font-size:0.8rem; color: var(--gold-elev);">Ver todas →</a>
             </div>
             <div data-upcoming-tasks-target="list" style="display:grid; gap: var(--space-2);">
                 <p style="text-align:center; color: var(--outline-elev); padding: var(--space-4);">Cargando…</p>
@@ -50,7 +50,7 @@
                     Guardian
                     <span class="ml-2 text-xs px-2 py-0.5 rounded-full bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--outline-elev)] font-normal">Risk & Discipline</span>
                 </h3>
-                <a href="/sanctum/guardian" class="text-xs text-[var(--gold-elev)] hover:underline flex items-center gap-1">
+                <a href="{{ path('sanctum_guardian') }}" class="text-xs text-[var(--gold-elev)] hover:underline flex items-center gap-1">
                     Ver completo
                     <span class="material-symbols-elev icon-size-xs">arrow_forward</span>
                 </a>
@@ -93,7 +93,7 @@
                             Nueva
                         </button>
                         {% endif %}
-                        <a href="/sanctum/tasks" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
+                        <a href="{{ path('sanctum_tasks') }}" class="text-xs text-[var(--gold-elev)] hover:underline">Ver todos →</a>
                     </div>
                 </div>
                 <div id="task-list" class="space-y-2" data-dashboard-tasks-target="taskList">
@@ -109,7 +109,7 @@
                     </h3>
                     {# L14: audit log is admin-only — hide the link for non-admins #}
                     {% if is_granted('ROLE_ADMIN') %}
-                    <a href="/sanctum/audit" class="text-xs text-[var(--gold-elev)] hover:underline">Ver audit log →</a>
+                    <a href="{{ path('sanctum_audit') }}" class="text-xs text-[var(--gold-elev)] hover:underline">Ver audit log →</a>
                     {% endif %}
                 </div>
                 <div id="signal-list" class="space-y-2 max-h-72 overflow-y-auto pr-2" data-dashboard-tasks-target="signalList">

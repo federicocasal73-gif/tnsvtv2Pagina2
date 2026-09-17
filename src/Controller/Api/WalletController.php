@@ -27,6 +27,7 @@ class WalletController extends AbstractController
         private EntityManagerInterface $em,
         private UserRepository $userRepository,
         private WalletTransactionRepository $txRepository,
+        private DolarController $dolarController,
     ) {}
 
     /**
@@ -63,10 +64,9 @@ class WalletController extends AbstractController
         $arsEquivalent = null;
         $rate = null;
         try {
-            $dolarController = new DolarController();
-            $ratesResp = $dolarController->rates();
+            $ratesResp = $this->dolarController->rates();
             $ratesData = json_decode($ratesResp->getContent(), true);
-            if (isset($ratesData['blue']['sell'])) {
+            if (is_array($ratesData) && isset($ratesData['blue']['sell'])) {
                 $rate = (float) $ratesData['blue']['sell'];
                 $arsEquivalent = round($usdBalance * $rate, 2);
             }
