@@ -1,8 +1,11 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
+    static targets = ['toastPref'];
+
     connect() {
         this.KEY = 'tnsvt_user_prefs_v1';
+        this.TOAST_KEY = 'tnsvt_toast_prefs';
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => this.init());
@@ -19,6 +22,7 @@ export default class extends Controller {
     init() {
         const prefs = this.loadPrefs();
         this.applyPrefs(prefs);
+        this.applyToastPrefs();
         this.hideLoading();
     }
 
@@ -93,5 +97,46 @@ export default class extends Controller {
         const elLastSaved = document.getElementById('last-saved');
         if (elLastSaved) elLastSaved.textContent = new Date().toLocaleString();
         if (window.apiToast) window.apiToast('Preferencias guardadas', 'success');
+    }
+
+    // ─── F18: per-kind toast preference toggles ───
+
+    loadToastPrefs() {
+        try {
+            return JSON.parse(localStorage.getItem(this.TOAST_KEY) || '{}') || {};
+        } catch (_) {
+            return {};
+        }
+    }
+
+    saveToastPrefs(prefs) {
+        try {
+            localStorage.setItem(this.TOAST_KEY, JSON.stringify(prefs));
+        } catch (_) {}
+    }
+
+    applyToastPrefs() {
+        const prefs = this.loadToastPrefs();
+        this.toastPrefTargets.forEach((cb) => {
+            const kind = cb.dataset.toastKind;
+            // default = enabled (true) — only `false` is stored
+            cb.checked = prefs[kind] !== false;
+        });
+    }
+
+    onToastPrefChange(event) {
+        const cb = event.currentTarget;
+        const kind = cb.dataset.toastKind;
+        const prefs = this.loadToastPrefs();
+        prefs[kind] = cb.checked;
+        this.saveToastPrefs(prefs);
+        if (window.apiToast) {
+            window.apiToast(
+                cb.checked
+                    ? `Toasts de "${kind}" activados`
+                    : `Toasts de "${kind}" silenciados`,
+                'info'
+            );
+        }
     }
 }
