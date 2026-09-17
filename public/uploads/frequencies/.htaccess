@@ -1,0 +1,21 @@
+# public/uploads/frequencies/.htaccess
+#
+# Defense-in-depth: even though the Symfony app now requires auth via
+# /api/frequencies/stream/{id} to serve uploaded audio, the underlying
+# files live under public/ and were historically served directly by Apache.
+# Block all direct access — only the app (with auth) should stream them.
+#
+# Works on Apache and LiteSpeed (which Hostinger uses). Nginx would require
+# a server-level location block, but this codebase ships to shared
+# Apache/LiteSpeed via AGENTS.md's SSH deploy.
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+
+<IfModule !mod_authz_core.c>
+    <IfModule mod_authz_host.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</IfModule>
