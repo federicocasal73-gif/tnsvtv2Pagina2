@@ -287,4 +287,178 @@ class FrequencyControllerTest extends ApiTestCase
         $r = $this->jsonRequest('POST', '/api/frequencies/upload', ['name' => 'no file']);
         $this->assertSame(400, $r['status']);
     }
+
+    // ---------------------------------------------------------------
+    // /api/frequencies/stream/{id}  (H1 security fix)
+    // ---------------------------------------------------------------
+
+    private function uploadOne(User $user, string $code = 'UPLOAD10', string $name = 'Streamed track'): array
+    {
+        $this->loginAs($user);
+        $fakePath = $this->tmpAudioFile('mp3');
+        $uploaded = new UploadedFile($fakePath, 'mi-track.mp3', 'audio/mpeg', null, true);
+        $this->client->request('POST', '/api/frequencies/upload', ['name' => $name, 'frequency' => 432], ['file' => $uploaded]);
+        $r = $this->parseJsonResponse();
+        $this->assertSame(201, $r['status'], 'upload body: ' . json_encode($r['data']));
+        @unlink($fakePath);
+        return $r['data'];
+    }
+
+    /**
+     * Hard reset: drop the auth token and restart the kernel browser
+     * with a clean cookie jar. Without this, the firewall rehydrates the
+     * previous user from the persisted session cookie.
+     */
+    private function goAnonymous(): void
+    {
+        try {
+            $this->client->getContainer()->get('security.token_storage')->setToken(null);
+        } catch (\Throwable) {
+            // token_storage may be unavailable; restart() handles cleanup.
+        }
+        $this->client->restart();
+    }
+
+    public function testStreamRequiresAuth(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER01', 'name' => 'Owner']);
+        $data = $this->uploadOne($owner);
+        $this->goAnonymous();
+
+        $this->client->request('GET', '/api/frequencies/stream/' . $data['id']);
+        $this->assertSame(401, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testStreamReturnsAudioForOwner(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER02', 'name' => 'Owner 2']);
+        $data = $this->uploadOne($owner, 'OWNER02', 'My track');
+
+        $this->client->request('GET', '/api/frequencies/stream/' . $data['id']);
+        $response = $this->client->getResponse();
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertStringContainsString('audio/', $response->headers->get('Content-Type') ?? '');
+        // BinaryFileResponse is lazy — `getContent()` returns false until
+        // the response is actually sent. We assert the file exists on disk
+        // (proves the controller resolved and authorized it) and that the
+        // Accept-Ranges header is set (proves it's a streaming response).
+        $this->assertSame('bytes', $response->headers->get('Accept-Ranges'));
+        $absPath = dirname(__DIR__, 2) . '/public' . $data['filePath'];
+        $this->assertFileExists($absPath);
+    }
+
+    public function testStreamForbidsOtherUsers(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER03', 'name' => 'Owner 3']);
+        $intruder = $this->createUser(['code' => 'INTRUDER01', 'name' => 'Intruder']);
+        $data = $this->uploadOne($owner, 'OWNER03', 'Private');
+
+        // Restart between owner and intruder to flush the persisted session
+        // cookie (otherwise the firewall rehydrates the previous user).
+        $this->client->restart();
+        $this->loginAs($intruder);
+        $this->client->request('GET', '/api/frequencies/stream/' . $data['id']);
+        $this->assertSame(403, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testStreamReturns404ForGeneratedFrequency(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER04', 'name' => 'Owner 4']);
+        $this->loginAs($owner);
+
+        // Add a custom_generated entry (no file)
+        $r = $this->jsonRequest('POST', '/api/frequencies/add', ['name' => 'Pure tone', 'frequency' => 432]);
+        $this->assertSame(201, $r['status']);
+        $id = $r['data']['id'];
+
+        $this->client->request('GET', '/api/frequencies/stream/' . $id);
+        $this->assertSame(404, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testStreamReturns404ForMissingEntry(): void
+    {
+        $user = $this->createUser(['code' => 'OWNER05', 'name' => 'Owner 5']);
+        $this->loginAs($user);
+
+        $this->client->request('GET', '/api/frequencies/stream/999999');
+        $this->assertSame(404, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testMineExposesFilePathAndStreamUrl(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER06', 'name' => 'Owner 6']);
+        $this->uploadOne($owner, 'OWNER06', 'Exposed');
+
+        $mine = $this->jsonRequest('GET', '/api/frequencies/mine');
+        $this->assertSame(200, $mine['status']);
+        $entry = $mine['data']['frequencies'][0] ?? null;
+        $this->assertNotNull($entry);
+        $this->assertTrue($entry['hasFile'] ?? false);
+        $this->assertStringContainsString('/uploads/frequencies/OWNER06/', $entry['filePath'] ?? '');
+        $this->assertSame('/api/frequencies/stream/' . $entry['id'], $entry['streamUrl'] ?? '');
+    }
+
+    // ---------------------------------------------------------------
+    // DELETE /api/frequencies/mine/{id}
+    // ---------------------------------------------------------------
+
+    public function testDeleteRemovesEntityAndFile(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER07', 'name' => 'Owner 7']);
+        $data = $this->uploadOne($owner, 'OWNER07', 'Delete me');
+
+        // filePath is stored as `/uploads/frequencies/OWNER07/{hash}.mp3` —
+        // resolve against public/, which is the document root.
+        // dirname(__DIR__, 2) is the project root (tnsvt-app/).
+        $absPath = dirname(__DIR__, 2) . '/public' . $data['filePath'];
+        $this->assertFileExists($absPath, 'File should exist before deletion');
+
+        $r = $this->jsonRequest('DELETE', '/api/frequencies/mine/' . $data['id']);
+        $this->assertSame(200, $r['status']);
+        $this->assertTrue($r['data']['success'] ?? false);
+        $this->assertTrue($r['data']['fileDeleted'] ?? false);
+        $this->assertFileDoesNotExist($absPath);
+
+        // Confirm gone from /mine
+        $mine = $this->jsonRequest('GET', '/api/frequencies/mine');
+        $this->assertSame(0, $mine['data']['count'] ?? -1);
+    }
+
+    public function testDeleteRequiresAuth(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER08', 'name' => 'Owner 8']);
+        $data = $this->uploadOne($owner);
+        $this->goAnonymous();
+
+        $this->client->request('DELETE', '/api/frequencies/mine/' . $data['id']);
+        $this->assertSame(401, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testDeleteForbidsOtherUsers(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER09', 'name' => 'Owner 9']);
+        $intruder = $this->createUser(['code' => 'INTRUDER02', 'name' => 'Intruder']);
+        $data = $this->uploadOne($owner, 'OWNER09', 'Mine only');
+
+        $this->client->restart();
+        $this->loginAs($intruder);
+        $this->client->request('DELETE', '/api/frequencies/mine/' . $data['id']);
+        $this->assertSame(403, $this->client->getResponse()->getStatusCode());
+    }
+
+    public function testAdminCanDeleteAnyUsersFile(): void
+    {
+        $owner = $this->createUser(['code' => 'OWNER10', 'name' => 'Owner 10']);
+        $admin = $this->createUser([
+            'code' => 'ADMIN01',
+            'name' => 'Admin',
+            'roles' => ['ROLE_ADMIN', 'ROLE_USER'],
+        ]);
+        $data = $this->uploadOne($owner, 'OWNER10', 'admin power');
+
+        $this->loginAs($admin);
+        $r = $this->jsonRequest('DELETE', '/api/frequencies/mine/' . $data['id']);
+        $this->assertSame(200, $r['status']);
+        $this->assertTrue($r['data']['success'] ?? false);
+    }
 }

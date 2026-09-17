@@ -58,7 +58,7 @@ class UserFrequency
 
     public function toArray(): array
     {
-        return [
+        $data = [
             'id' => $this->getId(),
             'name' => $this->getName(),
             'frequency' => $this->getFrequency(),
@@ -66,5 +66,16 @@ class UserFrequency
             'notes' => $this->getNotes(),
             'createdAt' => $this->getCreatedAt()->format('Y-m-d H:i'),
         ];
+        // Only expose filePath for uploaded files. The frontend uses this to
+        // hit the secure /api/frequencies/stream/{id} endpoint instead of
+        // fetching the file directly (which is blocked by .htaccess).
+        if ($this->type === 'custom_upload' && $this->filePath !== null) {
+            $data['filePath'] = $this->filePath;
+            $data['streamUrl'] = '/api/frequencies/stream/' . $this->getId();
+            $data['hasFile'] = true;
+        } else {
+            $data['hasFile'] = false;
+        }
+        return $data;
     }
 }

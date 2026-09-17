@@ -10,9 +10,12 @@ use App\Repository\UserFrequencyRepository;
 use App\Service\FrequencySessionGuard;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -317,5 +320,145 @@ class FrequencyController extends AbstractController
             'frequency' => $uf->getFrequency(),
             'type' => $uf->getType(),
         ], 201);
+    }
+
+    /**
+     * GET /api/frequencies/stream/{id}
+     *
+     * Secure stream for a user-uploaded audio file. The file lives under
+     * public/uploads/frequencies/{userCode}/{hash}.{ext} which is ALSO
+     * blocked by .htaccess (defense in depth) — this endpoint is the
+     * only authorised playback path.
+     *
+     * Owner OR admin can stream. Returns 404 if the frequency has no
+     * upload (custom_generated entries have no file).
+     *
+     * NOTE: method name is `serveAudio` (not `stream`) to avoid clashing
+     * with AbstractController::stream() which renders a streamed view.
+     */
+    #[Route('/stream/{id}', name: 'stream', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function serveAudio(int $id): Response
+    {
+        $uf = $this->userFreqRepo->find($id);
+        if (!$uf) {
+            return new JsonResponse(['success' => false, 'error' => 'Frequency not found'], 404);
+        }
+        if ($uf->getType() !== 'custom_upload' || !$uf->getFilePath()) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'This frequency has no audio file (it is a custom-generated tone)',
+            ], 404);
+        }
+
+        $current = $this->getUser();
+        $isOwner = $current === $uf->getUser();
+        $isAdmin = is_array($current?->getRoles()) && in_array('ROLE_ADMIN', $current->getRoles(), true);
+        if (!$isOwner && !$isAdmin) {
+            return new JsonResponse(['success' => false, 'error' => 'Forbidden'], 403);
+        }
+
+        // filePath is stored as `/uploads/frequencies/USER/HASH.ext` (with
+        // leading slash) — strip the slash and resolve from public/.
+        $rel = ltrim($uf->getFilePath(), '/');
+        $projectDir = $this->getParameter('kernel.project_dir');
+        $absPath = $projectDir . '/public/' . $rel;
+
+        // Defense-in-depth: verify the resolved file is actually under
+        // public/uploads/frequencies/ to neutralise any path traversal.
+        $realBase = realpath($projectDir . '/public/uploads/frequencies');
+        $realFile = $realBase ? realpath($absPath) : false;
+        if (!$realFile || !$realBase || !str_starts_with($realFile, $realBase . DIRECTORY_SEPARATOR)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'File path is invalid',
+            ], 410);
+        }
+        if (!is_file($realFile)) {
+            return new JsonResponse([
+                'success' => false,
+                'error' => 'File missing on disk',
+            ], 410);
+        }
+
+        $response = new BinaryFileResponse($realFile);
+        $ext = strtolower(pathinfo($realFile, PATHINFO_EXTENSION));
+        $mime = match ($ext) {
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'ogg' => 'audio/ogg',
+            default => 'application/octet-stream',
+        };
+        $response->headers->set('Content-Type', $mime);
+        $response->headers->set('Accept-Ranges', 'bytes');
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE,
+            $uf->getName() . '.' . $ext
+        );
+        $response->setPublic();
+        $response->setMaxAge(0);
+        $response->headers->addCacheControlDirective('no-cache', true);
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+        return $response;
+    }
+
+    /**
+     * DELETE /api/frequencies/mine/{id}
+     *
+     * Delete one of the user's uploaded frequencies. Cascade:
+     *  - removes the UserFrequency entity
+     *  - removes the actual file from public/uploads/frequencies/{userCode}/
+     *
+     * Owner OR admin can delete. Admins can purge users' entries from
+     * the audit/moderation flow.
+     */
+    #[Route('/mine/{id}', name: 'mine_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    public function mineDelete(int $id): JsonResponse
+    {
+        $uf = $this->userFreqRepo->find($id);
+        if (!$uf) {
+            return $this->json(['success' => false, 'error' => 'Frequency not found'], 404);
+        }
+
+        $current = $this->getUser();
+        $isOwner = $current === $uf->getUser();
+        $isAdmin = is_array($current?->getRoles()) && in_array('ROLE_ADMIN', $current->getRoles(), true);
+        if (!$isOwner && !$isAdmin) {
+            return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
+        }
+
+        $deleted = ['id' => $uf->getId(), 'name' => $uf->getName()];
+        $fileDeleted = false;
+        $fileError = null;
+
+        if ($uf->getFilePath()) {
+            $rel = ltrim($uf->getFilePath(), '/');
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $absPath = $projectDir . '/public/' . $rel;
+            // Belt-and-braces: ensure the resolved path is still under
+            // public/uploads/frequencies/ to avoid any traversal vector.
+            $realBase = realpath($projectDir . '/public/uploads/frequencies');
+            $realFile = realpath($absPath);
+            if ($realFile && $realBase && str_starts_with($realFile, $realBase . DIRECTORY_SEPARATOR)) {
+                if (@unlink($realFile)) {
+                    $fileDeleted = true;
+                } else {
+                    $fileError = 'Could not unlink file (check filesystem permissions)';
+                }
+            } else {
+                $fileError = 'File path looked suspicious; skipped file deletion';
+            }
+        }
+
+        $this->em->remove($uf);
+        $this->em->flush();
+
+        return $this->json([
+            'success' => true,
+            'deleted' => $deleted,
+            'fileDeleted' => $fileDeleted,
+            'fileError' => $fileError,
+        ]);
     }
 }
