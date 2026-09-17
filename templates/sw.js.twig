@@ -21,32 +21,17 @@ const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 const OFFLINE_URL = '/offline';
 
-// Assets that should always be cached aggressively
+// Assets that should always be cached aggressively.
+// Filled at runtime by ServiceWorkerController from public/assets/manifest.json
+// so the URLs match the actual content-hashed filenames compiled by
+// `asset-map:compile`. Falls back to [] if the manifest is missing (e.g.
+// fresh checkout before the first compile), in which case the SW still
+// works as network-first.
 const PRECACHE_URLS = [
     OFFLINE_URL,
-    '/manifest.json',
-    '/favicon.svg',
-    '/favicon.ico',
-    // Core CSS (public shell + sanctum shell)
-    '/assets/styles/tokens.css',
-    '/assets/styles/components.css',
-    '/assets/styles/home.css',
-    '/assets/styles/shell.css',
-    '/assets/styles/animations.css',
-    '/assets/styles/accessibility.css',
-    // Component CSS (lazy-loaded per-page)
-    '/assets/styles/components/forms.css',
-    '/assets/styles/components/calendar.css',
-    '/assets/styles/components/dashboard.css',
-    '/assets/styles/components/journal.css',
-    '/assets/styles/components/feed.css',
-    '/assets/styles/components/chat.css',
-    '/assets/styles/components/wallet.css',
-    '/assets/styles/components/profile.css',
-    '/assets/styles/components/notifications.css',
-    '/assets/styles/components/settings.css',
-    '/assets/styles/components/api-helper.css',
-    '/assets/styles/glow.css',
+{% for url in precache_urls %}
+    '{{ url }}',
+{% endfor %}
 ];
 
 // Auth-related paths that must never be cached

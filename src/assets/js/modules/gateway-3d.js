@@ -1,14 +1,15 @@
 /**
  * T.N.S.V.T Gateway — Sacred Geometry 3D Hero
- * Three.js icosahedron (wireframe) + octahedron (solid core)
- * Counter-rotation + breathing scale. Requires Three.js loaded via CDN.
+ * Three.js icosahedron (wireframe) + octahedron (solid core).
+ * Counter-rotation + breathing scale.
+ *
+ * Uses the `three` importmap entry (resolved to src/assets/third_party/three.module.js)
+ * so the bundle is shipped locally and the gateway works offline (PWA).
  */
-(function () {
-    'use strict';
+import * as THREE from 'three';
 
-    const container = document.getElementById('gw-emblem-3d');
-    if (!container || typeof THREE === 'undefined') return;
-
+const container = document.getElementById('gw-emblem-3d');
+if (container) {
     const width = container.clientWidth || 224;
     const height = container.clientHeight || 224;
 
@@ -29,70 +30,52 @@
     const icoMat = new THREE.MeshPhongMaterial({
         color: 0xd4af37,
         wireframe: true,
+        emissive: 0xd4af37,
+        emissiveIntensity: 0.4,
         transparent: true,
-        opacity: 0.3,
-        emissive: 0xd4af37,
-        emissiveIntensity: 0.2,
+        opacity: 0.85,
     });
-    const icosahedron = new THREE.Mesh(icoGeo, icoMat);
-    scene.add(icosahedron);
+    const ico = new THREE.Mesh(icoGeo, icoMat);
+    scene.add(ico);
 
-    /* ── Inner solid octahedron (core) ── */
-    const octGeo = new THREE.OctahedronGeometry(0.8, 0);
-    const octMat = new THREE.MeshPhongMaterial({
-        color: 0xd4af37,
-        emissive: 0xd4af37,
-        emissiveIntensity: 1.0,
-        shininess: 100,
+    /* ── Inner solid core (octahedron) ── */
+    const coreGeo = new THREE.OctahedronGeometry(0.55, 0);
+    const coreMat = new THREE.MeshBasicMaterial({
+        color: 0xffe7a0,
+        transparent: true,
+        opacity: 0.95,
     });
-    const octahedron = new THREE.Mesh(octGeo, octMat);
-    scene.add(octahedron);
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    scene.add(core);
 
     /* ── Lighting ── */
-    const pointLight = new THREE.PointLight(0xf2ca50, 4, 20);
-    pointLight.position.set(5, 5, 5);
-    scene.add(pointLight);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
-    scene.add(ambientLight);
+    const light = new THREE.PointLight(0xd4af37, 2.4, 12);
+    light.position.set(2.5, 2.5, 3);
+    scene.add(light);
+    scene.add(new THREE.AmbientLight(0x404040));
 
     /* ── Animation loop ── */
-    let rafId = null;
-    const clock = new THREE.Clock();
-
-    function animate() {
-        rafId = requestAnimationFrame(animate);
-        const t = clock.getElapsedTime();
-
-        icosahedron.rotation.y += 0.003;
-        icosahedron.rotation.z += 0.001;
-
-        octahedron.rotation.y -= 0.01;
-        octahedron.rotation.x += 0.005;
-
-        const breath = 1 + Math.sin(t) * 0.05;
-        octahedron.scale.set(breath, breath, breath);
-
+    let t0 = performance.now();
+    function frame(now) {
+        const t = (now - t0) / 1000;
+        ico.rotation.x = t * 0.18;
+        ico.rotation.y = -t * 0.24;
+        core.rotation.x = -t * 0.6;
+        core.rotation.z = t * 0.5;
+        const breathe = 1 + Math.sin(t * 1.4) * 0.06;
+        core.scale.setScalar(breathe);
         renderer.render(scene, camera);
+        requestAnimationFrame(frame);
     }
-
-    animate();
-
-    /* ── Pause when hidden ── */
-    document.addEventListener('visibilitychange', function () {
-        if (document.hidden) {
-            if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
-        } else {
-            if (rafId === null) animate();
-        }
-    });
+    requestAnimationFrame(frame);
 
     /* ── Resize ── */
-    window.addEventListener('resize', function () {
-        const w = container.clientWidth;
-        const h = container.clientHeight;
+    const ro = new ResizeObserver(() => {
+        const w = container.clientWidth || 224;
+        const h = container.clientHeight || 224;
         camera.aspect = w / h;
         camera.updateProjectionMatrix();
         renderer.setSize(w, h);
     });
-})();
+    ro.observe(container);
+}

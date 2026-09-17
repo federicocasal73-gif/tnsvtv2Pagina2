@@ -9,8 +9,7 @@
 {% endblock %}
 
 {% block content %}
-{# Three.js for Sacred Sigil #}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js" defer></script>
+{# Three.js for Sacred Sigil — bundled locally via importmap('app'); see src/assets/js/modules/sacred-sigil.js #}
 
 <div class="max-w-2xl mx-auto pb-24" data-controller="profile">
     {# ─── Profile Hero with 3D Sigil ─── #}
@@ -186,6 +185,6 @@
     </div>
 </div>
 
-{# Sacred Sigil 3D #}
-<script src="{{ asset('js/modules/sacred-sigil.js') }}" defer></script>
+{# Sacred Sigil 3D — Three.js bundled locally via importmap, no CDN #}
+{{ importmap('sacred_sigil') }}
 {% endblock %}

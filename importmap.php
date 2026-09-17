@@ -28,11 +28,22 @@ return [
         'path' => './src/assets/js/modules/onboarding.js',
         'entrypoint' => true,
     ],
+    'sacred_sigil' => [
+        'path' => './src/assets/js/modules/sacred-sigil.js',
+        'entrypoint' => true,
+    ],
+    'gateway_3d' => [
+        'path' => './src/assets/js/modules/gateway-3d.js',
+        'entrypoint' => true,
+    ],
     '@hotwired/stimulus' => [
         'path' => './src/assets/third_party/stimulus.module.js',
     ],
     '@hotwired/turbo' => [
         'path' => './src/assets/third_party/turbo.module.js',
+    ],
+    'three' => [
+        'path' => './src/assets/third_party/three.module.js',
     ],
     '@symfony/stimulus-bundle' => [
         'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
