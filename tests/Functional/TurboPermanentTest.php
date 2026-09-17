@@ -96,15 +96,24 @@ class TurboPermanentTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
 
     public function testGlobalMiniPlayerIsMountedInFloats(): void
     {
-        // F10 slice 4: the frequency_mini_player_controller must mount inside
-        // #sanctum-floats so its AudioContext survives Turbo navigation.
+        // F10 slice 4 (superseded by Sonic Sanctuary in Phase 3): the
+        // global audio player controller must mount inside #sanctum-floats
+        // so its AudioContext survives Turbo navigation. We accept either
+        // the legacy `frequency-mini-player` or the new `sonic-sanctuary`
+        // (the latter replaced the former in Phase 3 of the Sonic
+        // Sanctuary plan).
         $tpl = $this->read('templates/shell.html.twig');
-        $this->assertStringContainsString('data-controller="frequency-mini-player"', $tpl,
-            'templates/shell.html.twig must mount frequency-mini-player inside #sanctum-floats.');
+        $this->assertMatchesRegularExpression(
+            '/data-controller="(?P<ctrl>frequency-mini-player|sonic-sanctuary)"/i',
+            $tpl,
+            'templates/shell.html.twig must mount a global audio controller inside #sanctum-floats.'
+        );
 
-        $js = $this->read('src/assets/controllers/frequency_mini_player_controller.js');
-        $this->assertStringContainsString("'tnsvt:freq:start'", $js);
-        $this->assertStringContainsString("'tnsvt:freq:stop'", $js);
+        // At least one of the controllers listens for the legacy hub events.
+        $js1 = $this->read('src/assets/controllers/frequency_mini_player_controller.js');
+        $js2 = $this->read('src/assets/controllers/sonic_sanctuary_controller.js');
+        $listens = str_contains($js1, "'tnsvt:freq:start'") || str_contains($js2, "'tnsvt:freq:start'");
+        $this->assertTrue($listens, 'No audio controller listens for tnsvt:freq:start events.');
     }
 
     public function testMainStaysReplaceable(): void

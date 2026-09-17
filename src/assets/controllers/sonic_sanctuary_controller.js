@@ -49,7 +49,7 @@ export default class extends Controller {
         'miniPlayer', 'miniTitle', 'miniElapsed', 'miniDuration',
         'miniPlayBtn', 'miniIcon',
         'panel', 'panelClose',
-        'tabForever', 'tabMine', 'tabGlobal',
+        'temploTab', 'mineTab', 'globalTab',
         'temploList', 'mineList', 'globalList',
         'visualizer', 'visualizerWrap',
         'volume', 'volumeIcon', 'muteBtn',
@@ -99,6 +99,9 @@ export default class extends Controller {
         this.boundOnDragOver    = this.onDragOver.bind(this);
         this.boundOnDragLeave   = this.onDragLeave.bind(this);
         this.boundOnDrop        = this.onDrop.bind(this);
+        this.boundOnGlobalPlay  = this.onGlobalPlay.bind(this);
+        this.boundOnGlobalPrev  = this.onGlobalPrev.bind(this);
+        this.boundOnGlobalNext  = this.onGlobalNext.bind(this);
         window.addEventListener('tnsvt:freq:start',       this.boundOnStart);
         window.addEventListener('tnsvt:freq:stop',        this.boundOnStop);
         window.addEventListener('tnsvt:freq:request_stop', this.boundOnRequestStop);
@@ -107,6 +110,9 @@ export default class extends Controller {
         window.addEventListener('dragover',                this.boundOnDragOver);
         window.addEventListener('dragleave',               this.boundOnDragLeave);
         window.addEventListener('drop',                    this.boundOnDrop);
+        window.addEventListener('sonic:global-play',      this.boundOnGlobalPlay);
+        window.addEventListener('sonic:global-prev',      this.boundOnGlobalPrev);
+        window.addEventListener('sonic:global-next',      this.boundOnGlobalNext);
 
         // First-render fetches
         this.applyVolume();
@@ -125,6 +131,9 @@ export default class extends Controller {
         window.removeEventListener('dragover',                this.boundOnDragOver);
         window.removeEventListener('dragleave',               this.boundOnDragLeave);
         window.removeEventListener('drop',                    this.boundOnDrop);
+        window.removeEventListener('sonic:global-play',      this.boundOnGlobalPlay);
+        window.removeEventListener('sonic:global-prev',      this.boundOnGlobalPrev);
+        window.removeEventListener('sonic:global-next',      this.boundOnGlobalNext);
 
         this.stopTimer();
         this.stopVisualizer();
@@ -146,7 +155,7 @@ export default class extends Controller {
 
     applyActiveTab() {
         ['templo', 'mine', 'global'].forEach((t) => {
-            const btn = this[`has${this.cap(t)}TabTarget`] ? this[`${t}TabTarget`] : null;
+            const btn = this[`${t}TabTarget`];
             if (!btn) return;
             const active = t === this.activeTab;
             btn.classList.toggle('is-active', active);
@@ -418,6 +427,48 @@ export default class extends Controller {
         this.startVisualizer();
         this.updateMiniUI();
         this.refreshLists();
+    }
+
+    /**
+     * Fired by the "Global Temple Broadcast" widget in /sanctum/users
+     * (and any other page that wants the global admin playlist).
+     * Opens the side panel, switches to the 'global' tab, and plays the
+     * admin's currently-active track.
+     */
+    async onGlobalPlay() {
+        this.openPanelValue = true;
+        this.activeTab = 'global';
+        this.saveState();
+        this.applyActiveTab();
+
+        // Wait one frame so the global list is rendered (or refetched)
+        // before we click the active track.
+        await this.renderGlobal();
+
+        const r = await window.apiFetch('/api/music/current', { silent: true });
+        if (!r.ok || !r.data || !r.data.hasMusic || !r.data.playlist?.length) {
+            if (window.apiToast) window.apiToast('El Cónclave no está transmitiendo ahora.', 'warning');
+            return;
+        }
+        const idx = r.data.activeIndex ?? 0;
+        const tracks = r.data.playlist;
+        const target = tracks[idx] || tracks[0];
+        if (!target) return;
+
+        // Synthesize a "click" event so we go through the normal playGlobal
+        // path (DOM lookup + isPlaying toggle).
+        const fakeBtn = document.createElement('button');
+        fakeBtn.dataset.trackId = target.id;
+        fakeBtn.dataset.trackName = target.name;
+        this.playGlobal({ currentTarget: fakeBtn });
+    }
+
+    onGlobalPrev() {
+        this.onGlobalPlay().then(() => this.prevTrack()).catch(() => {});
+    }
+
+    onGlobalNext() {
+        this.onGlobalPlay().then(() => this.nextTrack()).catch(() => {});
     }
 
     // ─── playback: hub (compat) ──────────────────────────────────

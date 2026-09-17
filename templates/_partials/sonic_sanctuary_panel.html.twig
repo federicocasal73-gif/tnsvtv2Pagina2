@@ -1,0 +1,141 @@
+{# templates/_partials/sonic_sanctuary_panel.html.twig
+   Partial: el panel lateral del Sonic Sanctuary.
+   Es incluido desde templates/shell.html.twig dentro de #sanctum-floats,
+   que es data-turbo-permanent — el panel sobrevive navegaciones Turbo.
+
+   El controller `sonic_sanctuary` está en:
+   src/assets/controllers/sonic_sanctuary_controller.js
+
+   IMPORTANTE: este partial NO se renderiza aislado. Se asume que ya está
+   dentro de un `<div data-controller="sonic-sanctuary">`.
+#}
+
+<div class="sonic-panel"
+     data-sonic-sanctuary-target="panel"
+     role="region"
+     aria-label="Santuario Sonoro">
+    <header class="sonic-panel-header">
+        <h2 class="sonic-panel-title">
+            <span class="material-symbols-elev" aria-hidden="true">graphic_eq</span>
+            Santuario Sonoro
+        </h2>
+        <button type="button"
+                class="sonic-panel-close"
+                data-action="click->sonic-sanctuary#closePanel"
+                aria-label="Cerrar panel">
+            <span class="material-symbols-elev" aria-hidden="true">close</span>
+        </button>
+    </header>
+
+    {# Visualizer canvas — siempre presente, animación solo cuando el panel está visible #}
+    <div class="sonic-visualizer-wrap" data-sonic-sanctuary-target="visualizerWrap">
+        <canvas class="sonic-visualizer"
+                data-sonic-sanctuary-target="visualizer"
+                width="360"
+                height="64"
+                aria-label="Visualizador de audio"></canvas>
+    </div>
+
+    {# Tabs: Templo / Mías / Global #}
+    <div class="sonic-tabs" role="tablist" aria-label="Fuentes de audio">
+        <button type="button"
+                class="sonic-tab is-active"
+                role="tab"
+                aria-selected="true"
+                data-tab="templo"
+                data-sonic-sanctuary-target="temploTab"
+                data-action="click->sonic-sanctuary#selectTab">
+            🌐 Templo
+        </button>
+        <button type="button"
+                class="sonic-tab"
+                role="tab"
+                aria-selected="false"
+                data-tab="mine"
+                data-sonic-sanctuary-target="mineTab"
+                data-action="click->sonic-sanctuary#selectTab">
+            📂 Mías
+        </button>
+        <button type="button"
+                class="sonic-tab"
+                role="tab"
+                aria-selected="false"
+                data-tab="global"
+                data-sonic-sanctuary-target="globalTab"
+                data-action="click->sonic-sanctuary#selectTab">
+            🎼 Global
+        </button>
+    </div>
+
+    {# Listas de tracks por tab — todas en DOM, solo la activa es visible #}
+    <div class="sonic-list">
+        <div data-sonic-sanctuary-target="temploList">
+            <p class="sonic-empty">Cargando frecuencias del Templo…</p>
+        </div>
+        <div data-sonic-sanctuary-target="mineList" hidden>
+            <p class="sonic-empty">Cargando tus frecuencias…</p>
+        </div>
+        <div data-sonic-sanctuary-target="globalList" hidden>
+            <p class="sonic-empty">Cargando playlist global…</p>
+        </div>
+    </div>
+
+    {# Footer con controles: upload + loop + volumen #}
+    <div class="sonic-controls">
+        <button type="button"
+                class="sonic-btn sonic-btn-primary"
+                data-action="click->sonic-sanctuary#triggerUpload"
+                title="Subir archivo de audio (.mp3, .wav, .ogg, máx 10MB)">
+            <span class="material-symbols-elev" aria-hidden="true">upload</span>
+            Subir
+        </button>
+        <button type="button"
+                class="sonic-btn sonic-loop-btn"
+                data-sonic-sanctuary-target="loopBtn"
+                data-action="click->sonic-sanctuary#cycleLoop"
+                data-loop="all"
+                title="Modo repetición">
+            ↻∞ todo
+        </button>
+        <div class="sonic-volume-wrap">
+            <button type="button"
+                    class="sonic-mute-btn"
+                    data-sonic-sanctuary-target="muteBtn"
+                    data-action="click->sonic-sanctuary#toggleMute"
+                    title="Silenciar / Activar">
+                <span class="material-symbols-elev" aria-hidden="true">volume_up</span>
+            </button>
+            <input type="range"
+                   class="sonic-volume"
+                   data-sonic-sanctuary-target="volume"
+                   min="0"
+                   max="100"
+                   step="1"
+                   value="75"
+                   data-action="input->sonic-sanctuary#onVolumeInput"
+                   aria-label="Volumen" />
+        </div>
+    </div>
+
+    {# Atajos teclado (siempre visible al fondo, baja opacity) #}
+    <div class="sonic-keyboard" data-sonic-sanctuary-target="keyboardHints">
+        <span><kbd>Space</kbd> play</span>
+        <span><kbd>M</kbd> mute</span>
+        <span><kbd>←</kbd><kbd>→</kbd> prev/next</span>
+        <span><kbd>E</kbd> panel</span>
+    </div>
+
+    {# File input (oculto) — se activa via triggerUpload() #}
+    <input type="file"
+           accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/x-vorbis+ogg"
+           multiple
+           hidden
+           data-sonic-sanctuary-target="fileInput"
+           data-action="change->sonic-sanctuary#pickFile"
+           aria-label="Subir archivo de audio" />
+
+    {# Drop overlay (hidden por default; visible durante drag) #}
+    <div class="sonic-drop-overlay"
+         data-sonic-sanctuary-target="dropOverlay"
+         aria-hidden="true"></div>
+</div>

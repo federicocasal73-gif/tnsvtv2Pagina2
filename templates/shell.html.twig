@@ -47,6 +47,7 @@
     <link rel="stylesheet" href="{{ asset('styles/glow.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/shell.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/accessibility.css') }}" />
+    <link rel="stylesheet" href="{{ asset('styles/sonic-sanctuary.css') }}" />
 
     {% block stylesheets %}{% endblock %}
 </head>
@@ -404,65 +405,74 @@
 <div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50" data-turbo-permanent>
     {% block floats %}{% endblock %}
 
-    {# Global frequency mini-player — F10 slice 4. Mounted once inside
-       #sanctum-floats so it (and its AudioContext) survives every Turbo
-       navigation. Driven by custom events tnsvt:freq:start / :stop /
-       :request_stop. Hidden by default; appears when a session starts. #}
-    <div data-controller="frequency-mini-player"
+    {# ─── Sonic Sanctuary — reproductor unificado cross-page (Phase 1+2+3).
+       Reemplaza el antiguo frequency_mini_player. Tres fuentes:
+         - Templo (osciladores del Cónclave)
+         - Mías (uploads del usuario via /api/frequencies/stream/{id})
+         - Global (admin playlist via /api/music/stream?id=…)
+       Persiste cross-page gracias a data-turbo-permanent en #sanctum-floats.
+       Solo se muestra a usuarios autenticados (los anónimos no tienen
+       ni presets ni subidas que reproducir). #}
+    {% if app.user %}
+    <div data-controller="sonic-sanctuary"
+         data-sonic-sanctuary-open-panel-value="false"
          class="contents">
 
-        <div data-frequency-mini-player-target="panel"
-             class="mini-player fixed bottom-6 left-6 flex items-center gap-3 bg-[var(--surface-elev)]/95 px-4 py-3 rounded-2xl shadow-xl backdrop-blur-sm"
+        {# Mini-player flotante (bottom-center, visible durante reproducción) #}
+        <div class="sonic-mini-player"
+             data-sonic-sanctuary-target="miniPlayer"
+             role="region"
+             aria-label="Reproductor"
              hidden>
-            <div class="mini-player-icon w-10 h-10 rounded-full bg-gradient-to-br from-[var(--gold-elev)] to-[var(--gold-bright-elev)] flex items-center justify-center">
-                <span class="material-symbols-elev text-[var(--void-black)]" style="font-size: 1.2rem; font-variation-settings: 'FILL' 1;">music_note</span>
+            <div class="sonic-mini-icon" data-sonic-sanctuary-target="miniIcon">
+                <span class="material-symbols-elev" aria-hidden="true">equalizer</span>
             </div>
-            <div class="min-w-0">
-                <p class="text-sm font-bold text-[var(--gold-elev)] truncate"
-                   data-frequency-mini-player-target="frequencyLabel">432 Hz</p>
-                <p class="text-[11px] text-[var(--outline-elev)]">
-                    <span data-frequency-mini-player-target="elapsedLabel">00:00:00</span>
+            <div class="sonic-mini-body">
+                <p class="sonic-mini-title"
+                   data-sonic-sanctuary-target="miniTitle">—</p>
+                <p class="sonic-mini-time">
+                    <span data-sonic-sanctuary-target="miniElapsed">00:00</span>
                     <span aria-hidden="true"> · </span>
-                    <span data-frequency-mini-player-target="durationLabel">30 min</span>
+                    <span data-sonic-sanctuary-target="miniDuration">—</span>
                 </p>
             </div>
             <button type="button"
-                    class="ml-2 text-[var(--on-surface-elev)] hover:text-[var(--gold-elev)]"
-                    data-action="click->frequency-mini-player#requestStop"
-                    aria-label="Detener sesión de frecuencia">
-                <span class="material-symbols-elev">stop</span>
+                    class="sonic-mini-toggle sonic-mini-play"
+                    data-sonic-sanctuary-target="miniPlayBtn"
+                    data-action="click->sonic-sanctuary#togglePlay"
+                    title="Reproducir / Pausar">
+                <span class="material-symbols-elev" aria-hidden="true">pause</span>
+            </button>
+            <div class="sonic-mini-volume-wrap">
+                <button type="button"
+                        class="sonic-mini-toggle"
+                        data-sonic-sanctuary-target="muteBtn"
+                        data-action="click->sonic-sanctuary#toggleMute"
+                        title="Silenciar">
+                    <span class="material-symbols-elev" aria-hidden="true">volume_up</span>
+                </button>
+            </div>
+            <button type="button"
+                    class="sonic-mini-btn"
+                    data-action="click->sonic-sanctuary#togglePanel"
+                    title="Abrir Santuario Sonoro"
+                    aria-label="Abrir panel del Santuario Sonoro">
+                <span class="material-symbols-elev" aria-hidden="true">library_music</span>
             </button>
         </div>
 
-        <div data-frequency-mini-player-target="resumeModal"
-             class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-             role="dialog" aria-modal="true" aria-labelledby="freq-resume-title"
-             hidden>
-            <div class="bg-[var(--surface-elev)] rounded-2xl p-6 max-w-sm mx-4 shadow-2xl pointer-events-auto">
-                <h2 id="freq-resume-title" class="text-lg font-semibold mb-2 text-[var(--on-surface-elev)]">Sesión de frecuencia activa</h2>
-                <p class="text-sm text-[var(--outline-elev)] mb-4">
-                    Tenés una sesión sonando:
-                    <span class="text-[var(--gold-elev)] font-medium"
-                          data-frequency-mini-player-target="resumeModalFreq">432 Hz</span>.
-                    <br><br>
-                    <span data-frequency-mini-player-target="resumeModalRemaining"
-                          class="text-xs">tiempo restante</span>
-                </p>
-                <div class="flex gap-2 justify-end">
-                    <button type="button"
-                            class="ui-btn ui-btn ghost"
-                            data-action="click->frequency-mini-player#abandonSession">
-                        Abandonar
-                    </button>
-                    <button type="button"
-                            class="ui-btn ui-btn primary"
-                            data-action="click->frequency-mini-player#resumeSession">
-                        Reanudar
-                    </button>
-                </div>
-            </div>
-        </div>
+        {# Botón flotante (visible cuando no hay reproducción) #}
+        <button type="button"
+                class="sonic-mini-launcher"
+                data-action="click->sonic-sanctuary#togglePanel"
+                title="Abrir Santuario Sonoro">
+            <span class="material-symbols-elev" aria-hidden="true">library_music</span>
+        </button>
+
+        {# Panel lateral con tabs + visualizer + upload + lista #}
+        {% include '_partials/sonic_sanctuary_panel.html.twig' %}
     </div>
+    {% endif %}
 </div>
 
 {% block importmap %}

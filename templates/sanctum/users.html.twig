@@ -46,7 +46,11 @@
             </div>
         </div>
 
-        {# Audio Player Mini #}
+        {# Audio Player Mini — cableado al Sonic Sanctuary (Phase 3).
+           Antes era decorativo puro. Ahora el botón ▶ emite el evento
+           `sonic:open-and-play-global` que el sonic-sanctuary controller
+           escucha: abre el panel + carga la playlist admin + reproduce el
+           track active. #}
         <div class="audio-player-mini">
             <div class="flex items-center gap-5 mb-4 relative z-10">
                 <div class="w-16 h-16 rounded-lg overflow-hidden shadow-2xl relative bg-[var(--primary-container,#d4af37)]/20 flex items-center justify-center">
@@ -68,13 +72,22 @@
                 </div>
             </div>
             <div class="flex items-center justify-center gap-6 relative z-10">
-                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
+                <button type="button"
+                        class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors"
+                        title="Pista anterior"
+                        onclick="window.dispatchEvent(new CustomEvent('sonic:global-prev'))">
                     <span class="material-symbols-elev text-2xl">skip_previous</span>
                 </button>
-                <button class="w-12 h-12 rounded-full bg-[var(--primary)] text-[var(--void-black,#050308)] flex items-center justify-center gold-glow-elev hover:scale-110 transition-transform">
-                    <span class="material-symbols-elev text-3xl" style="font-variation-settings: 'FILL' 1;">pause</span>
+                <button type="button"
+                        class="w-12 h-12 rounded-full bg-[var(--primary)] text-[var(--void-black,#050308)] flex items-center justify-center gold-glow-elev hover:scale-110 transition-transform"
+                        title="Reproducir playlist del Cónclave (abre Santuario Sonoro)"
+                        onclick="window.dispatchEvent(new CustomEvent('sonic:global-play'))">
+                    <span class="material-symbols-elev text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
                 </button>
-                <button class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors">
+                <button type="button"
+                        class="text-[var(--outline-elev)] hover:text-[var(--primary)] transition-colors"
+                        title="Pista siguiente"
+                        onclick="window.dispatchEvent(new CustomEvent('sonic:global-next'))">
                     <span class="material-symbols-elev text-2xl">skip_next</span>
                 </button>
             </div>

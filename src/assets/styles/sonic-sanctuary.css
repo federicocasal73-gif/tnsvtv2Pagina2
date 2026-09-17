@@ -1,0 +1,596 @@
+/* sonic-sanctuary.css
+ *
+ * Estilos del reproductor unificado cross-page del Sanctum.
+ * Reemplaza el mini-player anterior (.mini-player de hub.css) con un widget
+ * más prominente y un panel lateral con 3 tabs + visualizer + drag-drop.
+ *
+ * Tokens: usa los CSS custom properties del theme (--gold-elev, --void-black,
+ * --surface-elev, etc.) para integrarse con dark/light/auto.
+ */
+
+/* ─────────────────────────────────────────────────────────────
+   Mini-player flotante (visible cuando hay reproducción activa)
+   ───────────────────────────────────────────────────────────── */
+
+.sonic-mini-player {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    background: linear-gradient(180deg, rgba(15, 12, 24, 0.96), rgba(8, 5, 14, 0.96));
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    border-radius: 9999px;
+    box-shadow:
+        0 10px 40px -10px rgba(0, 0, 0, 0.7),
+        0 0 24px -4px rgba(212, 175, 55, 0.35);
+    color: var(--on-surface-elev, #f5f0e6);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    max-width: calc(100vw - 2rem);
+}
+
+.sonic-mini-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, var(--gold-elev, #d4af37), var(--gold-bright-elev, #f2ca50));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--void-black, #050308);
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.6);
+}
+
+.sonic-mini-icon .material-symbols-elev {
+    font-variation-settings: 'FILL' 1;
+    font-size: 1.25rem;
+}
+
+.sonic-mini-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 8rem;
+    max-width: 18rem;
+}
+
+.sonic-mini-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--gold-elev, #d4af37);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+.sonic-mini-time {
+    font-size: 0.6875rem;
+    color: var(--outline-elev, #8a7f99);
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+}
+
+.sonic-mini-btn,
+.sonic-mini-toggle {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9999px;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--on-surface-elev, #f5f0e6);
+    cursor: pointer;
+    transition: all 0.18s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.sonic-mini-btn:hover,
+.sonic-mini-toggle:hover {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: rgba(212, 175, 55, 0.45);
+    color: var(--gold-elev, #d4af37);
+}
+
+.sonic-mini-play {
+    background: linear-gradient(135deg, var(--gold-elev, #d4af37), var(--gold-bright-elev, #f2ca50));
+    color: var(--void-black, #050308);
+    width: 2.5rem;
+    height: 2.5rem;
+    border-color: transparent;
+}
+
+.sonic-mini-play:hover {
+    background: linear-gradient(135deg, var(--gold-bright-elev, #f2ca50), var(--gold-elev, #d4af37));
+    color: var(--void-black, #050308);
+}
+
+.sonic-mini-volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0.25rem;
+}
+
+.sonic-mini-volume {
+    width: 80px;
+    accent-color: var(--gold-elev, #d4af37);
+}
+
+.sonic-mini-volume-wrap .material-symbols-elev {
+    font-size: 1.1rem;
+    color: var(--outline-elev, #8a7f99);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Botón flotante "abrir panel" cuando no hay reproducción
+   ───────────────────────────────────────────────────────────── */
+
+.sonic-mini-launcher {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 44;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    background: rgba(15, 12, 24, 0.92);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    backdrop-filter: blur(12px);
+    color: var(--gold-elev, #d4af37);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.sonic-mini-launcher:hover {
+    background: rgba(212, 175, 55, 0.18);
+    color: var(--gold-bright-elev, #f2ca50);
+    transform: translateX(-50%) scale(1.05);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Panel lateral derecho (380px, slide-in)
+   ───────────────────────────────────────────────────────────── */
+
+.sonic-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(380px, 100vw);
+    z-index: 60;
+    background: linear-gradient(180deg, rgba(13, 9, 22, 0.98), rgba(8, 5, 14, 0.98));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(212, 175, 55, 0.25);
+    box-shadow: -20px 0 60px -20px rgba(0, 0, 0, 0.8);
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    flex-direction: column;
+    color: var(--on-surface-elev, #f5f0e6);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    pointer-events: none;
+}
+
+.sonic-panel.is-open {
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.sonic-panel-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.25rem 0.75rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.sonic-panel-title {
+    font-family: 'Cinzel Display', serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold-elev, #d4af37);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sonic-panel-close {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 9999px;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--outline-elev, #8a7f99);
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s ease;
+}
+
+.sonic-panel-close:hover {
+    background: rgba(212, 175, 55, 0.15);
+    color: var(--gold-elev, #d4af37);
+    border-color: rgba(212, 175, 55, 0.4);
+}
+
+/* ── Tabs ── */
+.sonic-tabs {
+    flex-shrink: 0;
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem 0.5rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.sonic-tabs::-webkit-scrollbar { display: none; }
+
+.sonic-tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 0.75rem;
+    color: var(--outline-elev, #8a7f99);
+    cursor: pointer;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    border-radius: 4px 4px 0 0;
+}
+
+.sonic-tab:hover {
+    color: var(--on-surface-elev, #f5f0e6);
+}
+
+.sonic-tab.is-active {
+    color: var(--gold-elev, #d4af37);
+    border-bottom-color: var(--gold-elev, #d4af37);
+}
+
+/* ── Visualizer ── */
+.sonic-visualizer-wrap {
+    flex-shrink: 0;
+    padding: 1rem 1rem 0.5rem;
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.06), transparent);
+}
+
+.sonic-visualizer {
+    width: 100%;
+    height: 64px;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    display: block;
+}
+
+/* ── Lista de tracks ── */
+.sonic-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 0.5rem 0.75rem 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.3) transparent;
+}
+
+.sonic-list::-webkit-scrollbar { width: 6px; }
+.sonic-list::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 3px;
+}
+
+.sonic-empty {
+    text-align: center;
+    color: var(--outline-elev, #8a7f99);
+    padding: 2rem 1rem;
+    font-size: 0.875rem;
+}
+
+.sonic-empty-cta {
+    border: 2px dashed rgba(212, 175, 55, 0.25);
+    border-radius: 0.75rem;
+    margin: 1rem 0.5rem;
+}
+
+.sonic-empty-cta p {
+    margin: 0.25rem 0;
+}
+
+.sonic-empty-cta .text-xs {
+    font-size: 0.75rem;
+    color: var(--outline-elev, #8a7f99);
+}
+
+/* ── Track item ── */
+.sonic-track-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.25rem;
+    margin-bottom: 0.35rem;
+}
+
+.sonic-track {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.625rem;
+    padding: 0.625rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--on-surface-elev, #f5f0e6);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    font-family: inherit;
+    min-width: 0;
+}
+
+.sonic-track:hover {
+    background: rgba(212, 175, 55, 0.08);
+    border-color: rgba(212, 175, 55, 0.25);
+}
+
+.sonic-track.is-current {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: rgba(212, 175, 55, 0.6);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+}
+
+.sonic-track.is-active-admin {
+    border-left: 3px solid var(--violet, #8a3cff);
+}
+
+.sonic-track-icon {
+    flex-shrink: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, rgba(138, 60, 255, 0.25), rgba(212, 175, 55, 0.18));
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--gold-elev, #d4af37);
+    text-align: center;
+    line-height: 1;
+}
+
+.sonic-track-flex { min-width: 0; }
+
+.sonic-track-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.sonic-track-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sonic-track-sub {
+    font-size: 0.6875rem;
+    color: var(--outline-elev, #8a7f99);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sonic-track-action {
+    flex-shrink: 0;
+    color: var(--outline-elev, #8a7f99);
+    font-size: 1.25rem;
+}
+
+.sonic-track:hover .sonic-track-action {
+    color: var(--gold-elev, #d4af37);
+}
+
+.sonic-track.is-current .sonic-track-action {
+    color: var(--gold-bright-elev, #f2ca50);
+    /* Animated equalizer hint via icon swap in JS */
+}
+
+.sonic-track-delete {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.5rem;
+    width: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--outline-elev, #8a7f99);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.sonic-track-delete:hover {
+    background: rgba(220, 38, 38, 0.2);
+    color: #fca5a5;
+    border-color: rgba(220, 38, 38, 0.4);
+}
+
+/* ── Footer / controles ── */
+.sonic-controls {
+    flex-shrink: 0;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+    background: linear-gradient(0deg, rgba(13, 9, 22, 0.95), transparent);
+}
+
+.sonic-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    color: var(--on-surface-elev, #f5f0e6);
+    cursor: pointer;
+    font-size: 0.8125rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.sonic-btn:hover {
+    background: rgba(212, 175, 55, 0.15);
+    border-color: rgba(212, 175, 55, 0.4);
+    color: var(--gold-elev, #d4af37);
+}
+
+.sonic-btn-primary {
+    background: linear-gradient(135deg, var(--gold-elev, #d4af37), var(--gold-bright-elev, #f2ca50));
+    color: var(--void-black, #050308);
+    border-color: transparent;
+}
+
+.sonic-btn-primary:hover {
+    background: linear-gradient(135deg, var(--gold-bright-elev, #f2ca50), var(--gold-elev, #d4af37));
+    color: var(--void-black, #050308);
+}
+
+.sonic-btn .material-symbols-elev {
+    font-size: 1.05rem;
+}
+
+.sonic-loop-btn {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: lowercase;
+}
+
+.sonic-volume-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sonic-volume {
+    flex: 1;
+    accent-color: var(--gold-elev, #d4af37);
+}
+
+.sonic-mute-btn {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    color: var(--outline-elev, #8a7f99);
+    cursor: pointer;
+}
+
+/* ── Keyboard hints footer ── */
+.sonic-keyboard {
+    flex-shrink: 0;
+    padding: 0.5rem 1rem 0.75rem;
+    border-top: 1px solid rgba(212, 175, 55, 0.08);
+    font-size: 0.6875rem;
+    color: var(--outline-elev, #8a7f99);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.6rem;
+    justify-content: center;
+    opacity: 0.7;
+}
+
+.sonic-keyboard kbd {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    padding: 0 4px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--on-surface-elev, #f5f0e6);
+}
+
+/* ── Drag-drop overlay ── */
+.sonic-drop-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(212, 175, 55, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 4px dashed var(--gold-elev, #d4af37);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold-bright-elev, #f2ca50);
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.18s ease;
+}
+
+.sonic-drop-overlay.is-active {
+    opacity: 1;
+}
+
+.sonic-drop-overlay::before {
+    content: "⬇  Soltá tu audio acá  ⬇";
+    font-size: 1.5rem;
+    padding: 2rem 3rem;
+    background: rgba(13, 9, 22, 0.85);
+    border-radius: 1rem;
+    border: 2px solid var(--gold-elev, #d4af37);
+}
+
+/* ── Body class: scroll lock when panel open ── */
+body.sonic-panel-open {
+    overflow: hidden;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .sonic-mini-volume { width: 60px; }
+    .sonic-mini-title { max-width: 12rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sonic-panel,
+    .sonic-track,
+    .sonic-btn,
+    .sonic-mini-btn,
+    .sonic-mini-toggle {
+        transition: none;
+    }
+}
