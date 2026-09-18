@@ -46,7 +46,7 @@ const FADE_OUT_S = 0.4;
 
 export default class extends Controller {
     static targets = [
-        'miniPlayer', 'miniTitle', 'miniElapsed', 'miniDuration',
+        'miniPlayer', 'miniLauncher', 'miniTitle', 'miniElapsed', 'miniDuration',
         'miniPlayBtn', 'miniIcon',
         'panel', 'panelClose',
         'temploTab', 'mineTab', 'globalTab',
@@ -137,6 +137,9 @@ export default class extends Controller {
 
         this.stopTimer();
         this.stopVisualizer();
+        // B4: clear body scroll-lock class so logout/transition doesn't leave
+        // the page frozen if the panel was open.
+        document.body.classList.remove('sonic-panel-open');
         // Don't kill AudioContext here — the floats div is turbo-permanent
         // and disconnect happens during heavy page transitions; we only
         // really stop on explicit user request.
@@ -320,7 +323,7 @@ export default class extends Controller {
             this.gainNode.gain.value = 0;
             this.oscillator.connect(this.gainNode);
             this.gainNode.connect(this.analyser);
-            this.analyser.connect(this.audioCtx.destination);
+            // B1: analyser → destination is wired once in ensureAudioCtx()
             this.oscillator.start();
             this.gainNode.gain.linearRampToValueAtTime(this.gainValue(), this.audioCtx.currentTime + FADE_IN_S);
 
@@ -391,7 +394,7 @@ export default class extends Controller {
             try {
                 this.mediaSource = this.audioCtx.createMediaElementSource(this.audioElement);
                 this.mediaSource.connect(this.analyser);
-                this.analyser.connect(this.audioCtx.destination);
+                // B1: analyser → destination is wired once in ensureAudioCtx()
             } catch (e) {
                 // MediaElementSource can fail if the element was already connected.
                 // Safe to ignore; visualizer will just not draw for this source.
@@ -550,7 +553,7 @@ export default class extends Controller {
             this.gainNode.gain.value = 0;
             this.oscillator.connect(this.gainNode);
             this.gainNode.connect(this.analyser);
-            this.analyser.connect(this.audioCtx.destination);
+            // B1: analyser → destination is wired once in ensureAudioCtx()
             this.oscillator.start();
             this.gainNode.gain.linearRampToValueAtTime(this.gainValue(), this.audioCtx.currentTime + FADE_IN_S);
             this.sessionId = d.sessionId || null;
@@ -583,6 +586,13 @@ export default class extends Controller {
         this.analyser = this.audioCtx.createAnalyser();
         this.analyser.fftSize = 256;
         this.analyser.smoothingTimeConstant = 0.7;
+        // B1: connect analyser → destination ONCE here. Previously each play
+        // site called analyser.connect(destination) which accumulated parallel
+        // connections on every source switch (4 callsites). Web Audio
+        // doesn't error on duplicate connections but the graph grew unbounded
+        // and consumed extra CPU. analyser is a pass-through so sound is
+        // identical; the bug was structural, not audible.
+        this.analyser.connect(this.audioCtx.destination);
     }
 
     gainValue() {
@@ -672,7 +682,7 @@ export default class extends Controller {
                 this.gainNode.gain.value = 0;
                 this.oscillator.connect(this.gainNode);
                 this.gainNode.connect(this.analyser);
-                this.analyser.connect(this.audioCtx.destination);
+                // B1: analyser → destination is wired once in ensureAudioCtx()
                 this.oscillator.start();
                 this.gainNode.gain.linearRampToValueAtTime(this.gainValue(), this.audioCtx.currentTime + FADE_IN_S);
                 this.startTimer(30);
@@ -729,8 +739,10 @@ export default class extends Controller {
             return;
         }
         if (window.apiToast) window.apiToast('Frecuencia borrada', 'success');
+        // B3: if the deleted track is currently playing, stop it cleanly so
+        // the audio element doesn't keep streaming an entity that's gone.
         if (this.activeSource === 'mine' && this.activeTrackId === id) {
-            this.activeSource = 'idle';
+            this.stopCurrent();
         }
         await this.renderMine();
         this.applyActiveTab();
@@ -875,12 +887,26 @@ export default class extends Controller {
         const canvas = this.visualizerTarget;
         const ctx = canvas.getContext('2d');
         const buf = new Uint8Array(this.analyser.frequencyBinCount);
+
+        // B6: retina scaling. The canvas backing store size must be scaled by
+        // devicePixelRatio to render sharp on hi-DPI displays. CSS already
+        // sizes the canvas to its layout width/height (360×64); we just
+        // have to grow the bitmap so 1 CSS pixel = DPR backing pixels.
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const cssW = canvas.clientWidth || 360;
+        const cssH = canvas.clientHeight || 64;
+        canvas.width = Math.round(cssW * dpr);
+        canvas.height = Math.round(cssH * dpr);
+        ctx.scale(dpr, dpr);
+        // After scaling, ctx coords are CSS pixels again.
+        const W = cssW;
+        const H = cssH;
+
         let phase = 0;
         const draw = () => {
             if (!this.visualizerRunning) return;
             this.rafId = requestAnimationFrame(draw);
             this.analyser.getByteFrequencyData(buf);
-            const W = canvas.width, H = canvas.height;
             ctx.clearRect(0, 0, W, H);
             // Idle wave (subtle moving sine)
             if (!this.isPlaying() || this.activeSource === 'idle') {
@@ -964,6 +990,12 @@ export default class extends Controller {
         if (!this.hasMiniPlayerTarget) return;
         const show = this.activeSource !== 'idle';
         this.miniPlayerTarget.hidden = !show;
+        // B5: hide the floating launcher when something is playing so the user
+        // doesn't see two audio controls at the bottom of the page. The launcher
+        // is the entry point for opening the panel when nothing is playing.
+        if (this.hasMiniLauncherTarget) {
+            this.miniLauncherTarget.hidden = show;
+        }
         if (!show) return;
         if (this.hasMiniTitleTarget) {
             this.miniTitleTarget.textContent = this.activeTrackName || '—';
