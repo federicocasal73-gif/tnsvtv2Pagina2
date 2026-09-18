@@ -128,8 +128,17 @@ ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 -o StrictHostKeyChecking=accept-new \
      git reset --hard origin/main && \
      rm -rf var/cache/prod var/cache/dev && \
      php bin/console cache:warmup --env=prod --no-debug && \
-     php bin/console asset-map:compile --env=prod --no-interaction"
+     php bin/console asset-map:compile --env=prod --no-interaction && \
+     php bin/console app:assets:clean --env=prod --no-interaction --apply"
 ```
+
+The final `app:assets:clean --apply` prunes stale compiled assets
+(not referenced by the just-regenerated `public/assets/manifest.json`).
+Every `asset-map:compile` produces a new content-hashed filename and
+leaves the previous one on disk; without clean, `public/assets/`
+accumulates dozens of orphan `controllers-*.js` / `styles/*-*.css` /
+`js/modules/*-*.js` files after a few deploys. The clean command parses
+`manifest.json` and deletes anything on disk that's not in the live set.
 
 `public/assets/` is gitignored, so `asset-map:compile` **must** run on every
 deploy — otherwise new Stimulus controllers never reach the browser (see
