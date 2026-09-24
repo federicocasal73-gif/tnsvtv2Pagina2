@@ -176,6 +176,8 @@
     </div>
 
     <script>
+    (function () {
+    'use strict';
     const GW_TIER_COLOR = {
         elite: 'var(--gold-bright-elev)', strong: 'var(--gold-elev)', steady: 'var(--violet-elev)',
         caution: 'var(--warning-elev)', risk: 'var(--error-elev)',
@@ -311,5 +313,6 @@
         // El modal en sí puede estar siempre en el DOM; apiSetupModal ya tolera null.
         apiPoller(loadGuardianWidget, 90000);
     });
+    })();
     </script>
 {% endblock %}
