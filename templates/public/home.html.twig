@@ -208,7 +208,11 @@
 
     <script>
     (function() {
-        apiFetch('/api/public/stats', { redirectOn401: false, silent: true }).then(r => {
+        // apiFetch is provided by src/assets/js/api-helper.js (ES module,
+        // loaded via the importmap below). The module is deferred, so it
+        // may not be defined yet during HTML parse — guard before calling.
+        if (typeof window.apiFetch !== 'function') return;
+        window.apiFetch('/api/public/stats', { redirectOn401: false, silent: true }).then(r => {
             if (!r || !r.data || !r.data.stats) return;
             const stats = r.data.stats;
 
