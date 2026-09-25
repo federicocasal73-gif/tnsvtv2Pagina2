@@ -128,9 +128,15 @@ ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 -o StrictHostKeyChecking=accept-new \
      git reset --hard origin/main && \
      rm -rf var/cache/prod var/cache/dev && \
      php bin/console cache:warmup --env=prod --no-debug && \
+     php bin/console doctrine:migrations:migrate --env=prod --no-interaction && \
      php bin/console asset-map:compile --env=prod --no-interaction && \
      php bin/console app:assets:clean --env=prod --no-interaction --apply"
 ```
+
+`doctrine:migrations:migrate` is included so that any new migration
+shipped in the deploy is applied automatically. The local SQLite CI
+env uses `doctrine:schema:create`, but prod MySQL on Hostinger has no
+equivalent — every migration must be applied via this step.
 
 The final `app:assets:clean --apply` prunes stale compiled assets
 (not referenced by the just-regenerated `public/assets/manifest.json`).
@@ -219,3 +225,35 @@ git operation to scan 12 000+ files.
 | `Container var/cache/dev/App_KernelDevDebugContainer.xml does not exist` | PHPStan step didn't warm up dev cache with debug | Add `php bin/console cache:warmup --env=dev` (no `--no-debug`) |
 | `Call to undefined method App\Entity\User::isAdmin()` | User is a sum of three traits; the actual method is `getIsAdmin()` | Use `getIsAdmin()` (or check `UserAuthTrait`) |
 | `AccessDenied` returning 500 instead of 403 | Controller throws instead of returning JSON | Use `requireAdmin()` helper from `App\Controller\Sanctum\UsersController` or add `kernel.exception` listener that translates `AccessDeniedException` → 403 JSON for `/api/` and `/sanctum/api/` paths |
+
+### Service Worker cache versioning
+
+`CACHE_VERSION` in `templates/sw.js.twig` is derived from `APP_VERSION`
+via `src/Controller/ServiceWorkerController.php`. When the SW activates,
+it deletes every cache whose key doesn't start with the current
+`CACHE_VERSION` — so a bumped `APP_VERSION` invalidates all client-side
+caches at once.
+
+**Always bump `APP_VERSION` in BOTH `.env` (committed) AND `.env.local`
+(gitignored) when you change static assets** (`asset-map:compile` output
+hashes, CSS/JS modules, etc.). If you only bump `.env`, prod will keep
+serving the old `cache_version` because `ServiceWorkerController` reads
+via `$_ENV` / `$_SERVER` (Dotenv), not `getenv()`.
+
+**Bug history:** the original implementation used `getenv('APP_VERSION')`,
+which **always returned false** on Hostinger shared hosting because
+LiteSpeed + PHP-FPM don't export OS env vars. The fallback hardcoded
+`'2.0.0'` was therefore unconditional, and the cache never invalidated
+between deploys. Fix (commit `eec49b5`): read from `$_ENV` then
+`$_SERVER` then `getenv()` in that order.
+
+### Mercure / SSE
+
+`templates/sw.js.twig` and `MercurePublisher` assume a Mercure hub is
+reachable at `MERCURE_PUBLIC_URL`. On Hostinger shared, the hub is **not
+running** (`.well-known/mercure` returns 404), so all SSE-driven
+features (typing indicator, realtime message arrival, presence
+notifications) silently fall back to polling. Chat itself still works
+via 15-30s polling, but the UX feels laggy. To enable real realtime, host
+Mercure externally (Fly.io free tier, Render, or a small VPS) and set
+`MERCURE_URL` + `MERCURE_PUBLIC_URL` in `.env.local` to the public URLs.
