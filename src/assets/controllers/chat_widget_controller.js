@@ -23,6 +23,7 @@ export default class extends Controller {
     this.lastMessageId = 0;
     this.pollTimer = null;
     this.badgePoll = null;
+    this.presenceTimer = null;     // periodic POST /api/chat/ping → keeps lastActivityAt fresh
     this.mercure = null;          // EventSource for /chat/{id}
     this.typingEventSource = null; // EventSource for /chat/{id}/typing
     this.typingMap = {};          // {code: timestamp}
@@ -33,11 +34,13 @@ export default class extends Controller {
     if (window.TNSVT_USER?.code) {
       this.knownUserCode = window.TNSVT_USER.code;
       this.startBadgePoll();
+      this.startPresencePing();
     }
     window.addEventListener('tnsvt:user-loaded', (e) => {
       if (e.detail?.code && !this.knownUserCode) {
         this.knownUserCode = e.detail.code;
         this.startBadgePoll();
+        this.startPresencePing();
       }
     });
     window.addEventListener('online', () => this.flushOutbox());
@@ -46,6 +49,7 @@ export default class extends Controller {
   disconnect() {
     this.stopPoll();
     this.stopBadgePoll();
+    this.stopPresencePing();
     this.closeMercure();
     this.closeTypingEventSource();
     clearTimeout(this.typingDebounce);
@@ -60,6 +64,36 @@ export default class extends Controller {
   stopBadgePoll() {
     if (this.badgePoll) clearInterval(this.badgePoll);
     this.badgePoll = null;
+  }
+
+  // ─── Presence ping ────────────────────────────────────────────
+  // User::isOnline() compares lastActivityAt > (now - 2min). The only
+  // endpoint that updates lastActivityAt is POST /api/chat/ping, and no
+  // client was calling it → every user looked "off" forever. Send one
+  // ping every 60s while the widget is mounted and the tab is visible.
+  startPresencePing() {
+    this.stopPresencePing();
+    const ping = () => {
+      if (!this.knownUserCode || document.hidden) return;
+      window.apiFetch('/api/chat/ping', {
+        method: 'POST',
+        silent: true,
+        body: { user_code: this.knownUserCode },
+      }).catch(() => {});
+    };
+    ping(); // immediate first ping on connect
+    this.presenceTimer = setInterval(ping, 60_000);
+    document.addEventListener('visibilitychange', this._onVisibilityPing = () => {
+      if (!document.hidden) ping();
+    });
+  }
+  stopPresencePing() {
+    if (this.presenceTimer) clearInterval(this.presenceTimer);
+    this.presenceTimer = null;
+    if (this._onVisibilityPing) {
+      document.removeEventListener('visibilitychange', this._onVisibilityPing);
+      this._onVisibilityPing = null;
+    }
   }
   async loadBadge() {
     if (!this.knownUserCode) return;

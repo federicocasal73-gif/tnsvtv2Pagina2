@@ -61,6 +61,7 @@ export default class extends Controller {
         } catch (e) { /* localStorage disabled */ }
         this.searchTimer = null;
         this.dmTimer = null;
+        this.presenceTimer = null;
 
         this.wire();
         this.restoreUrlState();
@@ -69,8 +70,12 @@ export default class extends Controller {
         // 400 'user_code requerido'. Same pattern as chat-widget/feed.
         if (window.TNSVT_USER?.code) {
             this.loadConversations();
+            this.startPresencePing();
         } else {
-            window.addEventListener('tnsvt:user-loaded', () => this.loadConversations(), { once: true });
+            window.addEventListener('tnsvt:user-loaded', () => {
+                this.loadConversations();
+                this.startPresencePing();
+            }, { once: true });
         }
         if (typeof window.apiPoller === 'function') {
             this._poller = window.apiPoller(() => this.loadConversations(), 30 * 1000);
@@ -82,8 +87,39 @@ export default class extends Controller {
             this._poller.stop();
             this._poller = null;
         }
+        this.stopPresencePing();
         if (this.searchTimer) clearTimeout(this.searchTimer);
         if (this.dmTimer) clearTimeout(this.dmTimer);
+    }
+
+    // ─── Presence ping ────────────────────────────────────────────
+    // Keep lastActivityAt fresh so User::isOnline() reflects the user
+    // being in the chat. POST /api/chat/ping every 60s while the page
+    // is mounted and the tab is visible.
+    startPresencePing() {
+        this.stopPresencePing();
+        const ping = () => {
+            const code = this.me();
+            if (!code || document.hidden) return;
+            window.apiFetch('/api/chat/ping', {
+                method: 'POST',
+                silent: true,
+                body: { user_code: code },
+            }).catch(() => {});
+        };
+        ping();
+        this.presenceTimer = setInterval(ping, 60_000);
+        document.addEventListener('visibilitychange', this._onVisibilityPing = () => {
+            if (!document.hidden) ping();
+        });
+    }
+    stopPresencePing() {
+        if (this.presenceTimer) clearInterval(this.presenceTimer);
+        this.presenceTimer = null;
+        if (this._onVisibilityPing) {
+            document.removeEventListener('visibilitychange', this._onVisibilityPing);
+            this._onVisibilityPing = null;
+        }
     }
 
     me() {
