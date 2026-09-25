@@ -171,12 +171,12 @@ export default class extends Controller {
         this.setActiveAccount(id);
         this.renderChips();
         this.populateSelects();
-        // Refresh trade list + equity curve + calendar
+        // Refresh trade list + (overview panel internally refreshes
+        // equity curve / stats / calendar). Skipping the explicit
+        // loadEquityCurve / loadCalendarMonthly / loadStats calls
+        // avoids the previous double-fetch (Bug #G in audit).
         if (typeof window.loadTrades === 'function') window.loadTrades();
-        if (typeof window.loadEquityCurve === 'function') window.loadEquityCurve();
-        if (typeof window.loadCalendarMonthly === 'function') window.loadCalendarMonthly();
         if (typeof window.refreshOverviewPanel === 'function') window.refreshOverviewPanel();
-        if (typeof window.loadStats === 'function') window.loadStats();
     }
 
     onTradeFormChange(event) {

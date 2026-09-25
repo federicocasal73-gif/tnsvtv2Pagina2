@@ -684,6 +684,16 @@
         return (window.TNSVT_USER && window.TNSVT_USER.code) || '';
     }
 
+    // ─── Account filter helper ─────────────────────────────────────
+    // All journal widgets (log, stats, calendar, day modal) accept an
+    // optional `account_id` query parameter. Returns the param string
+    // (with leading '&' for appending, OR empty for "Todas" mode).
+    function accountQueryParam() {
+        return window.TNSVT_ACTIVE_ACCOUNT_ID
+            ? `&account_id=${encodeURIComponent(window.TNSVT_ACTIVE_ACCOUNT_ID)}`
+            : '';
+    }
+
     function escapeHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
@@ -722,7 +732,7 @@
     }
 
     async function loadTrades() {
-        const r = await apiFetch('/api/journal?user_code=' + currentUserCode());
+        const r = await apiFetch('/api/journal?user_code=' + currentUserCode() + accountQueryParam(), { silent: true });
         if (!r.ok || !r.data || !r.data.success) {
             apiEmpty(listEl, { icon: 'cloud_off', message: 'Sin datos disponibles' });
             return;
@@ -1382,7 +1392,7 @@
     async function loadStats() {
         if (!document.getElementById('stats-pf')) return;
 
-        const r = await apiFetch('/api/journal/stats', { silent: true });
+        const r = await apiFetch('/api/journal/stats?' + accountQueryParam().slice(1), { silent: true });
         if (!r.ok || !r.data || !r.data.success) return;
         const s = r.data.stats;
         const hasTrades = s.total > 0;
@@ -1504,7 +1514,7 @@
     async function loadCalendarMonthly(year, month) {
         const grid = document.getElementById('cal-month-grid');
         if (!grid) return;
-        const url = `/api/journal/calendar-monthly?year=${year}&month=${month}`;
+        const url = `/api/journal/calendar-monthly?year=${year}&month=${month}${accountQueryParam()}`;
         const r = await apiFetch(url, { silent: true });
         if (!r.ok || !r.data || !r.data.success) return;
 
@@ -1644,7 +1654,7 @@
             const t = _nowYM();
             _CALstate = t;
         }
-        const r = await apiFetch(`/api/journal/calendar-monthly?year=${_CALstate.year}&month=${_CALstate.month}`, { silent: true });
+        const r = await apiFetch(`/api/journal/calendar-monthly?year=${_CALstate.year}&month=${_CALstate.month}${accountQueryParam()}`, { silent: true });
         if (!r.ok || !r.data || !r.data.success) return;
         const dayData = (r.data.days || []).find(d => d.date === isoDate);
 
