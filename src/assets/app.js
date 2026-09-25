@@ -1,5 +1,4 @@
 import './stimulus_bootstrap.js';
-import './js/api-helper.js';
 /*
  * Welcome to your app's main JavaScript file!
  *
