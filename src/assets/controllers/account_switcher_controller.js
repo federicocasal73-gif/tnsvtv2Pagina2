@@ -45,9 +45,18 @@ export default class extends Controller {
             }
             this.accounts = r.data.accounts || [];
             this.maxAccounts = r.data.max_accounts || 3;
+            // Expose total account_size so the journal equity curve
+            // can use the sum-of-all-accounts as the baseline when
+            // "Todas" is selected (was hardcoded $10K before; wrong
+            // for users with multiple accounts of different sizes).
+            window.TNSVT_TOTAL_ACCOUNT_SIZE = this.accounts.reduce(
+                (s, a) => s + Number(a.account_size || 0), 0);
+            // Resolve the persisted / orphan active account BEFORE
+            // rendering so the chip strip paints with the correct selection
+            // on first paint (avoids the brief 'no active chip' state).
+            this.setActiveAccount(this.getPersistedActive());
             this.renderChips();
             this.populateSelects();
-            this.setActiveAccount(this.getPersistedActive());
             this.updateCapHint();
         } catch (e) {
             console.error('[account-switcher] load error', e);
@@ -148,10 +157,12 @@ export default class extends Controller {
     setActiveAccount(accountId) {
         const id = accountId ? String(accountId) : null;
         if (id && !this.accounts.find(a => String(a.id) === id)) {
-            const first = this.accounts[0];
-            if (first) {
-                this._setGlobal(first.id, first);
-            }
+            // Orphan id (account was deleted but localStorage kept it).
+            // Always fall back to "Todas" so the chip strip stays consistent
+            // and the journal loaders don't fire requests with a stale id.
+            // Also clear localStorage so we don't repeat the fallback.
+            try { localStorage.removeItem('tnsvt_active_account_id'); } catch {}
+            this._setGlobal(null, null);
             return;
         }
         const acc = id ? this.accounts.find(a => String(a.id) === id) : null;
@@ -171,6 +182,9 @@ export default class extends Controller {
         this.setActiveAccount(id);
         this.renderChips();
         this.populateSelects();
+        // Invalidate any in-flight fetch from the previous account
+        // before kicking off new ones (anti race condition).
+        if (typeof window._bumpJournalFetchSeq === 'function') window._bumpJournalFetchSeq();
         // Refresh trade list + (overview panel internally refreshes
         // equity curve / stats / calendar). Skipping the explicit
         // loadEquityCurve / loadCalendarMonthly / loadStats calls

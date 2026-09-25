@@ -694,6 +694,18 @@
             : '';
     }
 
+    // ─── Fetch sequence counter (anti race condition) ─────────────
+    // When the user toggles accounts rapidly, multiple in-flight fetchers
+    // can race: B's response landing after C's would otherwise overwrite
+    // the DOM with stale data. Bumping the seq before each change and
+    // capturing it at loader entry guarantees only the latest response
+    // paints.
+    let _journalFetchSeq = 0;
+    function nextFetchSeq() { return ++_journalFetchSeq; }
+    function bumpJournalFetchSeq() { _journalFetchSeq++; }
+    window._bumpJournalFetchSeq = bumpJournalFetchSeq;
+    window._currentFetchSeq = () => _journalFetchSeq;
+
     function escapeHtml(s) {
         return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
@@ -732,7 +744,9 @@
     }
 
     async function loadTrades() {
+        const mySeq = nextFetchSeq();
         const r = await apiFetch('/api/journal?user_code=' + currentUserCode() + accountQueryParam(), { silent: true });
+        if (mySeq !== _journalFetchSeq) return; // discard stale response (account changed mid-flight)
         if (!r.ok || !r.data || !r.data.success) {
             apiEmpty(listEl, { icon: 'cloud_off', message: 'Sin datos disponibles' });
             return;
@@ -1208,7 +1222,9 @@
         const svg = document.getElementById('ec-chart');
         if (!svg) return;
 
-        const accSize = (window.TNSVT_ACTIVE_ACCOUNT && Number(window.TNSVT_ACTIVE_ACCOUNT.account_size)) || 10000;
+        const accSize = (window.TNSVT_ACTIVE_ACCOUNT && Number(window.TNSVT_ACTIVE_ACCOUNT.account_size))
+            || window.TNSVT_TOTAL_ACCOUNT_SIZE
+            || 0;
         const accParam = window.TNSVT_ACTIVE_ACCOUNT_ID ? `&account_id=${window.TNSVT_ACTIVE_ACCOUNT_ID}` : '';
         const url = `/api/journal/equity-curve?range=${encodeURIComponent(range)}&account_size=${accSize}${accParam}`;
         const r = await apiFetch(url, { silent: true });
@@ -1391,8 +1407,10 @@
 
     async function loadStats() {
         if (!document.getElementById('stats-pf')) return;
+        const mySeq = nextFetchSeq();
 
         const r = await apiFetch('/api/journal/stats?' + accountQueryParam().slice(1), { silent: true });
+        if (mySeq !== _journalFetchSeq) return;
         if (!r.ok || !r.data || !r.data.success) return;
         const s = r.data.stats;
         const hasTrades = s.total > 0;
@@ -1514,8 +1532,10 @@
     async function loadCalendarMonthly(year, month) {
         const grid = document.getElementById('cal-month-grid');
         if (!grid) return;
+        const mySeq = nextFetchSeq();
         const url = `/api/journal/calendar-monthly?year=${year}&month=${month}${accountQueryParam()}`;
         const r = await apiFetch(url, { silent: true });
+        if (mySeq !== _journalFetchSeq) return;
         if (!r.ok || !r.data || !r.data.success) return;
 
         _CALstate = { year: r.data.year, month: r.data.month_num };
@@ -1654,7 +1674,9 @@
             const t = _nowYM();
             _CALstate = t;
         }
+        const mySeq = nextFetchSeq();
         const r = await apiFetch(`/api/journal/calendar-monthly?year=${_CALstate.year}&month=${_CALstate.month}${accountQueryParam()}`, { silent: true });
+        if (mySeq !== _journalFetchSeq) return;
         if (!r.ok || !r.data || !r.data.success) return;
         const dayData = (r.data.days || []).find(d => d.date === isoDate);
 
