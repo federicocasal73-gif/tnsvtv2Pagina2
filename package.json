@@ -1,0 +1,18 @@
+{
+  "name": "tnsvt-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "description": "End-to-end tests for TNSVT Sanctum (Symfony + Stimulus/Turbo).",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:chromium": "playwright test --project=chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "typescript": "^5.5.0",
+    "ts-node": "^10.9.2"
+  }
+}

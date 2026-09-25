@@ -73,3 +73,11 @@ src/Services/
 ###> tnsvt v2 build outputs ###
 /public/build/
 ###< tnsvt v2 build outputs ###
+
+###> tnsvt v2 e2e tests (Playwright) ###
+# Installed npm deps + Playwright browsers + test artifacts.
+/node_modules/
+/playwright-report/
+/test-results/
+/playwright/.cache/
+###< tnsvt v2 e2e tests (Playwright) ###
