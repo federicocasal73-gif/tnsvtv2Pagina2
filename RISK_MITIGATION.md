@@ -23,9 +23,9 @@ The goals are:
 |---|---|
 | **Severity if it breaks** | 🔴 High (every journal widget shows wrong totals, breaks the user's trust in stats) |
 | **Likelihood** | Medium — backend `JournalController::loadEntriesForOwner()` is the single point of truth; touches many paths (log, stats, calendar-monthly, equity-curve, drawdown). Easy to accidentally skip the param in a future endpoint. |
-| **Mitigation** | • Bloque F (P0) ships `accountQueryParam()` helper centralised in `templates/sanctum/journal.html.twig`. Any future widget MUST use it.<br>• Bloque K3 (e2e) tests assert every journal URL contains `account_id=` after a non-default chip click.<br>• PHPUnit regression test should be added (currently no backend test for the helper — TODO). |
+| **Mitigation** | • Bloque F (P0) ships `accountQueryParam()` helper centralised in `templates/sanctum/journal.html.twig`. Any future widget MUST use it.<br>• Bloque K3 (e2e) tests assert every journal URL contains `account_id=` after a non-default chip click.<br>• ✅ PHPUnit regression test added (commit `9afb5c1`) — `tests/Functional/JournalAccountFilterTest.php` with 6 tests / 37 assertions covering all 4 endpoints + grace-fallback + cross-user anti-leak. |
 | **Owner** | Backend team |
-| **Deadline** | Add PHPUnit test by **2026-10-15** (next sprint) |
+| **Deadline** | ✅ DONE on 2026-09-25 (commit `9afb5c1`). |
 | **Rollback plan** | `git revert c41d9d3` (commit of Fix #F+G). Verifies widgets revert to 'all accounts'. Then investigate. |
 
 ## Risk #2 — Mercure hub will keep failing silently on Hostinger
@@ -135,7 +135,7 @@ The goals are:
 ## Mitigation action plan — next 30 / 60 / 90 days
 
 ### 30 days (2026-10-25)
-- [ ] Risk #1: Add PHPUnit test for `accountQueryParam()` / `loadEntriesForOwner()`.
+- [x] Risk #1: Add PHPUnit test for `accountQueryParam()` / `loadEntriesForOwner()`. ✅ DONE (commit `9afb5c1`)
 - [ ] Risk #8: Audit `/api/chat/users` and `/api/auth/check` responses, strip sensitive fields.
 - [ ] Risk #10: Add defensive orphan-clear in chat controllers.
 - [ ] Risk #7: Daily `mysqldump` cron + S3 offload.
