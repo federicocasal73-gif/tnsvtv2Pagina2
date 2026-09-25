@@ -25,10 +25,11 @@ class ServiceWorkerController extends AbstractController
     #[Route('/sw.js', name: 'service_worker', methods: ['GET'])]
     public function index(): Response
     {
-        $appVersion = (string) getenv('APP_VERSION');
-        if ($appVersion === '') {
-            $appVersion = '2.0.0';
-        }
+        // Read APP_VERSION via Symfony's Dotenv-loaded super-globals.
+        // getenv() returns false here because the LiteSpeed front-end does
+        // not export env vars to PHP-FPM. $_ENV / $_SERVER are populated
+        // by Dotenv::bootEnv() at app boot.
+        $appVersion = (string) ($_ENV['APP_VERSION'] ?? $_SERVER['APP_VERSION'] ?? getenv('APP_VERSION') ?: '2.0.0');
 
         $content = $this->renderView('sw.js.twig', [
             'cache_version' => $appVersion,
