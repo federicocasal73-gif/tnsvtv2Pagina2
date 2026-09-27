@@ -10,4 +10,9 @@ mercure:
             # JWT used to publish (default is shared with subscribe for dev)
             jwt:
                 secret: '%env(MERCURE_JWT_SECRET)%'
-                algorithm: HS256
+                # Symfony Mercure 0.x → 1.x renamed the algorithm identifiers from
+                # JWS-style ("HS256") to lcobucci/JWT-style ("hmac.sha256").
+                # The old name now throws InvalidArgumentException at boot —
+                # confirmed by /api/health/mercure returning 503 with this exact
+                # error. Keep in sync with vendor/symfony/mercure/Jwt/LcobucciFactory.php.
+                algorithm: hmac.sha256
