@@ -48,7 +48,7 @@ The goals are:
 | **Likelihood** | Medium — easy to ship a new entity without a migration; CI never catches it (sqlite via `schema:create`). |
 | **Mitigation (automated)** | Custom PHPStan rule (config in `phpstan-baseline.neon`) that detects a new `#[ORM\Entity]` without a corresponding `Version*.php` migration in the same PR. Reject the PR via the linter step.<br>**Status: NOT shipped (would take ~2-3h to write + test a custom rule).** |
 | **Mitigation (process)** | `AGENTS.md § Deploy to Hostinger` now includes `php bin/console doctrine:migrations:migrate --env=prod --no-interaction` as part of the deploy command. From this commit onward, every push applies pending migrations on prod. |
-| **Mitigation (observability)** | Add a `/api/health/migrations` endpoint that returns the highest-applied migration version vs the highest-defined. If out of sync, returns 500 + logs `critical`. Expose in uptime monitoring (UptimeRobot / Betterstack).<br>**Status: ✅ DONE on 2026-09-27 (commit `954e6de`).** `MigrationHealthService` reads from the Doctrine DependencyFactory, caches 10s, returns `{in_sync, available, executed, pending, latest_available, latest_executed, pending_versions, unavailable_versions, checked_at, error}`. `GET /api/health/migrations` returns 200/500; `POST /api/admin/migrations/check` forces a fresh check (admin). 13 PHPUnit tests / 40 assertions + `StubDependencyFactory` test helper. |
+| **Mitigation (observability)** | Add a `/api/health/migrations` endpoint that returns the highest-applied migration version vs the highest-defined. If out of sync, returns 500 + logs `critical`. Expose in uptime monitoring (UptimeRobot / Betterstack).<br>**Status: ✅ DONE on 2026-09-27 (commit `954e6de` + hotfix `068350c` + data-alignment `f95b294`).** `MigrationHealthService` reads from the Doctrine DependencyFactory, caches 10s, returns `{in_sync, available, executed, pending, latest_available, latest_executed, pending_versions, unavailable_versions, checked_at, error}`. `GET /api/health/migrations` returns 200/500; `POST /api/admin/migrations/check` forces a fresh check (admin). **MySQL quirk fix (`068350c`)**: prod MySQL returns tiny `platformOptions: {charset:null, collation:null}` metadata that Doctrine's comparator flags as "metadata storage is not up to date" — even though the table IS fine. The service now catches `MetadataStorageError::notUpToDate()` and falls back to a raw SQL query against `doctrine_migration_versions`. **Data-alignment (`f95b294`)**: 2 outlier migrations (`Version20260806000000`, `Version20260807000001`) used a non-standard sub-namespace + class names; renamed to `VersionXXXX` to match the others. One-time `UPDATE` on prod's `doctrine_migration_versions` table aligned the stored versions. 14 PHPUnit tests / 42 assertions + `StubDependencyFactory` test helper. |
 | **Owner** | Backend team |
 | **Deadline** | Process (✅ shipped). Automation: ✅ shipped (commit `4dbcf5a`: `app:lint:entity-migrations` Symfony command + new CI job `lint-entity-migrations`). |
 | **Rollback plan** | If a migration breaks prod, SSH `doctrine:migrations:migrate prev` to roll back one version. The m:ss option lets us reach a specific version non-sequentially. |
@@ -205,15 +205,20 @@ Sign off: tech lead + 1 reviewer per PR touching these areas.
 | `4dbcf5a` | Risk #3 | `app:lint:entity-migrations` Symfony command + nuevo CI job `lint-entity-migrations` + 9 PHPUnit tests |
 | `607fe38` | Risk #4 | `account_switcher_controller.js`: `resolveActiveAccountId()` + `renderFor(activeId)` (single-pass, no flicker) |
 | `f59f40b` | Risk #9 | `tests/e2e/lint-no-mutations.mjs` + `npm run lint:e2e` + CI step |
+| `068350c` | Risk #3 hotfix | MigrationHealthService: fallback a raw SQL cuando MySQL quirks trip Doctrine's metadata-storage check |
+| `f95b294` | Risk #3 data-fix | Renombrar 2 outlier migrations a namespace estándar + `UPDATE` en `doctrine_migration_versions` para alinear |
 
 ### Estado del repo al cierre de la sesión
 
-- **HEAD en `main`:** `f59f40b`
-- **Tests pasando:** `229 / 674 asserts / 2 skipped` (PHPUnit). JS syntax checks verdes. PHPStan level 5: 0 errors sobre 277 archivos. Twig lint: 76 files OK. e2e mutation lint: 0 violations. Entity-migrations lint: 61 OK / 0 missing.
+- **HEAD en `main`:** `f95b294`
+- **Tests pasando:** `230 / 676 asserts / 2 skipped` (PHPUnit). JS syntax checks verdes. PHPStan level 5: 0 errors sobre 277 archivos. Twig lint: 76 files OK. e2e mutation lint: 0 violations. Entity-migrations lint: 61 OK / 0 missing.
 - **Risk #2 tier 1 ✅ funcionando en prod:** `GET https://www.tnsvt.com/api/health/mercure` devuelve:
   - `503 degraded` mientras el hub Mercure no exista (Hostinger no lo hostea)
   - Cambiará automáticamente a `200 ok` cuando Mercure esté hosteado externamente (Fly.io, Render, VPS)
-- **Risk #3 ✅ blindado:** `/api/health/migrations` (drift detection en runtime) + `app:lint:entity-migrations` (rechazo pre-deploy en CI). Las dos capas cubren antes Y después del deploy.
+- **Risk #3 ✅ blindado en prod:** `GET https://www.tnsvt.com/api/health/migrations` devuelve:
+  - `200 ok` con `in_sync: true, available: 12, executed: 12` ✅
+  - `500 drift` si se publica una migration sin aplicar (lo agarra UptimeRobot en <60s)
+  - Blindaje doble: pre-deploy (`app:lint:entity-migrations`) + post-deploy (endpoint)
 - **Cron de backup:** script instalado en `~/bin/db-backup.sh` y testeado (110 KB gzip verificado). Falta que el usuario lo programe via hPanel → Advanced → Cron Jobs
 
 ### Pendiente para la próxima sesión
@@ -271,7 +276,7 @@ Sign off: tech lead + 1 reviewer per PR touching these areas.
 src/Service/MercureHealthService.php                            (Risk #2)
 src/EventListener/SensitiveFieldStripListener.php               (Risk #8)
 src/Controller/Api/MercureHealthController.php                  (Risk #2)
-src/Service/MigrationHealthService.php                          (Risk #3 — drift detection)
+src/Service/MigrationHealthService.php                          (Risk #3 — drift detection + raw-SQL fallback)
 src/Controller/Api/MigrationHealthController.php                (Risk #3)
 src/Command/LintEntityMigrationsCommand.php                     (Risk #3 — pre-deploy lint)
 src/assets/controllers/chat_widget_controller.js                (Bloque L + Risk #10)
