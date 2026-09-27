@@ -312,3 +312,44 @@ loads. Never assume a deferred module is loaded at inline-script-parse time.
 and are consumed by **other ES modules** (e.g. Stimulus controllers
 loaded by `@symfony/stimulus-bundle`). Those work fine because Stimulus
 runs controllers after DOMContentLoaded.
+
+### Database backups
+
+**Status (Risk #7 in RISK_MITIGATION.md):** script `scripts/db-backup.sh`
+exists and is tested (creates a verified gzipped dump). **Cron is
+NOT installed on the Hostinger shared box** — `crontab`, `at`,
+`systemd-run` are all unavailable. The deploy step in this repo
+does **NOT** install a cron automatically.
+
+**Hostinger shared does not allow `proc_open`, `crontab`, or
+`systemd-timer`** — same root cause as the `composer install`
+limitation. You must use **Hostinger hPanel → Advanced → Cron Jobs**
+(web UI) to schedule the backup. Steps:
+
+1. Log in to https://hpanel.hostinger.com
+2. Hosting → your domain → **Advanced → Cron Jobs**
+3. Add a cron entry:
+   - **Command:** `/home/u310596868/bin/db-backup.sh >> /home/u310596868/backups/db-backup.log 2>&1`
+   - **Schedule:** `0 3 * * *` (every day at 03:00 server time)
+4. Save. The script will run daily, gzip to `~/backups/`, rotate
+   files older than 30 days.
+
+If you want to run it manually (e.g., before a deploy that touches
+schema): `ssh u310596868@185.173.111.201 '~/bin/db-backup.sh'`.
+
+**Restore from a backup:**
+```bash
+# Find the latest backup file
+ls -lt ~/backups/db_tnsvt_*.sql.gz | head -1
+# Decompress + pipe into mysql (use socket auth, not TCP)
+gunzip -c ~/backups/db_tnsvt_20260927_030000.sql.gz \
+  | mysql --socket=/var/lib/mysql/mysql.sock \
+           -u u310596868_tnsvt_v2 \
+           u310596868_tnsvt_v2
+```
+
+**Off-server backup (future):** the script is structured so adding
+an upload step before the rotation is one-line. When the user has
+S3 / Backblaze B2 / a personal NAS / etc., add the upload before
+the `find … -delete` line. Until then, the backup lives on the same
+disk as the server — better than nothing, not disaster-proof.
