@@ -48,9 +48,9 @@ The goals are:
 | **Likelihood** | Medium — easy to ship a new entity without a migration; CI never catches it (sqlite via `schema:create`). |
 | **Mitigation (automated)** | Custom PHPStan rule (config in `phpstan-baseline.neon`) that detects a new `#[ORM\Entity]` without a corresponding `Version*.php` migration in the same PR. Reject the PR via the linter step.<br>**Status: NOT shipped (would take ~2-3h to write + test a custom rule).** |
 | **Mitigation (process)** | `AGENTS.md § Deploy to Hostinger` now includes `php bin/console doctrine:migrations:migrate --env=prod --no-interaction` as part of the deploy command. From this commit onward, every push applies pending migrations on prod. |
-| **Mitigation (observability)** | Add a `/api/health/migrations` endpoint that returns the highest-applied migration version vs the highest-defined. If out of sync, returns 500 + logs `critical`. Expose in uptime monitoring (UptimeRobot / Betterstack).<br>**Status: TODO.** |
+| **Mitigation (observability)** | Add a `/api/health/migrations` endpoint that returns the highest-applied migration version vs the highest-defined. If out of sync, returns 500 + logs `critical`. Expose in uptime monitoring (UptimeRobot / Betterstack).<br>**Status: ✅ DONE on 2026-09-27 (commit `954e6de`).** `MigrationHealthService` reads from the Doctrine DependencyFactory, caches 10s, returns `{in_sync, available, executed, pending, latest_available, latest_executed, pending_versions, unavailable_versions, checked_at, error}`. `GET /api/health/migrations` returns 200/500; `POST /api/admin/migrations/check` forces a fresh check (admin). 13 PHPUnit tests / 40 assertions + `StubDependencyFactory` test helper. |
 | **Owner** | Backend team |
-| **Deadline** | Process (✅ shipped). Automation: 2026-11-01 (next quarter). |
+| **Deadline** | Process (✅ shipped). Automation: ✅ shipped (commit `4dbcf5a`: `app:lint:entity-migrations` Symfony command + new CI job `lint-entity-migrations`). |
 | **Rollback plan** | If a migration breaks prod, SSH `doctrine:migrations:migrate prev` to roll back one version. The m:ss option lets us reach a specific version non-sequentially. |
 
 ## Risk #4 — Account-switcher chip strip flicker on cold cache
@@ -59,7 +59,7 @@ The goals are:
 |---|---|
 | **Severity** | 🟡 Low (cosmetic) |
 | **Likelihood** | Medium — `renderChips()` runs twice on initial load (once before `setActiveAccount` resolves the persisted/orphan id, once after). Bloque I partially fixed by reordering, but the flicker window is ~10–50ms on slow networks. |
-| **Mitigation** | • Bloque I reorders `loadAccounts()` to resolve active before rendering.<br>• Future: collapse `setActiveAccount` and `renderChips` into a single `renderFor(active)` method that takes the active id as a parameter. Avoids the dual-pass entirely.<br>**Status: Bloque I shipped. Refactor: TODO.** |
+| **Mitigation** | • Bloque I reorders `loadAccounts()` to resolve active before rendering.<br>• ✅ DONE on 2026-09-27 (commit `607fe38`): extracted `resolveActiveAccountId(persistedId)` (pure, no side effects) and `renderFor(activeId)` (single-pass, no read of localStorage / window globals). The `loadAccounts()` flow now: resolve → setActiveAccount → renderFor — exactly one render with the correct id, no flicker window. `renderChips()` is kept as a thin wrapper for backward compat. |
 | **Owner** | Frontend team |
 | **Deadline** | Refactor: 2026-Q4 |
 | **Rollback plan** | If flicker becomes user-visible: temporarily inline the persisted id into the Twig template with `data-active-account-id="{{ app.user.activeAccountId }}"` so the first paint is correct server-side. Removes the need for the JS resolution. |
@@ -114,7 +114,7 @@ The goals are:
 |---|---|
 | **Severity** | 🔴 High (a runaway test could delete a user's trade or accounts) |
 | **Likelihood** | Low now (all current tests are read-only). Future contributors might add a write test. |
-| **Mitigation** | • `tests/e2e/README.md` mandates "Don't create or delete state — tests must be idempotent".<br>• Playwright config `fullyParallel: false, workers: 1` so even a malicious spec can't fan out.<br>• Optional: add a CI policy that rejects PRs introducing `request.post\|delete\|put` to non-test URLs in spec files.<br>**Status: Convention documented. Tooling: TODO.** |
+| **Mitigation** | • `tests/e2e/README.md` mandates "Don't create or delete state — tests must be idempotent".<br>• Playwright config `fullyParallel: false, workers: 1` so even a malicious spec can't fan out.<br>• ✅ DONE on 2026-09-27 (commit `f59f40b`): `tests/e2e/lint-no-mutations.mjs` + `npm run lint:e2e` rejects specs containing `request.post|put|delete|patch`, `.post|.put|.delete|.patch(` on fetch wrappers, mutating endpoint paths under `/api/accounts|journal|trades|admin`, `page.click([data-delete])`, or direct calls to `saveAccount|confirmDelete|deleteTrade|createTrade|userPurge`. Disable directives: `/* lint-e2e-disable:<rule> */` (single line) or `/* lint-e2e-disable-file */` (whole file). New CI step 'Lint e2e specs' in `.github/workflows/e2e.yml` runs before the Playwright suite. |
 | **Owner** | Frontend team |
 | **Deadline** | Lint policy: 2026-Q4 |
 | **Rollback plan** | Manual restore from `Risk #7` backup. |
@@ -144,13 +144,13 @@ The goals are:
 ### 60 days (2026-11-25)
 - [ ] Risk #1: full PHPUnit coverage for journal endpoints.
 - [x] Risk #2 tier 1: `MercureHealthCheck` listener. ✅ DONE (commit `c6c5151`)
-- [ ] Risk #9: lint policy blocking mutation in E2E specs.
+- [x] Risk #9: lint policy blocking mutation in E2E specs. ✅ DONE (commits `f59f40b`) — `tests/e2e/lint-no-mutations.mjs` + npm `lint:e2e` + CI step.
 
 ### 90 days (2026-12-25)
 - [ ] Risk #2 tier 2: deploy Mercure externally OR switch to PHP-native SSE.
-- [ ] Risk #3: PHPStan rule that requires a migration per new entity.
-- [ ] Risk #3: `/api/health/migrations` endpoint + UptimeRobot monitor.
-- [ ] Risk #4: Refactor chip strip into `renderFor(active)` single-pass.
+- [x] Risk #3: PHPStan rule that requires a migration per new entity. ✅ DONE (commit `4dbcf5a`) — `app:lint:entity-migrations` Symfony command + new CI job `lint-entity-migrations`.
+- [x] Risk #3: `/api/health/migrations` endpoint + UptimeRobot monitor. ✅ DONE (commit `954e6de`) — `MigrationHealthService` + `MigrationHealthController` (GET public, POST admin), 13 PHPUnit tests.
+- [x] Risk #4: Refactor chip strip into `renderFor(active)` single-pass. ✅ DONE (commit `607fe38`) — `account_switcher_controller.js`: extracted `resolveActiveAccountId()` (pure) + `renderFor(activeId)` (single-pass, no flicker).
 
 ---
 
@@ -201,14 +201,19 @@ Sign off: tech lead + 1 reviewer per PR touching these areas.
 | `c6c5151` | Risk #2 | `MercureHealthService` + `MercureHealthController` (GET `/api/health/mercure`, POST admin) + 13 tests |
 | `7b90497` | docs | RISK_MITIGATION.md: Risk #2 marcado |
 | `e1e75d5` | bug | `mercure.yaml`: `algorithm: HS256` → `hmac.sha256` (descubierto por el health check) |
+| `954e6de` | Risk #3 | `MigrationHealthService` + `MigrationHealthController` (GET `/api/health/migrations`, POST admin) + 13 PHPUnit tests + `StubDependencyFactory` |
+| `4dbcf5a` | Risk #3 | `app:lint:entity-migrations` Symfony command + nuevo CI job `lint-entity-migrations` + 9 PHPUnit tests |
+| `607fe38` | Risk #4 | `account_switcher_controller.js`: `resolveActiveAccountId()` + `renderFor(activeId)` (single-pass, no flicker) |
+| `f59f40b` | Risk #9 | `tests/e2e/lint-no-mutations.mjs` + `npm run lint:e2e` + CI step |
 
 ### Estado del repo al cierre de la sesión
 
-- **HEAD en `main`:** `e1e75d5`
-- **Tests pasando:** `207 / 617 asserts / 2 skipped` (los skipped son limitaciones del container test, documentadas)
+- **HEAD en `main`:** `f59f40b`
+- **Tests pasando:** `229 / 674 asserts / 2 skipped` (PHPUnit). JS syntax checks verdes. PHPStan level 5: 0 errors sobre 277 archivos. Twig lint: 76 files OK. e2e mutation lint: 0 violations. Entity-migrations lint: 61 OK / 0 missing.
 - **Risk #2 tier 1 ✅ funcionando en prod:** `GET https://www.tnsvt.com/api/health/mercure` devuelve:
   - `503 degraded` mientras el hub Mercure no exista (Hostinger no lo hostea)
   - Cambiará automáticamente a `200 ok` cuando Mercure esté hosteado externamente (Fly.io, Render, VPS)
+- **Risk #3 ✅ blindado:** `/api/health/migrations` (drift detection en runtime) + `app:lint:entity-migrations` (rechazo pre-deploy en CI). Las dos capas cubren antes Y después del deploy.
 - **Cron de backup:** script instalado en `~/bin/db-backup.sh` y testeado (110 KB gzip verificado). Falta que el usuario lo programe via hPanel → Advanced → Cron Jobs
 
 ### Pendiente para la próxima sesión
@@ -235,10 +240,10 @@ Sign off: tech lead + 1 reviewer per PR touching these areas.
 
 | # | Item | Commit previo | Esfuerzo |
 |---|---|---|---|
-| 1 | **Risk #3 — `/api/health/migrations`** + UptimeRobot | — | 1 h |
-| 2 | **Risk #3 — PHPStan rule** que requiere migration por entity nueva | — | 2-3 h |
-| 3 | **Risk #4 — Refactor** chip strip en `renderFor(active)` single-pass | `8bcbae4` | 1 h |
-| 4 | **Risk #9 — Lint policy** que rechaza mutaciones en e2e specs | `4e894b4` | 2-3 h |
+| 1 | ~~**Risk #3 — `/api/health/migrations`** + UptimeRobot~~ | ✅ DONE (`954e6de`) | 1 h |
+| 2 | ~~**Risk #3 — PHPStan rule** que requiere migration por entity nueva~~ | ✅ DONE (`4dbcf5a`) | 2-3 h |
+| 3 | ~~**Risk #4 — Refactor** chip strip en `renderFor(active)` single-pass~~ | ✅ DONE (`607fe38`) | 1 h |
+| 4 | ~~**Risk #9 — Lint policy** que rechaza mutaciones en e2e specs~~ | ✅ DONE (`f59f40b`) | 2-3 h |
 | 5 | **Risk #2 tier 2** — deploy Mercure externamente (Fly.io/Render/VPS) | `c6c5151` | cuando usuario quiera |
 
 #### 🟡 Bloque 4: Mejoras pendientes que el usuario mencionó
@@ -248,14 +253,17 @@ Sign off: tech lead + 1 reviewer per PR touching these areas.
 
 ### Cómo retomar
 
-1. Si seguís en la misma ventana, podés decir "**siguiente**" o "**siguiente [número]**" y arranco con el item que elijas del Bloque 3.
-2. Si abrís una nueva ventana, decí "**empezamos por el Risk #3 health/migrations**" (o el que prefieras) y arranco desde ahí.
-3. Si querés validar que todo está bien en prod antes de seguir, podés:
-   ```bash
-   ssh u310596868@185.173.111.201 "ls -lt ~/backups/db_tnsvt_*.sql.gz | head -3"
-   curl -s https://www.tnsvt.com/api/health/mercure
-   ```
-   (el segundo debería devolver 503 con `degraded` — si devuelve 200 `ok`, ¡Mercure está vivo!)
+1. **Status actual (2026-09-27 — cierre de esta sesión):** el Bloque 3 está 100% cerrado. Los 4 items marcados ✅ son code shipping + tests + CI wiring. El único pendiente en producción es Risk #2 tier 2 (Mercure externo), decisión del usuario.
+2. Si abrís una nueva ventana, podés:
+   - Validar todo está bien en prod:
+     ```bash
+     ssh u310596868@185.173.111.201 "ls -lt ~/backups/db_tnsvt_*.sql.gz | head -3"
+     curl -s https://www.tnsvt.com/api/health/mercure
+     curl -s https://www.tnsvt.com/api/health/migrations
+     ```
+     (mercure debería devolver 503 `degraded`; migrations debería devolver 200 `ok` después de deploy)
+   - O arrancar un **siguiente Bloque** —ej: configurar UptimeRobot/Better Stack para alertar sobre los 2 endpoints /api/health/*, o hosting de Mercure externo, o staging env.
+3. Si todo está verde, el próximo milestone natural es **Risk #1**: full PHPUnit coverage for journal endpoints (sigue pendiente en el plan 60-day).
 
 ### Archivos clave creados/modificados en esta sesión
 
@@ -263,21 +271,30 @@ Sign off: tech lead + 1 reviewer per PR touching these areas.
 src/Service/MercureHealthService.php                            (Risk #2)
 src/EventListener/SensitiveFieldStripListener.php               (Risk #8)
 src/Controller/Api/MercureHealthController.php                  (Risk #2)
+src/Service/MigrationHealthService.php                          (Risk #3 — drift detection)
+src/Controller/Api/MigrationHealthController.php                (Risk #3)
+src/Command/LintEntityMigrationsCommand.php                     (Risk #3 — pre-deploy lint)
 src/assets/controllers/chat_widget_controller.js                (Bloque L + Risk #10)
 src/assets/controllers/chat_controller.js                       (Bloque L + Risk #10)
-src/assets/controllers/account_switcher_controller.js           (B + H + I + J)
+src/assets/controllers/account_switcher_controller.js           (B + H + I + J + Risk #4)
 templates/_partials/api_helper.html.twig                       (Bloque A revert)
 templates/sanctum/dashboard.html.twig                           (Bloque B + F + H)
 config/packages/mercure.yaml                                   (HS256 → hmac.sha256 fix)
+config/services.yaml                                           (DependencyFactory alias)
 AGENTS.md                                                     (B + SW cache + inline-script + DB backup)
 RISK_MITIGATION.md                                            (este archivo)
 scripts/db-backup.sh                                          (Risk #7)
 tests/Functional/JournalAccountFilterTest.php                  (Risk #1)
 tests/Functional/SensitiveFieldStripTest.php                    (Risk #8)
 tests/Functional/MercureHealthTest.php                          (Risk #2)
+tests/Functional/MigrationHealthTest.php                        (Risk #3 — 13 tests)
+tests/Functional/Stub/StubDependencyFactory.php                 (Risk #3 — test helper)
+tests/Functional/Command/LintEntityMigrationsCommandTest.php    (Risk #3 — 9 tests)
 tests/e2e/journal-account-switching.spec.ts                     (K3)
 tests/e2e/login.ts                                             (K3)
 tests/e2e/README.md                                             (K3)
-package.json + tsconfig.json + playwright.config.ts             (K3)
-.github/workflows/e2e.yml                                      (K3)
+tests/e2e/lint-no-mutations.mjs                                (Risk #9)
+package.json + tsconfig.json + playwright.config.ts             (K3 + lint:e2e script)
+.github/workflows/ci.yml                                       (+ lint-entity-migrations job)
+.github/workflows/e2e.yml                                      (+ lint:e2e step)
 ```
