@@ -1,6 +1,8 @@
 <?php
 
-namespace Doctrine\Migrations\Version20260807000001;
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
@@ -8,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Create `settings` table for Phase 1c (Sanctum settings).
  */
-final class CreateSettingsTable extends AbstractMigration
+final class Version20260807000001 extends AbstractMigration
 {
     public function getDescription(): string
     {

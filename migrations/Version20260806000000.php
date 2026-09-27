@@ -1,11 +1,13 @@
 <?php
 
-namespace Doctrine\Migrations\Version20260806000000;
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
-final class CreateFrequencyTables extends AbstractMigration
+final class Version20260806000000 extends AbstractMigration
 {
     public function getDescription(): string
     {
