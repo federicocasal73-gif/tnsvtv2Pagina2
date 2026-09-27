@@ -51,11 +51,19 @@ export default class extends Controller {
             // for users with multiple accounts of different sizes).
             window.TNSVT_TOTAL_ACCOUNT_SIZE = this.accounts.reduce(
                 (s, a) => s + Number(a.account_size || 0), 0);
-            // Resolve the persisted / orphan active account BEFORE
-            // rendering so the chip strip paints with the correct selection
-            // on first paint (avoids the brief 'no active chip' state).
-            this.setActiveAccount(this.getPersistedActive());
-            this.renderChips();
+            // Resolve the persisted / orphan active account ONCE,
+            // then paint the chip strip with that resolved id in a
+            // single renderFor(activeId) pass — no double-read of
+            // localStorage + window global, so the chip is correct on
+            // the first paint (avoids the 10-50ms flicker window
+            // where no chip was marked active).
+            //
+            // setActiveAccount() updates window.TNSVT_ACTIVE_ACCOUNT_ID
+            // (and localStorage) but does NOT render — renderFor() does.
+            // Returns the resolved id so we can paint with it directly.
+            const activeId = this.resolveActiveAccountId(this.getPersistedActive());
+            this.setActiveAccount(activeId);
+            this.renderFor(activeId);
             this.populateSelects();
             this.updateCapHint();
         } catch (e) {
@@ -63,10 +71,20 @@ export default class extends Controller {
         }
     }
 
-    renderChips() {
+    /**
+     * Single-pass renderer: paints the chip strip using the supplied
+     * active id. No reads from localStorage / window globals inside
+     * the renderer, so the first paint is consistent and there is no
+     * flicker window between two consecutive renders.
+     *
+     * @param {string|null} activeId  The resolved active account id
+     *                                 (null = "Todas"). String for
+     *                                 consistent compare with `a.id`.
+     */
+    renderFor(activeId) {
         const container = document.getElementById('account-chips');
         if (!container) return;
-        const currentId = window.TNSVT_ACTIVE_ACCOUNT_ID || this.getPersistedActive();
+        const currentId = activeId == null ? '' : String(activeId);
 
         let html = `<button type="button" class="account-chip ${!currentId ? 'active' : ''}" data-account-id=""
                           title="Mostrar trades de todas las cuentas">
@@ -76,7 +94,7 @@ export default class extends Controller {
                     </button>`;
 
         html += this.accounts.map(a => {
-            const active = String(currentId) === String(a.id) ? 'active' : '';
+            const active = currentId !== '' && currentId === String(a.id) ? 'active' : '';
             return `<button type="button" class="account-chip ${active}" data-account-id="${a.id}"
                           style="--chip-color: ${escapeAttr(a.color || '#d4af37')}"
                           title="${escapeAttr(a.name)} · $${Number(a.account_size).toLocaleString()}">
@@ -119,6 +137,14 @@ export default class extends Controller {
         }
     }
 
+    /**
+     * Thin wrapper kept for callers that just want a re-render using
+     * the current global state. New code should prefer renderFor(id).
+     */
+    renderChips() {
+        this.renderFor(window.TNSVT_ACTIVE_ACCOUNT_ID);
+    }
+
     populateSelects() {
         const selects = document.querySelectorAll('select#trade-account-id');
         selects.forEach(sel => {
@@ -154,6 +180,33 @@ export default class extends Controller {
         }
     }
 
+    /**
+     * Pure resolver: given a persisted candidate id, return the id
+     * we should actually activate.
+     *
+     *   - null / '' → null (no account, "Todas")
+     *   - valid id (exists in this.accounts) → that id
+     *   - orphan id (no longer in this.accounts) → null (fall back)
+     *
+     * Does NOT mutate global state or localStorage. Callers can then
+     * `setActiveAccount(resolved)` to persist the choice, or
+     * `renderFor(resolved)` to paint the chip strip.
+     *
+     * Used by loadAccounts() so we render exactly once with the
+     * resolved id (single-pass, no flicker).
+     */
+    resolveActiveAccountId(persistedId) {
+        const id = persistedId ? String(persistedId) : null;
+        if (id === null || id === '') return null;
+        if (!this.accounts.find(a => String(a.id) === id)) {
+            // Orphan id: account was deleted but localStorage kept it.
+            // Fall back to "Todas" so the chip strip stays consistent
+            // and the journal loaders don't fire requests with a stale id.
+            return null;
+        }
+        return id;
+    }
+
     setActiveAccount(accountId) {
         const id = accountId ? String(accountId) : null;
         if (id && !this.accounts.find(a => String(a.id) === id)) {
@@ -180,7 +233,7 @@ export default class extends Controller {
     activate(accountId) {
         const id = accountId ? String(accountId) : null;
         this.setActiveAccount(id);
-        this.renderChips();
+        this.renderFor(id);
         this.populateSelects();
         // Invalidate any in-flight fetch from the previous account
         // before kicking off new ones (anti race condition).
