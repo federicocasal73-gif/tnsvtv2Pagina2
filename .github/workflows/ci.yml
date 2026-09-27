@@ -212,6 +212,36 @@ jobs:
             - name: Audit
               run: composer audit --no-interaction --format=json | jq '.vulnerabilities | length'
 
+    lint-entity-migrations:
+        name: Lint Entity↔Migration Coherence
+        # Catches the class of bug we hit with the 12-table prod incident:
+        # a new #[ORM\Entity] shipped without a corresponding CREATE TABLE
+        # in any migration. Without this check the entity passes local
+        # sqlite tests (doctrine:schema:create mirrors the entity layer)
+        # but throws 42S02 in prod. See RISK_MITIGATION.md § Risk #3.
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.4'
+                  extensions: intl, mbstring
+
+            - name: Cache Composer dependencies
+              uses: actions/cache@v4
+              with:
+                  path: vendor
+                  key: composer-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-
+
+            - name: Install dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: Run entity-migrations lint
+              run: php bin/console app:lint:entity-migrations --no-interaction
+
     messenger-consumer:
         name: Messenger Consumer Smoke Test
         runs-on: ubuntu-latest
