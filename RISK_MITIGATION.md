@@ -34,10 +34,10 @@ The goals are:
 |---|---|
 | **Severity** | 🟠 Medium — chat realtime (typing indicators, message arrival without reload) is permanently degraded. Users learn to live with it. The failure is silent: no log, no metric. |
 | **Likelihood** | Certain (already failing) |
-| **Mitigation (tier 1)** | Add a `MercureHealthCheck` listener: every 5 min, try `cache_pool->getItem('mercure_alive')->isHit()`. If the publisher fails ≥ 3 times, log a single `CRITICAL` line with `<env=production>` tag so `monolog` alerts catch it. Minimal overhead.<br>**Status: TODO — NOT yet shipped.** |
+| **Mitigation (tier 1)** | Add a `MercureHealthCheck` listener: every 5 min, try `cache_pool->getItem('mercure_alive')->isHit()`. If the publisher fails ≥ 3 times, log a single `CRITICAL` line with `<env=production>` tag so `monolog` alerts catch it. Minimal overhead.<br>**Status: ✅ DONE on 2026-09-27 (commit `c6c5151`).** `MercureHealthService` probes the hub on demand, caches 30s, debounces critical logs to one per failure streak, exposes `GET /api/health/mercure` (public, for UptimeRobot) + `POST /api/admin/mercure/check` (admin). 13 PHPUnit tests / 28 assertions. |
 | **Mitigation (tier 2)** | Document a runbook in `AGENTS.md § Mercure / SSE` explaining how to host Mercure externally (Fly.io free tier, Render, or a $5/mo VPS). Hostinger shared has `proc_open` disabled — same constraint that prevents `composer install` — so the hub MUST be elsewhere. |
 | **Owner** | Platform team |
-| **Deadline** | Tier 1: 2026-10-01 (next sprint). Tier 2: when chat realtime becomes a customer-requested feature. |
+| **Deadline** | Tier 1: ✅ DONE. Tier 2: when chat realtime becomes a customer-requested feature. |
 | **Rollback plan** | Tier 1 is read-only — no rollback needed. Tier 2 is a deployment; old domain stays live until new hub smoke-tested. |
 
 ## Risk #3 — Future `campus_*`-style entities never get a migration
@@ -143,7 +143,7 @@ The goals are:
 
 ### 60 days (2026-11-25)
 - [ ] Risk #1: full PHPUnit coverage for journal endpoints.
-- [ ] Risk #2 tier 1: `MercureHealthCheck` listener.
+- [x] Risk #2 tier 1: `MercureHealthCheck` listener. ✅ DONE (commit `c6c5151`)
 - [ ] Risk #9: lint policy blocking mutation in E2E specs.
 
 ### 90 days (2026-12-25)
