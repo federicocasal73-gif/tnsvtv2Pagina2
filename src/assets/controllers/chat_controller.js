@@ -98,6 +98,17 @@ export default class extends Controller {
     // is mounted and the tab is visible.
     startPresencePing() {
         this.stopPresencePing();
+        // Defensive (Risk #10 in RISK_MITIGATION.md): clear any orphan
+        // timer/listener from a prior controller instance that didn't
+        // disconnect cleanly (Stimulus dev hot-reload, race, etc.).
+        if (window.__tnsvtChatPagePresenceTimer) {
+            clearInterval(window.__tnsvtChatPagePresenceTimer);
+            window.__tnsvtChatPagePresenceTimer = null;
+        }
+        if (window.__tnsvtChatPagePresenceListener) {
+            document.removeEventListener('visibilitychange', window.__tnsvtChatPagePresenceListener);
+            window.__tnsvtChatPagePresenceListener = null;
+        }
         const ping = () => {
             const code = this.me();
             if (!code || document.hidden) return;
@@ -109,17 +120,27 @@ export default class extends Controller {
         };
         ping();
         this.presenceTimer = setInterval(ping, 60_000);
-        document.addEventListener('visibilitychange', this._onVisibilityPing = () => {
-            if (!document.hidden) ping();
-        });
+        window.__tnsvtChatPagePresenceTimer = this.presenceTimer;
+        const onVis = () => { if (!document.hidden) ping(); };
+        document.addEventListener('visibilitychange', onVis);
+        this._onVisibilityPing = onVis;
+        window.__tnsvtChatPagePresenceListener = onVis;
     }
     stopPresencePing() {
-        if (this.presenceTimer) clearInterval(this.presenceTimer);
+        if (this.presenceTimer) {
+            clearInterval(this.presenceTimer);
+            if (window.__tnsvtChatPagePresenceTimer === this.presenceTimer) {
+                window.__tnsvtChatPagePresenceTimer = null;
+            }
+        }
         this.presenceTimer = null;
         if (this._onVisibilityPing) {
             document.removeEventListener('visibilitychange', this._onVisibilityPing);
-            this._onVisibilityPing = null;
+            if (window.__tnsvtChatPagePresenceListener === this._onVisibilityPing) {
+                window.__tnsvtChatPagePresenceListener = null;
+            }
         }
+        this._onVisibilityPing = null;
     }
 
     me() {

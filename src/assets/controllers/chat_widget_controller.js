@@ -71,8 +71,25 @@ export default class extends Controller {
   // endpoint that updates lastActivityAt is POST /api/chat/ping, and no
   // client was calling it → every user looked "off" forever. Send one
   // ping every 60s while the widget is mounted and the tab is visible.
+  //
+  // Defensive (Risk #10 in RISK_MITIGATION.md): if Stimulus fails to call
+  // disconnect() (e.g., hot-reload during dev, edge case in Stimulus
+  // lifecycle), the orphan timer would keep pinging from a stale
+  // user_code. We anchor the interval + listener to a namespaced global
+  // (window.__tnsvtPresenceTimer) and clear any previous one before
+  // installing the new one. Last-instance-wins.
   startPresencePing() {
     this.stopPresencePing();
+    // Kill any orphan from a prior controller instance that didn't
+    // disconnect cleanly (Stimulus dev hot-reload, race, etc.).
+    if (window.__tnsvtPresenceTimer) {
+      clearInterval(window.__tnsvtPresenceTimer);
+      window.__tnsvtPresenceTimer = null;
+    }
+    if (window.__tnsvtPresenceListener) {
+      document.removeEventListener('visibilitychange', window.__tnsvtPresenceListener);
+      window.__tnsvtPresenceListener = null;
+    }
     const ping = () => {
       if (!this.knownUserCode || document.hidden) return;
       window.apiFetch('/api/chat/ping', {
@@ -83,17 +100,29 @@ export default class extends Controller {
     };
     ping(); // immediate first ping on connect
     this.presenceTimer = setInterval(ping, 60_000);
-    document.addEventListener('visibilitychange', this._onVisibilityPing = () => {
-      if (!document.hidden) ping();
-    });
+    // Anchor on window so a future startPresencePing (from any controller)
+    // can clean this up before installing its own.
+    window.__tnsvtPresenceTimer = this.presenceTimer;
+    const onVis = () => { if (!document.hidden) ping(); };
+    document.addEventListener('visibilitychange', onVis);
+    this._onVisibilityPing = onVis;
+    window.__tnsvtPresenceListener = onVis;
   }
   stopPresencePing() {
-    if (this.presenceTimer) clearInterval(this.presenceTimer);
+    if (this.presenceTimer) {
+      clearInterval(this.presenceTimer);
+      if (window.__tnsvtPresenceTimer === this.presenceTimer) {
+        window.__tnsvtPresenceTimer = null;
+      }
+    }
     this.presenceTimer = null;
     if (this._onVisibilityPing) {
       document.removeEventListener('visibilitychange', this._onVisibilityPing);
-      this._onVisibilityPing = null;
+      if (window.__tnsvtPresenceListener === this._onVisibilityPing) {
+        window.__tnsvtPresenceListener = null;
+      }
     }
+    this._onVisibilityPing = null;
   }
   async loadBadge() {
     if (!this.knownUserCode) return;
