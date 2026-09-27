@@ -225,11 +225,14 @@ git operation to scan 12 000+ files.
 | `Container var/cache/dev/App_KernelDevDebugContainer.xml does not exist` | PHPStan step didn't warm up dev cache with debug | Add `php bin/console cache:warmup --env=dev` (no `--no-debug`) |
 | `Call to undefined method App\Entity\User::isAdmin()` | User is a sum of three traits; the actual method is `getIsAdmin()` | Use `getIsAdmin()` (or check `UserAuthTrait`) |
 | `AccessDenied` returning 500 instead of 403 | Controller throws instead of returning JSON | Use `requireAdmin()` helper from `App\Controller\Sanctum\UsersController` or add `kernel.exception` listener that translates `AccessDeniedException` → 403 JSON for `/api/` and `/sanctum/api/` paths |
+| `Uncaught ReferenceError: apiFetch is not defined` (or `apiSetupModal`, `apiToast`, `apiConfirm`) at line ~XXX in a child template's inline script | Someone re-introduced the "convert api_helper.html.twig to ES module" mistake (commit `df090e6`). The ES module loads asynchronously but the inline script runs synchronously during HTML parse. | Read the "Inline `<script>` vs ES modules" section below. The partial **must stay inline**. If you need code-splitting, refactor the consumer to import or use DOMContentLoaded. |
+| `sw.js:158 Uncaught (in promise) TypeError: Failed to fetch` after a deploy | Service Worker is trying to refetch old bundle URLs after asset hashes changed but `APP_VERSION` wasn't bumped in `.env` AND `.env.local`. The SW activate handler invalidates only caches whose key starts with the current `CACHE_VERSION`. | Bump `APP_VERSION` in both `.env` and `.env.local`, deploy. See "Service Worker cache versioning" below. |
+| `Cannot find imported JavaScript asset "js/api-helper.js" in asset mapper` during `asset-map:compile` | Stale entry in `var/cache` referencing the deleted module. | `rm -rf var/cache/dev var/cache/prod` then re-compile. (See commit `a010e62` history.) |
 
 ### Service Worker cache versioning
 
 `CACHE_VERSION` in `templates/sw.js.twig` is derived from `APP_VERSION`
-via `src/Controller/ServiceWorkerController.php`. When the SW activates,
+via `src/Controller\ServiceWorkerController.php`. When the SW activates,
 it deletes every cache whose key doesn't start with the current
 `CACHE_VERSION` — so a bumped `APP_VERSION` invalidates all client-side
 caches at once.
@@ -240,12 +243,27 @@ hashes, CSS/JS modules, etc.). If you only bump `.env`, prod will keep
 serving the old `cache_version` because `ServiceWorkerController` reads
 via `$_ENV` / `$_SERVER` (Dotenv), not `getenv()`.
 
+**Mandatory check on every asset-changing PR:** when you commit
+`public/assets/*` (after compile), `src/assets/styles/*`, or any
+JS/CSS module that `asset-map:compile` will hash, the PR description
+must include "Bump APP_VERSION to 2.0.X+1". CI cannot enforce this
+because `public/assets/` is gitignored — this is a manual
+convention enforced by reviewers.
+
 **Bug history:** the original implementation used `getenv('APP_VERSION')`,
 which **always returned false** on Hostinger shared hosting because
 LiteSpeed + PHP-FPM don't export OS env vars. The fallback hardcoded
 `'2.0.0'` was therefore unconditional, and the cache never invalidated
 between deploys. Fix (commit `eec49b5`): read from `$_ENV` then
 `$_SERVER` then `getenv()` in that order.
+
+**Symptom if you forget to bump:** users see `sw.js:158 Uncaught (in
+promise) TypeError: Failed to fetch` in DevTools console after a
+deploy that changed bundle hashes. The SW still has the old cache
+key (`tnsvt-2.0.0-*`) and tries to refetch the old URLs that no
+longer exist on disk. Fix: either bump `APP_VERSION` and redeploy,
+or have the user DevTools → Application → Service Workers →
+"Unregister".
 
 ### Mercure / SSE
 
@@ -257,3 +275,40 @@ notifications) silently fall back to polling. Chat itself still works
 via 15-30s polling, but the UX feels laggy. To enable real realtime, host
 Mercure externally (Fly.io free tier, Render, or a small VPS) and set
 `MERCURE_URL` + `MERCURE_PUBLIC_URL` in `.env.local` to the public URLs.
+
+### Inline `<script>` vs ES modules — DO NOT convert `api_helper.html.twig`
+
+`templates/_partials/api_helper.html.twig` defines **global** functions
+(`window.apiFetch`, `window.apiToast`, `window.apiSetupModal`,
+`window.apiConfirm`, etc.) on the `window` object. These globals are
+consumed by **inline `<script>` blocks** in many child templates
+(e.g. `templates/sanctum/journal.html.twig`, `templates/sanctum/calendar.html.twig`,
+`templates/sanctum/journal_new.html.twig`) that call `apiSetupModal(...)`,
+`apiFetch(...)`, etc. **synchronously at parse time**.
+
+**If you convert this partial to an ES module** (loaded via `importmap`
+in `app.js`, served as a deferred `<script type="module">`):
+- The module loads **asynchronously**, AFTER the HTML is parsed.
+- Inline scripts in child templates (e.g. `dashboard.html.twig`) try
+  to call `apiSetupModal(...)` while parsing — but `window.apiSetupModal`
+  is still `undefined` at that point.
+- You get `Uncaught ReferenceError: apiSetupModal is not defined` in
+  every page that uses an inline script + the API.
+
+**This is exactly what happened in commit `df090e6`** and was reverted
+in commit `a010e62`. The inline `<script>` in `api_helper.html.twig`
+**must remain inline** until you also refactor **every consumer** to
+either:
+- Import the helper as an ES module from the module itself (i.e.
+  `import { apiFetch } from '...api-helper'`), OR
+- Wait for `window.apiReady` event (would require a ready-pattern).
+
+**Rule of thumb:** if a helper assigns to `window.*`, keep it as an
+inline `<script>` that runs synchronously. If you really want code-splitting,
+wrap the consumers in `DOMContentLoaded` so they run after the module
+loads. Never assume a deferred module is loaded at inline-script-parse time.
+
+**Allowed for ES modules:** new helper modules that **export** functions
+and are consumed by **other ES modules** (e.g. Stimulus controllers
+loaded by `@symfony/stimulus-bundle`). Those work fine because Stimulus
+runs controllers after DOMContentLoaded.
