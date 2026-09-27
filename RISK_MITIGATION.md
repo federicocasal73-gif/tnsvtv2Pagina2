@@ -125,7 +125,7 @@ The goals are:
 |---|---|
 | **Severity** | 🟠 Medium — chat presence ping runs every 60s. If the page is open for 8h, no leak. But if the controller is re-mounted (Turbo navigation), the timer might double-fire (cleanup may not fire if `disconnect()` isn't called reliably by Stimulus). |
 | **Likelihood** | Low (Stimulus lifecycle is well-tested). |
-| **Mitigation** | • `disconnect()` clears `presenceTimer` and removes the `visibilitychange` listener.<br>• Add a defensive guard: at module load, `clearInterval(window.__lastPingTimer)` to prevent any orphaned interval.<br>**Status: Bloque L shipped. Defensive guard: TODO.** |
+| **Mitigation** | • `disconnect()` clears `presenceTimer` and removes the `visibilitychange` listener.<br>• ✅ Defensive guard added (commit `8bcbae4`): both chat controllers now anchor the interval + listener to namespaced globals (`window.__tnsvtPresenceTimer`, `window.__tnsvtPresenceListener` for the widget; `window.__tnsvtChatPagePresenceTimer`, `window.__tnsvtChatPagePresenceListener` for the page). `startPresencePing()` clears any previous timer before installing a new one, catching edge cases where Stimulus `disconnect()` doesn't fire (hot-reload, Turbo race, etc.). |
 | **Owner** | Frontend team |
 | **Deadline** | 2026-10-01 |
 | **Rollback plan** | `git revert` the chat controller changes; presence stops updating within 2 min of last ping (matches `isOnline()` window). |
@@ -137,7 +137,7 @@ The goals are:
 ### 30 days (2026-10-25)
 - [x] Risk #1: Add PHPUnit test for `accountQueryParam()` / `loadEntriesForOwner()`. ✅ DONE (commit `9afb5c1`)
 - [x] Risk #8: Audit `/api/chat/users` and `/api/auth/check` responses, strip sensitive fields. ✅ DONE (commit `88bf052`)
-- [ ] Risk #10: Add defensive orphan-clear in chat controllers.
+- [x] Risk #10: Add defensive orphan-clear in chat controllers. ✅ DONE (commit `8bcbae4`)
 - [ ] Risk #7: Daily `mysqldump` cron + S3 offload.
 - [ ] AGENTS.md: extend doc for Risks #5, #6.
 
