@@ -8,7 +8,8 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
-    "test:chromium": "playwright test --project=chromium"
+    "test:chromium": "playwright test --project=chromium",
+    "lint:e2e": "node tests/e2e/lint-no-mutations.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.0",

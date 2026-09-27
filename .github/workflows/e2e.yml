@@ -46,6 +46,13 @@ jobs:
       - name: Install npm deps
         run: npm ci --no-audit --no-fund
 
+      - name: Lint e2e specs for mutation patterns
+        # Catches the class of bug where a spec accidentally calls
+        # request.delete / page.click('[data-delete]') and wipes a
+        # real user's trade or account on prod. See RISK_MITIGATION.md
+        # § Risk #9.
+        run: npm run lint:e2e
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
