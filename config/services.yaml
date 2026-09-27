@@ -49,5 +49,12 @@ services:
         arguments:
             $secret: '%env(APP_SECRET)%'
 
+    # Doctrine Migrations DependencyFactory is registered as private by
+    # the bundle. Alias it so MigrationHealthService (and any future
+    # migration-aware service) can autowire it.
+    Doctrine\Migrations\DependencyFactory:
+        alias: 'doctrine.migrations.dependency_factory'
+        public: true
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
