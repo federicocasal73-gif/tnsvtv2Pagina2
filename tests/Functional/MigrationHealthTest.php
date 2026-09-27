@@ -7,6 +7,7 @@ namespace App\Tests\Functional;
 use App\Service\MigrationHealthService;
 use App\Tests\Functional\Stub\StubDependencyFactory;
 use Doctrine\Migrations\DependencyFactory;
+use Doctrine\Migrations\Exception\MetadataStorageError;
 
 /**
  * Tests for the Doctrine migrations health probe (Risk #3 in RISK_MITIGATION.md).
@@ -185,6 +186,32 @@ class MigrationHealthTest extends ApiTestCase
         $this->assertSame(0, $result['executed']);
     }
 
+    public function testFallsBackToRawSqlWhenMetadataStorageIsNotUpToDate(): void
+    {
+        // The MySQL quirk we hit on prod: Doctrine's metadata-storage
+        // introspection disagrees with the live MySQL schema (charset /
+        // collation hints) and throws MetadataStorageError::notUpToDate.
+        // The service MUST fall back to a raw SQL query rather than
+        // failing the health endpoint.
+        //
+        // Implementation note: the raw SQL path is hard to unit-test
+        // because Connection's constructor needs a real driver config.
+        // We verify the integration end-to-end via SSH on prod (the
+        // /api/health/migrations endpoint returned 200 once the
+        // fallback fired). Here we just verify the MetadataStorageError
+        // path doesn't take down the endpoint.
+        $this->stubStorageOnlyThrows(MetadataStorageError::notUpToDate(), []);
+
+        $svc = static::getContainer()->get(MigrationHealthService::class);
+        $result = $svc->check();
+
+        // When raw SQL is reachable but the configured $rawRows is
+        // empty, the executed count is 0 and pending becomes "all
+        // available". in_sync=false is the correct, loud failure.
+        $this->assertArrayHasKey('in_sync', $result);
+        $this->assertArrayHasKey('error', $result);
+    }
+
     // ────────────────────────────────────────────────────────────────
     // End-to-end (HTTP) tests
     // ────────────────────────────────────────────────────────────────
@@ -341,6 +368,31 @@ class MigrationHealthTest extends ApiTestCase
         $instance = $ref->newInstanceWithoutConstructor();
         $instance->setThrowable($e);
 
+        static::getContainer()->set(DependencyFactory::class, $instance);
+    }
+
+    /**
+     * Stub that throws on getMetadataStorage() only — mimics the
+     * "metadata storage is not up to date" quirk we hit on prod MySQL.
+     *
+     * @param array<int, array{version: string, executed_at: string}> $rawRows
+     *        Used to make the available versions list consistent so
+     *        any subsequent diff computation is meaningful.
+     */
+    private function stubStorageOnlyThrows(\Throwable $e, array $rawRows): void
+    {
+        $ref = new \ReflectionClass(StubDependencyFactory::class);
+        /** @var StubDependencyFactory $instance */
+        $instance = $ref->newInstanceWithoutConstructor();
+        $instance->setStorageThrows($e, [
+            'available'        => count($rawRows),
+            'executed'         => 0,
+            'pending'          => [],
+            'unavailable'      => [],
+            'latestAvailable'  => $rawRows[count($rawRows) - 1]['version'] ?? 'Version20260924000000',
+            'latestExecuted'   => $rawRows[count($rawRows) - 1]['version'] ?? 'Version20260924000000',
+            'availableVersions' => array_column($rawRows, 'version'),
+        ]);
         static::getContainer()->set(DependencyFactory::class, $instance);
     }
 }

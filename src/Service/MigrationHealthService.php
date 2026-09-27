@@ -6,6 +6,7 @@ namespace App\Service;
 
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\Migrations\Metadata\AvailableMigrationsList;
+use Doctrine\Migrations\Metadata\ExecutedMigrationsList;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -31,6 +32,15 @@ use Psr\Log\LoggerInterface;
  * Cost: a single read-only SQL query against the
  * `doctrine_migration_versions` table + a filesystem scan of the
  * `migrations/` directory. Both are O(n_migrations), negligible.
+ *
+ * Resilience note:
+ *   Doctrine Migrations v3's TableMetadataStorage is sensitive to schema
+ *   differences between what's in MySQL vs what Doctrine "expects". On
+ *   prod MySQL the introspection often reports tiny platform-option
+ *   differences (charset/collation hints) that flag the table as
+ *   "not up to date" — even when it functionally IS up to date. When
+ *   that happens we fall back to a raw SQL query, which is the same
+ *   query Doctrine itself uses under the hood.
  */
 final class MigrationHealthService
 {
@@ -75,81 +85,101 @@ final class MigrationHealthService
 
         $checkedAt = (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM);
 
+        // "available" comes from the filesystem + Doctrine's class scanner.
+        // This is a pure-PHP scan — no DB involved, so it almost never fails.
         try {
-            $statusCalculator = $this->dependencyFactory->getMigrationStatusCalculator();
-
-            $newMigrations = $statusCalculator->getNewMigrations();
-            $unavailable   = $statusCalculator->getExecutedUnavailableMigrations();
-
-            $availableList  = $this->dependencyFactory->getMigrationPlanCalculator()->getMigrations();
-            $executedList   = $this->dependencyFactory->getMetadataStorage()->getExecutedMigrations();
-
-            $availableCount = $availableList->count();
-            $executedCount  = $executedList->count();
-
-            $pendingVersions     = $this->extractVersions($newMigrations);
-            $unavailableVersions = $this->extractExecutedVersions($unavailable);
-
+            $availableList   = $this->dependencyFactory->getMigrationPlanCalculator()->getMigrations();
+            $availableCount  = $availableList->count();
             $latestAvailable = $availableCount > 0
                 ? (string) $availableList->getLast()->getVersion()
                 : null;
-            $latestExecuted  = $executedCount > 0
-                ? (string) $executedList->getLast()->getVersion()
-                : null;
-
-            $pendingCount = $newMigrations->count();
-            $inSync       = $pendingCount === 0 && $unavailable->count() === 0;
-
-            $payload = [
-                'in_sync'              => $inSync,
-                'available'            => $availableCount,
-                'executed'             => $executedCount,
-                'pending'              => $pendingCount,
-                'latest_available'     => $latestAvailable,
-                'latest_executed'      => $latestExecuted,
-                'pending_versions'     => $pendingVersions,
-                'unavailable_versions' => $unavailableVersions,
-                'checked_at'           => $checkedAt,
-                'error'                => null,
-            ];
-
-            if (! $inSync) {
-                $this->logger->critical('MigrationHealth: prod DB is out of sync with codebase', [
-                    'available'           => $availableCount,
-                    'executed'            => $executedCount,
-                    'pending'             => $pendingCount,
-                    'pending_versions'    => $pendingVersions,
-                    'unavailable_in_db'   => $unavailable->count(),
-                    'latest_available'    => $latestAvailable,
-                    'latest_executed'     => $latestExecuted,
-                    'checked_at'          => $checkedAt,
-                ]);
-            }
-
-            $this->cached   = $payload;
-            $this->cachedAt = time();
-
-            return $payload;
         } catch (\Throwable $e) {
-            // Never let a broken migrations check take the canary down.
-            $payload = [
-                'in_sync'              => false,
-                'available'            => 0,
-                'executed'             => 0,
-                'pending'              => 0,
-                'latest_available'     => null,
-                'latest_executed'      => null,
-                'pending_versions'     => [],
-                'unavailable_versions' => [],
-                'checked_at'           => $checkedAt,
-                'error'                => sprintf('%s: %s', $e::class, $e->getMessage()),
-            ];
-
-            $this->cached   = $payload;
-            $this->cachedAt = time();
-
-            return $payload;
+            // Filesystem scanner failed — this is unusual (read perm denied?).
+            // Bubble up as a hard error so we don't silently report "in sync".
+            return $this->fail($checkedAt, sprintf('available scanner: %s: %s', $e::class, $e->getMessage()));
         }
+
+        // "executed" comes from the DB. We try Doctrine's API first; if
+        // it raises MetadataStorageError(notUpToDate) — a known quirk on
+        // MySQL where platform-option introspection differs from what
+        // Doctrine "expects" — we fall back to a raw SQL query against
+        // doctrine_migration_versions. We also remember which path we
+        // took so the diff calculation can use a consistent source.
+        [$executedList, $usedRawFallback] = $this->fetchExecutedList();
+        if ($executedList === null) {
+            return $this->fail($checkedAt, 'metadata storage unavailable; ran doctrine:migrations:sync-metadata-storage?');
+        }
+        $executedCount = $executedList->count();
+        $latestExecuted = $executedCount > 0
+            ? (string) $executedList->getLast()->getVersion()
+            : null;
+
+        // "pending" + "unavailable" — these need both lists. When we used
+        // the raw SQL fallback, Doctrine's status calc would re-query
+        // the broken storage. So we use the raw version-string diff
+        // in that case. Otherwise we use Doctrine's API which is
+        // already correct.
+        if ($usedRawFallback) {
+            $availableVersions   = $this->extractVersions($availableList);
+            $executedVersions    = $this->extractExecutedVersions($executedList);
+            $pendingVersions     = array_values(array_diff($availableVersions, $executedVersions));
+            $unavailableVersions = array_values(array_diff($executedVersions, $availableVersions));
+            $pendingCount        = count($pendingVersions);
+            $unavailableCount    = count($unavailableVersions);
+        } else {
+            try {
+                $statusCalc   = $this->dependencyFactory->getMigrationStatusCalculator();
+                $newMigrations    = $statusCalc->getNewMigrations();
+                $unavailable      = $statusCalc->getExecutedUnavailableMigrations();
+                $pendingVersions  = $this->extractVersions($newMigrations);
+                $unavailableVersions = $this->extractExecutedVersions($unavailable);
+                $pendingCount     = $newMigrations->count();
+                $unavailableCount = $unavailable->count();
+            } catch (\Throwable $e) {
+                $this->logger->warning('MigrationHealth: status calculator unavailable, using raw diff', [
+                    'reason' => $e->getMessage(),
+                ]);
+                $availableVersions   = $this->extractVersions($availableList);
+                $executedVersions    = $this->extractExecutedVersions($executedList);
+                $pendingVersions     = array_values(array_diff($availableVersions, $executedVersions));
+                $unavailableVersions = array_values(array_diff($executedVersions, $availableVersions));
+                $pendingCount        = count($pendingVersions);
+                $unavailableCount    = count($unavailableVersions);
+            }
+        }
+
+        $inSync = $pendingCount === 0 && $unavailableCount === 0;
+
+        $payload = [
+            'in_sync'              => $inSync,
+            'available'            => $availableCount,
+            'executed'             => $executedCount,
+            'pending'              => $pendingCount,
+            'latest_available'     => $latestAvailable,
+            'latest_executed'      => $latestExecuted,
+            'pending_versions'     => $pendingVersions,
+            'unavailable_versions' => $unavailableVersions,
+            'checked_at'           => $checkedAt,
+            'error'                => null,
+        ];
+
+        if (! $inSync) {
+            $this->logger->critical('MigrationHealth: prod DB is out of sync with codebase', [
+                'available'           => $availableCount,
+                'executed'            => $executedCount,
+                'pending'             => $pendingCount,
+                'pending_versions'    => $pendingVersions,
+                'unavailable_in_db'   => $unavailableCount,
+                'latest_available'    => $latestAvailable,
+                'latest_executed'     => $latestExecuted,
+                'checked_at'          => $checkedAt,
+            ]);
+        }
+
+        $this->cached   = $payload;
+        $this->cachedAt = time();
+
+        return $payload;
     }
 
     /**
@@ -162,6 +192,91 @@ final class MigrationHealthService
     }
 
     /**
+     * Try the Doctrine API; on metadata-storage drift, fall back to raw
+     * SQL. Returns [list, usedRawFallback]:
+     *   - list: ExecutedMigrationsList (or null on total failure)
+     *   - usedRawFallback: true if the raw SQL path was used (callers
+     *     should rely on raw diffs, not the Doctrine status calc)
+     */
+    private function fetchExecutedList(): array
+    {
+        try {
+            return [$this->dependencyFactory->getMetadataStorage()->getExecutedMigrations(), false];
+        } catch (\Doctrine\Migrations\Exception\MetadataStorageError $e) {
+            $this->logger->warning('MigrationHealth: metadata storage not up to date, falling back to raw query', [
+                'reason' => $e->getMessage(),
+            ]);
+        } catch (\Throwable $e) {
+            $this->logger->error('MigrationHealth: metadata storage read failed', [
+                'reason' => $e->getMessage(),
+            ]);
+            return [null, false];
+        }
+
+        // Fallback: raw SQL against doctrine_migration_versions.
+        // This is the exact same query Doctrine itself runs internally
+        // when the storage is initialised. We get the Connection from
+        // the DependencyFactory (not as a separate constructor arg) so
+        // tests can swap the DependencyFactory in one shot.
+        try {
+            $rows = $this->dependencyFactory->getConnection()
+                ->fetchAllAssociative('SELECT version, executed_at FROM doctrine_migration_versions ORDER BY version');
+        } catch (\Throwable $e) {
+            $this->logger->error('MigrationHealth: raw metadata query failed', [
+                'reason' => $e->getMessage(),
+            ]);
+            return [null, false];
+        }
+
+        $items = [];
+        foreach ($rows as $row) {
+            $row = array_change_key_case($row, CASE_LOWER);
+            $version = new \Doctrine\Migrations\Version\Version($row['version']);
+            $executedAt = !empty($row['executed_at'])
+                ? \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $row['executed_at'])
+                : null;
+            $items[(string) $version] = new \Doctrine\Migrations\Metadata\ExecutedMigration(
+                $version,
+                $executedAt,
+            );
+        }
+        return [new ExecutedMigrationsList($items), true];
+    }
+
+    /**
+     * @return array{
+     *     in_sync: false,
+     *     available: 0,
+     *     executed: 0,
+     *     pending: 0,
+     *     latest_available: null,
+     *     latest_executed: null,
+     *     pending_versions: string[],
+     *     unavailable_versions: string[],
+     *     checked_at: string,
+     *     error: string,
+     * }
+     */
+    private function fail(string $checkedAt, string $error): array
+    {
+        $payload = [
+            'in_sync'              => false,
+            'available'            => 0,
+            'executed'             => 0,
+            'pending'              => 0,
+            'latest_available'     => null,
+            'latest_executed'      => null,
+            'pending_versions'     => [],
+            'unavailable_versions' => [],
+            'checked_at'           => $checkedAt,
+            'error'                => $error,
+        ];
+        $this->cached   = $payload;
+        $this->cachedAt = time();
+        return $payload;
+    }
+
+    /**
      * @param AvailableMigrationsList $list
      * @return string[]
      */
@@ -171,20 +286,18 @@ final class MigrationHealthService
         foreach ($list->getItems() as $m) {
             $out[] = (string) $m->getVersion();
         }
-
         return $out;
     }
 
     /**
      * @return string[]
      */
-    private function extractExecutedVersions(\Doctrine\Migrations\Metadata\ExecutedMigrationsList $list): array
+    private function extractExecutedVersions(ExecutedMigrationsList $list): array
     {
         $out = [];
         foreach ($list->getItems() as $m) {
             $out[] = (string) $m->getVersion();
         }
-
         return $out;
     }
 }

@@ -35,6 +35,8 @@ final class StubDependencyFactory extends DependencyFactory
     /** @var int|null */
     private ?int $counter = null;
     private ?\Throwable $throwable = null;
+    /** When true, only getMetadataStorage() throws; everything else works. */
+    private bool $throwOnlyOnStorage = false;
 
     /** @param array<string, mixed> $config */
     public function setConfig(array $config): void
@@ -42,6 +44,7 @@ final class StubDependencyFactory extends DependencyFactory
         $this->config    = $config;
         $this->throwable = null;
         $this->counter   = null;
+        $this->throwOnlyOnStorage = false;
     }
 
     /**
@@ -53,6 +56,7 @@ final class StubDependencyFactory extends DependencyFactory
         $this->config    = $config;
         $this->throwable = null;
         $this->counter   = &$counter;
+        $this->throwOnlyOnStorage = false;
     }
 
     public function setThrowable(\Throwable $e): void
@@ -60,6 +64,21 @@ final class StubDependencyFactory extends DependencyFactory
         $this->config    = [];
         $this->throwable = $e;
         $this->counter   = null;
+        $this->throwOnlyOnStorage = false;
+    }
+
+    /**
+     * Like setThrowable() but only the metadata storage call fails —
+     * everything else (status calculator, plan calculator) succeeds.
+     * This simulates the real-world case where MySQL introspection
+     * disagrees with Doctrine's expected schema.
+     */
+    public function setStorageThrows(\Throwable $e, array $config): void
+    {
+        $this->config = $config;
+        $this->throwable = $e;
+        $this->counter = null;
+        $this->throwOnlyOnStorage = true;
     }
 
     public static function fromConfig(array $config): self
@@ -72,19 +91,25 @@ final class StubDependencyFactory extends DependencyFactory
         return $instance;
     }
 
-    private function maybeThrow(): void
+    private function maybeThrow(bool $force = false): void
     {
-        if ($this->throwable !== null) {
+        // `force=true` is used by getMetadataStorage() to throw even
+        // in "throwOnlyOnStorage" mode — that's the entire purpose of
+        // that mode.
+        if ($this->throwable !== null && ($force || !$this->throwOnlyOnStorage)) {
             throw $this->throwable;
         }
-        if ($this->counter !== null) {
+        if ($this->counter !== null && !$this->throwOnlyOnStorage) {
             $this->counter++;
         }
     }
 
     public function getMigrationStatusCalculator(): \Doctrine\Migrations\Version\MigrationStatusCalculator
     {
-        $this->maybeThrow();
+        // Only throw if this is the "throw on everything" mode.
+        if (!$this->throwOnlyOnStorage) {
+            $this->maybeThrow();
+        }
         $cfg = $this->config;
 
         return new class($cfg) implements \Doctrine\Migrations\Version\MigrationStatusCalculator {
@@ -112,7 +137,10 @@ final class StubDependencyFactory extends DependencyFactory
 
     public function getMigrationPlanCalculator(): \Doctrine\Migrations\Version\MigrationPlanCalculator
     {
-        $this->maybeThrow();
+        // Only throw if this is the "throw on everything" mode.
+        if (!$this->throwOnlyOnStorage) {
+            $this->maybeThrow();
+        }
         $cfg = $this->config;
 
         return new class($cfg) implements \Doctrine\Migrations\Version\MigrationPlanCalculator {
@@ -121,15 +149,23 @@ final class StubDependencyFactory extends DependencyFactory
             public function getMigrations(): AvailableMigrationsList
             {
                 $items = [];
+
+                // If `availableVersions` is set, use those exact strings.
+                // This is the path the raw-SQL fallback tests take so
+                // the stub's "available" matches the raw rows.
+                if (!empty($this->c['availableVersions'])) {
+                    foreach ($this->c['availableVersions'] as $ver) {
+                        $items[] = new AvailableMigration(new Version($ver), StubDependencyFactory::stubMigration());
+                    }
+                    return new AvailableMigrationsList($items);
+                }
+
+                // Otherwise build a synthetic list from `available` count
+                // + `latestAvailable`.
                 $latest = $this->c['latestAvailable'] ?? 'Version20260924000000';
-                // Generate distinct but plausible version strings.
-                // We pad with suffix digits so that count() works and
-                // getLast() returns a deterministic version.
-                $base = substr($latest, 0, -4); // strip last 4 digits
+                $base = substr($latest, 0, -4);
                 $rev  = (int) substr($latest, -4);
                 for ($i = 0; $i < $this->c['available']; $i++) {
-                    // First item is the OLDEST, last item is the LATEST.
-                    // We want getLast() to return $latest.
                     $seq = $rev - ($this->c['available'] - 1 - $i);
                     $ver = sprintf('%s%04d', $base, $seq);
                     $items[] = new AvailableMigration(new Version($ver), StubDependencyFactory::stubMigration());
@@ -151,7 +187,11 @@ final class StubDependencyFactory extends DependencyFactory
 
     public function getMetadataStorage(): MetadataStorage
     {
-        $this->maybeThrow();
+        // ALWAYS throw if a throwable is configured, regardless of
+        // throwOnlyOnStorage mode — this is the whole point of that
+        // mode: simulate "metadata storage is broken, everything else
+        // works".
+        $this->maybeThrow(true);
         $cfg = $this->config;
 
         return new class($cfg) implements MetadataStorage {
@@ -160,6 +200,25 @@ final class StubDependencyFactory extends DependencyFactory
             public function getExecutedMigrations(): ExecutedMigrationsList
             {
                 $items = [];
+
+                // If `availableVersions` is set, align the executed
+                // list to match so the diff calculation works.
+                if (!empty($this->c['availableVersions'])) {
+                    $avail = $this->c['availableVersions'];
+                    $execCount = $this->c['executed'] ?? count($avail);
+                    // Use the last `executed` versions from availableVersions.
+                    $execList = array_slice($avail, max(0, count($avail) - $execCount));
+                    foreach ($execList as $v) {
+                        $items[] = new ExecutedMigration(new Version($v));
+                    }
+                    // Append the unavailable versions if specified.
+                    foreach ($this->c['unavailable'] ?? [] as $v) {
+                        $items[] = new ExecutedMigration(new Version($v));
+                    }
+                    return new ExecutedMigrationsList($items);
+                }
+
+                // Otherwise build synthetic versions.
                 $latest = $this->c['latestExecuted'] ?? 'Version20260924000000';
                 $base = substr($latest, 0, -4);
                 $rev  = (int) substr($latest, -4);
@@ -187,6 +246,47 @@ final class StubDependencyFactory extends DependencyFactory
             }
         };
     }
+
+    /**
+     * Return the stubbed Connection (for raw-SQL fallback tests).
+     *
+     * The MigrationHealthService calls this when getMetadataStorage()
+     * throws. For all other tests, getConnection() should never be
+     * called — the service's happy path doesn't need it.
+     *
+     * Implementation: a real Connection has a complex constructor
+     * requiring a Driver object we don't have in tests. We bypass it
+     * with reflection. The anonymous class below extends Connection
+     * and overrides fetchAllAssociative() to return rawRows. Other
+     * methods will fail if called — that's the contract.
+     */
+    public function getConnection(): \Doctrine\DBAL\Connection
+    {
+        $ref = new \ReflectionClass(\Doctrine\DBAL\Connection::class);
+        /** @var \Doctrine\DBAL\Connection $conn */
+        $conn = $ref->newInstanceWithoutConstructor();
+
+        $rows = $this->rawRows;
+        return new class($conn, $rows) extends \Doctrine\DBAL\Connection {
+            // @phpstan-ignore-next-line method.childParameterType
+            public function __construct(\Doctrine\DBAL\Connection $inner, array $rows)
+            {
+                // Skip parent::__construct (Driver object not needed for tests).
+                $this->stubRows = $rows;
+            }
+            public function fetchAllAssociative(string $sql, array $params = [], array $types = []): array
+            {
+                return $this->stubRows;
+            }
+            private array $stubRows = [];
+        };
+    }
+
+    /**
+     * Rows returned by the stubbed Connection's fetchAllAssociative.
+     * @var array<int, array<string, string>>
+     */
+    public array $rawRows = [];
 
     public static function stubMigration(): \Doctrine\Migrations\AbstractMigration
     {
