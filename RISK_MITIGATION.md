@@ -92,7 +92,7 @@ The goals are:
 |---|---|
 | **Severity** | 🔴 Critical if needed (no backup = permanent data loss on migration failure) |
 | **Likelihood** | Real — every `doctrine:migrations:migrate` on prod runs without an automatic snapshot. |
-| **Mitigation** | • Deploy script should call `mysqldump` BEFORE the migration in the same SSH session.<br>• Cron job (daily) on the Hostinger box: `mysqldump | gzip > ~/backups/db_daily_$(date).sql.gz`, retain 30 days, offload to S3 nightly.<br>**Status: Bloque D's deploy command DOES take a backup. The daily cron is TODO.** |
+| **Mitigation** | • Deploy script should call `mysqldump` BEFORE the migration in the same SSH session.<br>• ✅ Daily backup script shipped (commit `14ae10a`): `scripts/db-backup.sh` parses DATABASE_URL, dumps via Unix socket, gzips, verifies, rotates files > 30 days. Tested on prod: 110 KB gzip verified.<br>• ⚠️ Cron schedule: Hostinger shared has no `crontab`/`at`/`systemd`. Schedule must be installed via **Hostinger hPanel → Advanced → Cron Jobs** (web UI). Documented in AGENTS.md § Database backups. Off-server upload (S3/Backblaze/NAS) is a 1-line change when configured. |
 | **Owner** | Platform team |
 | **Deadline** | Daily cron: 2026-10-15 |
 | **Rollback plan** | `gunzip < ~/backups/db_*.sql.gz | mysql -u $DB_USER -p $DB_PASS $DB_NAME`. Tested with `BACKUP_PATH` from the Bloque D script. |
@@ -139,7 +139,7 @@ The goals are:
 - [x] Risk #8: Audit `/api/chat/users` and `/api/auth/check` responses, strip sensitive fields. ✅ DONE (commit `88bf052`)
 - [x] Risk #10: Add defensive orphan-clear in chat controllers. ✅ DONE (commit `8bcbae4`)
 - [x] AGENTS.md: extend doc for Risks #5, #6. ✅ DONE (commit `5204849`)
-- [ ] Risk #7: Daily `mysqldump` cron + S3 offload.
+- [x] Risk #7: Daily `mysqldump` cron + S3 offload. ✅ PARTIAL (commit `14ae10a`): script + AGENTS.md doc. Cron itself needs hPanel setup by user.
 
 ### 60 days (2026-11-25)
 - [ ] Risk #1: full PHPUnit coverage for journal endpoints.
