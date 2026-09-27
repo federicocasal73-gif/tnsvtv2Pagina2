@@ -70,7 +70,7 @@ The goals are:
 |---|---|
 | **Severity** | 🟠 Medium (silently keeps clients pinned to old bundles; the "Failed to fetch" at sw.js:158 returns; users see broken UI until manual SW unregister) |
 | **Likelihood** | Low now (bug fix in `ServiceWorkerController` reads `$_ENV` correctly). Recurs only if a future regression breaks the env var reading. |
-| **Mitigation** | • Bloque "fix(sw): read APP_VERSION from $_ENV..." shipped (`eec49b5`).<br>• AGENTS.md documents the convention: bump APP_VERSION in BOTH `.env` AND `.env.local` on every asset change.<br>• Bloque E added `migrations:migrate` to deploy command — same doc now needs to mention bumping APP_VERSION for the `asset-map:compile` steps too. **TODO: extend AGENTS.md to make the bump mandatory when asset changes are committed.** |
+| **Mitigation** | • Bloque "fix(sw): read APP_VERSION from \$_ENV..." shipped (`eec49b5`).<br>• ✅ AGENTS.md documents the convention + mandatory PR check (commit `5204849`): bump APP_VERSION in BOTH `.env` AND `.env.local` on every asset change, mention in PR description. Common pitfalls table lists the symptom (`sw.js:158 Failed to fetch`). |
 | **Owner** | Platform team |
 | **Deadline** | Doc update: this PR (combine with Bloque E). |
 | **Rollback plan** | If SW is broken on prod: SSH in and manually edit `var/cache/prod/App_KernelProdContainer.xml` to set the `cache_version` to the next incremented value. Or have users hit DevTools → Application → Service Workers → Unregister. |
@@ -81,7 +81,7 @@ The goals are:
 |---|---|
 | **Severity** | 🟡 Low (asset-map:compile fails locally; deploy script `set -e` halts) |
 | **Likelihood** | Medium — a future agent (or dev) might re-introduce the ES module pattern that Bloque A (and its revert) shows is broken for this codebase. |
-| **Mitigation** | • AGENTS.md should document the constraint: "Inline `<script>` (not ES module) when the script defines globals read by other inline `<script>` blocks downstream. See commit messages `a010e62` and `df090e6` for the full history."<br>**Status: TODO.** |
+| **Mitigation** | • ✅ AGENTS.md documents the inline-script constraint (commit `5204849`): full section "Inline `<script>` vs ES modules — DO NOT convert `api_helper.html.twig`" with rule of thumb, history (failed df090e6, revert a010e62), and remediation patterns. |
 | **Owner** | Tech writer / docs |
 | **Deadline** | Doc update: this PR (combine with Bloque E) |
 | **Rollback plan** | `git checkout HEAD -- templates/_partials/api_helper.html.twig src/assets/app.js` |
@@ -138,8 +138,8 @@ The goals are:
 - [x] Risk #1: Add PHPUnit test for `accountQueryParam()` / `loadEntriesForOwner()`. ✅ DONE (commit `9afb5c1`)
 - [x] Risk #8: Audit `/api/chat/users` and `/api/auth/check` responses, strip sensitive fields. ✅ DONE (commit `88bf052`)
 - [x] Risk #10: Add defensive orphan-clear in chat controllers. ✅ DONE (commit `8bcbae4`)
+- [x] AGENTS.md: extend doc for Risks #5, #6. ✅ DONE (commit `5204849`)
 - [ ] Risk #7: Daily `mysqldump` cron + S3 offload.
-- [ ] AGENTS.md: extend doc for Risks #5, #6.
 
 ### 60 days (2026-11-25)
 - [ ] Risk #1: full PHPUnit coverage for journal endpoints.
