@@ -103,7 +103,7 @@ The goals are:
 |---|---|
 | **Severity** | 🟠 Medium (PII exposure — emails, X-Game-Code reuse risks) |
 | **Likelihood** | Medium — `/api/chat/users` currently returns the full user list. **TODO confirm shape.** Same for `/api/auth/check`. |
-| **Mitigation** | Audit every API response that touches `/api/chat/` for leaking `email`, `lastLogin`, `password_hash`, or any field not strictly needed by the client.<br>Add a Symfony `kernel.response` listener that strips `password`/`apiKey`/`lastLoginIp` on the way out.<br>**Status: TODO.** |
+| **Mitigation** | Audit every API response that touches `/api/chat/` for leaking `email`, `lastLogin`, `password_hash`, or any field not strictly needed by the client.<br>Add a Symfony `kernel.response` listener that strips `password`/`apiKey`/`lastLoginIp` on the way out.<br>**Status: ✅ DONE on 2026-09-25 (commit `88bf052`).** Audit found `/api/chat/users` and `/api/auth/check` were already safe (explicit array maps, no User serialisation). The listener `src/EventListener/SensitiveFieldStripListener.php` is now installed as defence-in-depth, with 7 PHPUnit tests covering top-level, nested, case-insensitive, non-JSON, and end-to-end behaviour. |
 | **Owner** | Backend team |
 | **Deadline** | 2026-Q4 (next security sprint) |
 | **Rollback plan** | If over-aggressive stripping breaks a legitimate use case: refine the per-endpoint rule via a `#[StripFields('password')]` attribute + targeted listener. |
@@ -136,7 +136,7 @@ The goals are:
 
 ### 30 days (2026-10-25)
 - [x] Risk #1: Add PHPUnit test for `accountQueryParam()` / `loadEntriesForOwner()`. ✅ DONE (commit `9afb5c1`)
-- [ ] Risk #8: Audit `/api/chat/users` and `/api/auth/check` responses, strip sensitive fields.
+- [x] Risk #8: Audit `/api/chat/users` and `/api/auth/check` responses, strip sensitive fields. ✅ DONE (commit `88bf052`)
 - [ ] Risk #10: Add defensive orphan-clear in chat controllers.
 - [ ] Risk #7: Daily `mysqldump` cron + S3 offload.
 - [ ] AGENTS.md: extend doc for Risks #5, #6.
