@@ -889,7 +889,7 @@ curl -s https://tnsvt.com/sanctum | grep -E '<h1|<link rel="canonical"|meta name
 | 2026-09-28 | Sesión 2 | Commit `38269ff` pusheado y deployado ✅ — 5 archivos JS borrados, 7 rutas admin MusicController, WalletController inlined DolarController, MP/Binance refs limpiadas en 6 archivos de docs |
 | 2026-09-28 | Sesión 3 | Commit `2366483` pusheado y deployado ✅ — ESLint + Prettier + Stylelint + axe-core + Lighthouse CI instalados. 84 typos de `var(--font-X);, sans-serif` corregidos. Auto-format aplicado a 103 archivos JS/CSS |
 | 2026-09-28 | Sesión 4 | Commit `6e37fc9` pusheado y deployado ✅ — sidebar h1→h2, 18 templates recibieron h1 propio, robots.txt + sitemap.xml + SitemapController |
-| TBD | Sesión 5 | Meta descriptions + canonical URLs |
+| 2026-09-28 | Sesión 5 | Commit `7fa3b46` pusheado y deployado ✅ — meta descriptions per-page en 36 templates, canonical URLs via og_meta partial, default apunta a app.request.uri |
 | TBD | Sesión 6 | aria-labels + Lighthouse ≥90 |
 | TBD | Sesión 7 | Auto-format + audit final |
 
