@@ -886,8 +886,8 @@ curl -s https://tnsvt.com/sanctum | grep -E '<h1|<link rel="canonical"|meta name
 |---|---|---|
 | 2026-09-28 | Sesión 0 | 7 archivos dead code eliminados + plan guardado |
 | 2026-09-28 | Sesión 1 | Commit `45ee899` pusheado a `main` ✅ — **deploy a Hostinger pendiente** |
-| TBD | Sesión 2 | Cleanup JS orphans + referencias |
-| TBD | Sesión 3 | Tooling ESLint + Prettier + Lighthouse + axe-core |
+| 2026-09-28 | Sesión 2 | Commit `38269ff` pusheado y deployado ✅ — 5 archivos JS borrados, 7 rutas admin MusicController, WalletController inlined DolarController, MP/Binance refs limpiadas en 6 archivos de docs |
+| 2026-09-28 | Sesión 3 | Commit `2366483` pusheado y deployado ✅ — ESLint + Prettier + Stylelint + axe-core + Lighthouse CI instalados. 84 typos de `var(--font-X);, sans-serif` corregidos. Auto-format aplicado a 103 archivos JS/CSS |
 | TBD | Sesión 4 | h1 hierarchy + robots + sitemap |
 | TBD | Sesión 5 | Meta descriptions + canonical URLs |
 | TBD | Sesión 6 | aria-labels + Lighthouse ≥90 |
