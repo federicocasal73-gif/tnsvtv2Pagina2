@@ -1,14 +1,30 @@
 {#
    og_meta.html.twig — Open Graph + Twitter Card meta tags
    ───────────────────────────────────────────────────────────────
-   Usage:
+   Usage (in shell.html.twig or any base template):
+     {% block meta_description %}default shell desc{% endblock %}
+     {% include '_partials/og_meta.html.twig' with {
+       title: block('title')|default('T.N.S.V.T'),
+       description: block('meta_description'),
+       type: 'website',
+     } %}
+
+   Per-page overrides — define in the page template that extends the
+   shell. `block()` in the shell walks the inheritance chain and picks
+   up the page's value:
+     {% block meta_description %}Bitácora de trading con equity
+         curve, drawdown y Guardian de riesgo para ejecutores
+         del reino.{% endblock %}
+
+   Optional direct overrides (rare; prefer blocks):
      {% include '_partials/og_meta.html.twig' with {
        title: 'Mi Página · T.N.S.V.T',
-       description: 'Descripción para SEO y social sharing',
-       image: 'https://tnsvt.com/og/dashboard.png',    ← optional
-       type: 'website',                                  ← optional: 'website' | 'article' | 'profile'
-       url: 'https://tnsvt.com/calendar'                 ← optional, defaults to current
-       twitter_card: 'summary_large_image'               ← optional
+       description: 'Override hardcoded description',
+       image: 'https://tnsvt.com/og/dashboard.png',
+       type: 'website',
+       url: 'https://tnsvt.com/calendar',
+       twitter_card: 'summary_large_image',
+       canonical: 'https://tnsvt.com/journal',    ← optional, defaults to app.request.uri
      } %}
 #}
 {% set _title = title|default('T.N.S.V.T — Reino del Cristo Íntegro') %}
@@ -18,6 +34,7 @@
 {% set _url   = url|default('') %}
 {% set _twc   = twitter_card|default('summary_large_image') %}
 {% set _site  = 'T.N.S.V.T' %}
+{% set _canonical = canonical|default(app.request.uri) %}
 
 <!-- Open Graph -->
 <meta property="og:type" content="{{ _type }}" />
@@ -36,6 +53,7 @@
 
 <!-- General meta -->
 <meta name="description" content="{{ _desc }}" />
+<link rel="canonical" href="{{ _canonical }}" />
 <meta name="theme-color" content="#050308" />
 <meta name="color-scheme" content="dark" />
 <meta name="format-detection" content="telephone=no" />

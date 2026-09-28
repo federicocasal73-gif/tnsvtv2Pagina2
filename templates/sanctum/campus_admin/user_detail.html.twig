@@ -4,6 +4,8 @@
 
 {% block title %}{{ student.name|default(student.code) }} · Alumno · T.N.S.V.T{% endblock %}
 
+{% block meta_description %}Detalle de un alumno del Campus: progreso, entregas, calificaciones y señales del Guardian de riesgo. Solo admin.{% endblock %}
+
 {% block topbar_title %}{{ student.name|default(student.code) }}{% endblock %}
 {% block topbar_subtitle %}Código {{ student.code }} · {{ student.tier|default('INITIATE') }}{% endblock %}
 

@@ -22,9 +22,11 @@
     </script>
     <title>{% block title %}T.N.S.V.T{% endblock %}</title>
 
+    {% block meta_description %}Plataforma neuro-espiritual de trading. Análisis macro, bitácora y guardian para ejecutores del reino.{% endblock %}
+
     {% include '_partials/og_meta.html.twig' with {
         title: block('title')|default('T.N.S.V.T — Gateway'),
-        description: 'Plataforma neuro-espiritual de trading. Análisis macro, bitácora y guardian para ejecutores del reino.',
+        description: block('meta_description'),
         type: 'website',
     } %}
 

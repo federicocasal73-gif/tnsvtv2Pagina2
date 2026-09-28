@@ -4,6 +4,8 @@
 
 {% block title %}{{ is_edit ? 'Editar curso' : 'Nuevo curso' }} · T.N.S.V.T{% endblock %}
 
+{% block meta_description %}{{ is_edit ? 'Edita un curso del Campus Académico: módulos, lecciones, materiales y configuración.' : 'Crea un nuevo curso para el Campus Académico del Sanctum.' }}{% endblock %}
+
 {% block topbar_title %}{{ is_edit ? 'Editar curso' : 'Nuevo curso' }}{% endblock %}
 {% block topbar_subtitle %}{{ is_edit ? 'Administra módulos, lecciones y materiales del curso.' : 'Crea un nuevo curso para el Campus Académico.' }}{% endblock %}
 
