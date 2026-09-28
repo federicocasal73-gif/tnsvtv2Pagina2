@@ -6,7 +6,6 @@ use App\Entity\User;
 use App\Entity\WalletTransaction;
 use App\Repository\WalletTransactionRepository;
 use App\Repository\UserRepository;
-use App\Controller\Api\DolarController;
 use App\Security\AdminAuthTrait;
 use App\Security\AuthAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,7 +27,6 @@ class WalletController extends AbstractController
         private EntityManagerInterface $em,
         private UserRepository $userRepository,
         private WalletTransactionRepository $txRepository,
-        private DolarController $dolarController,
         private AuthAuditLogger $authAuditLogger,
     ) {}
 
@@ -69,10 +67,8 @@ class WalletController extends AbstractController
         $arsEquivalent = null;
         $rate = null;
         try {
-            $ratesResp = $this->dolarController->rates();
-            $ratesData = json_decode($ratesResp->getContent(), true);
-            if (is_array($ratesData) && isset($ratesData['blue']['sell'])) {
-                $rate = (float) $ratesData['blue']['sell'];
+            $rate = $this->fetchBlueRate();
+            if ($rate !== null) {
                 $arsEquivalent = round($usdBalance * $rate, 2);
             }
         } catch (\Throwable $e) {
@@ -87,6 +83,43 @@ class WalletController extends AbstractController
             'rate_usd_ars' => $rate,
             'currency' => 'USD',
         ], 200);
+    }
+
+    /**
+     * Obtiene el rate blue (venta) del dolar desde dolarapi.com.
+     * Cache en memoria por 1 hora. Devuelve null si falla.
+     *
+     * Inlined from App\Controller\Api\DolarController (deleted in
+     * cleanup 2026-09-28). Solo se usa internamente — el endpoint
+     * público `/api/wallet/rates` ya no existe.
+     */
+    private function fetchBlueRate(): ?float
+    {
+        static $cache = null;
+        static $cacheTime = 0;
+        $ttl = 3600;
+        $now = time();
+        if ($cache !== null && ($now - $cacheTime) < $ttl) {
+            return $cache;
+        }
+
+        try {
+            $ctx = stream_context_create(['http' => ['timeout' => 5, 'method' => 'GET']]);
+            $raw = @file_get_contents('https://dolarapi.com/v1/dolares', false, $ctx);
+            if ($raw === false) return $cache;
+            $data = json_decode($raw, true);
+            if (!is_array($data)) return $cache;
+            foreach ($data as $entry) {
+                if (strtolower($entry['casa'] ?? '') === 'blue') {
+                    $cache = (float) ($entry['venta'] ?? 0);
+                    $cacheTime = $now;
+                    return $cache;
+                }
+            }
+        } catch (\Throwable $e) {
+            // silent
+        }
+        return $cache;
     }
 
     #[Route('/transactions', name: 'api_wallet_transactions', methods: ['GET'])]

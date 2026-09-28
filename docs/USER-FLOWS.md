@@ -428,7 +428,6 @@ These widgets are **future work**, documented here, not implemented in `/audit`.
 
 - `/wallet` — `WalletController`, `AdminWalletController`
 - `/shop` — `ShopController`
-- Payments: `MercadoPagoController`, `BinancePayController`
 
 ### 7.7 Notifications
 

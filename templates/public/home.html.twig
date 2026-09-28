@@ -51,7 +51,7 @@
     <main class="gw-main">
         {# ─── Hero ─── #}
         <section class="gw-hero" id="gw-hero">
-            <div class="gw-emblem" id="gw-emblem-3d" aria-hidden="true">
+            <div class="gw-emblem" aria-hidden="true">
                 <div class="gw-ring gw-ring-a"></div>
                 <div class="gw-ring gw-ring-b"></div>
                 <div class="gw-orbit"></div>
@@ -202,9 +202,6 @@
 
 {% block javascripts %}
     {{ importmap('divine_overlay', { nonce: csp_nonce('script') }) }}
-
-    {# Three.js for sacred geometry 3D hero — bundled locally via importmap #}
-    {{ importmap('gateway_3d', { nonce: csp_nonce('script') }) }}
 
     <script nonce="{{ csp_nonce('script') }}">
     (function() {

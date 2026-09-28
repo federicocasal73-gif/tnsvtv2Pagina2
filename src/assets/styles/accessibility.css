@@ -51,9 +51,7 @@
     }
 
     /* Disable WebGL/Three.js for users with reduced motion */
-    .bg-shader-canvas,
-    .sacred-sigil-container,
-    #sacred-sigil-container {
+    .bg-shader-canvas {
         display: none !important;
     }
 }

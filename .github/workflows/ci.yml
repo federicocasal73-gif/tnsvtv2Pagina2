@@ -13,8 +13,6 @@ env:
     MERCURE_URL: "http://127.0.0.1:3000/.well-known/mercure"
     MERCURE_JWT_SECRET: "ci-test-mercure-secret-32bytes-placeholder"
     TRUSTED_PROXIES: "127.0.0.1,REMOTE_ADDR"
-    MP_ACCESS_TOKEN: "TEST-FAKE-TOKEN-FOR-SIGNATURE-VERIFICATION-ONLY"
-    MP_WEBHOOK_SECRET: "test_webhook_secret_for_signing_verification"
 
 jobs:
     lint-php:

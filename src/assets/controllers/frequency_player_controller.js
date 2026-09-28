@@ -6,8 +6,10 @@ import { Controller } from '@hotwired/stimulus';
  * Extracted from `templates/frequencies/hub.html.twig` inline `<script>` in
  * P10 (vertical slice commit 2). Owns the Web Audio API oscillator for the
  * duration this page is mounted. Persistence across navigation lives in
- * `frequency_mini_player_controller.js` (commit 4) and is wired here via
- * the `tnsvt:freq:start` / `tnsvt:freq:stop` CustomEvents.
+ * `sonic_sanctuary_controller.js` (Phase 3 of the Sonic Sanctuary plan;
+ * replaced the legacy `frequency_mini_player_controller.js` which was
+ * deleted in cleanup 2026-09-28) and is wired here via the
+ * `tnsvt:freq:start` / `tnsvt:freq:stop` CustomEvents.
  *
  * AudioContext is created lazily inside the onclick handler (browser
  * autoplay policy requires a user gesture).
@@ -318,7 +320,7 @@ export default class extends Controller {
         }, 1000);
         this.renderTimer();
 
-        // Dispatch global event — the frequency_mini_player_controller in
+        // Dispatch global event — the sonic_sanctuary_controller in
         // the shell owns the AudioContext + survives navigations.
         window.dispatchEvent(new CustomEvent('tnsvt:freq:start', {
             detail: {
@@ -368,12 +370,12 @@ export default class extends Controller {
     }
 
     globalMiniPlayerMounted() {
-        // Recognises both the legacy `frequency-mini-player` controller
-        // and the newer `sonic-sanctuary` (which replaced it). If either is
-        // mounted in the shell, the hub trusts the global player to own
-        // the AudioContext and skips its local fallback (avoids double audio).
+        // The shell mounts sonic-sanctuary inside #sanctum-floats, which
+        // is data-turbo-permanent. If mounted, the hub trusts the global
+        // player to own the AudioContext and skips its local fallback
+        // (avoids double audio).
         if (typeof document === 'undefined') return false;
-        return !!document.querySelector('[data-controller~="frequency-mini-player"], [data-controller~="sonic-sanctuary"]');
+        return !!document.querySelector('[data-controller~="sonic-sanctuary"]');
     }
 
     stopTimer() {

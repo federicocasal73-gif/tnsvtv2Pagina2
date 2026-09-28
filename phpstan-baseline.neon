@@ -283,12 +283,6 @@ parameters:
 			path: src/Controller/Api/MeController.php
 
 		-
-			message: '#^Method App\\Controller\\Api\\MusicController\:\:requireAdmin\(\) invoked with 2 parameters, 0 required\.$#'
-			identifier: arguments.count
-			count: 7
-			path: src/Controller/Api/MusicController.php
-
-		-
 			message: '#^Access to constant HTTP_NOT_FOUND on an unknown class App\\Controller\\Api\\Response\.$#'
 			identifier: class.notFound
 			count: 2
@@ -889,24 +883,6 @@ parameters:
 			path: src/Security/CodeAuthenticator.php
 
 		-
-			message: '#^Parameter \#4 \$timestamp of method App\\Service\\BinancePayService\:\:callAPI\(\) expects int, float given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Service/BinancePayService.php
-
-		-
-			message: '#^Property App\\Service\\BinancePayService\:\:\$apiKey \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
-			identifier: property.unusedType
-			count: 1
-			path: src/Service/BinancePayService.php
-
-		-
-			message: '#^Property App\\Service\\BinancePayService\:\:\$secretKey \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
-			identifier: property.unusedType
-			count: 1
-			path: src/Service/BinancePayService.php
-
-		-
 			message: '#^Property App\\Service\\CampusQuizGrader\:\:\$logger is never read, only written\.$#'
 			identifier: property.onlyWritten
 			count: 1
@@ -965,12 +941,6 @@ parameters:
 			identifier: function.alreadyNarrowedType
 			count: 1
 			path: src/Service/MarketDataService.php
-
-		-
-			message: '#^Property App\\Service\\MercadoPagoService\:\:\$accessToken \(string\|null\) is never assigned null so it can be removed from the property type\.$#'
-			identifier: property.unusedType
-			count: 1
-			path: src/Service/MercadoPagoService.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'

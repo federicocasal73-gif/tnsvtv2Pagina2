@@ -168,7 +168,7 @@ normal users. Surface in a **separate Admin app shell** OR a clearly-labelled
 | Content | CMS-style content | **GAP — no page** (entities exist) |
 | Courses | Course admin | **GAP — no page** (CampusAdmin API exists) |
 | Tasks | Global tasks | `/sanctum/tasks` |
-| Subscriptions | Payments admin | **GAP — no page** (MercadoPago/BinancePay exist) |
+| Subscriptions | Payments admin | **GAP — no page** (payment backends removed in cleanup 2026-09-28) |
 | Audit log | System audit | `/sanctum/audit` |
 | Monitoring | System monitoring | `/sanctum/monitoring` |
 | Settings | System settings | `/sanctum/settings` |

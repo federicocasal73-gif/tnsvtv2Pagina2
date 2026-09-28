@@ -23,7 +23,7 @@
 1. **Autenticación rota**: el firewall no está cableado a JWT ni a `X-Game-Code`; cualquier atacante que conozca un `code` de usuario puede impersonar sin contraseña.
 2. **Cobertura de tests < 1%**: 1 archivo de test vs 246 archivos PHP — 0.4%.
 3. **Stimulus y Turbo instalados pero inertes**: 0 templates los cargan. 0 controllers `__invoke` excepto 2.
-4. **Bugs explotables activos**: IDOR en `EconomicReminderController::cancel`, webhook de MercadoPago sin firma obligatoria, `/api/wallet/me` endpoint de tests en producción.
+4. **Bugs explotables activos**: IDOR en `EconomicReminderController::cancel`, ~~webhook de MercadoPago sin firma obligatoria~~ (FIXED in cleanup 2026-09-28 — controllers/services/tests deleted), `/api/wallet/me` endpoint de tests en producción.
 5. **Deuda de IA masiva**: 49+ bloques `catch (\Throwable)` vacíos, 33 `@` supresores, lógica de auth duplicada en 25+ controllers.
 
 **Ningún archivo fue modificado durante la auditoría.** Solo lectura.
@@ -38,7 +38,7 @@
 | 2 | **Login por `code + name` permite enumeración → impersonación** | `src/Security/CodeAuthenticator.php:31-68` | `name` es público (sale en feed/leaderboard); con `code` + `name` cualquiera entra como ese usuario. |
 | 3 | **`X-User-Code` en `RequireAdminTrait` eleva a admin sin secreto** | `src/Controller/Api/Admin/RequireAdminTrait.php:21-62` | Suministras `X-User-Code: ADMIN01` y sos admin. |
 | 4 | **Sanctum admin endpoints sin `IsGranted('ROLE_ADMIN')`** | `AuditController.php:21`, `SettingsController.php:26`, `TasksController.php:32`, `UsersController.php:21`, `DashboardController.php:30` | Cualquier user logueado lista usuarios, lee audit log, modifica settings. |
-| 5 | **Webhook MercadoPago sin firma obligatoria** | `src/Controller/Api/MercadoPagoController.php:122-136` | Si `MP_WEBHOOK_SECRET` está vacío, no valida firma → atacante credita wallets. |
+| 5 | ~~**Webhook MercadoPago sin firma obligatoria**~~ | ~~`src/Controller/Api/MercadoPagoController.php:122-136`~~ | FIXED in cleanup 2026-09-28 — controller + service + test removed. |
 | 6 | **Endpoint de test `/api/wallet/me` en producción** | `src/Controller/Api/WalletController.php:178-195` | Devuelve TODOS los campos del user con solo `X-Game-Code`. |
 | 7 | **IDOR en `EconomicReminderController::cancel`** | `src/Controller/Api/EconomicReminderController.php:131-134` | Si `user_code` query está vacío, el check pasa y cancela recordatorios ajenos. |
 | 8 | **`config/jwt/` vacío** (no se generaron las claves RSA) | `config/jwt/` | Primer emisión de JWT falla con excepción. |
@@ -192,8 +192,8 @@ try {
 ### 1.5 33 supresores `@` activos
 
 ```
-src/Service/BinancePayService.php:129
-src/Service/MercadoPagoService.php:134
+src/Service/BinancePayService.php:129 *(deleted 2026-09-28)*
+src/Service/MercadoPagoService.php:134 *(deleted 2026-09-28)*
 src/Service/PushNotificationService.php:122, 161, 217
 src/Controller/Api/DolarController.php:51
 src/Controller/Api/MusicController.php:266, 274, 292, 401, 406, 407, 494-498
@@ -203,7 +203,7 @@ src/Service/LinkPreview/UrlNormalizer.php:220, 225, 235
 src/Service/CampusStorage.php:37, 174, 181, 186, 214, 217
 src/Command/MigrateLegacyDataCommand.php:90
 src/Controller/Api/CampusUploadController.php:84, 96, 98
-src/Controller/Api/MercadoPagoController.php:270
+src/Controller/Api/MercadoPagoController.php:270 *(deleted 2026-09-28)*
 src/Service/LinkPreview/FaviconService.php:27
 ```
 
@@ -289,7 +289,7 @@ new \DateTimeImmutable('now', $this->defaultTz)
 
 | Patrón | Conteo | Notas |
 |---|---|---|
-| Docblocks verbosos (>4 líneas en funciones triviales) | ~12 archivos | `BinancePayService.php:28-34`, `MarketDataService.php:8-21`, `LegacyDataMigrator.php:11-28` |
+| Docblocks verbosos (>4 líneas en funciones triviales) | ~11 archivos | `MarketDataService.php:8-21`, `LegacyDataMigrator.php:11-28` (`BinancePayService.php:28-34` deleted 2026-09-28) |
 | `final` excesivo | 10+ clases concentradas en `LinkPreview/` | Indica generación bulk con preferencia default |
 | Comentarios "Best-effort, move on" | 6+ archivos | `TournamentController.php:538, 542`, `FeedController.php:134`, `WalletController.php:74` |
 | Defensive null-checks en tipos no-nullable | varios | `FeedController.php:146-147` |
@@ -612,7 +612,15 @@ LEGACY_DATABASE_URL="mysql://<redacted>:<redacted>@localhost:3306/..."
 bin/console lexik:jwt:generate-keypair
 ```
 
-### 3.9 Webhook MercadoPago sin firma obligatoria
+### 3.9 ~~Webhook MercadoPago sin firma obligatoria~~ (FIXED 2026-09-28)
+
+**Status: REMOVED** in cleanup commit `45ee899`. `MercadoPagoController.php`,
+`MercadoPagoService.php`, and `MercadoPagoSecurityTest.php` were deleted along
+with the entire MercadoPago + BinancePay payment backends (no business need).
+Both `MP_WEBHOOK_SECRET` and `BINANCE_PAY_SECRET` env vars were removed from
+`.env.test`, `.github/workflows/ci.yml`, and `bin/rotate-secrets.php`.
+
+Historical detail (for audit trail):
 
 `src/Controller/Api/MercadoPagoController.php:122-136`:
 ```php
@@ -626,12 +634,6 @@ if ($webhookSecret !== '') {     // ← si está vacío, se salta la validación
 ```
 
 Si `MP_WEBHOOK_SECRET` está vacío (o no se configuró), **toda validación de firma se omite**. Después llama a `processPaymentNotification` que acredita wallets via raw SQL.
-
-**Acción:**
-```php
-if ($webhookSecret === '') {
-    throw new \RuntimeException('MP_WEBHOOK_SECRET not configured');
-}
 // (siempre validar)
 $signature = $request->headers->get('X-Signature', '');
 if (!$this->verifyMPSignature(...)) return 401;
@@ -779,10 +781,10 @@ framework:
 | 🟡 HIGH | `/api/wallet/*` sin rate limit | `WalletController.php:53-195` |
 | 🟡 HIGH | `/api/academia/admin/verify-academia-pass` sin rate limit | `AcademiaAuthController.php:20-34` |
 | 🟡 HIGH | `not_compromised_password` validator NO habilitado | `validator.yaml` (config vacío) |
-| 🟢 MED | `MERCADOPAGO::getDolarRate` usa HTTP plain (no TLS) y `@` suppressor | `MercadoPagoController.php:267-280` |
+| 🟢 ~~MED~~ | ~~`MERCADOPAGO::getDolarRate` usa HTTP plain (no TLS) y `@` suppressor~~ | `MercadoPagoController.php:267-280` *(deleted 2026-09-28)* |
 | 🟢 MED | JWT no incluye `aud`, `iss`, `jti` claims | `JwtService.php:31-52` |
 | 🟢 MED | Rate-limiter usa filesystem cache (no escala multi-node) | `rate_limiter.yaml:31-34` |
-| 🟢 MED | Webhook MercadoPago acepta GET (cache-poisonable) | `MercadoPagoController.php:121` |
+| 🟢 ~~MED~~ | ~~Webhook MercadoPago acepta GET (cache-poisonable)~~ | `MercadoPagoController.php:121` *(deleted 2026-09-28)* |
 | 🟢 MED | `AuditController::list` LIKE concat user input | `AuditController.php:29-48` (no SQLi, pero enumeration) |
 
 ---
@@ -796,7 +798,7 @@ framework:
 2. Login `code + name` permite enumeración → impersonación
 3. `X-User-Code` en `RequireAdminTrait` permite escalar a admin
 4. Sanctum admin endpoints sin `IsGranted('ROLE_ADMIN')` (6 controllers)
-5. Webhook MercadoPago sin firma obligatoria
+5. ~~Webhook MercadoPago sin firma obligatoria~~ (FIXED 2026-09-28)
 6. Endpoint `/api/wallet/me` en producción
 7. `config/jwt/` vacío (claves no generadas)
 8. `.env.local` con secretos reales de prod
@@ -887,7 +889,7 @@ Detallados en cada sección. Resumen:
 3. Wirear `JwtAuthenticator` en firewall + eliminar `X-User-Code` de `RequireAdminTrait`
 4. Forzar uso de `password` en `CodeAuthenticator` para TODOS los users (no solo admin)
 5. Agregar `#[IsGranted('ROLE_ADMIN')]` a los 7 controllers Sanctum admin
-6. Hacer obligatoria la firma en webhook MercadoPago
+6. ~~Hacer obligatoria la firma en webhook MercadoPago~~ (FIXED 2026-09-28)
 7. Eliminar `/api/wallet/me`
 8. Patchear IDOR en `EconomicReminderController::cancel`
 9. Configurar `trusted_proxies` en `framework.yaml`

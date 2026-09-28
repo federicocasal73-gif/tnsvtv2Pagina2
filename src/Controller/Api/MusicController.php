@@ -2,7 +2,6 @@
 
 namespace App\Controller\Api;
 
-use App\Controller\Api\Admin\RequireAdminTrait;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,30 +9,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 #[Route('/api/music')]
 class MusicController extends AbstractController
 {
-    use RequireAdminTrait;
-
-    private const ALLOWED_MIME = [
-        'audio/mpeg' => 'mp3',
-        'audio/mp3' => 'mp3',
-        'audio/wav' => 'wav',
-        'audio/x-wav' => 'wav',
-        'audio/ogg' => 'ogg',
-        'audio/mp4' => 'm4a',
-        'audio/x-m4a' => 'm4a',
-        'audio/aac' => 'aac',
-    ];
-
-    private const MAX_BYTES = 200 * 1024 * 1024;
     private const PLAYLIST_VERSION = 2;
-
-    public function __construct(
-        private TokenStorageInterface $tokenStorage,
-    ) {}
 
     private function audioDir(): string
     {
@@ -99,21 +79,6 @@ class MusicController extends AbstractController
         return $track;
     }
 
-    private function writePlaylist(array $playlist): void
-    {
-        $dir = $this->audioDir();
-        $metaPath = $dir . '/current.json';
-        file_put_contents($metaPath, json_encode($playlist, JSON_PRETTY_PRINT));
-    }
-
-    private function findTrack(array $playlist, string $id): ?array
-    {
-        foreach ($playlist['tracks'] as $idx => $t) {
-            if (($t['id'] ?? null) === $id) return ['index' => $idx, 'track' => $t];
-        }
-        return null;
-    }
-
     private function currentTrack(array $playlist): ?array
     {
         if (empty($playlist['tracks'])) return null;
@@ -122,7 +87,7 @@ class MusicController extends AbstractController
     }
 
     // ========================================================================
-    // ENDPOINTS PÚBLICOS
+    // ENDPOINTS PÚBLIC
     // ========================================================================
 
     #[Route('/current', name: 'api_music_current', methods: ['GET'])]
@@ -147,8 +112,14 @@ class MusicController extends AbstractController
         $trackId = $request->query->get('id');
         $track = null;
         if ($trackId) {
-            $found = $this->findTrack($playlist, $trackId);
-            $track = $found['track'] ?? null;
+            $byId = [];
+            foreach ($playlist['tracks'] as $idx => $t) {
+                if (($t['id'] ?? null) === $trackId) {
+                    $byId = ['index' => $idx, 'track' => $t];
+                    break;
+                }
+            }
+            $track = $byId['track'] ?? null;
         } else {
             $track = $this->currentTrack($playlist);
         }
@@ -306,201 +277,5 @@ class MusicController extends AbstractController
         if (substr($head, 0, 4) === "OggS") return 'audio/ogg';
         if (substr($head, 4, 4) === 'ftyp') return 'audio/mp4';
         return 'audio/mpeg';
-    }
-
-    // ========================================================================
-    // ENDPOINTS ADMIN
-    // ========================================================================
-
-    #[Route('/playlist/add-upload', name: 'api_admin_music_add_upload', methods: ['POST'])]
-    public function addUpload(Request $request): JsonResponse
-    {
-        if ($denied = $this->requireAdmin()) return $denied;
-        $file = $request->files->get('file');
-        if (!$file) return $this->json(['error' => 'Subí un archivo de audio'], Response::HTTP_BAD_REQUEST);
-        if (!$file->isValid()) return $this->json(['error' => 'Archivo inválido'], Response::HTTP_BAD_REQUEST);
-        if ($file->getSize() > self::MAX_BYTES) {
-            return $this->json(['error' => 'Máximo 200 MB. Para más grande usá URL externa.'], Response::HTTP_BAD_REQUEST);
-        }
-        $mime = (string) $file->getMimeType();
-        if (!isset(self::ALLOWED_MIME[$mime])) {
-            return $this->json(['error' => 'Formato no soportado. Usá mp3, wav, ogg, m4a o aac.', 'mimeRecibido' => $mime], Response::HTTP_BAD_REQUEST);
-        }
-        $ext = self::ALLOWED_MIME[$mime];
-        $dir = $this->audioDir();
-        $trackId = substr(bin2hex(random_bytes(6)), 0, 8);
-        $filename = 'track-' . $trackId . '.' . $ext;
-        $file->move($dir, $filename);
-        $track = [
-            'id' => $trackId,
-            'name' => $file->getClientOriginalName() ?: $filename,
-            'source' => 'local',
-            'filename' => $filename,
-            'mime' => $mime,
-            'size' => filesize($dir . '/' . $filename),
-            'addedAt' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            'addedBy' => $this->tokenStorage->getToken()?->getUserIdentifier() ?? 'admin',
-        ];
-        $playlist = $this->readPlaylist();
-        $playlist['tracks'][] = $track;
-        if (count($playlist['tracks']) === 1) $playlist['activeIndex'] = 0;
-        $this->writePlaylist($playlist);
-        return $this->json(['success' => true, 'track' => $track, 'total' => count($playlist['tracks'])]);
-    }
-
-    #[Route('/playlist/add-external', name: 'api_admin_music_add_external', methods: ['POST'])]
-    public function addExternal(Request $request): JsonResponse
-    {
-        if ($denied = $this->requireAdmin()) return $denied;
-        $data = json_decode($request->getContent(), true) ?? [];
-        $url = trim((string) ($data['url'] ?? ''));
-        $label = trim((string) ($data['label'] ?? ''));
-        if (!$url) return $this->json(['error' => 'La URL es requerida'], Response::HTTP_BAD_REQUEST);
-        if (!preg_match('#^https?://#i', $url)) {
-            return $this->json(['error' => 'La URL debe empezar con http:// o https://'], Response::HTTP_BAD_REQUEST);
-        }
-        $isGoogleDrive = (bool) preg_match('#^https?://(drive|drive\.usercontent)\.google\.com/#i', $url);
-        $downloadUrl = $url;
-        if ($isGoogleDrive) {
-            $fileId = $this->extractGoogleDriveId($url);
-            if ($fileId) {
-                $downloadUrl = 'https://drive.usercontent.google.com/download?id=' . $fileId . '&export=download&confirm=t';
-            }
-        }
-        $trackId = substr(bin2hex(random_bytes(6)), 0, 8);
-        $track = [
-            'id' => $trackId,
-            'name' => $label ?: ('Track ' . substr($url, 0, 40)),
-            'source' => 'external',
-            'url' => $url,
-            'downloadUrl' => $downloadUrl,
-            'mime' => 'audio/mpeg',
-            'addedAt' => (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            'addedBy' => $this->tokenStorage->getToken()?->getUserIdentifier() ?? 'admin',
-        ];
-        $playlist = $this->readPlaylist();
-        $playlist['tracks'][] = $track;
-        if (count($playlist['tracks']) === 1) $playlist['activeIndex'] = 0;
-        $this->writePlaylist($playlist);
-        return $this->json(['success' => true, 'track' => $track, 'total' => count($playlist['tracks'])]);
-    }
-
-    #[Route('/playlist/{id}', name: 'api_admin_music_remove', methods: ['DELETE'], requirements: ['id' => '[A-Za-z0-9_-]+'])]
-    public function remove(string $id): JsonResponse
-    {
-        if ($denied = $this->requireAdmin()) return $denied;
-        $playlist = $this->readPlaylist();
-        $found = $this->findTrack($playlist, $id);
-        if (!$found) return $this->json(['error' => 'Track no encontrado'], Response::HTTP_NOT_FOUND);
-        $track = $found['track'];
-        $idx = $found['index'];
-        // Borrar archivo si es local
-        if (($track['source'] ?? '') === 'local' && !empty($track['filename'])) {
-            @unlink($this->audioDir() . '/' . $track['filename']);
-        }
-        // Borrar cache si es externo
-        if (($track['source'] ?? '') === 'external') {
-            $cached = $this->audioDir() . '/cache-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $id) . '.bin';
-            @unlink($cached);
-            @unlink($cached . '.meta.json');
-        }
-        array_splice($playlist['tracks'], $idx, 1);
-        if ($playlist['activeIndex'] >= count($playlist['tracks'])) {
-            $playlist['activeIndex'] = max(0, count($playlist['tracks']) - 1);
-        } elseif ($idx < $playlist['activeIndex']) {
-            $playlist['activeIndex']--;
-        }
-        $this->writePlaylist($playlist);
-        return $this->json(['success' => true, 'total' => count($playlist['tracks'])]);
-    }
-
-    #[Route('/playlist/reorder', name: 'api_admin_music_reorder', methods: ['POST'])]
-    public function reorder(Request $request): JsonResponse
-    {
-        if ($denied = $this->requireAdmin()) return $denied;
-        $data = json_decode($request->getContent(), true) ?? [];
-        $order = $data['order'] ?? null;
-        if (!is_array($order) || count($order) === 0) {
-            return $this->json(['error' => 'Se requiere un array "order" con los ids en el nuevo orden'], Response::HTTP_BAD_REQUEST);
-        }
-        $playlist = $this->readPlaylist();
-        $byId = [];
-        foreach ($playlist['tracks'] as $t) {
-            if (!empty($t['id'])) $byId[$t['id']] = $t;
-        }
-        $newTracks = [];
-        foreach ($order as $id) {
-            if (isset($byId[$id])) {
-                $newTracks[] = $byId[$id];
-                unset($byId[$id]);
-            }
-        }
-        // Agregar los que faltaron al final
-        foreach ($byId as $t) $newTracks[] = $t;
-        if (count($newTracks) !== count($playlist['tracks'])) {
-            return $this->json(['error' => 'Faltan tracks en el orden enviado'], Response::HTTP_BAD_REQUEST);
-        }
-        $activeId = $playlist['tracks'][$playlist['activeIndex']]['id'] ?? null;
-        $playlist['tracks'] = $newTracks;
-        if ($activeId) {
-            foreach ($newTracks as $i => $t) {
-                if (($t['id'] ?? null) === $activeId) { $playlist['activeIndex'] = $i; break; }
-            }
-        }
-        $this->writePlaylist($playlist);
-        return $this->json(['success' => true, 'playlist' => $playlist['tracks'], 'activeIndex' => $playlist['activeIndex']]);
-    }
-
-    #[Route('/playlist/active', name: 'api_admin_music_set_active', methods: ['POST'])]
-    public function setActive(Request $request): JsonResponse
-    {
-        if ($denied = $this->requireAdmin()) return $denied;
-        $data = json_decode($request->getContent(), true) ?? [];
-        $id = $data['id'] ?? null;
-        $playlist = $this->readPlaylist();
-        if (!$id) {
-            return $this->json(['error' => 'Se requiere el id del track'], Response::HTTP_BAD_REQUEST);
-        }
-        $found = $this->findTrack($playlist, $id);
-        if (!$found) return $this->json(['error' => 'Track no encontrado'], Response::HTTP_NOT_FOUND);
-        $playlist['activeIndex'] = $found['index'];
-        $this->writePlaylist($playlist);
-        return $this->json(['success' => true, 'activeIndex' => $playlist['activeIndex'], 'current' => $found['track']]);
-    }
-
-    #[Route('/playlist/loop', name: 'api_admin_music_set_loop', methods: ['POST'])]
-    public function setLoop(Request $request): JsonResponse
-    {
-        if ($denied = $this->requireAdmin()) return $denied;
-        $data = json_decode($request->getContent(), true) ?? [];
-        $loop = $data['loop'] ?? 'all';
-        if (!in_array($loop, ['all', 'one', 'off'], true)) {
-            return $this->json(['error' => 'loop debe ser all, one u off'], Response::HTTP_BAD_REQUEST);
-        }
-        $playlist = $this->readPlaylist();
-        $playlist['loop'] = $loop;
-        $this->writePlaylist($playlist);
-        return $this->json(['success' => true, 'loop' => $loop]);
-    }
-
-    #[Route('/playlist', name: 'api_admin_music_clear', methods: ['DELETE'])]
-    public function clearAll(): JsonResponse
-    {
-        if ($denied = $this->requireAdmin()) return $denied;
-        $dir = $this->audioDir();
-        // Borrar todos los archivos de tracks locales
-        foreach (glob($dir . '/track-*.*') as $f) @unlink($f);
-        foreach (glob($dir . '/cache-*.bin*') as $f) @unlink($f);
-        foreach (glob($dir . '/bg-music.*') as $f) @unlink($f);
-        $metaPath = $dir . '/current.json';
-        if (is_file($metaPath)) @unlink($metaPath);
-        return $this->json(['success' => true, 'hasMusic' => false, 'total' => 0]);
-    }
-
-    private function extractGoogleDriveId(string $url): ?string
-    {
-        if (preg_match('#/file/d/([a-zA-Z0-9_-]+)#', $url, $m)) return $m[1];
-        if (preg_match('#[?&]id=([a-zA-Z0-9_-]+)#', $url, $m)) return $m[1];
-        return null;
     }
 }

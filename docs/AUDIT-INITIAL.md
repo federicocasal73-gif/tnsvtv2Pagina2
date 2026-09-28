@@ -87,7 +87,7 @@ Duel, Clan, Leaderboard, HonorBoard, Game (×2), Task, Sync (×2), TradingAccoun
 Notification, Macro, Oracle, Profile, User (×2), UserSound, Device, Academia (×2 +
 Admin), Campus (×3 + Upload + Admin), Bracket, Bet, Dolar, DailyChallenge, Diary,
 EconomicReminder, Event, FirebaseConfig, Frequencies, Music, LinkPreview,
-MercadoPago, BinancePay, AdminWallet, AppVersion.
+AdminWallet, AppVersion.
 
 Detailed breakdown lives in `MODULE-MAP.md`.
 
@@ -132,8 +132,8 @@ this audit).
 
 - **Root:** `TournamentMailer`, `RateLimiterService`, `PushService`,
   `PushNotificationService`, `PropFirmRuleChecker`, `CampusStorage`,
-  `BinancePayService`, `MercadoPagoService`, `MarketDataService`,
-  `AdminAuthService`, `AdminAuditLogger`, `ApiKeyService`, `ImageValidationService`
+  `MarketDataService`, `AdminAuthService`, `AdminAuditLogger`,
+  `ApiKeyService`, `ImageValidationService`
 - **`Auth/`:** `RefreshTokenService`, `JwtService`
 - **`Monitoring/`:** `MonitoringService`
 - **`Oracle/`:** `OracleMetricsService`

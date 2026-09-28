@@ -121,21 +121,21 @@ HTML,
             'title' => '6. Checklist — Validación en Tiempo Real',
             'description' => <<<'HTML'
 <p>Antes de ejecutar, marca las 4 condiciones. Si se cumplen todas, el setup está validado:</p>
-<div id="multifractal-checklist" class="space-y-2 mt-4 text-sm" data-controller="multifractal-checklist">
+<div id="multifractal-checklist" class="space-y-2 mt-4 text-sm">
     <label class="flex items-center gap-3 p-3 rounded border border-[var(--glass-border-elev)] cursor-pointer hover:border-[var(--gold-elev)] transition">
-        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]" data-action="change->multifractal-checklist#recalc">
+        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]">
         <span>1. BOS claro en TF alto (H1/H4) y dirección definida.</span>
     </label>
     <label class="flex items-center gap-3 p-3 rounded border border-[var(--glass-border-elev)] cursor-pointer hover:border-[var(--gold-elev)] transition">
-        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]" data-action="change->multifractal-checklist#recalc">
+        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]">
         <span>2. Precio en zona OTE (62-79%) del impulse anterior.</span>
     </label>
     <label class="flex items-center gap-3 p-3 rounded border border-[var(--glass-border-elev)] cursor-pointer hover:border-[var(--gold-elev)] transition">
-        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]" data-action="change->multifractal-checklist#recalc">
+        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]">
         <span>3. LG visible (toma de stops) en TF bajo.</span>
     </label>
     <label class="flex items-center gap-3 p-3 rounded border border-[var(--glass-border-elev)] cursor-pointer hover:border-[var(--gold-elev)] transition">
-        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]" data-action="change->multifractal-checklist#recalc">
+        <input type="checkbox" class="mf-check w-4 h-4 accent-[var(--gold-elev)]">
         <span>4. Step 2 confirmado (BOS menor en M5/M15).</span>
     </label>
 </div>

@@ -164,7 +164,7 @@ Status legend:
 | Communication | `Notification`, `Music`, `Frequencies`, `UserSound`, `EconomicReminder` |
 | Education | `Academia` (×2), `Campus` (×3), `CampusUpload`, `CampusAdmin` |
 | Macro & markets | `Macro`, `Dolar`, `Event` |
-| System | `AdminWallet` (also admin), `MercadoPago`, `BinancePay`, `Diary` |
+| System | `AdminWallet` (also admin), `Diary` |
 
 ---
 

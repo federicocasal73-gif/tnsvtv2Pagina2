@@ -9,19 +9,12 @@
 {% endblock %}
 
 {% block content %}
-{# Three.js for Sacred Sigil — bundled locally via importmap('app'); see src/assets/js/modules/sacred-sigil.js #}
 
 <div class="max-w-2xl mx-auto pb-24" data-controller="profile">
-    {# ─── Profile Hero with 3D Sigil ─── #}
+    {# ─── Profile Hero (3D Sacred Sigil removed in cleanup 2026-09-28) ─── #}
     <div class="glass-card-elev">
         <div class="text-center mb-4">
             <p class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Identidad Celestial</p>
-        </div>
-        <div class="profile-sigil" id="sacred-sigil-container">
-            {# Three.js will render the 3D sigil here via sacred-sigil.js #}
-        </div>
-            <div class="sigil-pulse"></div>
-            <div class="sigil-core"></div>
         </div>
         <div class="flex items-center gap-4 mb-6">
             <div class="relative">
@@ -184,7 +177,4 @@
         </button>
     </div>
 </div>
-
-{# Sacred Sigil 3D — Three.js bundled locally via importmap, no CDN #}
-{{ importmap('sacred_sigil', { nonce: csp_nonce('script') }) }}
 {% endblock %}

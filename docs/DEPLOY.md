@@ -68,10 +68,6 @@ JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
 ADMIN_PASSWORD=<openssl rand -hex 32>
 ACADEMIA_ADMIN_PASS=<openssl rand -hex 32>
 
-# MercadoPago
-MP_ACCESS_TOKEN=<from MP dashboard>
-MP_WEBHOOK_SECRET=<from MP dashboard>
-
 # Mercure (SSE real-time)
 MERCURE_URL=https://mercure.tnsvt.com/.well-known/mercure
 MERCURE_JWT_SECRET=<openssl rand -hex 32>

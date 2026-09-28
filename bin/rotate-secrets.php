@@ -20,8 +20,6 @@ $newSecrets = [
     'JWT_PASSPHRASE'        => bin2hex(random_bytes(32)),
     'ADMIN_PASSWORD'        => bin2hex(random_bytes(32)),
     'ACADEMIA_ADMIN_PASS'   => bin2hex(random_bytes(32)),
-    'MP_WEBHOOK_SECRET'     => bin2hex(random_bytes(32)),
-    'BINANCE_PAY_SECRET'   => bin2hex(random_bytes(32)),
     'MERCURE_JWT_SECRET'    => bin2hex(random_bytes(32)),
     'FIREBASE_WEB_PUSH_VAPID_KEY' => bin2hex(random_bytes(32)),
 ];
