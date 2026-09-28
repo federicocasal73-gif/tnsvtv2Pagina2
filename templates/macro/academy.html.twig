@@ -102,5 +102,5 @@
 {% endblock %}
 
 {% block javascripts %}
-    {{ importmap('macro_academy') }}
+    {{ importmap('macro_academy', { nonce: csp_nonce('script') }) }}
 {% endblock %}

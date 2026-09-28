@@ -172,4 +172,47 @@ class AuthControllerTest extends ApiTestCase
         $this->assertSame(200, $result['status']);
         $this->assertTrue($result['data']['success'] ?? false);
     }
+
+    /**
+     * Audit AUDIT-2026-09-28 #8: /api/auth/login debe devolver headers
+     * X-RateLimit-* para que el cliente sepa cuantos intentos le quedan.
+     * Verifica contrato en respuesta 401 (credenciales invalidas → ya consumio
+     * 1 intento).
+     */
+    public function testLoginReturnsRateLimitHeadersOnInvalidCredentials(): void
+    {
+        // Resetear el rate-limit para este test (otros tests pueden haber
+        // consumido slots con la misma combinacion IP+code).
+        $rl = self::getContainer()->get(\App\Service\RateLimiterService::class);
+        $rl->reset('login_attempts:127.0.0.1:NOPE_NOT_REAL');
+
+        $result = $this->jsonRequest('POST', '/api/auth/login', [
+            'code' => 'NOPE_NOT_REAL',
+            'name' => 'Nobody',
+        ]);
+
+        $this->assertSame(401, $result['status']);
+        $headers = $this->client->getResponse()->headers;
+        $this->assertSame('5', $headers->get('X-RateLimit-Limit'));
+        $this->assertSame('4', $headers->get('X-RateLimit-Remaining'));
+        $reset = (int) $headers->get('X-RateLimit-Reset');
+        $this->assertGreaterThan(time() + 800, $reset, 'reset debe estar ~15 min en el futuro');
+        $this->assertLessThanOrEqual(time() + 901, $reset);
+    }
+
+    public function testLoginReturnsRateLimitHeadersOnSuccess(): void
+    {
+        $user = $this->createUser(['code' => 'RATEOK1', 'name' => 'Rate OK']);
+
+        $this->jsonRequest('POST', '/api/auth/login', [
+            'code' => 'rateok1',
+            'name' => 'Rate OK',
+        ]);
+
+        $headers = $this->client->getResponse()->headers;
+        $this->assertSame('5', $headers->get('X-RateLimit-Limit'));
+        // Despues de un login exitoso, el rate-limit se resetea → 5 disponibles
+        $this->assertSame('5', $headers->get('X-RateLimit-Remaining'));
+        $this->assertNotNull($headers->get('X-RateLimit-Reset'));
+    }
 }

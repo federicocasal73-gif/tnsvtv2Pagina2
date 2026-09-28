@@ -7,7 +7,7 @@
     {# Theme flash prevention (Fase E): apply stored theme before CSS paints.
        theme.js (deferred) re-applies + syncs on load; this inline snippet
        only prevents the white/dark flash. #}
-    <script>
+    <script nonce="{{ csp_nonce('script') }}">
     (function () {
         try {
             var t = localStorage.getItem('tnsvt_theme') || 'auto';
@@ -477,9 +477,11 @@
 </div>
 
 {% block importmap %}
-    {{ importmap('app') }}
-    {{ importmap('divine_overlay') }}
-    {{ importmap('onboarding') }}
+    {# Audit AUDIT-2026-09-28 #5: importmap <script> necesita nonce para CSP strict.
+       Symfony 8.1 + asset-mapper: pasar `nonce` como atributo. #}
+    {{ importmap('app', { nonce: csp_nonce('script') }) }}
+    {{ importmap('divine_overlay', { nonce: csp_nonce('script') }) }}
+    {{ importmap('onboarding', { nonce: csp_nonce('script') }) }}
 {% endblock %}
 
 {# ─── Photo lightbox (singleton) ─── #}

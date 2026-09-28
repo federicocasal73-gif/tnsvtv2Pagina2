@@ -7,7 +7,6 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Auth\JwtService;
 use App\Service\Auth\RefreshTokenService;
-use App\Service\RateLimiterService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +24,6 @@ class AuthController extends AbstractController
     private const LOGIN_RATE_LIMIT_WINDOW = 900;
 
     public function __construct(
-        private RateLimiterService $rateLimiter,
         private JwtService $jwtService,
         private RefreshTokenService $refreshTokenService,
     ) {}
@@ -41,6 +39,24 @@ class AuthController extends AbstractController
         $response->headers->set('Content-Type', 'application/json; charset=utf-8');
         $response->headers->set('Content-Length', (string) strlen($body));
         $response->headers->set('X-TNSVT-Error', '1');
+
+        return $response;
+    }
+
+    /**
+     * Adjunta los headers X-RateLimit-* a una respuesta del endpoint /login.
+     * Audit AUDIT-2026-09-28 #8: el cliente debe saber cuantos intentos le quedan
+     * antes del 429. Sigue el formato de GitHub/Twitter API.
+     *
+     * @param Response $response respuesta a la que se le suman headers
+     * @param int      $remaining intentos restantes despues de este hit
+     * @param int      $resetAt   timestamp UNIX en que la ventana se resetea
+     */
+    private function withRateLimitHeaders(Response $response, int $remaining, int $resetAt): Response
+    {
+        $response->headers->set('X-RateLimit-Limit', (string) self::LOGIN_RATE_LIMIT_MAX);
+        $response->headers->set('X-RateLimit-Remaining', (string) max(0, $remaining));
+        $response->headers->set('X-RateLimit-Reset', (string) $resetAt);
 
         return $response;
     }
@@ -77,37 +93,48 @@ class AuthController extends AbstractController
             return $this->jsonError('Código de acceso requerido', Response::HTTP_BAD_REQUEST, 'code_required');
         }
 
-        $clientIp = $request->getClientIp() ?? '127.0.0.1';
-        $rlKey = sprintf('login_attempts:%s:%s', $clientIp, $code);
-        $remaining = $this->rateLimiter->checkAndHit($rlKey, self::LOGIN_RATE_LIMIT_MAX, self::LOGIN_RATE_LIMIT_WINDOW);
-        if ($remaining <= 0) {
-            return $this->jsonError(
-                'Demasiados intentos. Esperá 15 minutos.',
-                Response::HTTP_TOO_MANY_REQUESTS,
-                'rate_limit_exceeded'
-            );
-        }
+        // El rate-limit lo gestiona CodeAuthenticator (corre ANTES de este controller).
+        // Leemos los atributos que dejó para poder emitir los headers en la respuesta 200.
+        $remaining = (int) $request->attributes->get('_auth_remaining', self::LOGIN_RATE_LIMIT_MAX);
+        $resetAt = (int) $request->attributes->get('_auth_reset_at', time() + self::LOGIN_RATE_LIMIT_WINDOW);
 
         $user = $userRepository->findByCode($code);
 
         if (!$user || !$user->isActive()) {
-            return $this->jsonError('Código inválido o desactivado', Response::HTTP_UNAUTHORIZED, 'invalid_code');
+            return $this->withRateLimitHeaders(
+                $this->jsonError('Código inválido o desactivado', Response::HTTP_UNAUTHORIZED, 'invalid_code'),
+                $remaining,
+                $resetAt,
+            );
         }
 
         if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
             if (empty($password)) {
-                return $this->jsonError('Contraseña requerida para administradores', Response::HTTP_UNAUTHORIZED, 'admin_password_required');
+                return $this->withRateLimitHeaders(
+                    $this->jsonError('Contraseña requerida para administradores', Response::HTTP_UNAUTHORIZED, 'admin_password_required'),
+                    $remaining,
+                    $resetAt,
+                );
             }
             if (!$passwordHasher->isPasswordValid($user, $password)) {
-                return $this->jsonError('Contraseña incorrecta', Response::HTTP_UNAUTHORIZED, 'admin_password_invalid');
+                return $this->withRateLimitHeaders(
+                    $this->jsonError('Contraseña incorrecta', Response::HTTP_UNAUTHORIZED, 'admin_password_invalid'),
+                    $remaining,
+                    $resetAt,
+                );
             }
         } elseif (strcasecmp(trim($user->getName()), $name) !== 0) {
-            return $this->jsonError('Nombre de usuario incorrecto', Response::HTTP_UNAUTHORIZED, 'name_invalid');
+            return $this->withRateLimitHeaders(
+                $this->jsonError('Nombre de usuario incorrecto', Response::HTTP_UNAUTHORIZED, 'name_invalid'),
+                $remaining,
+                $resetAt,
+            );
         }
 
         $user->setLastLogin(new \DateTimeImmutable());
         $userRepository->getEntityManager()->flush();
-        $this->rateLimiter->reset($rlKey);
+        // El reset del rate-limit lo hace CodeAuthenticator::onAuthenticationSuccess()
+        // (corre antes de llegar al controller).
 
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
         $tokenStorage->setToken($token);
@@ -124,7 +151,11 @@ class AuthController extends AbstractController
         $payload = $this->jwtService->buildLoginResponse($user);
         $payload['refresh_token'] = $this->refreshTokenService->issue($user);
 
-        return $this->json($payload);
+        $response = $this->json($payload);
+        // Tras un login exitoso reseteamos el rate-limit (ver linea 110),
+        // pero dejamos los headers visibles para que el cliente sepa que ya no
+        // hay throttling pendiente.
+        return $this->withRateLimitHeaders($response, self::LOGIN_RATE_LIMIT_MAX, $resetAt);
     }
 
     #[Route('/refresh', name: 'api_auth_refresh', methods: ['POST'])]

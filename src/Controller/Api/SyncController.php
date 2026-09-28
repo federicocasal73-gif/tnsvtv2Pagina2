@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Event\TradeSavedEvent;
 use App\Repository\JournalEntryRepository;
 use App\Repository\UserRepository;
+use App\Security\AuthAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
@@ -24,6 +25,7 @@ class SyncController extends AbstractController
         private JournalEntryRepository $journalEntryRepository,
         private LoggerInterface $logger,
         private EventDispatcherInterface $eventDispatcher,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -33,11 +35,15 @@ class SyncController extends AbstractController
             return $user;
         }
         $code = trim($request->query->get('user_code', '') ?: '');
+        $source = $code !== '' ? 'query-string' : null;
         if (!$code) {
             $data = json_decode($request->getContent() ?: '{}', true);
             $code = trim($data['user_code'] ?? '');
+            if ($code !== '') $source = 'json-body';
         }
-        return $code ? $this->userRepository->findByCode($code) : null;
+        if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
+        return $this->userRepository->findByCode($code);
     }
 
     #[Route('/snapshot', name: 'api_sync_snapshot', methods: ['GET'])]

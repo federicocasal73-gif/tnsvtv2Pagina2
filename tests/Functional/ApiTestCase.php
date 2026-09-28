@@ -44,7 +44,7 @@ abstract class ApiTestCase extends WebTestCase
 
     protected function tablesToTruncate(): array
     {
-        return ['user', 'users', 'economic_reminders', 'admin_audit_log', 'wallet_transactions'];
+        return ['user', 'users', 'economic_reminders', 'admin_audit_log', 'wallet_transactions', 'rate_limits'];
     }
 
     protected function hasher(): UserPasswordHasherInterface

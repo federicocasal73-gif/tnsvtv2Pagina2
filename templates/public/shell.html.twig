@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#050308" />
     {# Theme flash prevention (Fase E) — see shell.html.twig for rationale. #}
-    <script>
+    <script nonce="{{ csp_nonce('script') }}">
     (function () {
         try {
             var t = localStorage.getItem('tnsvt_theme') || 'auto';
@@ -47,7 +47,7 @@
 <script src="{{ asset('js/modules/theme.js') }}" defer></script>
 <script src="{{ asset('js/modules/webgl-background.js') }}" defer></script>
 {% block javascripts %}
-    {{ importmap('divine_overlay') }}
+    {{ importmap('divine_overlay', { nonce: csp_nonce('script') }) }}
 {% endblock %}
 
 {# Public shell loads ONLY the tokens + home styles. #}

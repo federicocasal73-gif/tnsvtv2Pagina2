@@ -7,6 +7,7 @@ use App\Entity\LikedPost;
 use App\Repository\FeedPostRepository;
 use App\Repository\LikedPostRepository;
 use App\Repository\UserRepository;
+use App\Security\AuthAuditLogger;
 use App\Security\RateLimiterTrait;
 use App\Service\ImageValidationService;
 use App\Service\LinkPreview\LinkPreviewService;
@@ -31,6 +32,7 @@ class FeedController extends AbstractController
         private LinkPreviewService $linkPreviewService,
         private ImageValidationService $imageValidation,
         private NotificationService $notifier,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     private function getCurrentUser(Request $request): ?\App\Entity\User
@@ -38,13 +40,16 @@ class FeedController extends AbstractController
         $user = $this->getUser();
         if ($user instanceof \App\Entity\User) return $user;
         $code = trim($request->headers->get('X-Game-Code', ''));
+        $source = $code !== '' ? 'X-Game-Code-header' : null;
         if (!$code) {
             $data = json_decode($request->getContent(), true);
             if (is_array($data) && isset($data['code'])) {
                 $code = trim((string) $data['code']);
+                if ($code !== '') $source = 'json-body';
             }
         }
         if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
         return $this->userRepository->findOneBy(['code' => $code, 'active' => true]);
     }
 

@@ -140,6 +140,12 @@ Agregar a crontab de Hostinger:
 0 3 * * 0 cd /home/u310596868/public_html && php bin/console cache:clear --env=prod
 ```
 
+> **Backup diario de la DB** — ver `docs/BACKUPS.md` para el setup paso a paso
+> del cron de backups en hPanel (no automatizable desde el repo porque
+> Hostinger shared bloquea `proc_open`/`crontab`). El script
+> `scripts/db-backup.sh` ya esta en el repo, listo para copiarse a
+> `~/bin/db-backup.sh` y agendarse desde el panel web.
+
 ### 7. Verificar
 
 ```bash

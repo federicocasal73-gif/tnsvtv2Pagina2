@@ -201,12 +201,12 @@
 {% endblock %}
 
 {% block javascripts %}
-    {{ importmap('divine_overlay') }}
+    {{ importmap('divine_overlay', { nonce: csp_nonce('script') }) }}
 
     {# Three.js for sacred geometry 3D hero — bundled locally via importmap #}
-    {{ importmap('gateway_3d') }}
+    {{ importmap('gateway_3d', { nonce: csp_nonce('script') }) }}
 
-    <script>
+    <script nonce="{{ csp_nonce('script') }}">
     (function() {
         // apiFetch is provided by src/assets/js/api-helper.js (ES module,
         // loaded via the importmap below). The module is deferred, so it

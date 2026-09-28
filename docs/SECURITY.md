@@ -186,5 +186,60 @@ These belong to later phases but are tracked here:
 
 ---
 
+## 8. Content Security Policy (CSP) — reglas para contributors
+
+> **Audit AUDIT-2026-09-28 #5**: migrado de `'unsafe-inline'` a nonces + sha256.
+> CSP estricto activo en `config/packages/nelmio_security.yaml`.
+
+### Reglas al agregar contenido inline
+
+1. **`<script>` inline en templates**: SIEMPRE con `nonce="{{ csp_nonce('script') }}"`
+   ```twig
+   <script nonce="{{ csp_nonce('script') }}">
+       // tu código aqui
+   </script>
+   ```
+   Sin nonce → bloqueado por CSP.
+
+2. **`{{ importmap('entrypoint') }}`**: pasar `nonce` como atributo
+   ```twig
+   {{ importmap('app', { nonce: csp_nonce('script') }) }}
+   ```
+
+3. **Event handlers inline (`onclick="..."`, etc.)**: deben tener su hash sha256 en
+   el header CSP. Para regenerar hashes después de agregar/modificar uno:
+   ```bash
+   php bin/compute-csp-hashes.php
+   ```
+   El script escanea `templates/` y emite el YAML listo para copiar en
+   `config/packages/nelmio_security.yaml:script-src`.
+
+4. **`<style>` inline**: no permitido. Usar clases CSS en `src/assets/styles/`.
+
+5. **`style="..."` attributes inline**: permitidos (CSP `'unsafe-hashes'` cubre esto).
+   Para cambios de estilo dinamicos, mejor usar clases + JavaScript que setear
+   `style.width = '60%'` directo.
+
+### Tests de regresion CSP
+
+`tests/Functional/CspSmokeTest.php` verifica:
+- Header `Content-Security-Policy` presente
+- `script-src` no contiene `'unsafe-inline'`
+- `style-src` no contiene `'unsafe-inline'`
+- Todos los `<script>` inline tienen nonce que matchea el header
+- `script-src` tiene `'unsafe-hashes'` para event handlers
+- `script-src` tiene sha256-* para handlers de `macro_academy`
+
+`tests/Functional/StimulusMonitoringTest.php` verifica que Stimulus se hidrata
+correctamente con CSP estricto en `/sanctum/monitoring`.
+
+### Browsers soportados
+
+CSP3 (strict-dynamic, unsafe-hashes) requiere browsers >= 2020. Si necesitas
+soportar browsers mas viejos, agregar `'unsafe-inline'` como fallback NO esta
+permitido — migrar a bundles ESM con importmap (que es lo que ya hacemos).
+
+---
+
 **Status:** Critical findings documented. Rotation pending human action (steps §3).
 No code changes applied. This document does not contain any secret value.

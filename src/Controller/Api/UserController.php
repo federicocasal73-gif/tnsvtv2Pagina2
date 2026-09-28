@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +21,7 @@ class UserController extends AbstractController
 
     public function __construct(
         private TokenStorageInterface $tokenStorage,
+        private LoggerInterface $logger,
     ) {}
 
     #[Route('', name: 'api_admin_users_list', methods: ['GET'])]
@@ -213,7 +215,7 @@ class UserController extends AbstractController
             );
         } catch (\Throwable $e) {
             // Si falla la limpieza de dependencias, logueamos pero seguimos
-            error_log('User delete cleanup error: ' . $e->getMessage());
+            $this->logger->error('User delete cleanup error: ' . $e->getMessage(), ['exception' => $e]);
         }
 
         // 4) Eliminar el usuario

@@ -186,5 +186,5 @@
 </div>
 
 {# Sacred Sigil 3D — Three.js bundled locally via importmap, no CDN #}
-{{ importmap('sacred_sigil') }}
+{{ importmap('sacred_sigil', { nonce: csp_nonce('script') }) }}
 {% endblock %}

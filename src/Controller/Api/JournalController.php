@@ -13,8 +13,10 @@ use App\Repository\JournalSettingRepository;
 use App\Repository\TradingAccountRepository;
 use App\Util\JournalPhotoList;
 use App\Repository\UserRepository;
+use App\Security\AuthAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,6 +35,8 @@ class JournalController extends AbstractController
         private JournalSettingRepository $settingRepo,
         private TradingAccountRepository $accountRepo,
         private EventDispatcherInterface $eventDispatcher,
+        private AuthAuditLogger $authAuditLogger,
+        private LoggerInterface $logger,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -40,14 +44,18 @@ class JournalController extends AbstractController
         $user = $this->getUser();
         if ($user instanceof User) return $user;
         $code = trim($request->headers->get('X-Game-Code', ''));
+        $source = $code !== '' ? 'X-Game-Code-header' : null;
         if (!$code) {
             $data = json_decode($request->getContent(), true);
             $code = trim($data['user_code'] ?? '');
+            if ($code !== '') $source = 'json-body';
         }
         if (!$code) {
             $code = trim($request->query->get('user_code', ''));
+            if ($code !== '') $source = 'query-string';
         }
         if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
         return $this->userRepository->findByCode($code);
     }
 
@@ -57,7 +65,9 @@ class JournalController extends AbstractController
         try {
             $targetCode = $request->query->get('user_code');
             if (!$targetCode) {
-                return $this->json(['error' => 'Usuario requerido'], 400);
+                // Audit AUDIT-2026-09-28 #7: antes 400. Cuando falta user_code en query
+                // y no llega X-Game-Code, el cliente no esta autenticado → 401.
+                return $this->json(['error' => 'Autenticación requerida. Iniciá sesión o enviá el header X-Game-Code.'], 401);
             }
             $target = $this->userRepository->findByCode($targetCode);
             if (!$target) return $this->json(['error' => 'Usuario inválido'], 401);
@@ -117,7 +127,7 @@ class JournalController extends AbstractController
             ]);
         } catch (\Throwable $e) {
             // Defense in depth: log para ops, respuesta segura al cliente.
-            @error_log('[api_journal_list] ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
+            $this->logger->error('[api_journal_list] ' . $e->getMessage(), ['exception' => $e]);
             return $this->json(['error' => 'Error interno al cargar el journal'], 500);
         }
     }

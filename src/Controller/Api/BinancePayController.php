@@ -6,6 +6,7 @@ use App\Entity\User;
 use App\Entity\WalletTransaction;
 use App\Repository\UserRepository;
 use App\Repository\WalletTransactionRepository;
+use App\Security\AuthAuditLogger;
 use App\Service\BinancePayService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -23,6 +24,7 @@ class BinancePayController extends AbstractController
         private UserRepository $userRepository,
         private WalletTransactionRepository $txRepository,
         private LoggerInterface $logger,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -30,13 +32,16 @@ class BinancePayController extends AbstractController
         $user = $this->getUser();
         if ($user instanceof User) return $user;
         $code = trim($request->headers->get('X-Game-Code', ''));
+        $source = $code !== '' ? 'X-Game-Code-header' : null;
         if (!$code) {
             $data = json_decode($request->getContent(), true);
             if (is_array($data) && isset($data['code'])) {
                 $code = trim((string) $data['code']);
+                if ($code !== '') $source = 'json-body';
             }
         }
         if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
         return $this->userRepository->findOneBy(['code' => $code, 'active' => true]);
     }
 

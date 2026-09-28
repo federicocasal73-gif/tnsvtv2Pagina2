@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\JournalEntryRepository;
 use App\Repository\TradingAccountRepository;
 use App\Repository\UserRepository;
+use App\Security\AuthAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,6 +22,7 @@ class TradingAccountController extends AbstractController
         private TradingAccountRepository $accountRepo,
         private UserRepository $userRepository,
         private JournalEntryRepository $journalEntryRepo,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -28,14 +30,18 @@ class TradingAccountController extends AbstractController
         $user = $this->getUser();
         if ($user instanceof User) return $user;
         $code = trim($request->headers->get('X-Game-Code', ''));
+        $source = $code !== '' ? 'X-Game-Code-header' : null;
         if (!$code) {
             $data = json_decode($request->getContent(), true);
             $code = trim($data['user_code'] ?? '');
+            if ($code !== '') $source = 'json-body';
         }
         if (!$code) {
             $code = trim($request->query->get('user_code', ''));
+            if ($code !== '') $source = 'query-string';
         }
         if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
         return $this->userRepository->findByCode($code);
     }
 

@@ -8,6 +8,7 @@ use App\Repository\WalletTransactionRepository;
 use App\Repository\UserRepository;
 use App\Controller\Api\DolarController;
 use App\Security\AdminAuthTrait;
+use App\Security\AuthAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,6 +29,7 @@ class WalletController extends AbstractController
         private UserRepository $userRepository,
         private WalletTransactionRepository $txRepository,
         private DolarController $dolarController,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     /**
@@ -40,13 +42,16 @@ class WalletController extends AbstractController
         if ($user instanceof User) return $user;
 
         $code = trim($request->headers->get('X-Game-Code', ''));
+        $source = $code !== '' ? 'X-Game-Code-header' : null;
         if (!$code) {
             $data = json_decode($request->getContent(), true);
             if (is_array($data) && isset($data['code'])) {
                 $code = trim((string) $data['code']);
+                if ($code !== '') $source = 'json-body';
             }
         }
         if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
 
         return $this->userRepository->findOneBy(['code' => $code, 'active' => true]);
     }

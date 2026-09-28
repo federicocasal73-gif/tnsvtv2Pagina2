@@ -24,3 +24,8 @@
 <FilesMatch "^(\.|composer\.(json|lock)|README|YAML)">
     Require all denied
 </FilesMatch>
+
+# Ocultar versión de PHP (info disclosure menor, ver audit AUDIT-2026-09-28 #2)
+<IfModule mod_headers.c>
+    Header unset X-Powered-By
+</IfModule>

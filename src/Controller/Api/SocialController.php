@@ -16,6 +16,7 @@ use App\Repository\JournalEntryRepository;
 use App\Repository\JournalPermissionRepository;
 use App\Repository\JournalSettingRepository;
 use App\Repository\UserRepository;
+use App\Security\AuthAuditLogger;
 use App\Security\RateLimiterTrait;
 use App\Service\RateLimiterService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,6 +41,7 @@ class SocialController extends AbstractController
         private BlockRepository $blockRepo,
         private RateLimiterService $rateLimiter,
         private JournalEntryRepository $journalEntryRepo,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -47,14 +49,18 @@ class SocialController extends AbstractController
         $user = $this->getUser();
         if ($user instanceof User) return $user;
         $code = trim($request->headers->get('X-Game-Code', ''));
+        $source = $code !== '' ? 'X-Game-Code-header' : null;
         if (!$code) {
             $data = json_decode($request->getContent(), true);
             $code = trim($data['user_code'] ?? '');
+            if ($code !== '') $source = 'json-body';
         }
         if (!$code) {
             $code = trim($request->query->get('user_code', ''));
+            if ($code !== '') $source = 'query-string';
         }
         if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
         return $this->userRepo->findByCode($code);
     }
 

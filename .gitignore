@@ -48,6 +48,8 @@ public/uploads/
 *.swo
 .DS_Store
 Thumbs.db
+# opencode agent scratch (plans, session state) — no versionable.
+.opencode/
 bin/__pycache__/
 # Ad-hoc Python debug scripts (consolidation leftovers).
 # Use bin/console for Symfony debugging.

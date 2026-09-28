@@ -18,20 +18,73 @@ nelmio_security:
         hsts_preload: false
 
     # Content Security Policy
-    # NOTE: 'unsafe-inline' in script-src is required because we have ~30 inline
-    # <script> blocks across sanctum pages. Future work: migrate to nonce-based
-    # CSP via Symfony's "csp_nonce" helper (requires removing all inline scripts).
+    # Audit AUDIT-2026-09-28 #5: removimos 'unsafe-inline' para forzar attribution
+    # de cada script via nonce (CSP3). strict-dynamic permite que los scripts
+    # con nonce carguen otros (e.g. Stimulus bundle inyecta su loader con nonce).
+    # Inline scripts en templates DEBEN llevar el atributo nonce="{{ csp_nonce('script') }}".
+    # Inline event handlers (`onclick="..."`) requieren sha256 especificos (ver 3.1c-A).
+    # Nota: scripts inline se mantienen porque el helper api_helper.html.twig
+    # debe correr sincronamente antes de cualquier {% block content %} (ver AGENTS.md).
     csp:
         enabled: true
+        # Audit AUDIT-2026-09-28 #5: NO queremos 'unsafe-inline' en el header.
+        # level1_fallback default es true en Nelmio — lo apagamos explicitamente.
         enforce:
+            level1_fallback: false
             default-src: ["'self'"]
             script-src:
                 - "'self'"
-                - "'unsafe-inline'"
+                - "'nonce-{nonce}'"
+                - "'strict-dynamic'"
+                - "'unsafe-hashes'" # requerido para sha256-* de event handlers (CSP3)
                 - 'https://cdn.jsdelivr.net'
+                # Inline event handlers (onclick="...", oninput="...", etc.).
+                # Hashes auto-generados por bin/compute-csp-hashes.php — re-correr
+                # despues de cualquier modificacion a handlers inline.
+                # CSP3 'unsafe-hashes' requerido para que estos matcheen.
+                - "'sha256-FBtmGHL2IdXjY7A/QliE0pTOVmmDGzq5+cVxIleJ65E='" # api-error-banner close
+                - "'sha256-jHF5hTIlMDyGZRAsNK0HO/WFYrwPvI2I1q0o1xKKB6I='" # event.stopPropagation()
+                - "'sha256-9gOBGqEQINNDuds+tkXbNzih6klbz+KeCyxEj4KRLeM='" # location.reload()
+                - "'sha256-jR9WYy8vcDrKy0fvqe3SvJCvuQImNhCSd+uNRcjGw48='" # mcAnswer('q1',this,false)
+                - "'sha256-WcRBDyuzyRLOkqstVv8+plecHZLmQD0wBsCX2mL4Wgg='" # mcAnswer('q1',this,true)
+                - "'sha256-VGeaEA/NvyOn6i6NE9VeJvujp7j3C6MhfXYrGt6c2tA='" # mcAnswer('q10',this,false)
+                - "'sha256-GRzF1FVXG0BBTa34bDrUPijUUKfw/NXhpRTEq44jpqA='" # mcAnswer('q10',this,true)
+                - "'sha256-352XX2JTspzj2TtLyASuaKAHw14Hr6D6vlzVC9XqU5o='" # mcAnswer('q2',this,false)
+                - "'sha256-hq9VEhiDKzKxKWbHr7X8mvRapXYYMq5CqlslTMJU0yU='" # mcAnswer('q2',this,true)
+                - "'sha256-eQxNi10k+3/yzsAFq7zqYV9UsRsfQTf8ofpVtqf2/IM='" # mcAnswer('q3',this,false)
+                - "'sha256-2ZBm2ocOL0WkHmx2qwecZIx716OdHIy59Kg4NA3rsNU='" # mcAnswer('q3',this,true)
+                - "'sha256-FwOiwo0W2Cz6e7prgLWCg+OayPRLzBw6SI7CmSxithM='" # mcAnswer('q4',this,false)
+                - "'sha256-uh98cRMXxQR3p7sKIIh8B1BvCYr6VhpjlpnjZDD1bA0='" # mcAnswer('q4',this,true)
+                - "'sha256-w+XXSRVuoxjUGhjYaxxGxAo02Dkdk/CXBsOkFDmtp3U='" # mcAnswer('q5',this,false)
+                - "'sha256-3fM9Sma2bVspy8sbOHO1TT8IQ+WojDw6jUHEFQUgunY='" # mcAnswer('q5',this,true)
+                - "'sha256-mCa7kmLz4RThiOLs1oyrb3qnggur5gtQJG/2RZP1VHo='" # mcAnswer('q6',this,false)
+                - "'sha256-MUaeDRMLZIQiXmmSwhijyeWxovFhFwsiguMlshDwoOM='" # mcAnswer('q6',this,true)
+                - "'sha256-GKp15nA6G6WNzp4wLVkz43hJgfJOW7M6Aisv7vKa0R4='" # mcAnswer('q7',this,false)
+                - "'sha256-9nI73Jk9JQ2v29978vWcOp/BTKvGSYTZYTD3woisXVE='" # mcAnswer('q7',this,true)
+                - "'sha256-EL0EDdEasV3QIyZ5eGszzDk+rll4jKIjanqQHLMIuYU='" # mcAnswer('q8',this,false)
+                - "'sha256-adIqUqVsl0LiVuWnAV5LCYnqC29szUVKfXLH4guuph4='" # mcAnswer('q8',this,true)
+                - "'sha256-SXnW+giRh15hD28HpyIrKh6Zf3YJYgADQkLqK8nnnos='" # mcAnswer('q9',this,false)
+                - "'sha256-txYi/dNVKm0tHtcHnQ5kgPzYv8O9mDj9lMDyuDAoDP0='" # mcAnswer('q9',this,true)
+                - "'sha256-86YyH0geK2MloyDbTZFw46C+ft7UZLoROy5tylCvp6k='" # mcCalcInterest()
+                - "'sha256-QuHM5QkQ+a4pSg3ANx9F/O8K0MYiRtL8KFDK5irxt8U='" # mcResetQuiz()
+                - "'sha256-lEt6WnpSEJjBE6nb4ZdX3ruQ3y5btJRLH54F0bjBAhc='" # mcToggleAcc('cpi')
+                - "'sha256-BDZNTBXnXLALycS42f0lRqoqtSg/rfOZiUHxEQvbd7k='" # mcToggleAcc('commo')
+                - "'sha256-0Xi+I2xA31w5OfGDBOQjvDMhuF3pW30+SX7HgmIfhr8='" # mcToggleAcc('deuda')
+                - "'sha256-8FQs5LsnrSzPS/NImNkX0+6N++nu6sPSgMAvX9G2uXw='" # mcToggleAcc('div1')
+                - "'sha256-Jm9iziuQFsfrX5ETWGRuBGPWzRq4pmYNFQQm6EY77zs='" # mcToggleAcc('elecciones')
+                - "'sha256-NkEVXZ9zkkVIt7XrfkIm7LhDRGKCv6WHW+x9RecmMJg='" # mcToggleAcc('fomc')
+                - "'sha256-wyy6HR/x11KE1moXxIDn48YnJWeT/R/DKALN0G3LjxE='" # mcToggleAcc('guerra')
+                - "'sha256-VyNhuC6F8ySIHQLq0tzsCbtii2XIKTVCGl75i4Xl1/0='" # mcToggleAcc('nfp')
+                - "'sha256-3a0P8U5O6sxoYhhONkwXgDJSTaSaeYf7EyAY/IK61rI='" # mcToggleAcc('pce')
+                - "'sha256-2By5McingNj6ukX7PT/lpKUHCdiqM42UrM16IeIPXzE='" # mcToggleAcc('pmi')
+                - "'sha256-b+IxCHwA39t+w5v5/H/wSLFpCsECbiWLMCnaLdlOBnw='" # mcToggleAcc('sanciones')
+                - "'sha256-KBTiPI8USdNbRXoY0rBWg5E2SH7nVh18iTekbz+VqFs='" # window.dispatchEvent(next)
+                - "'sha256-Z/lbPM6LZJhd+GzhmYSDIT9Ha7NH8s0t254DwEAEMnk='" # window.dispatchEvent(play)
+                - "'sha256-t8DlncSiGqAbVWM7gg72cLdXJVsLdKoO+m5UyH3tJiI='" # window.dispatchEvent(prev)
             style-src:
                 - "'self'"
-                - "'unsafe-inline'"
+                - "'nonce-{nonce}'"
+                - "'unsafe-hashes'"
                 - 'https://fonts.googleapis.com'
             font-src:
                 - "'self'"

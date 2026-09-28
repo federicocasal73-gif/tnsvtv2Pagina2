@@ -19,6 +19,7 @@ use App\Repository\CampusModuleRepository;
 use App\Repository\CampusSubmissionRepository;
 use App\Repository\UserRepository;
 use App\Security\AdminAuthTrait;
+use App\Security\AuthAuditLogger;
 use App\Security\RateLimiterTrait;
 use App\Service\AchievementService;
 use App\Service\CampusStorage;
@@ -50,6 +51,7 @@ class CampusController extends AbstractController
         private CampusStorage $storage,
         private AchievementService $achievementService,
         private NotificationService $notifier,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     /**
@@ -63,6 +65,7 @@ class CampusController extends AbstractController
         if ($user instanceof User) return $user;
         $code = trim((string) $request->headers->get('X-Game-Code', ''));
         if ($code === '') return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, 'X-Game-Code-header');
         $u = $this->userRepository->findByCode($code);
         return ($u && $u->isActive()) ? $u : null;
     }

@@ -6,6 +6,7 @@ use App\Entity\DiaryEntry;
 use App\Entity\User;
 use App\Repository\DiaryEntryRepository;
 use App\Repository\UserRepository;
+use App\Security\AuthAuditLogger;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +20,7 @@ class DiaryController extends AbstractController
         private EntityManagerInterface $em,
         private DiaryEntryRepository $diaryRepo,
         private UserRepository $userRepository,
+        private AuthAuditLogger $authAuditLogger,
     ) {}
 
     private function getCurrentUser(Request $request): ?User
@@ -27,13 +29,16 @@ class DiaryController extends AbstractController
         if ($user instanceof User) return $user;
 
         $code = trim($request->headers->get('X-Game-Code', ''));
+        $source = $code !== '' ? 'X-Game-Code-header' : null;
         if (!$code) {
             $data = json_decode($request->getContent(), true);
             if (is_array($data) && isset($data['code'])) {
                 $code = trim((string) $data['code']);
+                if ($code !== '') $source = 'json-body';
             }
         }
         if (!$code) return null;
+        $this->authAuditLogger->logFallbackUsage($request, $code, $source ?? 'unknown');
 
         return $this->userRepository->findOneBy(['code' => $code, 'active' => true]);
     }
