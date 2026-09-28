@@ -92,7 +92,7 @@ ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 u310596868@185.173.111.201 "cd ~/domai
 
 ## 2. Roadmap por sesiones
 
-### Sesión 1 (~30min) — Commit + deploy Fase A
+### Sesión 1 (~30min) — Commit + deploy Fase A ✅ DONE
 
 > Los archivos ya están borrados. Solo falta commit + push + deploy.
 
@@ -116,6 +116,29 @@ ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 u310596868@185.173.111.201 "cd ~/domai
 - 7 archivos removidos en prod
 - 0 routes huérfanas de pago expuestas
 - Bug de seguridad webhook MP eliminado
+
+**Estado real (2026-09-28):**
+- Commit `45ee899` pusheado a `main` ✅
+- Archivos borrados: `BinancePayController.php`, `BinancePayService.php`, `MercadoPagoController.php`, `MercadoPagoService.php`, `MercadoPagoSecurityTest.php`, `LegacyModuleController.php`, `DolarController.php` ✅
+- **Pendiente deploy a Hostinger** — el push ya está hecho; falta correr SSH deploy:
+  ```bash
+  ssh -i ~/.ssh/id_tnsvt_deploy_oc -p 65002 -o StrictHostKeyChecking=accept-new \
+      u310596868@185.173.111.201 \
+       "cd ~/domains/tnsvt.com/public_html && \
+       git fetch origin main && git reset --hard origin/main && \
+       rm -rf var/cache/prod var/cache/dev && \
+       php bin/console cache:warmup --env=prod --no-debug && \
+       php bin/console doctrine:migrations:migrate --env=prod --no-interaction && \
+       php bin/console asset-map:compile --env=prod --no-interaction && \
+       php bin/console app:assets:clean --env=prod --no-interaction --apply"
+  ```
+- **Verificación post-deploy** (correr después del SSH):
+  ```bash
+  curl -sI https://tnsvt.com/api/binance-pay/create-order   # debe ser 404
+  curl -sI https://tnsvt.com/api/mercadopago/webhook         # debe ser 404
+  curl -sI https://tnsvt.com/trading                        # debe ser 404
+  curl -sI https://tnsvt.com/api/health/migrations          # debe ser 200
+  ```
 
 ---
 
@@ -861,8 +884,8 @@ curl -s https://tnsvt.com/sanctum | grep -E '<h1|<link rel="canonical"|meta name
 
 | Fecha | Sesión | Resultado |
 |---|---|---|
-| 2026-09-28 | Sesión 0 (esta) | 7 archivos dead code eliminados + plan guardado |
-| TBD | Sesión 1 | Commit + deploy Fase A — agujero webhook MP cerrado |
+| 2026-09-28 | Sesión 0 | 7 archivos dead code eliminados + plan guardado |
+| 2026-09-28 | Sesión 1 | Commit `45ee899` pusheado a `main` ✅ — **deploy a Hostinger pendiente** |
 | TBD | Sesión 2 | Cleanup JS orphans + referencias |
 | TBD | Sesión 3 | Tooling ESLint + Prettier + Lighthouse + axe-core |
 | TBD | Sesión 4 | h1 hierarchy + robots + sitemap |
