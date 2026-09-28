@@ -1,7 +1,7 @@
 let feedCatFilter = 'all';
 let postCatSelected = 'general';
-let feedRealtimeChannel = null;
-let myLikedPosts = new Set(JSON.parse(localStorage.getItem('tnsvt_liked_posts') || '[]'));
+const feedRealtimeChannel = null;
+const myLikedPosts = new Set(JSON.parse(localStorage.getItem('tnsvt_liked_posts') || '[]'));
 let postPhotoData = null;
 let signalPhotoData = null;
 let commentPhotoData = {};

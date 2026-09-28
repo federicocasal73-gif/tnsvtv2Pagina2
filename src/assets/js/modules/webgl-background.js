@@ -170,7 +170,7 @@
     let cachedW = 0;
     let cachedH = 0;
     let cachedDensity = 0;
-    let cachedGold = [0, 0, 0];
+    const cachedGold = [0, 0, 0];
     let lastFrame = 0;
     let frameCount = 0;
 

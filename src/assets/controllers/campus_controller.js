@@ -802,7 +802,7 @@ export default class extends Controller {
         const list = overlay.querySelector('[data-submit-list]');
         const status = overlay.querySelector('[data-submit-status]');
         const sendBtn = overlay.querySelector('[data-submit-send]');
-        let picked = [];
+        const picked = [];
 
         const renderPicked = () => {
             list.innerHTML = picked
