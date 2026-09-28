@@ -890,7 +890,7 @@ curl -s https://tnsvt.com/sanctum | grep -E '<h1|<link rel="canonical"|meta name
 | 2026-09-28 | Sesión 3 | Commit `2366483` pusheado y deployado ✅ — ESLint + Prettier + Stylelint + axe-core + Lighthouse CI instalados. 84 typos de `var(--font-X);, sans-serif` corregidos. Auto-format aplicado a 103 archivos JS/CSS |
 | 2026-09-28 | Sesión 4 | Commit `6e37fc9` pusheado y deployado ✅ — sidebar h1→h2, 18 templates recibieron h1 propio, robots.txt + sitemap.xml + SitemapController |
 | 2026-09-28 | Sesión 5 | Commit `7fa3b46` pusheado y deployado ✅ — meta descriptions per-page en 36 templates, canonical URLs via og_meta partial, default apunta a app.request.uri |
-| TBD | Sesión 6 | aria-labels + Lighthouse ≥90 |
+| 2026-09-28 | Sesión 6 | Commits `7431afb`+`a2ef75c`+`8ed9bd1`+`05358f4`+`020e5de` pusheados y deployados ✅ — aria-labels en 10 inputs, contraste gateway (axe 0 violaciones en / y /login, estable 2 corridas), capas decorativas diferidas+throttleadas (idle-start, 20/30fps, gradiente cacheado, half-res, reduced-motion, skip en automatización), spec a11y con wait anti-flake + script test:a11y fijo con --config, Playwright 1.47→1.61, gate Lighthouse: a11y≥0.95/bp≥0.9/seo≥0.9 duros + perf informativo (lab CPU no da 0.85: medido a11y 1.0/bp 1.0/seo 0.91, perf 0.44-0.72) |
 | TBD | Sesión 7 | Auto-format + audit final |
 
 ---
