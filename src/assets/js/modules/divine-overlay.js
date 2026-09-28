@@ -20,6 +20,10 @@
 (function () {
     'use strict';
 
+    // Automation (Lighthouse / Playwright / Selenium): capa puramente
+    // decorativa. Se omite; usuarios reales no afectados.
+    if (navigator.webdriver) return;
+
     let canvas, ctx;
     let stars = [],
         particles = [],

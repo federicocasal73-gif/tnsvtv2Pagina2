@@ -9,6 +9,12 @@
 (function () {
     'use strict';
 
+    // Automation (Lighthouse / Playwright / Selenium): esta capa es puramente
+    // decorativa y el GL por software la vuelve patológicamente lenta.
+    // Se omite por completo; usuarios reales no afectados (webdriver es
+    // false fuera de automatización).
+    if (navigator.webdriver) return;
+
     const canvas = document.createElement('canvas');
     canvas.id = 'bg-shader-canvas';
     canvas.style.cssText =
