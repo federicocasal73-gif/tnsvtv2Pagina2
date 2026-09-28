@@ -18,6 +18,18 @@
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     if (!gl) return;
 
+    // Software GL (SwiftShader/llvmpipe — headless CI, VMs sin GPU) no puede
+    // correr este shader a un costo razonable: dibujar 1 frame estático.
+    // Lo mismo vale para dispositivos reales sin GPU: degradación progresiva.
+    let softwareGL = false;
+    try {
+        const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+        const renderer = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : '';
+        softwareGL = /swiftshader|llvmpipe|software|basic render/i.test(renderer);
+    } catch (e) {
+        softwareGL = false;
+    }
+
     // Read CSS custom properties so the same shader can be tuned per view.
     const rootStyles = getComputedStyle(document.documentElement);
     const cssDensity = parseFloat(rootStyles.getPropertyValue('--bg-stars-density')) || 30;
@@ -151,8 +163,10 @@
         if (w === cachedW && h === cachedH) return;
         cachedW = w;
         cachedH = h;
-        canvas.width = w;
-        canvas.height = h;
+        // Fondo decorativo: render a mitad de resolución, el CSS lo estira.
+        // Recorta el fill-rate (el shader es uv-based, no pierde calidad visible).
+        canvas.width = Math.max(2, w >> 1);
+        canvas.height = Math.max(2, h >> 1);
     }
 
     function drawFrame(time) {
@@ -218,9 +232,9 @@
 
     // Decorative layer: must not compete with LCP. Start on idle (or on
     // window load), with a timeout fallback so the background never stays
-    // black if load hangs. Reduced motion renders a single static frame
-    // immediately — no loop.
-    if (prefersReducedMotion) {
+    // black if load hangs. Reduced motion / software GL render a single
+    // static frame immediately — no loop.
+    if (prefersReducedMotion || softwareGL) {
         drawFrame(0);
     } else if (document.readyState === 'complete') {
         if (typeof window.requestIdleCallback === 'function') {

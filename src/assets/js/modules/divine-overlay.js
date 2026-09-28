@@ -27,6 +27,7 @@
     let rafId = null;
     let isVisible = !document.hidden;
     let lastDraw = 0;
+    let bgGrad = null;
     let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let isMobile = window.matchMedia('(max-width: 768px)').matches;
 
@@ -96,6 +97,20 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
+        // El gradiente de fondo es estático: crearlo 1 vez por resize en
+        // lugar de allocarlo en cada frame.
+        bgGrad = ctx.createRadialGradient(
+            canvas.width / 2,
+            canvas.height / 2,
+            50,
+            canvas.width / 2,
+            canvas.height / 2,
+            canvas.width / 2
+        );
+        bgGrad.addColorStop(0, '#0a0618');
+        bgGrad.addColorStop(0.5, '#05030c');
+        bgGrad.addColorStop(1, '#010003');
+
         stars = [];
         particles = [];
         meteors = [];
@@ -161,22 +176,12 @@
     }
 
     function drawFrame() {
-        // Clear con radial gradient dark-deep
+        // Clear con radial gradient dark-deep (cacheado por resize)
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const grad = ctx.createRadialGradient(
-            canvas.width / 2,
-            canvas.height / 2,
-            50,
-            canvas.width / 2,
-            canvas.height / 2,
-            canvas.width / 2
-        );
-        grad.addColorStop(0, '#0a0618');
-        grad.addColorStop(0.5, '#05030c');
-        grad.addColorStop(1, '#010003');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (bgGrad) {
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
 
         const now = Date.now();
 
