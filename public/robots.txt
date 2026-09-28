@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /sanctum/
+Disallow: /api/
+Disallow: /_profiler/
+Disallow: /_wdt/
+
+Sitemap: https://tnsvt.com/sitemap.xml

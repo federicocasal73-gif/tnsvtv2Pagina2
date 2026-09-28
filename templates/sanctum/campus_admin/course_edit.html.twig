@@ -8,6 +8,7 @@
 {% block topbar_subtitle %}{{ is_edit ? 'Administra módulos, lecciones y materiales del curso.' : 'Crea un nuevo curso para el Campus Académico.' }}{% endblock %}
 
 {% block content %}
+<h1 class="page-title text-cinzel-display text-2xl md:text-3xl tracking-wide mb-6">{{ block('topbar_title') }}</h1>
 <div class="campus-admin-shell" data-controller="campus-admin-edit"
      data-campus-admin-edit-token-value="{{ app.user ? app.user.code : '' }}"
      data-campus-admin-edit-course-id-value="{{ course_id|default(0) }}">
