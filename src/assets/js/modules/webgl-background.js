@@ -142,6 +142,8 @@
     let cachedH = 0;
     let cachedDensity = 0;
     let cachedGold = [0, 0, 0];
+    let lastFrame = 0;
+    let frameCount = 0;
 
     function resize() {
         const w = window.innerWidth;
@@ -153,24 +155,36 @@
         canvas.height = h;
     }
 
-    function render(time) {
-        time *= 0.001;
+    function drawFrame(time) {
         resize();
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.uniform1f(timeLoc, time);
         gl.uniform2f(resLoc, canvas.width, canvas.height);
-        // Re-read CSS props each frame so live tuning works.
-        const liveDensity =
-            parseFloat(
-                getComputedStyle(document.documentElement).getPropertyValue('--bg-stars-density')
-            ) || cssDensity;
-        if (liveDensity !== cachedDensity) {
-            cachedDensity = liveDensity;
-            gl.uniform1f(densityLoc, liveDensity);
+        // Re-read CSS props occasionally so live tuning keeps working
+        // without forcing a style recalc on every frame.
+        frameCount += 1;
+        if (frameCount % 60 === 1 || cachedDensity === 0) {
+            const liveDensity =
+                parseFloat(
+                    getComputedStyle(document.documentElement).getPropertyValue(
+                        '--bg-stars-density'
+                    )
+                ) || cssDensity;
+            if (liveDensity !== cachedDensity) {
+                cachedDensity = liveDensity;
+                gl.uniform1f(densityLoc, liveDensity);
+            }
         }
         gl.uniform3f(goldLoc, goldRgb[0], goldRgb[1], goldRgb[2]);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    function render(time) {
         rafId = requestAnimationFrame(render);
+        // Decorative background — ~20fps is plenty (main thread + battery).
+        if (time - lastFrame < 50) return;
+        lastFrame = time;
+        drawFrame(time * 0.001);
     }
 
     // Push initial values
@@ -196,5 +210,26 @@
 
     window.addEventListener('resize', resize);
 
-    requestAnimationFrame(render);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function start() {
+        if (rafId === null) rafId = requestAnimationFrame(render);
+    }
+
+    // Decorative layer: must not compete with LCP. Start on idle (or on
+    // window load), with a timeout fallback so the background never stays
+    // black if load hangs. Reduced motion renders a single static frame
+    // immediately — no loop.
+    if (prefersReducedMotion) {
+        drawFrame(0);
+    } else if (document.readyState === 'complete') {
+        if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(start, { timeout: 2000 });
+        } else {
+            setTimeout(start, 0);
+        }
+    } else {
+        window.addEventListener('load', start, { once: true });
+        setTimeout(start, 4000);
+    }
 })();

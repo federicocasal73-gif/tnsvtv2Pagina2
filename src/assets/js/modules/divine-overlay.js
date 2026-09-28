@@ -26,6 +26,7 @@
         meteors = [];
     let rafId = null;
     let isVisible = !document.hidden;
+    let lastDraw = 0;
     let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let isMobile = window.matchMedia('(max-width: 768px)').matches;
 
@@ -75,7 +76,15 @@
             resize();
         });
 
-        loop();
+        // Decorative layer: don't compete with LCP — start the loop on idle.
+        // Reduced motion draws a single static frame, so start immediately.
+        if (reducedMotion) {
+            loop();
+        } else if (typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(loop, { timeout: 4000 });
+        } else {
+            setTimeout(loop, 0);
+        }
 
         // Fade-in
         requestAnimationFrame(() => {
@@ -132,11 +141,19 @@
         });
     }
 
-    function draw() {
+    function draw(time) {
         if (!isVisible || reducedMotion) {
             // Reduced motion: solo 1 frame estático
             if (reducedMotion) drawFrame();
             return;
+        }
+        // Decorative layer — ~30fps is plenty (main thread + battery).
+        if (typeof time === 'number') {
+            if (time - lastDraw < 33) {
+                rafId = requestAnimationFrame(draw);
+                return;
+            }
+            lastDraw = time;
         }
 
         drawFrame();
