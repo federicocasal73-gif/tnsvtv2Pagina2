@@ -14,9 +14,15 @@ export default class extends Controller {
             // Unified API (X-Game-Code auto-attached by apiFetch).
             let data = null;
             try {
-                const r = await window.apiFetch('/api/tasks/mine?sort=due_date&order=asc', { silent: true });
+                const r = await window.apiFetch('/api/tasks/mine?sort=due_date&order=asc', {
+                    silent: true,
+                });
                 if (r.ok && r.data && r.data.tasks) {
-                    data = { success: true, tasks: r.data.tasks.slice(0, 5), activeCount: r.data.count };
+                    data = {
+                        success: true,
+                        tasks: r.data.tasks.slice(0, 5),
+                        activeCount: r.data.count,
+                    };
                 }
             } catch {}
 
@@ -44,35 +50,51 @@ export default class extends Controller {
             return;
         }
 
-        this.taskListTarget.innerHTML = tasks.slice(0, 5).map(t => `
+        this.taskListTarget.innerHTML = tasks
+            .slice(0, 5)
+            .map(
+                (t) => `
             <div class="task-row-elev">
                 <span class="status-pill status-pill-${this.escapeHtml(t.status || 'pending')} text-xs">${this.escapeHtml(t.status_label || t.status || '')}</span>
                 <span class="text-sm flex-1 truncate">${this.escapeHtml(t.title || '')}</span>
                 <span class="text-xs text-[var(--outline-elev)] font-mono">${t.due_date ? this.escapeHtml(String(t.due_date).slice(0, 10)) : ''}</span>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
     }
 
     renderSignals(tasks) {
         if (!this.hasSignalListTarget) return;
 
         if (!tasks || tasks.length === 0) {
-            this.signalListTarget.innerHTML = this.emptyHtml('notifications_off', 'Sin actividad reciente');
+            this.signalListTarget.innerHTML = this.emptyHtml(
+                'notifications_off',
+                'Sin actividad reciente'
+            );
             return;
         }
 
-        this.signalListTarget.innerHTML = tasks.slice(0, 5).map(t => `
+        this.signalListTarget.innerHTML = tasks
+            .slice(0, 5)
+            .map(
+                (t) => `
             <div class="flex items-center justify-between p-2 rounded glass-card-elev text-sm">
                 <span class="truncate">${this.escapeHtml(t.title)}</span>
                 <span class="status-pill status-pill-${this.escapeHtml(t.status || 'pending')} text-xs">${this.escapeHtml(t.status_label || t.status || '')}</span>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
     }
 
     showEmpty(type, message) {
         const el = type === 'task' ? this.taskListTarget : this.signalListTarget;
         if (el) {
-            el.innerHTML = this.emptyHtml(type === 'task' ? 'task_alt' : 'notifications_off', message);
+            el.innerHTML = this.emptyHtml(
+                type === 'task' ? 'task_alt' : 'notifications_off',
+                message
+            );
         }
     }
 
@@ -81,8 +103,16 @@ export default class extends Controller {
     }
 
     escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, m => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s || '').replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

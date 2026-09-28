@@ -121,8 +121,8 @@
 }
 button:focus-visible,
 a:focus-visible,
-[role="button"]:focus-visible,
-[role="tab"]:focus-visible,
+[role='button']:focus-visible,
+[role='tab']:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
@@ -131,7 +131,7 @@ summary:focus-visible {
     outline-offset: 2px;
 }
 /* Darker gold for light theme via [data-theme="light"] override */
-[data-theme="light"] :focus-visible {
+[data-theme='light'] :focus-visible {
     outline-color: var(--gold-container-elev);
 }
 
@@ -196,7 +196,7 @@ summary:focus-visible {
 @media (pointer: coarse) {
     button,
     a,
-    [role="button"],
+    [role='button'],
     .sanctum-link,
     .filter-pill,
     .modal-close,
@@ -212,7 +212,7 @@ summary:focus-visible {
     }
 
     /* Inherit display: inline-flex so min-width doesn't break inline icons */
-    button:not([class*="flex"]):not([class*="grid"]) {
+    button:not([class*='flex'], [class*='grid']) {
         display: inline-flex;
         align-items: center;
         justify-content: center;

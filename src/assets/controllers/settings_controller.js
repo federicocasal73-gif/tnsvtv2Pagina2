@@ -5,14 +5,7 @@ import { Controller } from '@hotwired/stimulus';
  * Usage in template: data-controller="settings" + data-settings-target="<name>"
  */
 export default class extends Controller {
-    static targets = [
-        'sound',
-        'theme',
-        'savePrefsBtn',
-        'reloadBtn',
-        'container',
-        'importFile',
-    ];
+    static targets = ['sound', 'theme', 'savePrefsBtn', 'reloadBtn', 'container', 'importFile'];
 
     static values = {
         userCode: String,
@@ -56,8 +49,18 @@ export default class extends Controller {
     }
 
     render(byCategory) {
-        const labels = { tier: 'Tiers & Pricing', feature: 'Feature Flags', general: 'General', limit: 'Límites del Sistema' };
-        const icons = { tier: 'workspace_premium', feature: 'toggle_on', general: 'settings', limit: 'tune' };
+        const labels = {
+            tier: 'Tiers & Pricing',
+            feature: 'Feature Flags',
+            general: 'General',
+            limit: 'Límites del Sistema',
+        };
+        const icons = {
+            tier: 'workspace_premium',
+            feature: 'toggle_on',
+            general: 'settings',
+            limit: 'tune',
+        };
         let html = '';
         for (const [cat, settings] of Object.entries(byCategory)) {
             html += this.renderCategory(cat, settings, labels, icons);
@@ -118,9 +121,10 @@ export default class extends Controller {
 
     async persistPreference(value) {
         const originalText = this.savePrefsBtnTarget?.textContent;
-        const doneLoading = (typeof window.apiButtonLoading === 'function' && this.hasSavePrefsBtnTarget)
-            ? window.apiButtonLoading(this.savePrefsBtnTarget)
-            : null;
+        const doneLoading =
+            typeof window.apiButtonLoading === 'function' && this.hasSavePrefsBtnTarget
+                ? window.apiButtonLoading(this.savePrefsBtnTarget)
+                : null;
         if (this.hasSavePrefsBtnTarget) {
             this.savePrefsBtnTarget.textContent = 'Guardando...';
         }
@@ -139,7 +143,8 @@ export default class extends Controller {
                 this.savePrefsBtnTarget.textContent = '✓ Guardado';
                 setTimeout(() => {
                     if (this.hasSavePrefsBtnTarget) {
-                        this.savePrefsBtnTarget.textContent = originalText || 'Guardar Preferencias';
+                        this.savePrefsBtnTarget.textContent =
+                            originalText || 'Guardar Preferencias';
                     }
                 }, 2000);
             }
@@ -172,7 +177,8 @@ export default class extends Controller {
             });
             const data = await r.json();
             if (!data.success) {
-                if (window.apiToast) window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');
+                if (window.apiToast)
+                    window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');
             }
         } catch (e) {
             if (window.apiToast) window.apiToast('Error: ' + e.message, 'error');
@@ -198,7 +204,10 @@ export default class extends Controller {
         a.download = 'tnsvt-preferencias.json';
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        setTimeout(() => {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+        }, 500);
         if (window.apiToast) window.apiToast('Preferencias exportadas', 'success');
     }
 
@@ -224,16 +233,32 @@ export default class extends Controller {
                 throw new Error('formato inválido');
             }
             const themes = ['auto', 'dark', 'light'];
-            const sounds = ['chime', 'mario_coin', 'zelda_secret', 'sonic_ring', 'apple_tritone',
-                'pixel_popcorn', 'pokemon_levelup', 'deus_ex_scan', 'indiana_jones_whip',
-                'msn_message', 'swoosh'];
+            const sounds = [
+                'chime',
+                'mario_coin',
+                'zelda_secret',
+                'sonic_ring',
+                'apple_tritone',
+                'pixel_popcorn',
+                'pokemon_levelup',
+                'deus_ex_scan',
+                'indiana_jones_whip',
+                'msn_message',
+                'swoosh',
+            ];
             const payload = {};
-            if (typeof data.theme_preference === 'string' && themes.includes(data.theme_preference)) {
+            if (
+                typeof data.theme_preference === 'string' &&
+                themes.includes(data.theme_preference)
+            ) {
                 payload.theme_preference = data.theme_preference;
                 if (this.hasThemeTarget) this.themeTarget.value = data.theme_preference;
                 if (window.tnsvtTheme) window.tnsvtTheme.set(data.theme_preference);
             }
-            if (typeof data.notification_sound === 'string' && sounds.includes(data.notification_sound)) {
+            if (
+                typeof data.notification_sound === 'string' &&
+                sounds.includes(data.notification_sound)
+            ) {
                 payload.notification_sound = data.notification_sound;
                 if (this.hasSoundTarget) this.soundTarget.value = data.notification_sound;
             }
@@ -251,13 +276,22 @@ export default class extends Controller {
                 throw new Error((r.data && r.data.error) || 'error del servidor');
             }
         } catch (e) {
-            if (window.apiToast) window.apiToast('No se pudo importar: ' + (e.message || 'error'), 'error');
+            if (window.apiToast)
+                window.apiToast('No se pudo importar: ' + (e.message || 'error'), 'error');
         }
     }
 
     escape(str) {
-        return String(str ?? '').replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        }[m]));
+        return String(str ?? '').replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

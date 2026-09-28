@@ -4,9 +4,11 @@ export default class extends Controller {
     connect() {
         this.status = 'pending';
 
-        document.querySelectorAll('#bookings-tabs .bookings-tab').forEach(t => {
+        document.querySelectorAll('#bookings-tabs .bookings-tab').forEach((t) => {
             t.addEventListener('click', () => {
-                document.querySelectorAll('#bookings-tabs .bookings-tab').forEach(x => x.classList.toggle('active', x === t));
+                document
+                    .querySelectorAll('#bookings-tabs .bookings-tab')
+                    .forEach((x) => x.classList.toggle('active', x === t));
                 this.status = t.dataset.status;
                 this.loadBookings();
             });
@@ -16,17 +18,37 @@ export default class extends Controller {
     }
 
     esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+        );
     }
 
     fmtLong(iso) {
         try {
-            return new Date(iso).toLocaleString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        } catch (e) { return iso; }
+            return new Date(iso).toLocaleString('es-AR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        } catch (e) {
+            return iso;
+        }
     }
 
     statusLabel(s) {
-        return ({ pending: 'Pendiente', accepted: 'Aceptada', declined: 'Rechazada', proposed: 'Propuesto', canceled: 'Cancelada' })[s] || s;
+        return (
+            {
+                pending: 'Pendiente',
+                accepted: 'Aceptada',
+                declined: 'Rechazada',
+                proposed: 'Propuesto',
+                canceled: 'Cancelada',
+            }[s] || s
+        );
     }
 
     async loadBookings() {
@@ -35,16 +57,19 @@ export default class extends Controller {
 
         list.innerHTML = '<p class="bookings-loading">Cargando...</p>';
         try {
-            const r = await fetch(`/api/academic/bookings?status=${encodeURIComponent(this.status)}`);
+            const r = await fetch(
+                `/api/academic/bookings?status=${encodeURIComponent(this.status)}`
+            );
             const data = await r.json();
 
             if (!data.ok || !data.data) {
-                list.innerHTML = '<div class="bookings-empty"><span class="material-symbols-elev bookings-empty-icon">event_busy</span><p>Sin reservas registradas</p></div>';
+                list.innerHTML =
+                    '<div class="bookings-empty"><span class="material-symbols-elev bookings-empty-icon">event_busy</span><p>Sin reservas registradas</p></div>';
                 return;
             }
 
-            const items = Array.isArray(data.data) ? data.data : (data.data.bookings || []);
-            const filtered = items.filter(b => !this.status || b.status === this.status);
+            const items = Array.isArray(data.data) ? data.data : data.data.bookings || [];
+            const filtered = items.filter((b) => !this.status || b.status === this.status);
 
             if (filtered.length === 0) {
                 list.innerHTML = `
@@ -57,7 +82,8 @@ export default class extends Controller {
             }
             this.renderBookings(filtered);
         } catch (e) {
-            list.innerHTML = '<p class="bookings-empty"><span class="material-symbols-elev bookings-empty-icon">cloud_off</span>Sin conexión.</p>';
+            list.innerHTML =
+                '<p class="bookings-empty"><span class="material-symbols-elev bookings-empty-icon">cloud_off</span>Sin conexión.</p>';
         }
     }
 
@@ -65,10 +91,11 @@ export default class extends Controller {
         const list = document.getElementById('bookings-list');
         if (!list) return;
 
-        list.innerHTML = items.map(b => {
-            const showActions = b.status === 'pending';
-            const showCancel = ['pending', 'proposed', 'accepted'].includes(b.status);
-            return `
+        list.innerHTML = items
+            .map((b) => {
+                const showActions = b.status === 'pending';
+                const showCancel = ['pending', 'proposed', 'accepted'].includes(b.status);
+                return `
                 <article class="booking-card status-${this.esc(b.status)}" data-id="${this.esc(b.id)}">
                     <header class="booking-card-head">
                         <span class="booking-card-topic">${this.esc(b.topic || 'Clase 1:1')}</span>
@@ -83,7 +110,9 @@ export default class extends Controller {
                         <strong>Duración:</strong> ${b.duration_minutes || 30} min
                     </div>
                     ${b.notes ? `<div class="booking-card-notes">${this.esc(b.notes)}</div>` : ''}
-                    ${showActions ? `
+                    ${
+                        showActions
+                            ? `
                         <div class="booking-card-actions">
                             <button type="button" class="booking-btn accept" data-action="accept" data-id="${this.esc(b.id)}">
                                 <span class="material-symbols-elev" style="font-size:1rem;">check_circle</span>
@@ -104,12 +133,15 @@ export default class extends Controller {
                                 <button type="button" class="booking-btn propose" data-action="submit-propose" data-id="${this.esc(b.id)}">Enviar propuesta</button>
                             </div>
                         </div>
-                    ` : ''}
+                    `
+                            : ''
+                    }
                 </article>
             `;
-        }).join('');
+            })
+            .join('');
 
-        list.querySelectorAll('[data-action]').forEach(btn => {
+        list.querySelectorAll('[data-action]').forEach((btn) => {
             btn.addEventListener('click', () => this.handleAction(btn));
         });
     }
@@ -119,7 +151,13 @@ export default class extends Controller {
         const act = btn.dataset.action;
 
         if (act === 'cancel') {
-            if (!await window.apiConfirm('¿Cancelar esta reserva?', { title: 'Cancelar reserva', variant: 'danger' })) return;
+            if (
+                !(await window.apiConfirm('¿Cancelar esta reserva?', {
+                    title: 'Cancelar reserva',
+                    variant: 'danger',
+                }))
+            )
+                return;
             await this.patchBooking(`/api/academic/bookings/${id}/cancel`, {});
             this.loadBookings();
             return;
@@ -131,7 +169,13 @@ export default class extends Controller {
             return;
         }
         if (act === 'decline') {
-            if (!await window.apiConfirm('¿Rechazar esta reserva?', { title: 'Rechazar reserva', variant: 'danger' })) return;
+            if (
+                !(await window.apiConfirm('¿Rechazar esta reserva?', {
+                    title: 'Rechazar reserva',
+                    variant: 'danger',
+                }))
+            )
+                return;
             btn.disabled = true;
             await this.patchBooking(`/api/academic/bookings/${id}/decline`, {});
             this.loadBookings();
@@ -145,14 +189,18 @@ export default class extends Controller {
         if (act === 'submit-propose') {
             const form = document.querySelector(`.proposed-form[data-id="${id}"]`);
             const ta = form.querySelector('textarea');
-            const lines = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+            const lines = ta.value
+                .split('\n')
+                .map((l) => l.trim())
+                .filter(Boolean);
             if (lines.length === 0) {
-                if (window.apiToast) window.apiToast('Ingresá al menos un horario propuesto.', 'warning');
+                if (window.apiToast)
+                    window.apiToast('Ingresá al menos un horario propuesto.', 'warning');
                 return;
             }
             btn.disabled = true;
             await this.patchBooking(`/api/academic/bookings/${id}/propose`, {
-                proposed_times: lines
+                proposed_times: lines,
             });
             this.loadBookings();
         }
@@ -163,12 +211,14 @@ export default class extends Controller {
             const r = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
             });
             const data = await r.json();
             if (!data.ok && window.apiToast) {
                 window.apiToast(data.data && data.data.error ? data.data.error : 'Error', 'error');
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+        }
     }
 }

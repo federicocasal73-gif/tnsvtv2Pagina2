@@ -16,36 +16,66 @@ const REACT_QUICK = ['❤️', '👍', '🔥', '👏', '😮'];
 const DM_SAVED_KEY = 'tnsvt_feed_saved';
 
 function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[m]));
+    return String(s == null ? '' : s).replace(
+        /[&<>"']/g,
+        (m) =>
+            ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            })[m]
+    );
 }
 function initials(name) {
-    return (name || '?').split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+    return (name || '?')
+        .split(/\s+/)
+        .map((p) => p[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
 }
 function relTime(iso) {
     try {
         const d = new Date(iso);
         const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-        if (diff < 60)   return 'ahora';
+        if (diff < 60) return 'ahora';
         if (diff < 3600) return Math.floor(diff / 60) + 'm';
         if (diff < 86400) return Math.floor(diff / 3600) + 'h';
         return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
-    } catch (e) { return ''; }
+    } catch (e) {
+        return '';
+    }
 }
 function fmtTime(iso) {
     try {
         const d = new Date(iso);
         return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
-    } catch (e) { return ''; }
+    } catch (e) {
+        return '';
+    }
 }
 
 export default class extends Controller {
     static targets = [
-        'list', 'tabs', 'search', 'newDmBtn',
-        'convHeader', 'convAvatar', 'convName', 'convStatus',
-        'messages', 'composer', 'input', 'send', 'emptyDefault',
-        'newDmModal', 'modalClose', 'dmSearch', 'dmResults',
+        'list',
+        'tabs',
+        'search',
+        'newDmBtn',
+        'convHeader',
+        'convAvatar',
+        'convName',
+        'convStatus',
+        'messages',
+        'composer',
+        'input',
+        'send',
+        'emptyDefault',
+        'newDmModal',
+        'modalClose',
+        'dmSearch',
+        'dmResults',
     ];
 
     connect() {
@@ -58,7 +88,9 @@ export default class extends Controller {
         try {
             const raw = localStorage.getItem(DM_SAVED_KEY);
             if (raw) this.savedIds = new Set(JSON.parse(raw));
-        } catch (e) { /* localStorage disabled */ }
+        } catch (e) {
+            /* localStorage disabled */
+        }
         this.searchTimer = null;
         this.dmTimer = null;
         this.presenceTimer = null;
@@ -72,10 +104,14 @@ export default class extends Controller {
             this.loadConversations();
             this.startPresencePing();
         } else {
-            window.addEventListener('tnsvt:user-loaded', () => {
-                this.loadConversations();
-                this.startPresencePing();
-            }, { once: true });
+            window.addEventListener(
+                'tnsvt:user-loaded',
+                () => {
+                    this.loadConversations();
+                    this.startPresencePing();
+                },
+                { once: true }
+            );
         }
         if (typeof window.apiPoller === 'function') {
             this._poller = window.apiPoller(() => this.loadConversations(), 30 * 1000);
@@ -106,22 +142,29 @@ export default class extends Controller {
             window.__tnsvtChatPagePresenceTimer = null;
         }
         if (window.__tnsvtChatPagePresenceListener) {
-            document.removeEventListener('visibilitychange', window.__tnsvtChatPagePresenceListener);
+            document.removeEventListener(
+                'visibilitychange',
+                window.__tnsvtChatPagePresenceListener
+            );
             window.__tnsvtChatPagePresenceListener = null;
         }
         const ping = () => {
             const code = this.me();
             if (!code || document.hidden) return;
-            window.apiFetch('/api/chat/ping', {
-                method: 'POST',
-                silent: true,
-                body: { user_code: code },
-            }).catch(() => {});
+            window
+                .apiFetch('/api/chat/ping', {
+                    method: 'POST',
+                    silent: true,
+                    body: { user_code: code },
+                })
+                .catch(() => {});
         };
         ping();
         this.presenceTimer = setInterval(ping, 60_000);
         window.__tnsvtChatPagePresenceTimer = this.presenceTimer;
-        const onVis = () => { if (!document.hidden) ping(); };
+        const onVis = () => {
+            if (!document.hidden) ping();
+        };
         document.addEventListener('visibilitychange', onVis);
         this._onVisibilityPing = onVis;
         window.__tnsvtChatPagePresenceListener = onVis;
@@ -188,7 +231,8 @@ export default class extends Controller {
                 open: () => {
                     if (this.hasDmSearchTarget) this.dmSearchTarget.value = '';
                     if (this.hasDmResultsTarget) {
-                        this.dmResultsTarget.innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
+                        this.dmResultsTarget.innerHTML =
+                            '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
                     }
                 },
             });
@@ -207,11 +251,15 @@ export default class extends Controller {
             if (!r.ok || !r.data) {
                 this.listTarget.innerHTML = '';
                 if (window.apiEmpty) {
-                    window.apiEmpty(this.listTarget, { icon: 'forum', message: 'Sin conversaciones', size: 'compact' });
+                    window.apiEmpty(this.listTarget, {
+                        icon: 'forum',
+                        message: 'Sin conversaciones',
+                        size: 'compact',
+                    });
                 }
                 return;
             }
-            const items = Array.isArray(r.data) ? r.data : (r.data.conversations || []);
+            const items = Array.isArray(r.data) ? r.data : r.data.conversations || [];
             this.conversations = items;
             this.renderConversations();
         } catch (e) {
@@ -235,9 +283,11 @@ export default class extends Controller {
                 if (lm && typeof lm === 'object') return lm.content || lm.text || lm.message || '';
                 return '';
             };
-            items = items.filter((c) =>
-                (c.name || c.title || '').toLowerCase().includes(q)
-                || bodyOf(c).toLowerCase().includes(q));
+            items = items.filter(
+                (c) =>
+                    (c.name || c.title || '').toLowerCase().includes(q) ||
+                    bodyOf(c).toLowerCase().includes(q)
+            );
         }
 
         if (items.length === 0) {
@@ -252,14 +302,15 @@ export default class extends Controller {
             return;
         }
 
-        this.listTarget.innerHTML = items.map((c) => {
-            const id = c.id || c.conversation_id;
-            const name = c.name || c.title || 'Conversación';
-            const isActive = String(this.activeConvId) === String(id);
-            const unread = c.unread || 0;
-            const preview = c.last_message_preview || c.last_message || (c.lastMessage || '');
-            const time = c.last_message_at || c.last_message_time || c.updated_at || '';
-            return `
+        this.listTarget.innerHTML = items
+            .map((c) => {
+                const id = c.id || c.conversation_id;
+                const name = c.name || c.title || 'Conversación';
+                const isActive = String(this.activeConvId) === String(id);
+                const unread = c.unread || 0;
+                const preview = c.last_message_preview || c.last_message || c.lastMessage || '';
+                const time = c.last_message_at || c.last_message_time || c.updated_at || '';
+                return `
                 <div class="chat-conv ${isActive ? 'active' : ''}" data-id="${esc(id)}">
                     <div class="chat-conv-avatar">${esc(initials(name))}</div>
                     <div class="chat-conv-body">
@@ -272,7 +323,8 @@ export default class extends Controller {
                     </div>
                 </div>
             `;
-        }).join('');
+            })
+            .join('');
 
         this.listTarget.querySelectorAll('.chat-conv').forEach((el) => {
             el.addEventListener('click', () => this.openConversation(el.dataset.id));
@@ -282,23 +334,27 @@ export default class extends Controller {
     async openConversation(id) {
         this.activeConvId = id;
         this.renderConversations();
-        const conv = this.conversations.find((c) => String(c.id || c.conversation_id) === String(id));
+        const conv = this.conversations.find(
+            (c) => String(c.id || c.conversation_id) === String(id)
+        );
         if (conv && this.hasConvNameTarget) {
             this.convNameTarget.textContent = conv.name || conv.title || 'Conversación';
             if (this.hasConvAvatarTarget) {
                 this.convAvatarTarget.textContent = initials(conv.name || conv.title || 'C');
             }
             if (this.hasConvStatusTarget) {
-                const last = conv.last_message?.created_at || conv.lastMessage?.created_at
-                    || conv.updated_at || conv.last_message_at;
+                const last =
+                    conv.last_message?.created_at ||
+                    conv.lastMessage?.created_at ||
+                    conv.updated_at ||
+                    conv.last_message_at;
                 if (conv.is_group || conv.type === 'group') {
                     const n = conv.member_count || conv.members?.length;
                     this.convStatusTarget.textContent = n ? 'Grupo · ' + n : 'Grupo';
                 } else if (last) {
                     const diff = (Date.now() - new Date(last).getTime()) / 1000;
-                    this.convStatusTarget.textContent = diff < 300
-                        ? 'activo ahora'
-                        : 'últ. actividad ' + fmtTime(last);
+                    this.convStatusTarget.textContent =
+                        diff < 300 ? 'activo ahora' : 'últ. actividad ' + fmtTime(last);
                 } else {
                     this.convStatusTarget.textContent = 'Sin mensajes';
                 }
@@ -308,51 +364,69 @@ export default class extends Controller {
         if (this.hasComposerTarget) this.composerTarget.style.display = 'flex';
         if (this.hasEmptyDefaultTarget) this.emptyDefaultTarget.style.display = 'none';
         if (this.hasMessagesTarget) {
-            this.messagesTarget.innerHTML = '<div class="skeleton-stack" aria-hidden="true"><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div></div>';
+            this.messagesTarget.innerHTML =
+                '<div class="skeleton-stack" aria-hidden="true"><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line w-1-2"></div></div><div class="skeleton skeleton-card"><div class="skeleton skeleton-line w-3-4"></div><div class="skeleton skeleton-line"></div></div></div>';
         }
         try {
-            const r = await window.apiFetch(`/api/chat/conversations/${id}/messages`, { silent: true });
+            const r = await window.apiFetch(`/api/chat/conversations/${id}/messages`, {
+                silent: true,
+            });
             if (!r.ok || !r.data) {
-                if (this.hasMessagesTarget) this.messagesTarget.innerHTML = '<p class="chat-list-empty">Sin mensajes</p>';
+                if (this.hasMessagesTarget)
+                    this.messagesTarget.innerHTML = '<p class="chat-list-empty">Sin mensajes</p>';
                 return;
             }
-            const items = Array.isArray(r.data) ? r.data : (r.data.messages || []);
+            const items = Array.isArray(r.data) ? r.data : r.data.messages || [];
             this.renderMessages(items);
             window.apiFetch(`/api/chat/conversations/${id}/read`, { method: 'POST', silent: true });
-            const c = this.conversations.find((cc) => String(cc.id || cc.conversation_id) === String(id));
+            const c = this.conversations.find(
+                (cc) => String(cc.id || cc.conversation_id) === String(id)
+            );
             if (c) c.unread = 0;
         } catch (e) {
-            if (this.hasMessagesTarget) this.messagesTarget.innerHTML = '<p class="chat-list-empty">Error al cargar mensajes</p>';
+            if (this.hasMessagesTarget)
+                this.messagesTarget.innerHTML =
+                    '<p class="chat-list-empty">Error al cargar mensajes</p>';
         }
     }
 
     renderMessages(items) {
         if (!this.hasMessagesTarget) return;
         if (items.length === 0) {
-            this.messagesTarget.innerHTML = '<p class="chat-list-empty">Sin mensajes — escribí el primero.</p>';
+            this.messagesTarget.innerHTML =
+                '<p class="chat-list-empty">Sin mensajes — escribí el primero.</p>';
             return;
         }
         const me = this.me();
-        this.messagesTarget.innerHTML = items.map((m) => {
-            const mine = me && (m.author_code === me || m.sender_code === me || m.from_code === me);
-            const authorName = m.author || m.author_name || m.sender_name || m.from_name || (mine ? 'Vos' : '—');
-            const readers = Array.isArray(m.read_by) ? m.read_by : [];
-            const receipt = mine
-                ? (readers.length > 0
-                    ? `<span class="chat-read is-read" title="Leído por ${esc(readers.join(', '))}">✓✓</span>`
-                    : `<span class="chat-read" title="Enviado">✓</span>`)
-                : '';
-            const reacts = (m.reactions && typeof m.reactions === 'object') ? m.reactions : {};
-            const chips = Object.entries(reacts)
-                .filter(([, codes]) => Array.isArray(codes) && codes.length > 0)
-                .map(([emoji, codes]) => {
-                    const own = me && codes.includes(me);
-                    return `<button type="button" class="chat-react-chip${own ? ' is-own' : ''}" data-react="${esc(emoji)}" data-id="${m.id}" title="${esc(codes.join(', '))}">${esc(emoji)} ${codes.length}</button>`;
-                }).join('');
-            const picker = REACT_QUICK.map((e) =>
-                `<button type="button" class="chat-react-pick" data-react="${esc(e)}" data-id="${m.id}" aria-label="Reaccionar ${esc(e)}">${esc(e)}</button>`
-            ).join('');
-            return `
+        this.messagesTarget.innerHTML = items
+            .map((m) => {
+                const mine =
+                    me && (m.author_code === me || m.sender_code === me || m.from_code === me);
+                const authorName =
+                    m.author ||
+                    m.author_name ||
+                    m.sender_name ||
+                    m.from_name ||
+                    (mine ? 'Vos' : '—');
+                const readers = Array.isArray(m.read_by) ? m.read_by : [];
+                const receipt = mine
+                    ? readers.length > 0
+                        ? `<span class="chat-read is-read" title="Leído por ${esc(readers.join(', '))}">✓✓</span>`
+                        : `<span class="chat-read" title="Enviado">✓</span>`
+                    : '';
+                const reacts = m.reactions && typeof m.reactions === 'object' ? m.reactions : {};
+                const chips = Object.entries(reacts)
+                    .filter(([, codes]) => Array.isArray(codes) && codes.length > 0)
+                    .map(([emoji, codes]) => {
+                        const own = me && codes.includes(me);
+                        return `<button type="button" class="chat-react-chip${own ? ' is-own' : ''}" data-react="${esc(emoji)}" data-id="${m.id}" title="${esc(codes.join(', '))}">${esc(emoji)} ${codes.length}</button>`;
+                    })
+                    .join('');
+                const picker = REACT_QUICK.map(
+                    (e) =>
+                        `<button type="button" class="chat-react-pick" data-react="${esc(e)}" data-id="${m.id}" aria-label="Reaccionar ${esc(e)}">${esc(e)}</button>`
+                ).join('');
+                return `
                 <div class="chat-msg ${mine ? 'own' : ''}" data-id="${esc(m.id || '')}">
                     <div class="chat-msg-avatar">${esc(initials(authorName))}</div>
                     <div>
@@ -366,7 +440,8 @@ export default class extends Controller {
                     </div>
                 </div>
             `;
-        }).join('');
+            })
+            .join('');
         this.messagesTarget.scrollTop = this.messagesTarget.scrollHeight;
         this.messagesTarget.querySelectorAll('[data-react][data-id]').forEach((btn) => {
             btn.addEventListener('click', (ev) => {
@@ -386,7 +461,9 @@ export default class extends Controller {
                 silent: true,
             });
             if (this.activeConvId) this.openConversation(this.activeConvId);
-        } catch (e) { /* silent: toggle is best-effort */ }
+        } catch (e) {
+            /* silent: toggle is best-effort */
+        }
     }
 
     // ─── Composer ───────────────────────────────────────────────
@@ -402,17 +479,23 @@ export default class extends Controller {
         if (!text || !this.activeConvId) return;
         this.sendTarget.disabled = true;
         try {
-            const r = await window.apiFetch(`/api/chat/conversations/${this.activeConvId}/messages`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: text }),
-            });
+            const r = await window.apiFetch(
+                `/api/chat/conversations/${this.activeConvId}/messages`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: text }),
+                }
+            );
             if (r.ok && r.data) {
                 this.inputTarget.value = '';
                 await this.openConversation(this.activeConvId);
             } else {
                 if (window.apiToast) {
-                    window.apiToast(r.data && r.data.error ? r.data.error : 'Error al enviar', 'error');
+                    window.apiToast(
+                        r.data && r.data.error ? r.data.error : 'Error al enviar',
+                        'error'
+                    );
                 }
             }
         } catch (e) {
@@ -427,8 +510,9 @@ export default class extends Controller {
 
     selectTab(t) {
         if (!this.hasTabsTarget) return;
-        this.tabsTarget.querySelectorAll('.chat-tab').forEach((x) =>
-            x.classList.toggle('active', x === t));
+        this.tabsTarget
+            .querySelectorAll('.chat-tab')
+            .forEach((x) => x.classList.toggle('active', x === t));
         this.tab = t.dataset.tab;
         const url = new URL(location.href);
         if (this.tab && this.tab !== 'all') url.searchParams.set('tab', this.tab);
@@ -479,7 +563,8 @@ export default class extends Controller {
         clearTimeout(this.dmTimer);
         if (!q) {
             if (this.hasDmResultsTarget) {
-                this.dmResultsTarget.innerHTML = '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
+                this.dmResultsTarget.innerHTML =
+                    '<p class="chat-list-empty">Escribí un código o nombre para buscar...</p>';
             }
             return;
         }
@@ -488,14 +573,19 @@ export default class extends Controller {
 
     async searchDmUsers(q) {
         try {
-            const r = await window.apiFetch(`/api/chat/users?q=${encodeURIComponent(q)}`, { silent: true });
+            const r = await window.apiFetch(`/api/chat/users?q=${encodeURIComponent(q)}`, {
+                silent: true,
+            });
             if (!r.ok || !r.data || !this.hasDmResultsTarget) return;
-            const users = Array.isArray(r.data) ? r.data : (r.data.users || []);
+            const users = Array.isArray(r.data) ? r.data : r.data.users || [];
             if (users.length === 0) {
                 this.dmResultsTarget.innerHTML = '<p class="chat-list-empty">Sin resultados</p>';
                 return;
             }
-            this.dmResultsTarget.innerHTML = users.slice(0, 8).map((u) => `
+            this.dmResultsTarget.innerHTML = users
+                .slice(0, 8)
+                .map(
+                    (u) => `
                 <div class="chat-user-result" data-code="${esc(u.code)}" data-name="${esc(u.name || u.code)}">
                     <div class="chat-conv-avatar">${esc(initials(u.name || u.code))}</div>
                     <div>
@@ -503,11 +593,15 @@ export default class extends Controller {
                         <div style="font-size:0.7rem;color:var(--outline-elev);">${esc(u.code)}</div>
                     </div>
                 </div>
-            `).join('');
+            `
+                )
+                .join('');
             this.dmResultsTarget.querySelectorAll('.chat-user-result').forEach((el) => {
                 el.addEventListener('click', () => this.createDm(el.dataset.code, el.dataset.name));
             });
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     async createDm(code, name) {
@@ -523,6 +617,8 @@ export default class extends Controller {
                 const newId = r.data.id || r.data.conversation_id || code;
                 this.openConversation(newId);
             }
-        } catch (e) { console.error(e); }
+        } catch (e) {
+            console.error(e);
+        }
     }
 }

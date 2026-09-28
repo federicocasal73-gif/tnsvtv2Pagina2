@@ -83,3 +83,8 @@ src/Services/
 /test-results/
 /playwright/.cache/
 ###< tnsvt v2 e2e tests (Playwright) ###
+
+###> tnsvt v2 lighthouse ci ###
+# Lighthouse CI artifacts + reports.
+/.lighthouseci/
+###< tnsvt v2 lighthouse ci ###

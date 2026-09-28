@@ -6,22 +6,20 @@
 
 /* ═══ TOKENS (extiende tokens.css) ═══ */
 :root {
-    --font-display: 'Cinzel', serif;          /* títulos hero / section */
-    --font-label:   'Orbitron', sans-serif;   /* labels / Eyebrow / tags */
-    --font-body:    'Inter', sans-serif;      /* párrafos */
-
+    --font-display: 'Cinzel', serif; /* títulos hero / section */
+    --font-label: 'Orbitron', sans-serif; /* labels / Eyebrow / tags */
+    --font-body: 'Inter', sans-serif; /* párrafos */
     --text-display-2xl: clamp(2rem, 6vw, 3rem);
     --text-display-xl: clamp(1.25rem, 2.2vw, 1.6rem);
-    --text-title:      0.95rem;
-    --text-body:       0.82rem;
-    --text-caption:    0.72rem;
-    --text-label:      0.58rem;
-    --text-micro:      0.52rem;
-
-    --leading-body:    1.65;
-    --leading-tight:   1.2;
-    --tracking-label:  0.08em;
-    --tracking-display:0.04em;
+    --text-title: 0.95rem;
+    --text-body: 0.82rem;
+    --text-caption: 0.72rem;
+    --text-label: 0.58rem;
+    --text-micro: 0.52rem;
+    --leading-body: 1.65;
+    --leading-tight: 1.2;
+    --tracking-label: 0.08em;
+    --tracking-display: 0.04em;
 }
 
 /* ═══ UTILITIES ═══ */

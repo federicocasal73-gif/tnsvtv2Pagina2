@@ -34,44 +34,68 @@
     animation: pulse-aura 4s ease-in-out infinite;
 }
 .freq-ring-1 {
-    width: 80%; height: 80%;
-    animation: spin-sacred 80s linear infinite, pulse-aura 4s ease-in-out infinite;
+    width: 80%;
+    height: 80%;
+    animation:
+        spin-sacred 80s linear infinite,
+        pulse-aura 4s ease-in-out infinite;
     animation-delay: 0s, 0s;
     border-color: rgba(242, 202, 80, 0.25);
-    box-shadow: 0 0 30px rgba(242, 202, 80, 0.08) inset, 0 0 20px rgba(242, 202, 80, 0.06);
+    box-shadow:
+        0 0 30px rgba(242, 202, 80, 0.08) inset,
+        0 0 20px rgba(242, 202, 80, 0.06);
 }
 .freq-ring-2 {
-    width: 60%; height: 60%;
-    animation: spin-sacred 40s linear infinite reverse, pulse-aura 4s ease-in-out infinite;
+    width: 60%;
+    height: 60%;
+    animation:
+        spin-sacred 40s linear infinite reverse,
+        pulse-aura 4s ease-in-out infinite;
     animation-delay: 0.5s, 0.5s;
     border-color: rgba(242, 202, 80, 0.35);
     border-style: dashed;
     box-shadow: 0 0 20px rgba(138, 60, 255, 0.08) inset;
 }
 .freq-ring-3 {
-    width: 40%; height: 40%;
-    animation: spin-sacred 25s linear infinite, pulse-aura 4s ease-in-out infinite;
+    width: 40%;
+    height: 40%;
+    animation:
+        spin-sacred 25s linear infinite,
+        pulse-aura 4s ease-in-out infinite;
     animation-delay: 1s, 1s;
     border-color: rgba(242, 202, 80, 0.5);
     box-shadow: 0 0 15px rgba(138, 60, 255, 0.12) inset;
 }
 .freq-ring-4 {
-    width: 20%; height: 20%;
-    animation: spin-sacred 15s linear infinite reverse, pulse-aura 4s ease-in-out infinite;
+    width: 20%;
+    height: 20%;
+    animation:
+        spin-sacred 15s linear infinite reverse,
+        pulse-aura 4s ease-in-out infinite;
     animation-delay: 1.5s, 1.5s;
     border-color: rgba(242, 202, 80, 0.7);
     box-shadow: 0 0 18px rgba(242, 202, 80, 0.25);
 }
 @keyframes spin-sacred {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 @media (prefers-reduced-motion: reduce) {
-    .freq-ring-1, .freq-ring-2, .freq-ring-3, .freq-ring-4 {
+    .freq-ring-1,
+    .freq-ring-2,
+    .freq-ring-3,
+    .freq-ring-4 {
         animation: pulse-aura 4s ease-in-out infinite;
     }
 }
-.freq-center { text-align: center; z-index: 10; }
+.freq-center {
+    text-align: center;
+    z-index: 10;
+}
 .freq-value {
     font-family: var(--font-body-elev, sans-serif);
     font-size: 3.5rem;
@@ -108,12 +132,14 @@
     box-shadow: 0 0 15px rgba(242, 202, 80, 0.2);
 }
 .freq-btn-value {
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--on-surface-elev);
 }
-.freq-btn-value.active { color: var(--gold-elev, #f2ca50); }
+.freq-btn-value.active {
+    color: var(--gold-elev, #f2ca50);
+}
 .freq-btn-label {
     font-size: 0.65rem;
     color: var(--outline-elev, #99907c);
@@ -174,13 +200,14 @@
     cursor: pointer;
     transition: all 0.2s ease;
 }
-.timer-btn:hover { background: rgba(255, 255, 255, 0.08); }
+.timer-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
 .timer-btn.active {
     border-color: var(--gold-elev, #f2ca50);
     background: rgba(242, 202, 80, 0.1);
     color: var(--gold-elev, #f2ca50);
 }
-
 
 /* ─── Frequency visualizer: idle breathing vs active glow ─── */
 .frequency-visualizer.is-idle .freq-ring {
@@ -199,10 +226,21 @@
     animation: freq-core-pulse 1.6s ease-in-out infinite;
 }
 @keyframes freq-core-pulse {
-    0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(242, 202, 80, 0)); }
-    50%      { transform: scale(1.04); filter: drop-shadow(0 0 18px rgba(242, 202, 80, 0.55)); }
+    0%,
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 rgba(242, 202, 80, 0));
+    }
+    50% {
+        transform: scale(1.04);
+        filter: drop-shadow(0 0 18px rgba(242, 202, 80, 0.55));
+    }
 }
 @media (prefers-reduced-motion: reduce) {
-    .frequency-visualizer.is-playing .freq-ring { animation-duration: 4s !important; }
-    .frequency-visualizer.is-playing .freq-center { animation: none; }
+    .frequency-visualizer.is-playing .freq-ring {
+        animation-duration: 4s !important;
+    }
+    .frequency-visualizer.is-playing .freq-center {
+        animation: none;
+    }
 }

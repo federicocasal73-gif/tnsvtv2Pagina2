@@ -39,7 +39,11 @@
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 9999px;
-    background: linear-gradient(135deg, var(--gold-elev, #d4af37), var(--gold-bright-elev, #f2ca50));
+    background: linear-gradient(
+        135deg,
+        var(--gold-elev, #d4af37),
+        var(--gold-bright-elev, #f2ca50)
+    );
     display: flex;
     align-items: center;
     justify-content: center;
@@ -104,7 +108,11 @@
 }
 
 .sonic-mini-play {
-    background: linear-gradient(135deg, var(--gold-elev, #d4af37), var(--gold-bright-elev, #f2ca50));
+    background: linear-gradient(
+        135deg,
+        var(--gold-elev, #d4af37),
+        var(--gold-bright-elev, #f2ca50)
+    );
     color: var(--void-black, #050308);
     width: 2.5rem;
     height: 2.5rem;
@@ -112,7 +120,11 @@
 }
 
 .sonic-mini-play:hover {
-    background: linear-gradient(135deg, var(--gold-bright-elev, #f2ca50), var(--gold-elev, #d4af37));
+    background: linear-gradient(
+        135deg,
+        var(--gold-bright-elev, #f2ca50),
+        var(--gold-elev, #d4af37)
+    );
     color: var(--void-black, #050308);
 }
 
@@ -247,7 +259,9 @@
     scrollbar-width: none;
 }
 
-.sonic-tabs::-webkit-scrollbar { display: none; }
+.sonic-tabs::-webkit-scrollbar {
+    display: none;
+}
 
 .sonic-tab {
     background: transparent;
@@ -297,7 +311,9 @@
     scrollbar-color: rgba(212, 175, 55, 0.3) transparent;
 }
 
-.sonic-list::-webkit-scrollbar { width: 6px; }
+.sonic-list::-webkit-scrollbar {
+    width: 6px;
+}
 .sonic-list::-webkit-scrollbar-thumb {
     background: rgba(212, 175, 55, 0.3);
     border-radius: 3px;
@@ -382,7 +398,9 @@
     line-height: 1;
 }
 
-.sonic-track-flex { min-width: 0; }
+.sonic-track-flex {
+    min-width: 0;
+}
 
 .sonic-track-body {
     flex: 1;
@@ -476,13 +494,21 @@
 }
 
 .sonic-btn-primary {
-    background: linear-gradient(135deg, var(--gold-elev, #d4af37), var(--gold-bright-elev, #f2ca50));
+    background: linear-gradient(
+        135deg,
+        var(--gold-elev, #d4af37),
+        var(--gold-bright-elev, #f2ca50)
+    );
     color: var(--void-black, #050308);
     border-color: transparent;
 }
 
 .sonic-btn-primary:hover {
-    background: linear-gradient(135deg, var(--gold-bright-elev, #f2ca50), var(--gold-elev, #d4af37));
+    background: linear-gradient(
+        135deg,
+        var(--gold-bright-elev, #f2ca50),
+        var(--gold-elev, #d4af37)
+    );
     color: var(--void-black, #050308);
 }
 
@@ -491,7 +517,7 @@
 }
 
 .sonic-loop-btn {
-    font-family: 'Orbitron', monospace;
+    font-family: Orbitron, monospace;
     font-size: 0.7rem;
     letter-spacing: 0.05em;
     text-transform: lowercase;
@@ -566,7 +592,7 @@
 }
 
 .sonic-drop-overlay::before {
-    content: "⬇  Soltá tu audio acá  ⬇";
+    content: '⬇  Soltá tu audio acá  ⬇';
     font-size: 1.5rem;
     padding: 2rem 3rem;
     background: rgba(13, 9, 22, 0.85);
@@ -581,8 +607,12 @@ body.sonic-panel-open {
 
 /* ── Responsive ── */
 @media (max-width: 480px) {
-    .sonic-mini-volume { width: 60px; }
-    .sonic-mini-title { max-width: 12rem; }
+    .sonic-mini-volume {
+        width: 60px;
+    }
+    .sonic-mini-title {
+        max-width: 12rem;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

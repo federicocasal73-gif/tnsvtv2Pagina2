@@ -10,4 +10,3 @@ import './styles/animations.css';
 
 import './controllers/protocol_controller.js';
 import './controllers/notification_bell_controller.js';
-

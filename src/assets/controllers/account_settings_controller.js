@@ -65,11 +65,16 @@ export default class extends Controller {
         const elNotifMacro = document.getElementById('notif-macro');
         const elNotifCommunity = document.getElementById('notif-community');
         const elNotifFrequencies = document.getElementById('notif-frequencies');
-        if (typeof prefs.notif_trade === 'boolean' && elNotifTrade) elNotifTrade.checked = prefs.notif_trade;
-        if (typeof prefs.notif_macro === 'boolean' && elNotifMacro) elNotifMacro.checked = prefs.notif_macro;
-        if (typeof prefs.notif_community === 'boolean' && elNotifCommunity) elNotifCommunity.checked = prefs.notif_community;
-        if (typeof prefs.notif_frequencies === 'boolean' && elNotifFrequencies) elNotifFrequencies.checked = prefs.notif_frequencies;
-        if (prefs.saved_at && elLastSaved) elLastSaved.textContent = new Date(prefs.saved_at).toLocaleString();
+        if (typeof prefs.notif_trade === 'boolean' && elNotifTrade)
+            elNotifTrade.checked = prefs.notif_trade;
+        if (typeof prefs.notif_macro === 'boolean' && elNotifMacro)
+            elNotifMacro.checked = prefs.notif_macro;
+        if (typeof prefs.notif_community === 'boolean' && elNotifCommunity)
+            elNotifCommunity.checked = prefs.notif_community;
+        if (typeof prefs.notif_frequencies === 'boolean' && elNotifFrequencies)
+            elNotifFrequencies.checked = prefs.notif_frequencies;
+        if (prefs.saved_at && elLastSaved)
+            elLastSaved.textContent = new Date(prefs.saved_at).toLocaleString();
     }
 
     readPrefs() {
@@ -81,7 +86,8 @@ export default class extends Controller {
         const elNotifFrequencies = document.getElementById('notif-frequencies');
         return {
             theme: document.querySelector('input[name="theme"]:checked')?.value || 'dark',
-            density: document.querySelector('input[name="density"]:checked')?.value || 'comfortable',
+            density:
+                document.querySelector('input[name="density"]:checked')?.value || 'comfortable',
             locale: elLocale ? elLocale.value : 'en',
             tz: elTz ? elTz.value : 'UTC',
             notif_trade: elNotifTrade ? elNotifTrade.checked : true,
@@ -132,9 +138,7 @@ export default class extends Controller {
         this.saveToastPrefs(prefs);
         if (window.apiToast) {
             window.apiToast(
-                cb.checked
-                    ? `Toasts de "${kind}" activados`
-                    : `Toasts de "${kind}" silenciados`,
+                cb.checked ? `Toasts de "${kind}" activados` : `Toasts de "${kind}" silenciados`,
                 'info'
             );
         }

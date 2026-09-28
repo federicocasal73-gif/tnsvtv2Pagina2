@@ -17,16 +17,18 @@
 }
 .toggle-slider {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    inset: 0 0 0 0;
     background: var(--glass-border-elev);
     border-radius: 12px;
     transition: 0.3s;
 }
 .toggle-slider::before {
-    content: "";
+    content: '';
     position: absolute;
-    height: 18px; width: 18px;
-    left: 3px; bottom: 3px;
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
     background: var(--on-surface-elev);
     border-radius: 50%;
     transition: 0.3s;

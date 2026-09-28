@@ -1,0 +1,32 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended", "plugin:import/recommended"],
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "no-console": "off",
+    "import/no-unresolved": "off",
+    "prefer-const": "warn",
+    "eqeqeq": ["error", "smart"],
+    "no-empty": ["error", { "allowEmptyCatch": true }],
+    "no-case-declarations": "off"
+  },
+  "ignorePatterns": [
+    "public/assets/**",
+    "var/cache/**",
+    "vendor/**",
+    "node_modules/**",
+    "a11y/**",
+    "stitch_tnsvt_app_m_vil/**",
+    "public/build/**",
+    "src/assets/third_party/**"
+  ]
+}

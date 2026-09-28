@@ -16,11 +16,19 @@ export default class extends Controller {
     }
 
     esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+        );
     }
 
     initials(name) {
-        return (name || '?').split(/\s+/).map(p => p[0]).join('').slice(0, 2).toUpperCase();
+        return (name || '?')
+            .split(/\s+/)
+            .map((p) => p[0])
+            .join('')
+            .slice(0, 2)
+            .toUpperCase();
     }
 
     toast(msg, type = 'success') {
@@ -32,14 +40,25 @@ export default class extends Controller {
     }
 
     fmtDate(iso) {
-        try { return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }); }
-        catch (e) { return iso; }
+        try {
+            return new Date(iso).toLocaleDateString('es-AR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+            });
+        } catch (e) {
+            return iso;
+        }
     }
 
     switchTab(name) {
         this.tab = name;
-        document.querySelectorAll('.social-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-        document.querySelectorAll('.social-tab-panel').forEach(p => p.hidden = (p.id !== 'tab-' + name));
+        document
+            .querySelectorAll('.social-tab')
+            .forEach((t) => t.classList.toggle('active', t.dataset.tab === name));
+        document
+            .querySelectorAll('.social-tab-panel')
+            .forEach((p) => (p.hidden = p.id !== 'tab-' + name));
 
         const url = new URL(location.href);
         if (name && name !== 'users') url.searchParams.set('tab', name);
@@ -54,25 +73,41 @@ export default class extends Controller {
 
     userCard(u, accessStatus) {
         const isMe = u.code === this.me;
-        const status = accessStatus || (isMe ? 'self' : (u.access_status || 'none'));
+        const status = accessStatus || (isMe ? 'self' : u.access_status || 'none');
         let action = '';
         if (isMe) {
-            action = '<span class="social-btn primary" style="opacity:0.6;cursor:default;">Sos vos</span>';
+            action =
+                '<span class="social-btn primary" style="opacity:0.6;cursor:default;">Sos vos</span>';
         } else if (status === 'connected' || status === 'accepted') {
-            action = '<button type="button" class="social-btn connected" disabled>✓ Conectado</button>';
+            action =
+                '<button type="button" class="social-btn connected" disabled>✓ Conectado</button>';
         } else if (status === 'pending' || status === 'pending_sent' || status === 'sent') {
-            action = '<button type="button" class="social-btn pending" disabled>⏳ Solicitud enviada</button>';
+            action =
+                '<button type="button" class="social-btn pending" disabled>⏳ Solicitud enviada</button>';
         } else if (status === 'pending_received') {
-            action = '<button type="button" class="social-btn ghost" data-action="request" data-code="' + this.esc(u.code) + '">Aceptar / Ver</button>';
+            action =
+                '<button type="button" class="social-btn ghost" data-action="request" data-code="' +
+                this.esc(u.code) +
+                '">Aceptar / Ver</button>';
         } else if (status === 'declined' || status === 'rejected') {
-            action = '<button type="button" class="social-btn ghost" data-action="request" data-code="' + this.esc(u.code) + '">Reenviar</button>';
+            action =
+                '<button type="button" class="social-btn ghost" data-action="request" data-code="' +
+                this.esc(u.code) +
+                '">Reenviar</button>';
         } else if (status === 'blocked') {
-            action = '<span class="social-btn danger" style="opacity:0.5;cursor:default;">Bloqueado</span>';
+            action =
+                '<span class="social-btn danger" style="opacity:0.5;cursor:default;">Bloqueado</span>';
         } else {
-            action = '<button type="button" class="social-btn primary" data-action="request" data-code="' + this.esc(u.code) + '">+ Conectar</button>';
+            action =
+                '<button type="button" class="social-btn primary" data-action="request" data-code="' +
+                this.esc(u.code) +
+                '">+ Conectar</button>';
         }
-        const roleClass = ['admin', 'mentor', 'analyst', 'trader'].includes((u.role || '').toLowerCase())
-            ? u.role.toLowerCase() : 'trader';
+        const roleClass = ['admin', 'mentor', 'analyst', 'trader'].includes(
+            (u.role || '').toLowerCase()
+        )
+            ? u.role.toLowerCase()
+            : 'trader';
         return `
             <article class="social-card">
                 <div class="social-avatar">${this.esc(this.initials(u.name))}</div>
@@ -121,11 +156,13 @@ export default class extends Controller {
     }
 
     labelForPrivacy(v) {
-        return ({
-            'public': '🌍 Público — todo el Sanctum puede ver tu journal',
-            'connections': '👥 Solo conexiones — sólo conexiones aceptadas',
-            'private': '🔒 Privado — sólo vos (los demás requieren solicitud)',
-        })[v] || v;
+        return (
+            {
+                public: '🌍 Público — todo el Sanctum puede ver tu journal',
+                connections: '👥 Solo conexiones — sólo conexiones aceptadas',
+                private: '🔒 Privado — sólo vos (los demás requieren solicitud)',
+            }[v] || v
+        );
     }
 
     async loadUsers() {
@@ -134,7 +171,11 @@ export default class extends Controller {
 
         // L69: abort the in-flight search before starting a new one so
         // slow responses can't overwrite fresher results.
-        if (this._usersAbort) { try { this._usersAbort.abort(); } catch (e) {} }
+        if (this._usersAbort) {
+            try {
+                this._usersAbort.abort();
+            } catch (e) {}
+        }
         this._usersAbort = new AbortController();
         const signal = this._usersAbort.signal;
 
@@ -146,10 +187,11 @@ export default class extends Controller {
             const r = await response.json();
 
             if (!r.success || !Array.isArray(r.users)) {
-                list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros para mostrar.</p>';
+                list.innerHTML =
+                    '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros para mostrar.</p>';
                 return;
             }
-            this.allUsers = r.users.map(u => ({
+            this.allUsers = r.users.map((u) => ({
                 ...u,
                 role: u.is_admin ? 'admin' : 'trader',
                 access_status: u.status,
@@ -157,16 +199,18 @@ export default class extends Controller {
             const badge = document.getElementById('badge-users');
             if (badge) badge.hidden = true;
             if (this.allUsers.length === 0) {
-                list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros. Probá con otra búsqueda.</p>';
+                list.innerHTML =
+                    '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros. Probá con otra búsqueda.</p>';
                 return;
             }
-            list.innerHTML = this.allUsers.map(u => this.userCard(u)).join('');
-            list.querySelectorAll('[data-action="request"]').forEach(b => {
+            list.innerHTML = this.allUsers.map((u) => this.userCard(u)).join('');
+            list.querySelectorAll('[data-action="request"]').forEach((b) => {
                 b.addEventListener('click', () => this.sendRequest(b.dataset.code));
             });
         } catch (e) {
             if (e && e.name === 'AbortError') return; // superseded search
-            list.innerHTML = '<p class="social-empty" style="grid-column: 1 / -1;">Sin conexión.</p>';
+            list.innerHTML =
+                '<p class="social-empty" style="grid-column: 1 / -1;">Sin conexión.</p>';
         }
     }
 
@@ -180,7 +224,9 @@ export default class extends Controller {
 
         list.innerHTML = '<p class="social-empty">Cargando...</p>';
         try {
-            const response = await fetch('/api/access-request?user_code=' + encodeURIComponent(this.me));
+            const response = await fetch(
+                '/api/access-request?user_code=' + encodeURIComponent(this.me)
+            );
             const r = await response.json();
 
             if (!r.success) {
@@ -188,7 +234,7 @@ export default class extends Controller {
                 return;
             }
             const items = Array.isArray(r.received) ? r.received : [];
-            this.myRequests = items.filter(x => x.status === 'pending');
+            this.myRequests = items.filter((x) => x.status === 'pending');
 
             const pending = document.getElementById('badge-requests');
             if (pending) {
@@ -199,12 +245,16 @@ export default class extends Controller {
                 list.innerHTML = '<p class="social-empty">No tenés solicitudes pendientes.</p>';
                 return;
             }
-            list.innerHTML = this.myRequests.map(r => this.requestCard(r)).join('');
-            list.querySelectorAll('[data-action="accept"]').forEach(b =>
-                b.addEventListener('click', () => this.respondRequest(parseInt(b.dataset.id, 10), 'accepted'))
+            list.innerHTML = this.myRequests.map((r) => this.requestCard(r)).join('');
+            list.querySelectorAll('[data-action="accept"]').forEach((b) =>
+                b.addEventListener('click', () =>
+                    this.respondRequest(parseInt(b.dataset.id, 10), 'accepted')
+                )
             );
-            list.querySelectorAll('[data-action="deny"]').forEach(b =>
-                b.addEventListener('click', () => this.respondRequest(parseInt(b.dataset.id, 10), 'rejected'))
+            list.querySelectorAll('[data-action="deny"]').forEach((b) =>
+                b.addEventListener('click', () =>
+                    this.respondRequest(parseInt(b.dataset.id, 10), 'rejected')
+                )
             );
         } catch (e) {
             list.innerHTML = '<p class="social-empty">Sin conexión.</p>';
@@ -221,14 +271,16 @@ export default class extends Controller {
 
         list.innerHTML = '<p class="social-empty">Cargando...</p>';
         try {
-            const response = await fetch('/api/connections?user_code=' + encodeURIComponent(this.me));
+            const response = await fetch(
+                '/api/connections?user_code=' + encodeURIComponent(this.me)
+            );
             const r = await response.json();
 
             if (!r.success) {
                 list.innerHTML = '<p class="social-empty">Sin conexiones.</p>';
                 return;
             }
-            this.connections = (r.connections || []).map(c => ({
+            this.connections = (r.connections || []).map((c) => ({
                 ...c,
                 connected_code: c.user_code,
                 connected_name: c.user_name,
@@ -239,12 +291,15 @@ export default class extends Controller {
                 badge.hidden = this.connections.length === 0;
             }
             if (this.connections.length === 0) {
-                list.innerHTML = '<p class="social-empty">Sin conexiones todavía. Buscá usuarios y enviá solicitudes.</p>';
+                list.innerHTML =
+                    '<p class="social-empty">Sin conexiones todavía. Buscá usuarios y enviá solicitudes.</p>';
                 return;
             }
-            list.innerHTML = this.connections.map(c => this.connectionCard(c)).join('');
-            list.querySelectorAll('[data-action="remove"]').forEach(b => {
-                b.addEventListener('click', () => this.removeConnection(parseInt(b.dataset.id, 10)));
+            list.innerHTML = this.connections.map((c) => this.connectionCard(c)).join('');
+            list.querySelectorAll('[data-action="remove"]').forEach((b) => {
+                b.addEventListener('click', () =>
+                    this.removeConnection(parseInt(b.dataset.id, 10))
+                );
             });
         } catch (e) {
             list.innerHTML = '<p class="social-empty">Sin conexión.</p>';
@@ -257,7 +312,9 @@ export default class extends Controller {
 
     async loadPrivacy() {
         try {
-            const response = await fetch('/api/journal/settings?code=' + encodeURIComponent(this.me));
+            const response = await fetch(
+                '/api/journal/settings?code=' + encodeURIComponent(this.me)
+            );
             const r = await response.json();
 
             if (r.ok && r.data) {
@@ -268,7 +325,7 @@ export default class extends Controller {
             }
             const currentValue = document.getElementById('privacy-current-value');
             if (currentValue) currentValue.textContent = this.labelForPrivacy(this.privacy);
-            document.querySelectorAll('.social-privacy-opt').forEach(b => {
+            document.querySelectorAll('.social-privacy-opt').forEach((b) => {
                 b.classList.toggle('active', b.dataset.vis === this.privacy);
             });
         } catch (e) {
@@ -291,11 +348,14 @@ export default class extends Controller {
             if (!ok) return;
         }
         try {
-            const response = await fetch('/api/access-request?code=' + encodeURIComponent(this.me), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_code: this.me, target_code: targetCode })
-            });
+            const response = await fetch(
+                '/api/access-request?code=' + encodeURIComponent(this.me),
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_code: this.me, target_code: targetCode }),
+                }
+            );
             const r = await response.json();
             if (r.success) {
                 this.toast('Solicitud enviada a ' + targetCode, 'success');
@@ -310,14 +370,20 @@ export default class extends Controller {
 
     async respondRequest(id, status) {
         try {
-            const response = await fetch('/api/access-request/' + id + '?code=' + encodeURIComponent(this.me), {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_code: this.me, status: status })
-            });
+            const response = await fetch(
+                '/api/access-request/' + id + '?code=' + encodeURIComponent(this.me),
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_code: this.me, status: status }),
+                }
+            );
             const r = await response.json();
             if (r.success) {
-                this.toast('Solicitud ' + (status === 'accepted' ? 'aceptada' : 'rechazada'), 'success');
+                this.toast(
+                    'Solicitud ' + (status === 'accepted' ? 'aceptada' : 'rechazada'),
+                    'success'
+                );
                 this.loadReceived();
                 this.loadUsers();
             } else {
@@ -329,11 +395,20 @@ export default class extends Controller {
     }
 
     async removeConnection(id) {
-        if (!await window.apiConfirm('¿Eliminar esta conexión?', { title: 'Eliminar conexión', variant: 'danger' })) return;
+        if (
+            !(await window.apiConfirm('¿Eliminar esta conexión?', {
+                title: 'Eliminar conexión',
+                variant: 'danger',
+            }))
+        )
+            return;
         try {
-            const response = await fetch('/api/connections/' + id + '?code=' + encodeURIComponent(this.me), {
-                method: 'DELETE'
-            });
+            const response = await fetch(
+                '/api/connections/' + id + '?code=' + encodeURIComponent(this.me),
+                {
+                    method: 'DELETE',
+                }
+            );
             const r = await response.json().catch(() => null);
             if (response.ok) {
                 this.toast('Conexión eliminada', 'success');
@@ -348,17 +423,20 @@ export default class extends Controller {
 
     async setPrivacy(vis) {
         try {
-            const response = await fetch('/api/journal/settings?code=' + encodeURIComponent(this.me), {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code: this.me, visibility: vis })
-            });
+            const response = await fetch(
+                '/api/journal/settings?code=' + encodeURIComponent(this.me),
+                {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: this.me, visibility: vis }),
+                }
+            );
             const r = await response.json();
             if (r.ok && r.data && r.data.success) {
                 this.privacy = vis;
                 const currentValue = document.getElementById('privacy-current-value');
                 if (currentValue) currentValue.textContent = this.labelForPrivacy(vis);
-                document.querySelectorAll('.social-privacy-opt').forEach(b => {
+                document.querySelectorAll('.social-privacy-opt').forEach((b) => {
                     b.classList.toggle('active', b.dataset.vis === vis);
                 });
                 this.toast('Privacidad actualizada', 'success');
@@ -371,7 +449,7 @@ export default class extends Controller {
     }
 
     wire() {
-        document.querySelectorAll('.social-tab').forEach(t => {
+        document.querySelectorAll('.social-tab').forEach((t) => {
             t.addEventListener('click', () => this.switchTab(t.dataset.tab));
         });
         let searchT = null;
@@ -382,7 +460,7 @@ export default class extends Controller {
                 searchT = setTimeout(() => this.loadUsers(), 200);
             });
         }
-        document.querySelectorAll('.social-privacy-opt').forEach(b => {
+        document.querySelectorAll('.social-privacy-opt').forEach((b) => {
             b.addEventListener('click', () => this.setPrivacy(b.dataset.vis));
         });
     }

@@ -16,7 +16,8 @@ export default class extends Controller {
             const data = await r.json();
 
             if (!data || !data.clan) {
-                this.infoTarget.innerHTML = '<p class="text-center">No perteneces a ningún clan. ¡Crea o únete a uno!</p>';
+                this.infoTarget.innerHTML =
+                    '<p class="text-center">No perteneces a ningún clan. ¡Crea o únete a uno!</p>';
                 return;
             }
 
@@ -31,7 +32,8 @@ export default class extends Controller {
                 </div>
             `;
         } catch (e) {
-            this.infoTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)]">Error al cargar.</p>';
+            this.infoTarget.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)]">Error al cargar.</p>';
         }
     }
 
@@ -53,16 +55,20 @@ export default class extends Controller {
 
             this.renderClans(clans);
         } catch (e) {
-            this.searchTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>';
+            this.searchTarget.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>';
         }
     }
 
     renderClans(clans) {
         if (!clans || clans.length === 0) {
-            this.searchTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">No hay clanes públicos.</p>';
+            this.searchTarget.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)] py-8">No hay clanes públicos.</p>';
             return;
         }
-        this.searchTarget.innerHTML = clans.map(c => `
+        this.searchTarget.innerHTML = clans
+            .map(
+                (c) => `
             <div class="glass-card-elev clan-card flex items-center justify-between">
                 <div>
                     <div class="clan-name">${c.name}</div>
@@ -70,7 +76,9 @@ export default class extends Controller {
                 </div>
                 <button class="ui-btn ui-btn-primary text-xs" data-action="click->clans#join" data-id="${c.id}">Unirse</button>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
     }
 
     async join(e) {

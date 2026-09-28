@@ -10,11 +10,7 @@ import { Controller } from '@hotwired/stimulus';
  * the client picks which ones to show.
  */
 export default class extends Controller {
-    static targets = [
-        'list', 'count',
-        'tabAll', 'tabActive', 'tabDraft',
-        'searchInput',
-    ];
+    static targets = ['list', 'count', 'tabAll', 'tabActive', 'tabDraft', 'searchInput'];
 
     static values = {
         token: { type: String, default: '' },
@@ -26,9 +22,18 @@ export default class extends Controller {
     }
 
     // ── Tabs ──
-    loadAll() { this.currentFilter = 'all'; this.loadList(); }
-    loadActive() { this.currentFilter = 'active'; this.loadList(); }
-    loadDrafts() { this.currentFilter = 'draft'; this.loadList(); }
+    loadAll() {
+        this.currentFilter = 'all';
+        this.loadList();
+    }
+    loadActive() {
+        this.currentFilter = 'active';
+        this.loadList();
+    }
+    loadDrafts() {
+        this.currentFilter = 'draft';
+        this.loadList();
+    }
 
     onSearch() {
         clearTimeout(this._searchTimer);
@@ -58,7 +63,7 @@ export default class extends Controller {
                 this.listTarget.innerHTML = this.emptyHtml();
                 return;
             }
-            this.listTarget.innerHTML = filtered.map(c => this.cardHtml(c)).join('');
+            this.listTarget.innerHTML = filtered.map((c) => this.cardHtml(c)).join('');
             this.bindRowEvents();
         } catch (e) {
             this.listTarget.innerHTML = this.errorHtml('Red');
@@ -67,14 +72,18 @@ export default class extends Controller {
     }
 
     applyFilter(courses) {
-        const search = this.hasSearchInputTarget ? this.searchInputTarget.value.trim().toLowerCase() : '';
+        const search = this.hasSearchInputTarget
+            ? this.searchInputTarget.value.trim().toLowerCase()
+            : '';
         let filtered = courses;
-        if (this.currentFilter === 'active') filtered = courses.filter(c => c.is_active);
-        else if (this.currentFilter === 'draft') filtered = courses.filter(c => !c.is_active);
+        if (this.currentFilter === 'active') filtered = courses.filter((c) => c.is_active);
+        else if (this.currentFilter === 'draft') filtered = courses.filter((c) => !c.is_active);
         if (search) {
-            filtered = filtered.filter(c =>
-                (c.title || '').toLowerCase().includes(search) ||
-                (c.description || '').toLowerCase().includes(search));
+            filtered = filtered.filter(
+                (c) =>
+                    (c.title || '').toLowerCase().includes(search) ||
+                    (c.description || '').toLowerCase().includes(search)
+            );
         }
         return filtered;
     }
@@ -111,7 +120,7 @@ export default class extends Controller {
     }
 
     bindRowEvents() {
-        this.listTarget.querySelectorAll('.campus-admin-card').forEach(card => {
+        this.listTarget.querySelectorAll('.campus-admin-card').forEach((card) => {
             card.addEventListener('dragstart', (e) => {
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/plain', card.dataset.courseId);
@@ -135,21 +144,22 @@ export default class extends Controller {
         // For simplicity we just bump the dropped item above the target
         // and persist the new order to the server.
         const cards = Array.from(this.listTarget.querySelectorAll('.campus-admin-card'));
-        const fromIdx = cards.findIndex(c => c.dataset.courseId === fromId);
-        const toIdx = cards.findIndex(c => c.dataset.courseId === toId);
+        const fromIdx = cards.findIndex((c) => c.dataset.courseId === fromId);
+        const toIdx = cards.findIndex((c) => c.dataset.courseId === toId);
         if (fromIdx === -1 || toIdx === -1) return;
         // Optimistic DOM update
         const moved = cards[fromIdx];
         cards[fromIdx].remove();
         this.listTarget.insertBefore(moved, cards[toIdx]);
 
-        const order = Array.from(this.listTarget.querySelectorAll('.campus-admin-card'))
-            .map(c => c.dataset.courseId);
+        const order = Array.from(this.listTarget.querySelectorAll('.campus-admin-card')).map(
+            (c) => c.dataset.courseId
+        );
         try {
             await fetch('/api/campus/admin/courses/reorder', {
                 method: 'POST',
                 headers: { ...this.adminHeaders(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({ order: order.map(id => parseInt(id, 10)) }),
+                body: JSON.stringify({ order: order.map((id) => parseInt(id, 10)) }),
             });
             if (window.apiToast) window.apiToast('Orden actualizado', 'success');
         } catch (e) {
@@ -177,8 +187,16 @@ export default class extends Controller {
     }
 
     escape(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

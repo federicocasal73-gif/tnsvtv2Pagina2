@@ -18,19 +18,29 @@
 
     animation: lightboxFadeIn 220ms ease;
 }
-.lightbox-root[hidden] { display: none !important; }
+.lightbox-root[hidden] {
+    display: none !important;
+}
 
 .lightbox-root.is-closing {
     animation: lightboxFadeOut 180ms ease forwards;
 }
 
 @keyframes lightboxFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 @keyframes lightboxFadeOut {
-    from { opacity: 1; }
-    to   { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 
 /* ═══ Backdrop ═══ */
@@ -55,7 +65,7 @@
     justify-content: center;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: none;        /* let us own pan/pinch gestures */
+    touch-action: none; /* let us own pan/pinch gestures */
     overflow: hidden;
 }
 
@@ -76,7 +86,9 @@
 }
 
 /* When transform is being dragged we don't want the spring transition */
-.lightbox-image.is-dragging { transition: none; }
+.lightbox-image.is-dragging {
+    transition: none;
+}
 
 /* ═══ Caption ═══ */
 .lightbox-caption {
@@ -128,7 +140,9 @@
     outline: 2px solid var(--gold-elev);
     outline-offset: 3px;
 }
-.lightbox-btn .material-symbols-elev { font-size: 1.6rem; }
+.lightbox-btn .material-symbols-elev {
+    font-size: 1.6rem;
+}
 
 .lightbox-btn--close {
     top: 1rem;
@@ -140,18 +154,24 @@
     top: 50%;
     transform: translateY(-50%);
 }
-.lightbox-btn--prev:hover { transform: translateY(-50%) translateX(-2px); }
+.lightbox-btn--prev:hover {
+    transform: translateY(-50%) translateX(-2px);
+}
 
 .lightbox-btn--next {
     right: 1rem;
     top: 50%;
     transform: translateY(-50%);
 }
-.lightbox-btn--next:hover { transform: translateY(-50%) translateX(2px); }
+.lightbox-btn--next:hover {
+    transform: translateY(-50%) translateX(2px);
+}
 
 /* Solo photos hide navigation */
 .lightbox-root.is-solo .lightbox-btn--prev,
-.lightbox-root.is-solo .lightbox-btn--next { display: none; }
+.lightbox-root.is-solo .lightbox-btn--next {
+    display: none;
+}
 
 /* ═══ Toolbar (zoom in/out/reset, download, share, copy URL) ═══ */
 .lightbox-toolbar {
@@ -194,7 +214,9 @@
     outline: 2px solid var(--gold-elev);
     outline-offset: 2px;
 }
-.lightbox-toolbar-btn .material-symbols-elev { font-size: 1.25rem; }
+.lightbox-toolbar-btn .material-symbols-elev {
+    font-size: 1.25rem;
+}
 
 .lightbox-toolbar-sep {
     width: 1px;
@@ -224,7 +246,9 @@
 /* ═══ Trigger hint: cursor + subtle hover affordance ═══ */
 img.lightbox-trigger {
     cursor: zoom-in;
-    transition: transform 180ms ease, filter 180ms ease;
+    transition:
+        transform 180ms ease,
+        filter 180ms ease;
 }
 img.lightbox-trigger:hover {
     transform: scale(1.01);
@@ -233,8 +257,12 @@ img.lightbox-trigger:hover {
 
 /* ═══ Reduced motion ═══ */
 @media (prefers-reduced-motion: reduce) {
-    .lightbox-root { animation: none !important; }
-    .lightbox-image { transition: none !important; }
+    .lightbox-root {
+        animation: none !important;
+    }
+    .lightbox-image {
+        transition: none !important;
+    }
     img.lightbox-trigger,
     img.lightbox-trigger:hover {
         transition: none !important;
@@ -253,17 +281,43 @@ img.lightbox-trigger:hover {
         max-height: 75vh;
         border-radius: 0;
     }
-    .lightbox-btn { width: 44px; height: 44px; }
-    .lightbox-btn--prev { left: 0.5rem; }
-    .lightbox-btn--next { right: 0.5rem; }
-    .lightbox-btn--close { top: 0.5rem; right: 0.5rem; }
-    .lightbox-counter { top: 0.5rem; left: 0.5rem; }
-    .lightbox-toolbar { bottom: 0.75rem; padding: 0.35rem 0.45rem; }
-    .lightbox-toolbar-btn { width: 36px; height: 36px; }
-    .lightbox-caption { bottom: -2rem; font-size: 0.75rem; }
+    .lightbox-btn {
+        width: 44px;
+        height: 44px;
+    }
+    .lightbox-btn--prev {
+        left: 0.5rem;
+    }
+    .lightbox-btn--next {
+        right: 0.5rem;
+    }
+    .lightbox-btn--close {
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+    .lightbox-counter {
+        top: 0.5rem;
+        left: 0.5rem;
+    }
+    .lightbox-toolbar {
+        bottom: 0.75rem;
+        padding: 0.35rem 0.45rem;
+    }
+    .lightbox-toolbar-btn {
+        width: 36px;
+        height: 36px;
+    }
+    .lightbox-caption {
+        bottom: -2rem;
+        font-size: 0.75rem;
+    }
 }
 
 @media (max-width: 360px) {
-    .lightbox-stage { max-height: 70vh; }
-    .lightbox-image { max-height: 70vh; }
+    .lightbox-stage {
+        max-height: 70vh;
+    }
+    .lightbox-image {
+        max-height: 70vh;
+    }
 }

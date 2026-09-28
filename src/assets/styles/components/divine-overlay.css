@@ -15,7 +15,7 @@
     transition: opacity 600ms ease;
 }
 
-#divine-canvas-overlay[aria-hidden="true"] {
+#divine-canvas-overlay[aria-hidden='true'] {
     /* aria-hidden por defecto — es decorativo */
 }
 

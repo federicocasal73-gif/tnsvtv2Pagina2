@@ -27,8 +27,14 @@
     background: var(--glass-bg-strong-elev);
     border: 1px solid var(--outline-variant-elev);
 }
-.audit-icon.success { color: #4ade80; border-color: rgba(74, 222, 128, 0.4); }
-.audit-icon.fail { color: #ff6b6b; border-color: rgba(255, 107, 107, 0.4); }
+.audit-icon.success {
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.4);
+}
+.audit-icon.fail {
+    color: #ff6b6b;
+    border-color: rgba(255, 107, 107, 0.4);
+}
 /* Status pill variants (.success/.fail/.admin) now live in components.css */
 .action-tag {
     display: inline-block;

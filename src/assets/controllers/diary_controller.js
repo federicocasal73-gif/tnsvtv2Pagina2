@@ -25,20 +25,44 @@ import { Controller } from '@hotwired/stimulus';
 const STATES = ['locked', 'list', 'empty', 'editing'];
 
 function escapeHtml(s) {
-    return String(s == null ? '' : s)
-        .replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    return String(s == null ? '' : s).replace(
+        /[&<>"']/g,
+        (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+    );
 }
 
 export default class extends Controller {
     static targets = [
         'message',
-        'stateLocked', 'stateList', 'stateEmpty', 'stateEditing',
-        'passInput', 'unlockBtn', 'fingerprintBtn', 'lockSubtitle', 'resetLockedBtn',
-        'newBtn', 'exportBtn', 'lockBtn', 'resetBtn', 'listSummary', 'entriesGrid',
-        'writeFirstBtn', 'lockEmptyBtn',
-        'editorWrap', 'editorTitle', 'editorTitleInput', 'editorTextarea',
-        'editorPreview', 'autosaveBadge', 'wordCount', 'manualSaveBtn',
-        'lockEditBtn', 'backBtn', 'viewTabs', 'promptChips',
+        'stateLocked',
+        'stateList',
+        'stateEmpty',
+        'stateEditing',
+        'passInput',
+        'unlockBtn',
+        'fingerprintBtn',
+        'lockSubtitle',
+        'resetLockedBtn',
+        'newBtn',
+        'exportBtn',
+        'lockBtn',
+        'resetBtn',
+        'listSummary',
+        'entriesGrid',
+        'writeFirstBtn',
+        'lockEmptyBtn',
+        'editorWrap',
+        'editorTitle',
+        'editorTitleInput',
+        'editorTextarea',
+        'editorPreview',
+        'autosaveBadge',
+        'wordCount',
+        'manualSaveBtn',
+        'lockEditBtn',
+        'backBtn',
+        'viewTabs',
+        'promptChips',
     ];
 
     connect() {
@@ -76,7 +100,9 @@ export default class extends Controller {
             if (!el) return;
             if (name === s) {
                 el.hidden = false;
-                requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-visible')));
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(() => el.classList.add('is-visible'))
+                );
             } else {
                 el.classList.remove('is-visible');
                 setTimeout(() => {
@@ -94,28 +120,42 @@ export default class extends Controller {
         return null;
     }
 
-    cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    cap(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
 
     // ─── Crypto helpers ────────────────────────────────────────────
 
     async deriveKey(pass) {
         const enc = new TextEncoder();
         const keyMaterial = await crypto.subtle.importKey(
-            'raw', enc.encode(pass), { name: 'PBKDF2' }, false, ['deriveKey']
+            'raw',
+            enc.encode(pass),
+            { name: 'PBKDF2' },
+            false,
+            ['deriveKey']
         );
         return crypto.subtle.deriveKey(
-            { name: 'PBKDF2', salt: enc.encode('tnsvt-diary-v2'),
-              iterations: 100000, hash: 'SHA-256' },
+            {
+                name: 'PBKDF2',
+                salt: enc.encode('tnsvt-diary-v2'),
+                iterations: 100000,
+                hash: 'SHA-256',
+            },
             keyMaterial,
             { name: 'AES-GCM', length: 256 },
-            true, ['encrypt', 'decrypt']
+            true,
+            ['encrypt', 'decrypt']
         );
     }
 
     async encryptText(plaintext, key) {
         const iv = crypto.getRandomValues(new Uint8Array(12));
         const ct = await crypto.subtle.encrypt(
-            { name: 'AES-GCM', iv }, key, new TextEncoder().encode(plaintext));
+            { name: 'AES-GCM', iv },
+            key,
+            new TextEncoder().encode(plaintext)
+        );
         return {
             encrypted: btoa(String.fromCharCode(...new Uint8Array(ct))),
             iv: btoa(String.fromCharCode(...iv)),
@@ -124,11 +164,13 @@ export default class extends Controller {
 
     async decryptText(encB64, ivB64, key) {
         try {
-            const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-            const ct = Uint8Array.from(atob(encB64), c => c.charCodeAt(0));
+            const iv = Uint8Array.from(atob(ivB64), (c) => c.charCodeAt(0));
+            const ct = Uint8Array.from(atob(encB64), (c) => c.charCodeAt(0));
             const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ct);
             return new TextDecoder().decode(pt);
-        } catch (e) { return null; }
+        } catch (e) {
+            return null;
+        }
     }
 
     async tokenFromKey(key) {
@@ -145,7 +187,9 @@ export default class extends Controller {
         this.messageTarget.textContent = text;
         this.messageTarget.hidden = false;
         if (type === 'success') {
-            setTimeout(() => { this.messageTarget.hidden = true; }, 4000);
+            setTimeout(() => {
+                this.messageTarget.hidden = true;
+            }, 4000);
         }
     }
 
@@ -168,16 +212,20 @@ export default class extends Controller {
     fmtDate(iso) {
         try {
             const d = new Date(iso);
-            const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+            const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
             return {
                 day: d.getDate(),
                 weekday: dias[d.getDay()],
                 month: d.toLocaleString('es-AR', { month: 'short' }),
             };
-        } catch (e) { return { day: '?', weekday: '—', month: '—' }; }
+        } catch (e) {
+            return { day: '?', weekday: '—', month: '—' };
+        }
     }
 
-    wordCount(s) { return (s.trim().match(/\S+/g) || []).length; }
+    wordCount(s) {
+        return (s.trim().match(/\S+/g) || []).length;
+    }
 
     relTime(iso) {
         try {
@@ -196,15 +244,20 @@ export default class extends Controller {
             if (mo < 12) return 'hace ' + mo + ' mes' + (mo > 1 ? 'es' : '');
             const y = Math.floor(d / 365);
             return 'hace ' + y + ' año' + (y > 1 ? 's' : '');
-        } catch (e) { return ''; }
+        } catch (e) {
+            return '';
+        }
     }
 
     // ─── LOCKED state ─────────────────────────────────────────────
 
     async checkSetupAndLoad() {
         try {
-            const r = await window.apiFetch('/api/diary/setup', { silent: true, cache: 'no-store' });
-            const data = (r.ok && r.data) ? r.data : null;
+            const r = await window.apiFetch('/api/diary/setup', {
+                silent: true,
+                cache: 'no-store',
+            });
+            const data = r.ok && r.data ? r.data : null;
             const hasSetup = !!(data && data.setup_token);
             if (this.hasLockSubtitleTarget) {
                 this.lockSubtitleTarget.textContent = hasSetup
@@ -239,14 +292,22 @@ export default class extends Controller {
             // fail here with an actionable message instead of crashing later
             // inside exportKey ('parameter 2 is not of type CryptoKey').
             if (!this.masterKey || this.masterKey.type !== 'secret') {
-                console.error('[diary] deriveKey did not return a CryptoKey',
-                    { hasSubtle: !!window.crypto?.subtle, keyType: this.masterKey?.type });
+                console.error('[diary] deriveKey did not return a CryptoKey', {
+                    hasSubtle: !!window.crypto?.subtle,
+                    keyType: this.masterKey?.type,
+                });
                 this.masterKey = null;
-                this.showMessage('Tu navegador no pudo derivar la clave. Recargá la página con Ctrl+Shift+R y probá de nuevo.', 'error');
+                this.showMessage(
+                    'Tu navegador no pudo derivar la clave. Recargá la página con Ctrl+Shift+R y probá de nuevo.',
+                    'error'
+                );
                 return;
             }
-            const r = await window.apiFetch('/api/diary/setup', { silent: true, cache: 'no-store' });
-            const data = (r.ok && r.data) ? r.data : null;
+            const r = await window.apiFetch('/api/diary/setup', {
+                silent: true,
+                cache: 'no-store',
+            });
+            const data = r.ok && r.data ? r.data : null;
             const storedToken = (data && data.setup_token) || null;
             const computedToken = await this.tokenFromKey(this.masterKey);
 
@@ -258,8 +319,9 @@ export default class extends Controller {
                 }
                 this.showMessage('Cuaderno desbloqueado', 'success');
             } else {
-                const ivB64 = btoa(String.fromCharCode(
-                    ...crypto.getRandomValues(new Uint8Array(12))));
+                const ivB64 = btoa(
+                    String.fromCharCode(...crypto.getRandomValues(new Uint8Array(12)))
+                );
                 const sr = await window.apiFetch('/api/diary/setup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -299,7 +361,10 @@ export default class extends Controller {
             for (const e of encrypted) {
                 const pt = await this.decryptText(e.encrypted_data, e.iv, this.masterKey);
                 if (pt === null) {
-                    this.showMessage('La clave no descifra estas entradas — usando clave incorrecta', 'error');
+                    this.showMessage(
+                        'La clave no descifra estas entradas — usando clave incorrecta',
+                        'error'
+                    );
                     this.masterKey = null;
                     this.showState('locked');
                     return;
@@ -312,8 +377,9 @@ export default class extends Controller {
                     ...parsed,
                 });
             }
-            this.entries = decrypted
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            this.entries = decrypted.sort(
+                (a, b) => new Date(b.created_at) - new Date(a.created_at)
+            );
 
             if (this.entries.length === 0) {
                 this.showState('empty');
@@ -330,13 +396,13 @@ export default class extends Controller {
     renderList() {
         if (!this.hasEntriesGridTarget) return;
         if (this.hasListSummaryTarget) {
-            this.listSummaryTarget.textContent =
-                `${this.entries.length} ${this.entries.length === 1 ? 'entrada cifrada' : 'entradas cifradas'}`;
+            this.listSummaryTarget.textContent = `${this.entries.length} ${this.entries.length === 1 ? 'entrada cifrada' : 'entradas cifradas'}`;
         }
-        this.entriesGridTarget.innerHTML = this.entries.map((e) => {
-            const d = this.fmtDate(e.created_at);
-            const wc = this.wordCount(e.body);
-            return `
+        this.entriesGridTarget.innerHTML = this.entries
+            .map((e) => {
+                const d = this.fmtDate(e.created_at);
+                const wc = this.wordCount(e.body);
+                return `
                 <article class="diary-entry-card" data-id="${e.id}" tabindex="0">
                     <div class="diary-entry-card-date">${d.day}</div>
                     <div class="diary-entry-card-weekday">${d.weekday} · ${d.month}</div>
@@ -351,7 +417,8 @@ export default class extends Controller {
                     </div>
                 </article>
             `;
-        }).join('');
+            })
+            .join('');
 
         this.entriesGridTarget.querySelectorAll('.diary-entry-card').forEach((el) => {
             el.addEventListener('click', () => this.openEntry(parseInt(el.dataset.id, 10)));
@@ -361,12 +428,18 @@ export default class extends Controller {
                     this.openEntry(parseInt(el.dataset.id, 10));
                     return;
                 }
-                if (e.key === 'ArrowDown' || e.key === 'ArrowRight'
-                    || e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                if (
+                    e.key === 'ArrowDown' ||
+                    e.key === 'ArrowRight' ||
+                    e.key === 'ArrowUp' ||
+                    e.key === 'ArrowLeft'
+                ) {
                     e.preventDefault();
-                    const cards = Array.from(this.entriesGridTarget.querySelectorAll('.diary-entry-card'));
+                    const cards = Array.from(
+                        this.entriesGridTarget.querySelectorAll('.diary-entry-card')
+                    );
                     const i = cards.indexOf(el);
-                    const dir = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : -1;
+                    const dir = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : -1;
                     const next = cards[i + dir];
                     if (next) next.focus();
                 }
@@ -382,8 +455,10 @@ export default class extends Controller {
         this.editId = id;
         if (this.hasEditorTitleTarget) {
             try {
-                this.editorTitleTarget.textContent = new Date(e.created_at)
-                    .toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+                this.editorTitleTarget.textContent = new Date(e.created_at).toLocaleDateString(
+                    'es-AR',
+                    { day: 'numeric', month: 'long', year: 'numeric' }
+                );
             } catch (_) {
                 this.editorTitleTarget.textContent = 'Editar entrada';
             }
@@ -423,7 +498,8 @@ export default class extends Controller {
         preview.classList.add('is-fading');
         this.previewFadeTimer = setTimeout(() => {
             if (!v.trim()) {
-                preview.innerHTML = '<p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>';
+                preview.innerHTML =
+                    '<p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>';
             } else {
                 const html = escapeHtml(v)
                     .replace(/^# (.+)$/gm, '<h3>$1</h3>')
@@ -506,16 +582,21 @@ export default class extends Controller {
 
     async lockNow() {
         if (this.dirty) {
-            if (!await window.apiConfirm(
-                'Tenés cambios sin guardar. ¿Bloquear igual?',
-                { title: 'Cambios sin guardar' }
-            )) return;
+            if (
+                !(await window.apiConfirm('Tenés cambios sin guardar. ¿Bloquear igual?', {
+                    title: 'Cambios sin guardar',
+                }))
+            )
+                return;
         }
         this.masterKey = null;
         this.editId = null;
         this.entries = [];
         if (this.hasPassInputTarget) this.passInputTarget.value = '';
-        if (this.autosaveTimer) { clearTimeout(this.autosaveTimer); this.autosaveTimer = null; }
+        if (this.autosaveTimer) {
+            clearTimeout(this.autosaveTimer);
+            this.autosaveTimer = null;
+        }
         this.showMessage('Cuaderno bloqueado', 'success');
         this.showState('locked');
     }
@@ -525,8 +606,14 @@ export default class extends Controller {
             this.showMessage('No hay entradas para exportar', 'error');
             return;
         }
-        const lines = ['# Cuaderno del Alma — exportación', '', '_Exportado el ' + new Date().toLocaleString('es-AR') + '_', ''];
-        this.entries.slice()
+        const lines = [
+            '# Cuaderno del Alma — exportación',
+            '',
+            '_Exportado el ' + new Date().toLocaleString('es-AR') + '_',
+            '',
+        ];
+        this.entries
+            .slice()
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
             .forEach((e) => {
                 const when = e.created_at ? new Date(e.created_at).toLocaleString('es-AR') : '';
@@ -543,7 +630,10 @@ export default class extends Controller {
         a.download = 'cuaderno-tnsvt.md';
         document.body.appendChild(a);
         a.click();
-        setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+        setTimeout(() => {
+            URL.revokeObjectURL(a.href);
+            a.remove();
+        }, 500);
         this.showMessage(this.entries.length + ' entrada(s) exportada(s)', 'success');
     }
 
@@ -567,7 +657,8 @@ export default class extends Controller {
             if (window.apiToast) {
                 window.apiToast(
                     `Cuaderno reseteado. ${r.data.entries_deleted || 0} entradas eliminadas.`,
-                    'success');
+                    'success'
+                );
             }
             this.entries = [];
             this.editId = null;
@@ -599,7 +690,10 @@ export default class extends Controller {
         }
         if (this.hasFingerprintBtnTarget) {
             this.fingerprintBtnTarget.addEventListener('click', () => {
-                this.showMessage('Huella biométrica requiere WebAuthn — próxima iteración', 'error');
+                this.showMessage(
+                    'Huella biométrica requiere WebAuthn — próxima iteración',
+                    'error'
+                );
             });
         }
         // Forgot-key escape hatch: reachable from the locked state itself,
@@ -608,12 +702,18 @@ export default class extends Controller {
             this.resetLockedBtnTarget.addEventListener('click', () => this.resetDiary());
         }
 
-        if (this.hasNewBtnTarget) this.newBtnTarget.addEventListener('click', () => this.startNew());
-        if (this.hasLockBtnTarget) this.lockBtnTarget.addEventListener('click', () => this.lockNow());
-        if (this.hasExportBtnTarget) this.exportBtnTarget.addEventListener('click', () => this.exportEntries());
-        if (this.hasWriteFirstBtnTarget) this.writeFirstBtnTarget.addEventListener('click', () => this.startNew());
-        if (this.hasLockEmptyBtnTarget) this.lockEmptyBtnTarget.addEventListener('click', () => this.lockNow());
-        if (this.hasResetBtnTarget) this.resetBtnTarget.addEventListener('click', () => this.resetDiary());
+        if (this.hasNewBtnTarget)
+            this.newBtnTarget.addEventListener('click', () => this.startNew());
+        if (this.hasLockBtnTarget)
+            this.lockBtnTarget.addEventListener('click', () => this.lockNow());
+        if (this.hasExportBtnTarget)
+            this.exportBtnTarget.addEventListener('click', () => this.exportEntries());
+        if (this.hasWriteFirstBtnTarget)
+            this.writeFirstBtnTarget.addEventListener('click', () => this.startNew());
+        if (this.hasLockEmptyBtnTarget)
+            this.lockEmptyBtnTarget.addEventListener('click', () => this.lockNow());
+        if (this.hasResetBtnTarget)
+            this.resetBtnTarget.addEventListener('click', () => this.resetDiary());
 
         const $title = this.hasEditorTitleInputTarget ? this.editorTitleInputTarget : null;
         const $body = this.hasEditorTextareaTarget ? this.editorTextareaTarget : null;
@@ -664,10 +764,12 @@ export default class extends Controller {
 
     async onBackClick() {
         if (this.dirty) {
-            if (!await window.apiConfirm(
-                'Tenés cambios sin guardar. ¿Volver sin guardar?',
-                { title: 'Cambios sin guardar' }
-            )) return;
+            if (
+                !(await window.apiConfirm('Tenés cambios sin guardar. ¿Volver sin guardar?', {
+                    title: 'Cambios sin guardar',
+                }))
+            )
+                return;
             this.dirty = false;
         }
         if (this.editId) await this.saveCurrent({ silent: true });

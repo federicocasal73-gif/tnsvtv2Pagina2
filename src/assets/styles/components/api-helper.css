@@ -17,17 +17,19 @@
     -webkit-backdrop-filter: blur(12px) saturate(140%);
     animation: tnsvtOverlayIn 250ms ease;
 }
-.api-confirm-overlay[hidden] { display: none !important; }
+.api-confirm-overlay[hidden] {
+    display: none !important;
+}
 .api-confirm-card {
     width: 100%;
     max-width: 420px;
-    background: linear-gradient(135deg, rgba(20,12,40,0.97) 0%, rgba(15,8,30,0.97) 100%);
-    border: 1px solid rgba(212,175,55,0.25);
+    background: linear-gradient(135deg, rgba(20, 12, 40, 0.97) 0%, rgba(15, 8, 30, 0.97) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.25);
     border-radius: 16px;
     box-shadow:
-        0 24px 64px rgba(0,0,0,0.6),
-        0 0 80px rgba(212,175,55,0.15),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        0 24px 64px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(212, 175, 55, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
     padding: 1.5rem;
     text-align: center;
     animation: tnsvtCardIn 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -35,9 +37,9 @@
 .api-confirm-overlay.api-confirm-danger .api-confirm-card {
     border-color: rgba(248, 113, 113, 0.45);
     box-shadow:
-        0 24px 64px rgba(0,0,0,0.6),
+        0 24px 64px rgba(0, 0, 0, 0.6),
         0 0 80px rgba(248, 113, 113, 0.18),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .api-confirm-title {
     margin: 0 0 0.5rem;
@@ -99,7 +101,9 @@
 }
 @media (prefers-reduced-motion: reduce) {
     .api-confirm-overlay,
-    .api-confirm-card { animation: none !important; }
+    .api-confirm-card {
+        animation: none !important;
+    }
 }
 
 #api-error-banner {
@@ -122,9 +126,16 @@
     max-width: 36rem;
     animation: api-banner-in 0.2s ease-out;
 }
-#api-error-banner.hidden { display: none !important; }
-#api-error-banner .api-banner-icon { color: #f87171; flex-shrink: 0; }
-#api-error-banner #api-error-banner-msg { flex: 1; }
+#api-error-banner.hidden {
+    display: none !important;
+}
+#api-error-banner .api-banner-icon {
+    color: #f87171;
+    flex-shrink: 0;
+}
+#api-error-banner #api-error-banner-msg {
+    flex: 1;
+}
 #api-error-banner button {
     background: transparent;
     border: none;
@@ -133,7 +144,10 @@
     padding: 0.25rem;
     border-radius: 0.25rem;
 }
-#api-error-banner button:hover { color: #fff; background: rgba(255,255,255,0.1); }
+#api-error-banner button:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
 
 #api-toast-stack {
     position: fixed;
@@ -149,8 +163,8 @@
     pointer-events: auto;
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(8px);
     font-size: 0.875rem;
     display: flex;
@@ -160,11 +174,30 @@
     max-width: 24rem;
     animation: api-toast-in 0.2s ease-out;
 }
-.api-toast-success { background: rgba(6, 78, 59, 0.95); color: #a7f3d0; border-color: rgba(52, 211, 153, 0.5); }
-.api-toast-error   { background: rgba(127, 29, 29, 0.95); color: #fecaca; border-color: rgba(248, 113, 113, 0.5); }
-.api-toast-info    { background: rgba(24, 24, 27, 0.95);  color: #d4d4d8; border-color: rgba(161, 161, 170, 0.5); }
-.api-toast-warning { background: rgba(120, 53, 15, 0.95); color: #fde68a; border-color: rgba(251, 191, 36, 0.5); }
-.api-toast { position: relative; overflow: hidden; }
+.api-toast-success {
+    background: rgba(6, 78, 59, 0.95);
+    color: #a7f3d0;
+    border-color: rgba(52, 211, 153, 0.5);
+}
+.api-toast-error {
+    background: rgba(127, 29, 29, 0.95);
+    color: #fecaca;
+    border-color: rgba(248, 113, 113, 0.5);
+}
+.api-toast-info {
+    background: rgba(24, 24, 27, 0.95);
+    color: #d4d4d8;
+    border-color: rgba(161, 161, 170, 0.5);
+}
+.api-toast-warning {
+    background: rgba(120, 53, 15, 0.95);
+    color: #fde68a;
+    border-color: rgba(251, 191, 36, 0.5);
+}
+.api-toast {
+    position: relative;
+    overflow: hidden;
+}
 .api-toast-progress {
     position: absolute;
     left: 0;
@@ -177,8 +210,12 @@
     animation: api-toast-progress linear forwards;
 }
 @keyframes api-toast-progress {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
 }
 .api-toast-close {
     appearance: none;
@@ -194,22 +231,43 @@
     justify-content: center;
     margin-left: 0.25rem;
 }
-.api-toast-close:hover { opacity: 1; background: rgba(255, 255, 255, 0.08); }
-.api-toast-close .material-symbols-elev { font-size: 1rem; }
-.api-toast-msg { flex: 1; min-width: 0; }
+.api-toast-close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.08);
+}
+.api-toast-close .material-symbols-elev {
+    font-size: 1rem;
+}
+.api-toast-msg {
+    flex: 1;
+    min-width: 0;
+}
 @media (prefers-reduced-motion: reduce) {
-    .api-toast-progress { display: none; }
+    .api-toast-progress {
+        display: none;
+    }
 }
 
 @keyframes api-banner-in {
-    from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 @keyframes api-toast-in {
-    from { opacity: 0; transform: translateX(20px); }
-    to   { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
-
 
 /* ─── Undo toast (H14) ─── */
 .api-undo-toast {
@@ -231,8 +289,13 @@
     cursor: pointer;
     transition: background 0.15s ease;
 }
-.api-undo-btn:hover { background: rgba(255, 255, 255, 0.26); }
-.api-undo-btn:disabled { opacity: 0.6; cursor: progress; }
+.api-undo-btn:hover {
+    background: rgba(255, 255, 255, 0.26);
+}
+.api-undo-btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
 .api-undo-progress {
     height: 3px;
     background: rgba(255, 255, 255, 0.15);
@@ -247,9 +310,16 @@
     animation: api-undo-progress-shrink linear forwards;
 }
 @keyframes api-undo-progress-shrink {
-    from { transform: scaleX(1); }
-    to   { transform: scaleX(0); }
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
 }
 @media (prefers-reduced-motion: reduce) {
-    .api-undo-progress-bar { animation: none; transform: scaleX(0); }
+    .api-undo-progress-bar {
+        animation: none;
+        transform: scaleX(0);
+    }
 }

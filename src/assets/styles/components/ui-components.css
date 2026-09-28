@@ -14,9 +14,10 @@
     border-radius: var(--radius-lg);
     backdrop-filter: blur(var(--glass-blur-elev));
     -webkit-backdrop-filter: blur(var(--glass-blur-elev));
-    transition: border-color var(--duration-base) var(--ease-standard),
-                transform var(--duration-base) var(--ease-standard),
-                box-shadow var(--duration-base) var(--ease-standard);
+    transition:
+        border-color var(--duration-base) var(--ease-standard),
+        transform var(--duration-base) var(--ease-standard),
+        box-shadow var(--duration-base) var(--ease-standard);
 }
 .ui-card:hover {
     border-color: var(--glass-border-strong-elev);
@@ -24,21 +25,23 @@
     box-shadow: var(--shadow-md-elev);
 }
 @media (hover: none) {
-    .ui-card:hover { transform: none; }
+    .ui-card:hover {
+        transform: none;
+    }
 }
 /* Button loading state (Fase C — opt-in via .is-loading + aria-busy) */
 .ui-btn.is-loading,
-.ui-btn[aria-busy="true"],
+.ui-btn[aria-busy='true'],
 button.is-loading,
-button[aria-busy="true"] {
+button[aria-busy='true'] {
     pointer-events: none;
     opacity: 0.85;
     position: relative;
 }
 .ui-btn.is-loading::after,
-.ui-btn[aria-busy="true"]::after,
+.ui-btn[aria-busy='true']::after,
 button.is-loading::after,
-button[aria-busy="true"]::after {
+button[aria-busy='true']::after {
     content: '';
     width: 0.9em;
     height: 0.9em;
@@ -50,11 +53,13 @@ button[aria-busy="true"]::after {
     flex-shrink: 0;
 }
 @keyframes ui-btn-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 @media (prefers-reduced-motion: reduce) {
     .ui-btn.is-loading::after,
-    .ui-btn[aria-busy="true"]::after {
+    .ui-btn[aria-busy='true']::after {
         animation-duration: 1.4s;
     }
 }
@@ -66,9 +71,15 @@ button[aria-busy="true"]::after {
     border-color: var(--glass-border-gold-elev);
     box-shadow: var(--gold-glow-elev);
 }
-.ui-card-padding-sm { padding: var(--space-3); }
-.ui-card-padding-md { padding: var(--space-5); }
-.ui-card-padding-lg { padding: var(--space-7); }
+.ui-card-padding-sm {
+    padding: var(--space-3);
+}
+.ui-card-padding-md {
+    padding: var(--space-5);
+}
+.ui-card-padding-lg {
+    padding: var(--space-7);
+}
 .ui-card-header {
     display: flex;
     align-items: center;
@@ -88,7 +99,9 @@ button[aria-busy="true"]::after {
 .ui-card-header-action {
     flex-shrink: 0;
 }
-.ui-card-body { color: var(--on-surface-variant-elev); }
+.ui-card-body {
+    color: var(--on-surface-variant-elev);
+}
 .ui-card-footer {
     padding-top: var(--space-4);
     margin-top: var(--space-4);
@@ -99,9 +112,15 @@ button[aria-busy="true"]::after {
 .progress-bar {
     width: 100%;
 }
-.progress-bar-sm .progress-bar-track { height: 4px; }
-.progress-bar-md .progress-bar-track { height: 8px; }
-.progress-bar-lg .progress-bar-track { height: 12px; }
+.progress-bar-sm .progress-bar-track {
+    height: 4px;
+}
+.progress-bar-md .progress-bar-track {
+    height: 8px;
+}
+.progress-bar-lg .progress-bar-track {
+    height: 12px;
+}
 .progress-bar-label {
     display: flex;
     justify-content: space-between;
@@ -127,7 +146,12 @@ button[aria-busy="true"]::after {
     transition: width var(--duration-slower) var(--ease-decelerate);
 }
 .progress-bar-gold .progress-bar-fill {
-    background: linear-gradient(90deg, var(--gold-container-elev), var(--gold-elev), var(--gold-bright-elev));
+    background: linear-gradient(
+        90deg,
+        var(--gold-container-elev),
+        var(--gold-elev),
+        var(--gold-bright-elev)
+    );
     box-shadow: 0 0 8px rgba(242, 202, 80, 0.4);
 }
 .progress-bar-violet .progress-bar-fill {
@@ -163,8 +187,14 @@ button[aria-busy="true"]::after {
     opacity: 0.5;
     cursor: not-allowed;
 }
-.ui-btn-size-sm { padding: var(--space-2) var(--space-3); font-size: 0.75rem; }
-.ui-btn-size-lg { padding: var(--space-4) var(--space-7); font-size: 1rem; }
+.ui-btn-size-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.75rem;
+}
+.ui-btn-size-lg {
+    padding: var(--space-4) var(--space-7);
+    font-size: 1rem;
+}
 .ui-btn-primary {
     background: linear-gradient(135deg, var(--gold-elev) 0%, var(--gold-bright-elev) 100%);
     color: var(--on-primary-elev);
@@ -200,7 +230,10 @@ button[aria-busy="true"]::after {
 .ui-btn-danger:hover:not(:disabled) {
     background: rgba(248, 113, 113, 0.25);
 }
-.ui-btn-icon { font-size: 1.1em; line-height: 1; }
+.ui-btn-icon {
+    font-size: 1.1em;
+    line-height: 1;
+}
 
 /* ── Badge ── */
 .ui-badge {
@@ -230,31 +263,53 @@ button[aria-busy="true"]::after {
 }
 
 /* ── Icon sizes ── */
-.icon-size-xs { font-size: 0.875rem; }
-.icon-size-sm { font-size: 1.125rem; }
-.icon-size-md { font-size: 1.5rem; }
-.icon-size-lg { font-size: 2rem; }
-.icon-size-xl { font-size: 3rem; }
+.icon-size-xs {
+    font-size: 0.875rem;
+}
+.icon-size-sm {
+    font-size: 1.125rem;
+}
+.icon-size-md {
+    font-size: 1.5rem;
+}
+.icon-size-lg {
+    font-size: 2rem;
+}
+.icon-size-xl {
+    font-size: 3rem;
+}
 
 /* ── Status pill size variants (used by ui.status_pill macro) ── */
-.status-pill.size-sm { font-size: 0.6rem; padding: 0.15rem 0.45rem; }
-.status-pill.size-md { font-size: 0.65rem; padding: 0.2rem 0.6rem; }
-.status-pill.size-lg { font-size: 0.75rem; padding: 0.3rem 0.8rem; }
+.status-pill.size-sm {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.45rem;
+}
+.status-pill.size-md {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+}
+.status-pill.size-lg {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.8rem;
+}
 
 /* ─── Micro-skeleton on <select> during async load ─── */
 .select-skeleton {
-    background:
-        linear-gradient(90deg,
-            var(--glass-bg-elev) 0%,
-            var(--surface-high-elev) 50%,
-            var(--glass-bg-elev) 100%) !important;
+    background: linear-gradient(
+        90deg,
+        var(--glass-bg-elev) 0%,
+        var(--surface-high-elev) 50%,
+        var(--glass-bg-elev) 100%
+    ) !important;
     background-size: 200% 100% !important;
     animation: skeleton-shimmer 1.4s linear infinite;
     color: transparent !important;
     cursor: wait;
 }
-.select-skeleton option { color: var(--outline-elev); background: var(--surface-elev); }
-
+.select-skeleton option {
+    color: var(--outline-elev);
+    background: var(--surface-elev);
+}
 
 /* ─── Ripple effect on primary buttons (CSS-only, no JS) ─── */
 .ui-btn-primary {
@@ -265,9 +320,11 @@ button[aria-busy="true"]::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at center,
+    background: radial-gradient(
+        circle at center,
         rgba(255, 255, 255, 0.55) 0%,
-        rgba(255, 255, 255, 0) 60%);
+        rgba(255, 255, 255, 0) 60%
+    );
     opacity: 0;
     transform: scale(0.2);
     pointer-events: none;
@@ -277,10 +334,18 @@ button[aria-busy="true"]::after {
     animation: btn-ripple 480ms ease-out;
 }
 @keyframes btn-ripple {
-    0%   { opacity: 0.9; transform: scale(0.2); }
-    100% { opacity: 0;   transform: scale(2.2); }
+    0% {
+        opacity: 0.9;
+        transform: scale(0.2);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(2.2);
+    }
 }
 @media (prefers-reduced-motion: reduce) {
     .ui-btn-primary::after,
-    .ui-btn-primary:active::after { animation: none; }
+    .ui-btn-primary:active::after {
+        animation: none;
+    }
 }

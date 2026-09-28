@@ -30,8 +30,7 @@
     }
 
     function systemPrefersLight() {
-        return window.matchMedia &&
-               window.matchMedia('(prefers-color-scheme: light)').matches;
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
     }
 
     function effectiveIsDark(theme) {
@@ -52,16 +51,20 @@
         }
         // Notificar a Stimulus controllers y otros listeners.
         try {
-            html.dispatchEvent(new CustomEvent('theme:change', {
-                bubbles: false,
-                detail: { theme: theme, effectiveDark: effectiveIsDark(theme) }
-            }));
+            html.dispatchEvent(
+                new CustomEvent('theme:change', {
+                    bubbles: false,
+                    detail: { theme: theme, effectiveDark: effectiveIsDark(theme) },
+                })
+            );
         } catch (_) {}
     }
 
     function set(theme) {
         if (!VALID.includes(theme)) theme = 'auto';
-        try { localStorage.setItem(STORAGE_KEY, theme); } catch (_) {}
+        try {
+            localStorage.setItem(STORAGE_KEY, theme);
+        } catch (_) {}
         apply(theme);
         // Sincronizar cualquier select con data-theme-target en la página.
         syncSelectors(theme);

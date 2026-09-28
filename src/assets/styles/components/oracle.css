@@ -28,7 +28,7 @@
     opacity: 0.5;
 }
 .oracle-label {
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -36,7 +36,7 @@
     color: var(--outline, #99907c);
 }
 .oracle-value {
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-size: 2.5rem;
     font-weight: 700;
     color: var(--gold-elev, #f2ca50);
@@ -52,7 +52,6 @@
 .gauge-container {
     filter: drop-shadow(0 0 10px rgba(242, 202, 80, 0.3));
 }
-
 
 /* ─── L42: header sigil mark ─── */
 .oracle-sigil {
@@ -81,5 +80,8 @@
     animation: pulse-gold 2s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-    .oracle-sigil .sigil-pulse, .oracle-sigil .sigil-core { animation: none; }
+    .oracle-sigil .sigil-pulse,
+    .oracle-sigil .sigil-core {
+        animation: none;
+    }
 }

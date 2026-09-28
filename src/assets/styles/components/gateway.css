@@ -1,2 +1,5 @@
 /* Gateway — extracted from public/home.html.twig */
-:root { --bg-stars-opacity: 1; --bg-stars-density: 45; }
+:root {
+    --bg-stars-opacity: 1;
+    --bg-stars-density: 45;
+}

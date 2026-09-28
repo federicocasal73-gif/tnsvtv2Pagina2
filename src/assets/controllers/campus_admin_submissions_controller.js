@@ -7,10 +7,7 @@ import { Controller } from '@hotwired/stimulus';
  * them one by one. Filters by status with tab buttons.
  */
 export default class extends Controller {
-    static targets = [
-        'list',
-        'tabAll', 'tabPending', 'tabApproved', 'tabRevision',
-    ];
+    static targets = ['list', 'tabAll', 'tabPending', 'tabApproved', 'tabRevision'];
 
     static values = {
         token: { type: String, default: '' },
@@ -21,10 +18,22 @@ export default class extends Controller {
         this.loadAll();
     }
 
-    loadAll() { this.currentFilter = 'all'; this.loadList(); }
-    loadPending() { this.currentFilter = 'pending'; this.loadList(); }
-    loadApproved() { this.currentFilter = 'approved'; this.loadList(); }
-    loadRevision() { this.currentFilter = 'revision'; this.loadList(); }
+    loadAll() {
+        this.currentFilter = 'all';
+        this.loadList();
+    }
+    loadPending() {
+        this.currentFilter = 'pending';
+        this.loadList();
+    }
+    loadApproved() {
+        this.currentFilter = 'approved';
+        this.loadList();
+    }
+    loadRevision() {
+        this.currentFilter = 'revision';
+        this.loadList();
+    }
 
     async loadList() {
         if (!this.hasListTarget) return;
@@ -34,7 +43,9 @@ export default class extends Controller {
             if (this.currentFilter !== 'all') {
                 params.set('status', this.currentFilter);
             }
-            const r = await fetch(`/api/campus/admin/submissions?${params}`, { headers: this.headers() });
+            const r = await fetch(`/api/campus/admin/submissions?${params}`, {
+                headers: this.headers(),
+            });
             if (!r.ok) {
                 this.listTarget.innerHTML = `<p class="empty-state empty-state-md"><span class="material-symbols-elev empty-state-icon">error</span><p class="empty-state-message">Error ${r.status}</p></p>`;
                 return;
@@ -42,7 +53,7 @@ export default class extends Controller {
             const json = await r.json();
             // API returns {data, total, page, limit} — accept a raw array too
             // for backward compatibility with older responses.
-            const submissions = Array.isArray(json) ? json : (json.data || []);
+            const submissions = Array.isArray(json) ? json : json.data || [];
             if (!Array.isArray(submissions) || submissions.length === 0) {
                 this.listTarget.innerHTML = `
                     <div class="empty-state empty-state-md">
@@ -51,29 +62,31 @@ export default class extends Controller {
                     </div>`;
                 return;
             }
-            this.listTarget.innerHTML = submissions.map(s => this.rowHtml(s)).join('');
+            this.listTarget.innerHTML = submissions.map((s) => this.rowHtml(s)).join('');
         } catch (e) {
             console.error('[campus-admin-submissions] loadList', e);
         }
     }
 
     rowHtml(s) {
-        const statusLabel = ({
-            pending: 'Pendiente',
-            submitted: 'Enviada',
-            approved: 'Aprobada',
-            corrected: 'Calificada',
-            revision: 'Devuelta',
-            completed: 'Completada',
-        })[s.status] || s.status;
-        const statusClass = ({
-            pending: 'pending',
-            submitted: 'in-progress',
-            approved: 'approved',
-            corrected: 'approved',
-            revision: 'needs-revision',
-            completed: 'approved',
-        })[s.status] || 'pending';
+        const statusLabel =
+            {
+                pending: 'Pendiente',
+                submitted: 'Enviada',
+                approved: 'Aprobada',
+                corrected: 'Calificada',
+                revision: 'Devuelta',
+                completed: 'Completada',
+            }[s.status] || s.status;
+        const statusClass =
+            {
+                pending: 'pending',
+                submitted: 'in-progress',
+                approved: 'approved',
+                corrected: 'approved',
+                revision: 'needs-revision',
+                completed: 'approved',
+            }[s.status] || 'pending';
 
         return `
             <article class="campus-admin-submission" data-submission-id="${s.id}">
@@ -87,11 +100,15 @@ export default class extends Controller {
                     </div>
                 </header>
                 ${s.comments ? `<p class="campus-admin-submission-comments">${this.escape(s.comments)}</p>` : ''}
-                ${s.files && s.files.length > 0 ? `
+                ${
+                    s.files && s.files.length > 0
+                        ? `
                     <div class="campus-admin-submission-files">
-                        ${s.files.map(f => `<a href="${this.escape(f.url)}" target="_blank" rel="noopener" class="ui-btn ui-btn ghost ui-btn-size-sm"><span class="material-symbols-elev ui-btn-icon">attach_file</span> ${this.escape(f.name || 'archivo')}</a>`).join('')}
+                        ${s.files.map((f) => `<a href="${this.escape(f.url)}" target="_blank" rel="noopener" class="ui-btn ui-btn ghost ui-btn-size-sm"><span class="material-symbols-elev ui-btn-icon">attach_file</span> ${this.escape(f.name || 'archivo')}</a>`).join('')}
                     </div>
-                ` : ''}
+                `
+                        : ''
+                }
                 <footer class="campus-admin-submission-actions">
                     <button type="button" class="ui-btn ui-btn primary ui-btn-size-sm"
                             data-action="click->campus-admin-submissions#approve"
@@ -120,7 +137,11 @@ export default class extends Controller {
                 body: JSON.stringify({ grade, comment, decision }),
             });
             if (r.ok) {
-                if (window.apiToast) window.apiToast(decision === 'approved' ? 'Aprobada' : 'Devuelta para corrección', 'success');
+                if (window.apiToast)
+                    window.apiToast(
+                        decision === 'approved' ? 'Aprobada' : 'Devuelta para corrección',
+                        'success'
+                    );
                 this.loadList();
             } else {
                 if (window.apiToast) window.apiToast('Error al calificar', 'error');
@@ -143,8 +164,16 @@ export default class extends Controller {
     }
 
     escape(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

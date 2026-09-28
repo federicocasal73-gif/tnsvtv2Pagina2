@@ -35,26 +35,40 @@ import { Controller } from '@hotwired/stimulus';
 const STORAGE_KEY = 'tnsvt_sanctuary_v1';
 
 const DEFAULT_STATE = {
-    volume: 75,           // 0..100
+    volume: 75, // 0..100
     muted: false,
-    loop: 'all',          // 'off' | 'one' | 'all'
-    activeTab: 'templo',  // 'templo' | 'mine' | 'global'
+    loop: 'all', // 'off' | 'one' | 'all'
+    activeTab: 'templo', // 'templo' | 'mine' | 'global'
 };
 
-const FADE_IN_S  = 0.6;
+const FADE_IN_S = 0.6;
 const FADE_OUT_S = 0.4;
 
 export default class extends Controller {
     static targets = [
-        'miniPlayer', 'miniLauncher', 'miniTitle', 'miniElapsed', 'miniDuration',
-        'miniPlayBtn', 'miniIcon',
-        'panel', 'panelClose',
-        'temploTab', 'mineTab', 'globalTab',
-        'temploList', 'mineList', 'globalList',
-        'visualizer', 'visualizerWrap',
-        'volume', 'volumeIcon', 'muteBtn',
+        'miniPlayer',
+        'miniLauncher',
+        'miniTitle',
+        'miniElapsed',
+        'miniDuration',
+        'miniPlayBtn',
+        'miniIcon',
+        'panel',
+        'panelClose',
+        'temploTab',
+        'mineTab',
+        'globalTab',
+        'temploList',
+        'mineList',
+        'globalList',
+        'visualizer',
+        'visualizerWrap',
+        'volume',
+        'volumeIcon',
+        'muteBtn',
         'loopBtn',
-        'fileInput', 'dropOverlay',
+        'fileInput',
+        'dropOverlay',
         'loading',
         'toast',
         'keyboardHints',
@@ -62,8 +76,8 @@ export default class extends Controller {
 
     static values = {
         openPanel: { type: Boolean, default: false },
-        source:    { type: String, default: 'idle' }, // idle|templo|mine|global
-        trackId:   { type: String, default: '' },
+        source: { type: String, default: 'idle' }, // idle|templo|mine|global
+        trackId: { type: String, default: '' },
         trackName: { type: String, default: '' },
     };
 
@@ -76,12 +90,12 @@ export default class extends Controller {
         this.gainNode = null;
         this.analyser = null;
         this.mediaSource = null;
-        this.audioElement = null;      // HTMLAudioElement (for mine/global)
+        this.audioElement = null; // HTMLAudioElement (for mine/global)
         this.sessionId = null;
         this.secondsElapsed = 0;
         this.timerInterval = null;
         this.rafId = null;
-        this.queuedSource = null;       // pending fetch when user clicks too fast
+        this.queuedSource = null; // pending fetch when user clicks too fast
 
         // State
         const stored = this.loadState();
@@ -91,28 +105,28 @@ export default class extends Controller {
         this.activeTab = stored.activeTab;
 
         // Event bindings (compat with hub + cross-controller)
-        this.boundOnStart       = this.onHubStart.bind(this);
-        this.boundOnStop        = this.onHubStop.bind(this);
+        this.boundOnStart = this.onHubStart.bind(this);
+        this.boundOnStop = this.onHubStop.bind(this);
         this.boundOnRequestStop = this.onHubRequestStop.bind(this);
-        this.boundOnKeyDown     = this.onKeyDown.bind(this);
-        this.boundOnDragEnter   = this.onDragEnter.bind(this);
-        this.boundOnDragOver    = this.onDragOver.bind(this);
-        this.boundOnDragLeave   = this.onDragLeave.bind(this);
-        this.boundOnDrop        = this.onDrop.bind(this);
-        this.boundOnGlobalPlay  = this.onGlobalPlay.bind(this);
-        this.boundOnGlobalPrev  = this.onGlobalPrev.bind(this);
-        this.boundOnGlobalNext  = this.onGlobalNext.bind(this);
-        window.addEventListener('tnsvt:freq:start',       this.boundOnStart);
-        window.addEventListener('tnsvt:freq:stop',        this.boundOnStop);
+        this.boundOnKeyDown = this.onKeyDown.bind(this);
+        this.boundOnDragEnter = this.onDragEnter.bind(this);
+        this.boundOnDragOver = this.onDragOver.bind(this);
+        this.boundOnDragLeave = this.onDragLeave.bind(this);
+        this.boundOnDrop = this.onDrop.bind(this);
+        this.boundOnGlobalPlay = this.onGlobalPlay.bind(this);
+        this.boundOnGlobalPrev = this.onGlobalPrev.bind(this);
+        this.boundOnGlobalNext = this.onGlobalNext.bind(this);
+        window.addEventListener('tnsvt:freq:start', this.boundOnStart);
+        window.addEventListener('tnsvt:freq:stop', this.boundOnStop);
         window.addEventListener('tnsvt:freq:request_stop', this.boundOnRequestStop);
-        window.addEventListener('keydown',                 this.boundOnKeyDown);
-        window.addEventListener('dragenter',               this.boundOnDragEnter);
-        window.addEventListener('dragover',                this.boundOnDragOver);
-        window.addEventListener('dragleave',               this.boundOnDragLeave);
-        window.addEventListener('drop',                    this.boundOnDrop);
-        window.addEventListener('sonic:global-play',      this.boundOnGlobalPlay);
-        window.addEventListener('sonic:global-prev',      this.boundOnGlobalPrev);
-        window.addEventListener('sonic:global-next',      this.boundOnGlobalNext);
+        window.addEventListener('keydown', this.boundOnKeyDown);
+        window.addEventListener('dragenter', this.boundOnDragEnter);
+        window.addEventListener('dragover', this.boundOnDragOver);
+        window.addEventListener('dragleave', this.boundOnDragLeave);
+        window.addEventListener('drop', this.boundOnDrop);
+        window.addEventListener('sonic:global-play', this.boundOnGlobalPlay);
+        window.addEventListener('sonic:global-prev', this.boundOnGlobalPrev);
+        window.addEventListener('sonic:global-next', this.boundOnGlobalNext);
 
         // First-render fetches
         this.applyVolume();
@@ -123,17 +137,17 @@ export default class extends Controller {
     }
 
     disconnect() {
-        window.removeEventListener('tnsvt:freq:start',       this.boundOnStart);
-        window.removeEventListener('tnsvt:freq:stop',        this.boundOnStop);
+        window.removeEventListener('tnsvt:freq:start', this.boundOnStart);
+        window.removeEventListener('tnsvt:freq:stop', this.boundOnStop);
         window.removeEventListener('tnsvt:freq:request_stop', this.boundOnRequestStop);
-        window.removeEventListener('keydown',                 this.boundOnKeyDown);
-        window.removeEventListener('dragenter',               this.boundOnDragEnter);
-        window.removeEventListener('dragover',                this.boundOnDragOver);
-        window.removeEventListener('dragleave',               this.boundOnDragLeave);
-        window.removeEventListener('drop',                    this.boundOnDrop);
-        window.removeEventListener('sonic:global-play',      this.boundOnGlobalPlay);
-        window.removeEventListener('sonic:global-prev',      this.boundOnGlobalPrev);
-        window.removeEventListener('sonic:global-next',      this.boundOnGlobalNext);
+        window.removeEventListener('keydown', this.boundOnKeyDown);
+        window.removeEventListener('dragenter', this.boundOnDragEnter);
+        window.removeEventListener('dragover', this.boundOnDragOver);
+        window.removeEventListener('dragleave', this.boundOnDragLeave);
+        window.removeEventListener('drop', this.boundOnDrop);
+        window.removeEventListener('sonic:global-play', this.boundOnGlobalPlay);
+        window.removeEventListener('sonic:global-prev', this.boundOnGlobalPrev);
+        window.removeEventListener('sonic:global-next', this.boundOnGlobalNext);
 
         this.stopTimer();
         this.stopVisualizer();
@@ -166,35 +180,37 @@ export default class extends Controller {
         });
         // Show only the active list (other lists stay in DOM for caching)
         if (this.hasTemploListTarget) this.temploListTarget.hidden = this.activeTab !== 'templo';
-        if (this.hasMineListTarget)   this.mineListTarget.hidden   = this.activeTab !== 'mine';
+        if (this.hasMineListTarget) this.mineListTarget.hidden = this.activeTab !== 'mine';
         if (this.hasGlobalListTarget) this.globalListTarget.hidden = this.activeTab !== 'global';
     }
 
-    cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    cap(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
 
     // ─── list rendering ────────────────────────────────────────────
 
     async refreshLists() {
-        await Promise.all([
-            this.renderTemplo(),
-            this.renderMine(),
-            this.renderGlobal(),
-        ]);
+        await Promise.all([this.renderTemplo(), this.renderMine(), this.renderGlobal()]);
     }
 
     async renderTemplo() {
         if (!this.hasTemploListTarget) return;
         const r = await window.apiFetch('/api/frequencies/presets', { silent: true });
         if (!r.ok || !r.data || !r.data.success) {
-            this.temploListTarget.innerHTML = '<p class="sonic-empty">Sin frecuencias del Templo.</p>';
+            this.temploListTarget.innerHTML =
+                '<p class="sonic-empty">Sin frecuencias del Templo.</p>';
             return;
         }
         const presets = r.data.presets || [];
         if (presets.length === 0) {
-            this.temploListTarget.innerHTML = '<p class="sonic-empty">Sin frecuencias del Templo.</p>';
+            this.temploListTarget.innerHTML =
+                '<p class="sonic-empty">Sin frecuencias del Templo.</p>';
             return;
         }
-        this.temploListTarget.innerHTML = presets.map((p) => `
+        this.temploListTarget.innerHTML = presets
+            .map(
+                (p) => `
             <button type="button"
                     class="sonic-track ${this.isCurrent('templo', String(p.id)) ? 'is-current' : ''}"
                     data-track-id="${p.id}"
@@ -208,7 +224,9 @@ export default class extends Controller {
                 </span>
                 <span class="sonic-track-action material-symbols-elev">play_arrow</span>
             </button>
-        `).join('');
+        `
+            )
+            .join('');
     }
 
     async renderMine() {
@@ -218,7 +236,9 @@ export default class extends Controller {
             this.mineListTarget.innerHTML = '<p class="sonic-empty">No autenticado.</p>';
             return;
         }
-        const list = (r.data.frequencies || []).filter((f) => f.hasFile || f.type === 'custom_upload');
+        const list = (r.data.frequencies || []).filter(
+            (f) => f.hasFile || f.type === 'custom_upload'
+        );
         if (list.length === 0) {
             this.mineListTarget.innerHTML = `
                 <div class="sonic-empty sonic-empty-cta">
@@ -227,9 +247,10 @@ export default class extends Controller {
                 </div>`;
             return;
         }
-        this.mineListTarget.innerHTML = list.map((f) => {
-            const isCurrent = this.isCurrent('mine', String(f.id));
-            return `
+        this.mineListTarget.innerHTML = list
+            .map((f) => {
+                const isCurrent = this.isCurrent('mine', String(f.id));
+                return `
             <div class="sonic-track-row ${isCurrent ? 'is-current' : ''}">
                 <button type="button"
                         class="sonic-track sonic-track-flex"
@@ -252,7 +273,8 @@ export default class extends Controller {
                     <span class="material-symbols-elev">delete</span>
                 </button>
             </div>`;
-        }).join('');
+            })
+            .join('');
     }
 
     async renderGlobal() {
@@ -264,14 +286,16 @@ export default class extends Controller {
         }
         const tracks = r.data.playlist || [];
         if (!r.data.hasMusic || tracks.length === 0) {
-            this.globalListTarget.innerHTML = '<p class="sonic-empty">El Cónclave no está transmitiendo ahora.</p>';
+            this.globalListTarget.innerHTML =
+                '<p class="sonic-empty">El Cónclave no está transmitiendo ahora.</p>';
             return;
         }
         const activeIdx = r.data.activeIndex ?? 0;
-        this.globalListTarget.innerHTML = tracks.map((t, i) => {
-            const isCurrent = this.isCurrent('global', t.id);
-            const isActive = i === activeIdx;
-            return `
+        this.globalListTarget.innerHTML = tracks
+            .map((t, i) => {
+                const isCurrent = this.isCurrent('global', t.id);
+                const isActive = i === activeIdx;
+                return `
             <button type="button"
                     class="sonic-track ${isCurrent ? 'is-current' : ''} ${isActive ? 'is-active-admin' : ''}"
                     data-track-id="${this.esc(t.id)}"
@@ -284,7 +308,8 @@ export default class extends Controller {
                 </span>
                 <span class="sonic-track-action material-symbols-elev">${isCurrent ? 'equalizer' : 'play_arrow'}</span>
             </button>`;
-        }).join('');
+            })
+            .join('');
     }
 
     // ─── playback: templo (oscillator) ─────────────────────────────
@@ -301,7 +326,8 @@ export default class extends Controller {
             body: { duration_minutes: 30, preset_id: parseInt(id, 10) },
         });
         if (!r.ok || !r.data?.success) {
-            if (window.apiToast) window.apiToast('Error: ' + (r.data?.error || 'no se pudo iniciar'), 'error');
+            if (window.apiToast)
+                window.apiToast('Error: ' + (r.data?.error || 'no se pudo iniciar'), 'error');
             return;
         }
 
@@ -325,7 +351,10 @@ export default class extends Controller {
             this.gainNode.connect(this.analyser);
             // B1: analyser → destination is wired once in ensureAudioCtx()
             this.oscillator.start();
-            this.gainNode.gain.linearRampToValueAtTime(this.gainValue(), this.audioCtx.currentTime + FADE_IN_S);
+            this.gainNode.gain.linearRampToValueAtTime(
+                this.gainValue(),
+                this.audioCtx.currentTime + FADE_IN_S
+            );
 
             this.startTimer(30);
             this.startVisualizer();
@@ -450,7 +479,8 @@ export default class extends Controller {
 
         const r = await window.apiFetch('/api/music/current', { silent: true });
         if (!r.ok || !r.data || !r.data.hasMusic || !r.data.playlist?.length) {
-            if (window.apiToast) window.apiToast('El Cónclave no está transmitiendo ahora.', 'warning');
+            if (window.apiToast)
+                window.apiToast('El Cónclave no está transmitiendo ahora.', 'warning');
             return;
         }
         const idx = r.data.activeIndex ?? 0;
@@ -467,11 +497,15 @@ export default class extends Controller {
     }
 
     onGlobalPrev() {
-        this.onGlobalPlay().then(() => this.prevTrack()).catch(() => {});
+        this.onGlobalPlay()
+            .then(() => this.prevTrack())
+            .catch(() => {});
     }
 
     onGlobalNext() {
-        this.onGlobalPlay().then(() => this.nextTrack()).catch(() => {});
+        this.onGlobalPlay()
+            .then(() => this.nextTrack())
+            .catch(() => {});
     }
 
     // ─── playback: hub (compat) ──────────────────────────────────
@@ -489,7 +523,10 @@ export default class extends Controller {
             this.activeTrackId = String(r.data.session.preset?.id ?? '');
             this.activeTrackName = `${r.data.session.frequency?.hz ?? '?'} Hz · ${r.data.session.frequency?.name ?? ''}`;
             if (window.apiToast) {
-                window.apiToast(`Tenés sesión activa: ${this.activeTrackName}. Click ▶ para reanudar.`, 'info');
+                window.apiToast(
+                    `Tenés sesión activa: ${this.activeTrackName}. Click ▶ para reanudar.`,
+                    'info'
+                );
             }
             this.updateMiniUI();
         } catch (e) {}
@@ -504,13 +541,15 @@ export default class extends Controller {
             this.activeTrackId = String(s.preset?.id ?? '');
             this.activeTrackName = `${s.frequency?.hz ?? '?'} Hz · ${s.frequency?.name ?? ''}`;
             this.activeFrequency = s.frequency?.hz ?? 432;
-            await this.playTemplo({ currentTarget: {
-                dataset: {
-                    trackId: String(s.preset?.id ?? ''),
-                    trackName: s.frequency?.name ?? '',
-                    trackFreq: String(s.frequency?.hz ?? 432),
+            await this.playTemplo({
+                currentTarget: {
+                    dataset: {
+                        trackId: String(s.preset?.id ?? ''),
+                        trackName: s.frequency?.name ?? '',
+                        trackFreq: String(s.frequency?.hz ?? 432),
+                    },
                 },
-            } });
+            });
         } catch (e) {
             if (window.apiToast) window.apiToast('Error al reanudar', 'error');
         }
@@ -520,7 +559,8 @@ export default class extends Controller {
         if (!this.sessionId) return;
         try {
             await window.apiFetch(`/api/frequencies/session/${this.sessionId}/abandon`, {
-                method: 'DELETE', silent: true,
+                method: 'DELETE',
+                silent: true,
             });
         } catch (e) {}
         this.sessionId = null;
@@ -536,10 +576,11 @@ export default class extends Controller {
         if (!d.frequency) return;
         // Defer to next tick so we don't race with our own session start.
         setTimeout(() => {
-            if (this.activeSource === 'templo' && this.activeTrackId === String(d.presetId ?? '')) return;
+            if (this.activeSource === 'templo' && this.activeTrackId === String(d.presetId ?? ''))
+                return;
             this.activeSource = 'templo';
             this.activeTrackId = d.presetId ? String(d.presetId) : '';
-            this.activeTrackName = d.name || (d.frequency + ' Hz');
+            this.activeTrackName = d.name || d.frequency + ' Hz';
             this.activeFrequency = d.frequency;
             this.ensureAudioCtx();
             if (this.audioCtx.state === 'suspended') {
@@ -555,7 +596,10 @@ export default class extends Controller {
             this.gainNode.connect(this.analyser);
             // B1: analyser → destination is wired once in ensureAudioCtx()
             this.oscillator.start();
-            this.gainNode.gain.linearRampToValueAtTime(this.gainValue(), this.audioCtx.currentTime + FADE_IN_S);
+            this.gainNode.gain.linearRampToValueAtTime(
+                this.gainValue(),
+                this.audioCtx.currentTime + FADE_IN_S
+            );
             this.sessionId = d.sessionId || null;
             this.startTimer(d.durationMinutes || 30);
             this.startVisualizer();
@@ -612,11 +656,19 @@ export default class extends Controller {
         if (this.activeSource === 'templo' && this.oscillator) {
             try {
                 this.gainNode.gain.cancelScheduledValues(this.audioCtx.currentTime);
-                this.gainNode.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + FADE_OUT_S);
+                this.gainNode.gain.linearRampToValueAtTime(
+                    0,
+                    this.audioCtx.currentTime + FADE_OUT_S
+                );
             } catch (e) {}
-            setTimeout(() => {
-                try { this.oscillator.stop(); } catch (e) {}
-            }, FADE_OUT_S * 1000 + 60);
+            setTimeout(
+                () => {
+                    try {
+                        this.oscillator.stop();
+                    } catch (e) {}
+                },
+                FADE_OUT_S * 1000 + 60
+            );
             this.oscillator = null;
             this.gainNode = null;
         }
@@ -629,9 +681,12 @@ export default class extends Controller {
         if (!opts.keepSession && this.sessionId) {
             const sid = this.sessionId;
             this.sessionId = null;
-            window.apiFetch(`/api/frequencies/session/${sid}/end`, {
-                method: 'POST', silent: true,
-            }).catch(() => {});
+            window
+                .apiFetch(`/api/frequencies/session/${sid}/end`, {
+                    method: 'POST',
+                    silent: true,
+                })
+                .catch(() => {});
         }
         this.stopTimer();
         this.stopVisualizer();
@@ -648,9 +703,12 @@ export default class extends Controller {
         if (this.activeSource === 'idle') {
             // No source: play first available track from active tab
             this.refreshLists().then(() => {
-                const selector = this.activeTab === 'mine' ? '.sonic-track-flex'
-                    : this.activeTab === 'global' ? '[data-action="click->sonic-sanctuary#playGlobal"]'
-                    : '[data-action="click->sonic-sanctuary#playTemplo"]';
+                const selector =
+                    this.activeTab === 'mine'
+                        ? '.sonic-track-flex'
+                        : this.activeTab === 'global'
+                          ? '[data-action="click->sonic-sanctuary#playGlobal"]'
+                          : '[data-action="click->sonic-sanctuary#playTemplo"]';
                 const first = this.element.querySelector(selector);
                 if (first) first.click();
             });
@@ -663,7 +721,9 @@ export default class extends Controller {
                     this.gainNode.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.2);
                 } catch (e) {}
                 setTimeout(() => {
-                    try { this.oscillator.stop(); } catch (e) {}
+                    try {
+                        this.oscillator.stop();
+                    } catch (e) {}
                     this.oscillator = null;
                 }, 250);
             } else if (this.audioElement) {
@@ -684,7 +744,10 @@ export default class extends Controller {
                 this.gainNode.connect(this.analyser);
                 // B1: analyser → destination is wired once in ensureAudioCtx()
                 this.oscillator.start();
-                this.gainNode.gain.linearRampToValueAtTime(this.gainValue(), this.audioCtx.currentTime + FADE_IN_S);
+                this.gainNode.gain.linearRampToValueAtTime(
+                    this.gainValue(),
+                    this.audioCtx.currentTime + FADE_IN_S
+                );
                 this.startTimer(30);
                 this.startVisualizer();
                 this.updateMiniUI();
@@ -698,10 +761,13 @@ export default class extends Controller {
 
     nextTrack() {
         // Navigate to next track in current list (DOM order).
-        const current = this.element.querySelector('.sonic-track.is-current, .sonic-track-flex.is-current');
+        const current = this.element.querySelector(
+            '.sonic-track.is-current, .sonic-track-flex.is-current'
+        );
         if (!current) return;
-        const all = Array.from(this.element.querySelectorAll('.sonic-track, .sonic-track-flex'))
-            .filter((b) => this.element.contains(b));
+        const all = Array.from(
+            this.element.querySelectorAll('.sonic-track, .sonic-track-flex')
+        ).filter((b) => this.element.contains(b));
         const idx = all.indexOf(current);
         let next = all[idx + 1];
         if (!next && this.loop === 'all') next = all[0];
@@ -709,10 +775,13 @@ export default class extends Controller {
     }
 
     prevTrack() {
-        const current = this.element.querySelector('.sonic-track.is-current, .sonic-track-flex.is-current');
+        const current = this.element.querySelector(
+            '.sonic-track.is-current, .sonic-track-flex.is-current'
+        );
         if (!current) return;
-        const all = Array.from(this.element.querySelectorAll('.sonic-track, .sonic-track-flex'))
-            .filter((b) => this.element.contains(b));
+        const all = Array.from(
+            this.element.querySelectorAll('.sonic-track, .sonic-track-flex')
+        ).filter((b) => this.element.contains(b));
         const idx = all.indexOf(current);
         let prev = all[idx - 1];
         if (!prev && this.loop === 'all') prev = all[all.length - 1];
@@ -728,9 +797,13 @@ export default class extends Controller {
         if (!window.apiConfirm) {
             if (!confirm('¿Borrar esta frecuencia?')) return;
         } else {
-            const ok = await window.apiConfirm('¿Borrar esta frecuencia? El archivo de audio también se eliminará.', {
-                title: 'Confirmar borrado', danger: true,
-            });
+            const ok = await window.apiConfirm(
+                '¿Borrar esta frecuencia? El archivo de audio también se eliminará.',
+                {
+                    title: 'Confirmar borrado',
+                    danger: true,
+                }
+            );
             if (!ok) return;
         }
         const r = await window.apiFetch(`/api/frequencies/mine/${id}`, { method: 'DELETE' });
@@ -760,8 +833,14 @@ export default class extends Controller {
         event.target.value = '';
     }
 
-    onDragEnter(e) { e.preventDefault(); if (this.hasDropOverlayTarget) this.dropOverlayTarget.classList.add('is-active'); }
-    onDragOver(e)  { e.preventDefault(); if (this.hasDropOverlayTarget) this.dropOverlayTarget.classList.add('is-active'); }
+    onDragEnter(e) {
+        e.preventDefault();
+        if (this.hasDropOverlayTarget) this.dropOverlayTarget.classList.add('is-active');
+    }
+    onDragOver(e) {
+        e.preventDefault();
+        if (this.hasDropOverlayTarget) this.dropOverlayTarget.classList.add('is-active');
+    }
     onDragLeave(e) {
         // Only deactivate when leaving the window (not child elements).
         if (e.target === document || e.relatedTarget == null) {
@@ -774,7 +853,8 @@ export default class extends Controller {
         const files = Array.from(e.dataTransfer?.files || []);
         const audio = files.filter((f) => /^audio\//.test(f.type));
         if (audio.length === 0) {
-            if (window.apiToast) window.apiToast('Solo archivos de audio (.mp3, .wav, .ogg)', 'warning');
+            if (window.apiToast)
+                window.apiToast('Solo archivos de audio (.mp3, .wav, .ogg)', 'warning');
             return;
         }
         this.uploadFiles(audio);
@@ -796,7 +876,8 @@ export default class extends Controller {
                 });
                 if (!r.ok) {
                     const txt = await r.text();
-                    if (window.apiToast) window.apiToast('Error: ' + (txt || r.statusText), 'error');
+                    if (window.apiToast)
+                        window.apiToast('Error: ' + (txt || r.statusText), 'error');
                     continue;
                 }
                 if (window.apiToast) window.apiToast(`✓ ${f.name} subido`, 'success');
@@ -826,7 +907,9 @@ export default class extends Controller {
         }
     }
 
-    closePanel() { this.openPanelValue = false; }
+    closePanel() {
+        this.openPanelValue = false;
+    }
 
     // ─── volume / mute / loop ────────────────────────────────────
 
@@ -846,12 +929,18 @@ export default class extends Controller {
     applyVolume() {
         if (this.hasVolumeTarget) this.volumeTarget.value = this.volume;
         if (this.hasMuteBtnTarget) {
-            this.muteBtnTarget.querySelector('.material-symbols-elev').textContent =
-                this.muted ? 'volume_off' : (this.volume === 0 ? 'volume_mute' : 'volume_up');
+            this.muteBtnTarget.querySelector('.material-symbols-elev').textContent = this.muted
+                ? 'volume_off'
+                : this.volume === 0
+                  ? 'volume_mute'
+                  : 'volume_up';
         }
         if (this.oscillator && this.gainNode) {
             try {
-                this.gainNode.gain.linearRampToValueAtTime(this.gainValue(), this.audioCtx.currentTime + 0.1);
+                this.gainNode.gain.linearRampToValueAtTime(
+                    this.gainValue(),
+                    this.audioCtx.currentTime + 0.1
+                );
             } catch (e) {}
         }
         if (this.audioElement) {
@@ -916,7 +1005,8 @@ export default class extends Controller {
                 ctx.beginPath();
                 for (let x = 0; x < W; x += 2) {
                     const y = H / 2 + Math.sin(x * 0.04 + phase) * (H * 0.18);
-                    if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
                 }
                 ctx.stroke();
                 return;
@@ -1004,9 +1094,12 @@ export default class extends Controller {
             this.miniElapsedTarget.textContent = this.fmtTime(this.secondsElapsed);
         }
         if (this.hasMiniDurationTarget) {
-            this.miniDurationTarget.textContent = (this.activeSource === 'templo' && this.activeFrequency)
-                ? this.fmtHz(this.activeFrequency)
-                : (this.audioElement && !isNaN(this.audioElement.duration)) ? this.fmtTime(this.audioElement.duration) : '—';
+            this.miniDurationTarget.textContent =
+                this.activeSource === 'templo' && this.activeFrequency
+                    ? this.fmtHz(this.activeFrequency)
+                    : this.audioElement && !isNaN(this.audioElement.duration)
+                      ? this.fmtTime(this.audioElement.duration)
+                      : '—';
         }
         if (this.hasMiniPlayBtnTarget) {
             const icon = this.miniPlayBtnTarget.querySelector('.material-symbols-elev');
@@ -1014,7 +1107,9 @@ export default class extends Controller {
         }
     }
 
-    refreshCurrentTrackInLists() { this.refreshLists(); }
+    refreshCurrentTrackInLists() {
+        this.refreshLists();
+    }
 
     // ─── keyboard shortcuts ──────────────────────────────────────
 
@@ -1072,12 +1167,15 @@ export default class extends Controller {
 
     saveState() {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                volume: this.volume,
-                muted: this.muted,
-                loop: this.loop,
-                activeTab: this.activeTab,
-            }));
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({
+                    volume: this.volume,
+                    muted: this.muted,
+                    loop: this.loop,
+                    activeTab: this.activeTab,
+                })
+            );
         } catch (e) {}
     }
 
@@ -1093,11 +1191,13 @@ export default class extends Controller {
     }
 
     fmtType(type) {
-        return ({
-            custom_upload: 'Subido',
-            custom_generated: 'Generado',
-            preset: 'Preset',
-        })[type] || type;
+        return (
+            {
+                custom_upload: 'Subido',
+                custom_generated: 'Generado',
+                preset: 'Preset',
+            }[type] || type
+        );
     }
 
     fmtTime(sec) {
@@ -1110,8 +1210,16 @@ export default class extends Controller {
     }
 
     esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

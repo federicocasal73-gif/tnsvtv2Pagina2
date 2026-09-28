@@ -50,7 +50,9 @@ export default class extends Controller {
             // "Todas" is selected (was hardcoded $10K before; wrong
             // for users with multiple accounts of different sizes).
             window.TNSVT_TOTAL_ACCOUNT_SIZE = this.accounts.reduce(
-                (s, a) => s + Number(a.account_size || 0), 0);
+                (s, a) => s + Number(a.account_size || 0),
+                0
+            );
             // Resolve the persisted / orphan active account ONCE,
             // then paint the chip strip with that resolved id in a
             // single renderFor(activeId) pass — no double-read of
@@ -93,9 +95,10 @@ export default class extends Controller {
                         <span class="account-chip-count">${this.accounts.reduce((s, a) => s + (a.trade_count || 0), 0)}</span>
                     </button>`;
 
-        html += this.accounts.map(a => {
-            const active = currentId !== '' && currentId === String(a.id) ? 'active' : '';
-            return `<button type="button" class="account-chip ${active}" data-account-id="${a.id}"
+        html += this.accounts
+            .map((a) => {
+                const active = currentId !== '' && currentId === String(a.id) ? 'active' : '';
+                return `<button type="button" class="account-chip ${active}" data-account-id="${a.id}"
                           style="--chip-color: ${escapeAttr(a.color || '#d4af37')}"
                           title="${escapeAttr(a.name)} · $${Number(a.account_size).toLocaleString()}">
                         <span class="account-chip-dot"></span>
@@ -104,19 +107,20 @@ export default class extends Controller {
                         <span class="account-chip-count">${a.trade_count || 0}</span>
                         <span class="account-chip-edit material-symbols-elev icon-size-sm" data-edit-id="${a.id}" title="Editar">edit</span>
                     </button>`;
-        }).join('');
+            })
+            .join('');
 
         container.innerHTML = html;
 
         // Bind click handlers
-        container.querySelectorAll('.account-chip[data-account-id]').forEach(btn => {
+        container.querySelectorAll('.account-chip[data-account-id]').forEach((btn) => {
             btn.addEventListener('click', (e) => {
                 if (e.target.classList.contains('account-chip-edit')) return;
                 const id = btn.dataset.accountId || null;
                 this.activate(id);
             });
         });
-        container.querySelectorAll('.account-chip-edit').forEach(btn => {
+        container.querySelectorAll('.account-chip-edit').forEach((btn) => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const id = parseInt(btn.dataset.editId);
@@ -129,7 +133,10 @@ export default class extends Controller {
         if (addBtn) {
             if (this.accounts.length >= this.maxAccounts) {
                 addBtn.classList.add('disabled');
-                addBtn.setAttribute('title', `Máximo ${this.maxAccounts} cuentas — elimina una para crear otra`);
+                addBtn.setAttribute(
+                    'title',
+                    `Máximo ${this.maxAccounts} cuentas — elimina una para crear otra`
+                );
             } else {
                 addBtn.classList.remove('disabled');
                 addBtn.setAttribute('title', 'Crear nueva cuenta');
@@ -147,7 +154,7 @@ export default class extends Controller {
 
     populateSelects() {
         const selects = document.querySelectorAll('select#trade-account-id');
-        selects.forEach(sel => {
+        selects.forEach((sel) => {
             const current = window.TNSVT_ACTIVE_ACCOUNT_ID || this.getPersistedActive() || '';
             // Micro-skeleton while async load is in flight (empty + skeleton class).
             if (!this.accounts || this.accounts.length === 0) {
@@ -158,9 +165,12 @@ export default class extends Controller {
             }
             sel.classList.remove('select-skeleton');
             sel.disabled = false;
-            sel.innerHTML = this.accounts.map(a =>
-                `<option value="${a.id}" data-size="${a.account_size}">${escapeHtml(a.name)} — $${Number(a.account_size).toLocaleString()}</option>`
-            ).join('');
+            sel.innerHTML = this.accounts
+                .map(
+                    (a) =>
+                        `<option value="${a.id}" data-size="${a.account_size}">${escapeHtml(a.name)} — $${Number(a.account_size).toLocaleString()}</option>`
+                )
+                .join('');
             sel.value = current ? String(current) : '';
         });
     }
@@ -198,7 +208,7 @@ export default class extends Controller {
     resolveActiveAccountId(persistedId) {
         const id = persistedId ? String(persistedId) : null;
         if (id === null || id === '') return null;
-        if (!this.accounts.find(a => String(a.id) === id)) {
+        if (!this.accounts.find((a) => String(a.id) === id)) {
             // Orphan id: account was deleted but localStorage kept it.
             // Fall back to "Todas" so the chip strip stays consistent
             // and the journal loaders don't fire requests with a stale id.
@@ -209,23 +219,27 @@ export default class extends Controller {
 
     setActiveAccount(accountId) {
         const id = accountId ? String(accountId) : null;
-        if (id && !this.accounts.find(a => String(a.id) === id)) {
+        if (id && !this.accounts.find((a) => String(a.id) === id)) {
             // Orphan id (account was deleted but localStorage kept it).
             // Always fall back to "Todas" so the chip strip stays consistent
             // and the journal loaders don't fire requests with a stale id.
             // Also clear localStorage so we don't repeat the fallback.
-            try { localStorage.removeItem('tnsvt_active_account_id'); } catch {}
+            try {
+                localStorage.removeItem('tnsvt_active_account_id');
+            } catch {}
             this._setGlobal(null, null);
             return;
         }
-        const acc = id ? this.accounts.find(a => String(a.id) === id) : null;
+        const acc = id ? this.accounts.find((a) => String(a.id) === id) : null;
         this._setGlobal(id, acc);
     }
 
     _setGlobal(id, acc) {
         window.TNSVT_ACTIVE_ACCOUNT_ID = id;
         window.TNSVT_ACTIVE_ACCOUNT = acc;
-        try { localStorage.setItem('tnsvt_active_account_id', id || ''); } catch {}
+        try {
+            localStorage.setItem('tnsvt_active_account_id', id || '');
+        } catch {}
         // Dispatch event so journal reloads trades / equity curve
         window.dispatchEvent(new CustomEvent('account:changed', { detail: { id, account: acc } }));
     }
@@ -253,7 +267,11 @@ export default class extends Controller {
 
     async openManager(editId = null) {
         if (this.accounts.length >= this.maxAccounts && !editId) {
-            if (window.apiToast) window.apiToast(`Máximo ${this.maxAccounts} cuentas. Elimina una para crear otra.`, 'warn');
+            if (window.apiToast)
+                window.apiToast(
+                    `Máximo ${this.maxAccounts} cuentas. Elimina una para crear otra.`,
+                    'warn'
+                );
             return;
         }
         if (!this.modal) {
@@ -274,7 +292,9 @@ export default class extends Controller {
         const formEl = document.getElementById('accounts-manager-form');
         if (!listEl || !formEl) return;
 
-        listEl.innerHTML = this.accounts.map(a => `
+        listEl.innerHTML = this.accounts
+            .map(
+                (a) => `
             <div class="account-manager-row ${editId === a.id ? 'editing' : ''}" data-id="${a.id}">
                 <span class="account-chip-dot" style="--chip-color: ${escapeAttr(a.color || '#d4af37')}"></span>
                 <div class="flex-1 min-w-0">
@@ -288,23 +308,31 @@ export default class extends Controller {
                     <span class="material-symbols-elev icon-size-sm">delete</span>
                 </button>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
 
         // Bind buttons
-        listEl.querySelectorAll('[data-edit-id]').forEach(btn => {
-            btn.addEventListener('click', () => this.renderManagerList(parseInt(btn.dataset.editId)));
+        listEl.querySelectorAll('[data-edit-id]').forEach((btn) => {
+            btn.addEventListener('click', () =>
+                this.renderManagerList(parseInt(btn.dataset.editId))
+            );
         });
-        listEl.querySelectorAll('[data-delete-id]').forEach(btn => {
+        listEl.querySelectorAll('[data-delete-id]').forEach((btn) => {
             btn.addEventListener('click', () => this.confirmDelete(parseInt(btn.dataset.deleteId)));
         });
 
         // Reset form for new
-        const editing = editId ? this.accounts.find(a => a.id === editId) : null;
+        const editing = editId ? this.accounts.find((a) => a.id === editId) : null;
         formEl.querySelector('input[name="id"]').value = editing ? editing.id : '';
         formEl.querySelector('input[name="name"]').value = editing ? editing.name : '';
-        formEl.querySelector('input[name="account_size"]').value = editing ? editing.account_size : 10000;
-        formEl.querySelector('input[name="color"]').value = editing ? (editing.color || '#d4af37') : '#d4af37';
-        formEl.querySelector('input[name="icon"]').value = editing ? (editing.icon || '💰') : '💰';
+        formEl.querySelector('input[name="account_size"]').value = editing
+            ? editing.account_size
+            : 10000;
+        formEl.querySelector('input[name="color"]').value = editing
+            ? editing.color || '#d4af37'
+            : '#d4af37';
+        formEl.querySelector('input[name="icon"]').value = editing ? editing.icon || '💰' : '💰';
         const errEl = formEl.querySelector('.form-error');
         if (errEl) errEl.textContent = '';
     }
@@ -329,35 +357,54 @@ export default class extends Controller {
             body: JSON.stringify(payload),
         });
         if (r.ok && r.data && r.data.success) {
-            if (window.apiToast) window.apiToast(id ? 'Cuenta actualizada' : 'Cuenta creada', 'success');
+            if (window.apiToast)
+                window.apiToast(id ? 'Cuenta actualizada' : 'Cuenta creada', 'success');
             this.modal.close();
             this.loadAccounts();
         } else {
-            if (errEl) errEl.textContent = (r.data && (r.data.error || r.data.message)) || 'Error al guardar';
+            if (errEl)
+                errEl.textContent =
+                    (r.data && (r.data.error || r.data.message)) || 'Error al guardar';
         }
     }
 
     async confirmDelete(id) {
-        const acc = this.accounts.find(a => a.id === id);
+        const acc = this.accounts.find((a) => a.id === id);
         if (!acc) return;
         const trades = acc.trade_count || 0;
         if (trades > 0) {
-            if (!await window.apiConfirm(`La cuenta "${acc.name}" tiene ${trades} trades. Se hará soft-delete (se conserva el historial). ¿Continuar?`, { title: 'Eliminar cuenta', variant: 'danger' })) return;
+            if (
+                !(await window.apiConfirm(
+                    `La cuenta "${acc.name}" tiene ${trades} trades. Se hará soft-delete (se conserva el historial). ¿Continuar?`,
+                    { title: 'Eliminar cuenta', variant: 'danger' }
+                ))
+            )
+                return;
         } else {
-            if (!await window.apiConfirm(`¿Eliminar la cuenta "${acc.name}"?`, { title: 'Eliminar cuenta', variant: 'danger' })) return;
+            if (
+                !(await window.apiConfirm(`¿Eliminar la cuenta "${acc.name}"?`, {
+                    title: 'Eliminar cuenta',
+                    variant: 'danger',
+                }))
+            )
+                return;
         }
         const r = await window.apiFetch(`/api/accounts/${id}`, { method: 'DELETE' });
         if (r.ok && r.data && r.data.success) {
             if (window.apiToast) window.apiToast('Cuenta eliminada', 'success');
             this.loadAccounts();
         } else {
-            if (window.apiToast) window.apiToast((r.data && r.data.error) || 'Error al eliminar', 'error');
+            if (window.apiToast)
+                window.apiToast((r.data && r.data.error) || 'Error al eliminar', 'error');
         }
     }
 }
 
 function escapeHtml(s) {
-    return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    return String(s ?? '').replace(
+        /[&<>"']/g,
+        (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+    );
 }
 function escapeAttr(s) {
     return escapeHtml(s);

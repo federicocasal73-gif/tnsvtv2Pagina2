@@ -80,32 +80,40 @@ export default class extends Controller {
         const grid = document.getElementById('users-grid');
         if (!grid) return;
 
-        const filtered = this.allUsers.filter(u => {
-            if (this.currentFilter.search && !u.code.toLowerCase().includes(this.currentFilter.search.toLowerCase())) return false;
+        const filtered = this.allUsers.filter((u) => {
+            if (
+                this.currentFilter.search &&
+                !u.code.toLowerCase().includes(this.currentFilter.search.toLowerCase())
+            )
+                return false;
             if (this.currentFilter.tier && u.tier !== this.currentFilter.tier) return false;
             return true;
         });
 
         if (filtered.length === 0) {
-            grid.innerHTML = '<p class="col-span-full text-center text-[var(--outline-elev)] py-8">Sin usuarios encontrados</p>';
+            grid.innerHTML =
+                '<p class="col-span-full text-center text-[var(--outline-elev)] py-8">Sin usuarios encontrados</p>';
             return;
         }
 
-        grid.innerHTML = filtered.map(u => {
-            const initials = (u.code || '??').substring(0, 2).toUpperCase();
-            // Backend sends `roles`, not `isAdmin` — derive it, otherwise
-            // every admin rendered as USER.
-            const isAdmin = Array.isArray(u.roles) && u.roles.includes('ROLE_ADMIN');
-            const roleClass = isAdmin ? 'ADMIN' : 'USER';
-            const avatarClass = isAdmin ? 'admin' : 'user';
-            const statusClass = u.active ? 'active' : 'inactive';
-            const statusText = u.active ? 'Active' : 'Inactive';
-            const statusDotClass = u.active ? 'online' : 'offline';
-            const tier = u.tier || 'INITIATE';
-            // Backend sends `last_login` (snake_case).
-            const lastLogin = u.last_login ? String(u.last_login).substring(5, 16).replace('T', ' ') : '—';
+        grid.innerHTML = filtered
+            .map((u) => {
+                const initials = (u.code || '??').substring(0, 2).toUpperCase();
+                // Backend sends `roles`, not `isAdmin` — derive it, otherwise
+                // every admin rendered as USER.
+                const isAdmin = Array.isArray(u.roles) && u.roles.includes('ROLE_ADMIN');
+                const roleClass = isAdmin ? 'ADMIN' : 'USER';
+                const avatarClass = isAdmin ? 'admin' : 'user';
+                const statusClass = u.active ? 'active' : 'inactive';
+                const statusText = u.active ? 'Active' : 'Inactive';
+                const statusDotClass = u.active ? 'online' : 'offline';
+                const tier = u.tier || 'INITIATE';
+                // Backend sends `last_login` (snake_case).
+                const lastLogin = u.last_login
+                    ? String(u.last_login).substring(5, 16).replace('T', ' ')
+                    : '—';
 
-            return `
+                return `
             <div class="user-card ${u.active ? '' : 'inactive'}">
                 <div class="flex items-start gap-3">
                     <div class="relative">
@@ -137,7 +145,8 @@ export default class extends Controller {
                     </button>
                 </div>
             </div>`;
-        }).join('');
+            })
+            .join('');
     }
 
     async toggleUser(btn) {
@@ -145,12 +154,16 @@ export default class extends Controller {
         if (!code) return;
         btn.disabled = true;
         try {
-            const r = await window.apiFetch('/sanctum/api/users/' + encodeURIComponent(code) + '/active', { method: 'PATCH' });
+            const r = await window.apiFetch(
+                '/sanctum/api/users/' + encodeURIComponent(code) + '/active',
+                { method: 'PATCH' }
+            );
             const data = r.data;
             if (r.ok && data && data.success) {
                 this.loadUsers();
             } else {
-                if (window.apiToast) window.apiToast('Error: ' + ((data && data.error) || 'desconocido'), 'error');
+                if (window.apiToast)
+                    window.apiToast('Error: ' + ((data && data.error) || 'desconocido'), 'error');
                 btn.disabled = false;
             }
         } catch (err) {
@@ -160,7 +173,10 @@ export default class extends Controller {
     }
 
     escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        return String(s || '').replace(
+            /[&<>"']/g,
+            (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+        );
     }
 
     async deleteUser(btn) {
@@ -168,22 +184,38 @@ export default class extends Controller {
         if (!code) return;
         const ok = window.apiConfirm
             ? await window.apiConfirm(
-                `¿PURGAR TOTALMENTE al adepto ${code}?\n\nSe borra el usuario + TODO lo suyo: mensajes, diario, journal, frecuencias, tareas, notificaciones, wallet, campus, clanes y archivos. IRREVERSIBLE. Si lidera un clan con miembros o es el último admin, se rechaza.`,
-                { title: 'Purgado total', confirmLabel: 'Sí, purgar todo', cancelLabel: 'Cancelar', variant: 'danger' }
+                  `¿PURGAR TOTALMENTE al adepto ${code}?\n\nSe borra el usuario + TODO lo suyo: mensajes, diario, journal, frecuencias, tareas, notificaciones, wallet, campus, clanes y archivos. IRREVERSIBLE. Si lidera un clan con miembros o es el último admin, se rechaza.`,
+                  {
+                      title: 'Purgado total',
+                      confirmLabel: 'Sí, purgar todo',
+                      cancelLabel: 'Cancelar',
+                      variant: 'danger',
+                  }
               )
             : true;
         if (!ok) return;
         btn.disabled = true;
         try {
-            const r = await window.apiFetch('/sanctum/api/users/' + encodeURIComponent(code) + '?force=1', { method: 'DELETE' });
+            const r = await window.apiFetch(
+                '/sanctum/api/users/' + encodeURIComponent(code) + '?force=1',
+                { method: 'DELETE' }
+            );
             if (r.ok && r.data && r.data.success) {
                 const n = r.data.purged
-                    ? Object.values(r.data.purged).reduce((a, b) => a + (typeof b === 'number' ? b : 0), 0)
+                    ? Object.values(r.data.purged).reduce(
+                          (a, b) => a + (typeof b === 'number' ? b : 0),
+                          0
+                      )
                     : 0;
-                if (window.apiToast) window.apiToast(`Adepto ${code} purgado (${n} filas)`, 'success');
+                if (window.apiToast)
+                    window.apiToast(`Adepto ${code} purgado (${n} filas)`, 'success');
                 this.loadUsers();
             } else {
-                if (window.apiToast) window.apiToast('Error: ' + ((r.data && r.data.error) || 'desconocido'), 'error');
+                if (window.apiToast)
+                    window.apiToast(
+                        'Error: ' + ((r.data && r.data.error) || 'desconocido'),
+                        'error'
+                    );
                 btn.disabled = false;
             }
         } catch (err) {
@@ -216,7 +248,11 @@ export default class extends Controller {
                 if (this._addUserModal) this._addUserModal.close();
                 this.loadUsers();
             } else {
-                if (window.apiToast) window.apiToast('Error: ' + ((r.data && r.data.error) || 'desconocido'), 'error');
+                if (window.apiToast)
+                    window.apiToast(
+                        'Error: ' + ((r.data && r.data.error) || 'desconocido'),
+                        'error'
+                    );
             }
         } catch (err) {
             if (window.apiToast) window.apiToast('Error: ' + err.message, 'error');

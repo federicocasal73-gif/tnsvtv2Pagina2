@@ -61,7 +61,9 @@ export default class extends Controller {
                 try {
                     await navigator.share({ title: 'Mi perfil en T.N.S.V.T', url });
                     return;
-                } catch (e) { /* user cancelled, fall through */ }
+                } catch (e) {
+                    /* user cancelled, fall through */
+                }
             }
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(url);
@@ -172,8 +174,8 @@ export default class extends Controller {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: editName ? editName.value : '',
-                    notification_sound: editSound ? editSound.value : 'chime'
-                })
+                    notification_sound: editSound ? editSound.value : 'chime',
+                }),
             });
             const data = await r.json();
 
@@ -208,7 +210,8 @@ export default class extends Controller {
             const pnlEl = document.getElementById('js-pnl');
             if (pnlEl) {
                 pnlEl.textContent = (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toFixed(0);
-                pnlEl.className = 'text-lg font-bold ' + (pnl >= 0 ? 'text-green-400' : 'text-red-400');
+                pnlEl.className =
+                    'text-lg font-bold ' + (pnl >= 0 ? 'text-green-400' : 'text-red-400');
             }
         } catch (e) {}
     }

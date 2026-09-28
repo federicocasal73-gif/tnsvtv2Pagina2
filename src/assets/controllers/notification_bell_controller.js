@@ -94,7 +94,10 @@ export default class extends Controller {
     }
 
     escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+        );
     }
 
     async load() {
@@ -104,7 +107,10 @@ export default class extends Controller {
         this.renderCount(0);
 
         try {
-            const r = await window.apiFetch('/api/notifications?user_code=' + encodeURIComponent(this.me()), { silent: true });
+            const r = await window.apiFetch(
+                '/api/notifications?user_code=' + encodeURIComponent(this.me()),
+                { silent: true }
+            );
             if (!r.ok || !Array.isArray(r.data)) {
                 listEl.innerHTML = '<p class="notif-popover-placeholder">Sin notificaciones</p>';
                 return;
@@ -135,20 +141,22 @@ export default class extends Controller {
         this.renderCount(unread);
 
         if (notifs.length === 0) {
-            listEl.innerHTML = '<p class="notif-popover-placeholder">Sin notificaciones todavía</p>';
+            listEl.innerHTML =
+                '<p class="notif-popover-placeholder">Sin notificaciones todavía</p>';
             return;
         }
 
         const recent = notifs.slice(0, MAX_ITEMS);
-        listEl.innerHTML = recent.map((n) => {
-            const icon = ICONS[n.type] || ICONS[n.type?.split('_')[0]] || 'notifications';
-            let link = n.link || LINKS[n.type] || '/feed';
-            // Deep-link task:taskId → /sanctum/tasks/{id}
-            if (link.startsWith('task:')) link = '/sanctum/tasks/' + link.split(':')[1];
-            if (link.startsWith('chat:')) link = '/chat';
-            const time = n.ts ? new Date(n.ts).toLocaleString() : '';
-            const unreadClass = n.read ? '' : 'notif-popover-item-unread';
-            return `<a href="${this.escapeHtml(link)}" class="notif-popover-item ${unreadClass}">
+        listEl.innerHTML = recent
+            .map((n) => {
+                const icon = ICONS[n.type] || ICONS[n.type?.split('_')[0]] || 'notifications';
+                let link = n.link || LINKS[n.type] || '/feed';
+                // Deep-link task:taskId → /sanctum/tasks/{id}
+                if (link.startsWith('task:')) link = '/sanctum/tasks/' + link.split(':')[1];
+                if (link.startsWith('chat:')) link = '/chat';
+                const time = n.ts ? new Date(n.ts).toLocaleString() : '';
+                const unreadClass = n.read ? '' : 'notif-popover-item-unread';
+                return `<a href="${this.escapeHtml(link)}" class="notif-popover-item ${unreadClass}">
                         <span class="material-symbols-elev notif-popover-icon" aria-hidden="true">${icon}</span>
                         <span class="notif-popover-main">
                             <span class="notif-popover-text">${this.escapeHtml(n.text || '')}</span>
@@ -156,14 +164,18 @@ export default class extends Controller {
                         </span>
                         ${n.read ? '' : '<span class="notif-popover-new">NUEVO</span>'}
                     </a>`;
-        }).join('');
+            })
+            .join('');
     }
 
     async markAll() {
-        const r = await window.apiFetch('/api/notifications/read-all?user_code=' + encodeURIComponent(this.me()), {
-            method: 'PUT',
-            silent: true,
-        });
+        const r = await window.apiFetch(
+            '/api/notifications/read-all?user_code=' + encodeURIComponent(this.me()),
+            {
+                method: 'PUT',
+                silent: true,
+            }
+        );
         if (r.ok) {
             if (window.apiToast) window.apiToast('Todas marcadas como leídas', 'success');
             this.load();

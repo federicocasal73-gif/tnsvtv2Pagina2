@@ -66,8 +66,8 @@ export default class extends Controller {
             if (!data.success) return;
 
             const total = data.entries.length;
-            const success = data.entries.filter(e => e.result === 'success').length;
-            const failed = data.entries.filter(e => e.result === 'fail').length;
+            const success = data.entries.filter((e) => e.result === 'success').length;
+            const failed = data.entries.filter((e) => e.result === 'fail').length;
 
             const elTotal = document.getElementById('stat-total');
             const elSuccess = document.getElementById('stat-success');
@@ -84,20 +84,24 @@ export default class extends Controller {
         if (!list) return;
 
         if (!entries || entries.length === 0) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas de audit log</p>';
+            list.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)] py-8">Sin entradas de audit log</p>';
             const elPag = document.getElementById('pagination');
             if (elPag) elPag.innerHTML = '';
             return;
         }
 
         const filtered = this.filter.search
-            ? entries.filter(e => e.action.toLowerCase().includes(this.filter.search.toLowerCase()))
+            ? entries.filter((e) =>
+                  e.action.toLowerCase().includes(this.filter.search.toLowerCase())
+              )
             : entries;
 
-        list.innerHTML = filtered.map(e => {
-            const iconClass = e.result === 'success' ? 'success' : 'fail';
-            const iconName = e.result === 'success' ? 'check_circle' : 'cancel';
-            return `
+        list.innerHTML = filtered
+            .map((e) => {
+                const iconClass = e.result === 'success' ? 'success' : 'fail';
+                const iconName = e.result === 'success' ? 'check_circle' : 'cancel';
+                return `
             <div class="audit-entry">
                 <div class="audit-icon ${iconClass}">
                     <span class="material-symbols-elev">${iconName}</span>
@@ -115,7 +119,8 @@ export default class extends Controller {
                 </div>
                 <p class="text-xs text-[var(--outline-elev)] font-mono whitespace-nowrap">${(e.time || '').substring(0, 16).replace('T', ' ')}</p>
             </div>`;
-        }).join('');
+            })
+            .join('');
 
         this.renderPagination(pagination);
     }
@@ -131,11 +136,17 @@ export default class extends Controller {
 
         const html = [];
         if (p.page > 1) {
-            html.push(`<button class="ui-btn ui-btn ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page - 1}">← Anterior</button>`);
+            html.push(
+                `<button class="ui-btn ui-btn ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page - 1}">← Anterior</button>`
+            );
         }
-        html.push(`<span class="px-3 text-[var(--var(--on-surface-elev))]">Página ${p.page} de ${p.pages} · ${p.total} total</span>`);
+        html.push(
+            `<span class="px-3 text-[var(--var(--on-surface-elev))]">Página ${p.page} de ${p.pages} · ${p.total} total</span>`
+        );
         if (p.page < p.pages) {
-            html.push(`<button class="ui-btn ui-btn ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page + 1}">Siguiente →</button>`);
+            html.push(
+                `<button class="ui-btn ui-btn ghost text-xs" data-action="click->audit#goToPage" data-page="${p.page + 1}">Siguiente →</button>`
+            );
         }
         elPag.innerHTML = html.join('');
     }
@@ -146,6 +157,9 @@ export default class extends Controller {
     }
 
     escapeHtml(s) {
-        return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        return String(s || '').replace(
+            /[&<>"']/g,
+            (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+        );
     }
 }

@@ -46,7 +46,7 @@
     border-color: rgba(242, 202, 80, 0.2);
 }
 .stat-mini-value {
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--gold-elev, #f2ca50);
@@ -135,10 +135,16 @@
     margin-top: 1.5rem;
 }
 
-
 /* ─── L79: stat-mini on very small screens ─── */
 @media (max-width: 360px) {
-    .stat-mini { padding: 0.5rem 0.25rem; }
-    .stat-mini-value { font-size: 1rem; }
-    .stat-mini-label { font-size: 0.58rem; letter-spacing: 0.06em; }
+    .stat-mini {
+        padding: 0.5rem 0.25rem;
+    }
+    .stat-mini-value {
+        font-size: 1rem;
+    }
+    .stat-mini-label {
+        font-size: 0.58rem;
+        letter-spacing: 0.06em;
+    }
 }

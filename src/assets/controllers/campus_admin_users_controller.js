@@ -6,70 +6,90 @@ import { Controller } from '@hotwired/stimulus';
  * Mejora progresiva: pinta las barras sobre las cards server-side y añade search/sort/paginación.
  */
 export default class extends Controller {
-  static targets = ['grid', 'search', 'sort', 'prev', 'next', 'pageInfo', 'count'];
+    static targets = ['grid', 'search', 'sort', 'prev', 'next', 'pageInfo', 'count'];
 
-  connect() {
-    this.page = 1;
-    this.limit = 20;
-    this.sort = 'name_asc';
-    this.search = '';
-    this._deb = null;
-    this.load();
-  }
-
-  onSearch() {
-    clearTimeout(this._deb);
-    this._deb = setTimeout(() => {
-      this.search = this.searchTarget.value.trim();
-      this.page = 1;
-      this.load();
-    }, 300);
-  }
-
-  onSort() {
-    this.sort = this.sortTarget.value;
-    this.page = 1;
-    this.load();
-  }
-
-  prev() { if (this.page > 1) { this.page -= 1; this.load(); } }
-  next() { this.page += 1; this.load(); }
-
-  async load() {
-    const params = new URLSearchParams({
-      page: String(this.page),
-      limit: String(this.limit),
-      sort: this.sort,
-    });
-    if (this.search) params.set('search', this.search);
-    const res = await window.apiFetch(`/api/campus/admin/overview?${params.toString()}`, { silent: true });
-    if (!res.ok || !res.data) return;
-    this.render(res.data);
-  }
-
-  esc(s) {
-    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-
-  render(data) {
-    const users = data.users || [];
-    if (this.hasCountTarget) this.countTarget.textContent = `${data.total ?? users.length} alumnos · ${data.total_lessons_catalog ?? 0} lecciones`;
-    if (this.hasPageInfoTarget) this.pageInfoTarget.textContent = `Página ${data.page ?? this.page} / ${data.pages ?? 1}`;
-    if (this.hasPrevTarget) this.prevTarget.disabled = (data.page ?? 1) <= 1;
-    if (this.hasNextTarget) this.nextTarget.disabled = (data.page ?? 1) >= (data.pages ?? 1);
-
-    if (!this.hasGridTarget) return;
-    if (users.length === 0) {
-      this.gridTarget.innerHTML = '<p class="text-sm opacity-70">Sin alumnos para este filtro.</p>';
-      return;
+    connect() {
+        this.page = 1;
+        this.limit = 20;
+        this.sort = 'name_asc';
+        this.search = '';
+        this._deb = null;
+        this.load();
     }
-    this.gridTarget.innerHTML = users.map((u) => {
-      const pct = u.progress_percent ?? 0;
-      const avg = u.average_grade !== null && u.average_grade !== undefined ? ` · Nota ${this.esc(u.average_grade)}` : '';
-      const initial = this.esc((u.name || '?').slice(0, 1).toUpperCase());
-      // NOTE: user code is a login credential (code+name) — never paint it on cards.
-      // Full code/email live only on the detail page (/users/{code}).
-      return `<article class="ui-card ui-card-elevated ui-card-padding-md campus-admin-user-card">
+
+    onSearch() {
+        clearTimeout(this._deb);
+        this._deb = setTimeout(() => {
+            this.search = this.searchTarget.value.trim();
+            this.page = 1;
+            this.load();
+        }, 300);
+    }
+
+    onSort() {
+        this.sort = this.sortTarget.value;
+        this.page = 1;
+        this.load();
+    }
+
+    prev() {
+        if (this.page > 1) {
+            this.page -= 1;
+            this.load();
+        }
+    }
+    next() {
+        this.page += 1;
+        this.load();
+    }
+
+    async load() {
+        const params = new URLSearchParams({
+            page: String(this.page),
+            limit: String(this.limit),
+            sort: this.sort,
+        });
+        if (this.search) params.set('search', this.search);
+        const res = await window.apiFetch(`/api/campus/admin/overview?${params.toString()}`, {
+            silent: true,
+        });
+        if (!res.ok || !res.data) return;
+        this.render(res.data);
+    }
+
+    esc(s) {
+        return String(s ?? '').replace(
+            /[&<>"']/g,
+            (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+        );
+    }
+
+    render(data) {
+        const users = data.users || [];
+        if (this.hasCountTarget)
+            this.countTarget.textContent = `${data.total ?? users.length} alumnos · ${data.total_lessons_catalog ?? 0} lecciones`;
+        if (this.hasPageInfoTarget)
+            this.pageInfoTarget.textContent = `Página ${data.page ?? this.page} / ${data.pages ?? 1}`;
+        if (this.hasPrevTarget) this.prevTarget.disabled = (data.page ?? 1) <= 1;
+        if (this.hasNextTarget) this.nextTarget.disabled = (data.page ?? 1) >= (data.pages ?? 1);
+
+        if (!this.hasGridTarget) return;
+        if (users.length === 0) {
+            this.gridTarget.innerHTML =
+                '<p class="text-sm opacity-70">Sin alumnos para este filtro.</p>';
+            return;
+        }
+        this.gridTarget.innerHTML = users
+            .map((u) => {
+                const pct = u.progress_percent ?? 0;
+                const avg =
+                    u.average_grade !== null && u.average_grade !== undefined
+                        ? ` · Nota ${this.esc(u.average_grade)}`
+                        : '';
+                const initial = this.esc((u.name || '?').slice(0, 1).toUpperCase());
+                // NOTE: user code is a login credential (code+name) — never paint it on cards.
+                // Full code/email live only on the detail page (/users/{code}).
+                return `<article class="ui-card ui-card-elevated ui-card-padding-md campus-admin-user-card">
         <header class="ui-card-header">
           <div class="campus-admin-user-avatar"><span>${initial}</span></div>
           <div><h3 class="ui-card-title">${this.esc(u.name || '—')}</h3></div>
@@ -88,6 +108,7 @@ export default class extends Controller {
           </a>
         </footer>
       </article>`;
-    }).join('');
-  }
+            })
+            .join('');
+    }
 }

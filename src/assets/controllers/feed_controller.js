@@ -40,34 +40,61 @@ const CAT_LABEL = {
 const SAVED_KEY = 'tnsvt_feed_saved';
 
 function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[m]));
+    return String(s == null ? '' : s).replace(
+        /[&<>"']/g,
+        (m) =>
+            ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            })[m]
+    );
 }
 
 function initials(name) {
-    return (name || '?').split(/\s+/).map((p) => p[0]).join('').slice(0, 2).toUpperCase();
+    return (name || '?')
+        .split(/\s+/)
+        .map((p) => p[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
 }
 
 function relTime(iso) {
     try {
         const d = new Date(iso);
         const diff = Math.floor((Date.now() - d.getTime()) / 1000);
-        if (diff < 60)    return 'hace ' + diff + 's';
-        if (diff < 3600)  return 'hace ' + Math.floor(diff / 60) + 'm';
+        if (diff < 60) return 'hace ' + diff + 's';
+        if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + 'm';
         if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + 'h';
         return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short' });
-    } catch (e) { return ''; }
+    } catch (e) {
+        return '';
+    }
 }
 
-function catClass(cat)  { return CAT_CLASS[cat] || 'cat-general'; }
-function catLabel(cat)  { return CAT_LABEL[cat] || cat; }
+function catClass(cat) {
+    return CAT_CLASS[cat] || 'cat-general';
+}
+function catLabel(cat) {
+    return CAT_LABEL[cat] || cat;
+}
 
 export default class extends Controller {
     static targets = [
-        'list', 'loading', 'loadMore', 'sentinel',
-        'text', 'count', 'submit', 'chips',
-        'tabs', 'sideConversations', 'sideTop',
+        'list',
+        'loading',
+        'loadMore',
+        'sentinel',
+        'text',
+        'count',
+        'submit',
+        'chips',
+        'tabs',
+        'sideConversations',
+        'sideTop',
         'backToTop',
     ];
 
@@ -93,10 +120,14 @@ export default class extends Controller {
             this.loadSideConversations();
             this.loadSideTop();
         } else {
-            window.addEventListener('tnsvt:user-loaded', () => {
-                this.loadSideConversations();
-                this.loadSideTop();
-            }, { once: true });
+            window.addEventListener(
+                'tnsvt:user-loaded',
+                () => {
+                    this.loadSideConversations();
+                    this.loadSideTop();
+                },
+                { once: true }
+            );
         }
     }
 
@@ -109,7 +140,9 @@ export default class extends Controller {
     }
 
     persistSaved() {
-        try { localStorage.setItem(SAVED_KEY, JSON.stringify(Array.from(this.savedIds))); } catch (e) {}
+        try {
+            localStorage.setItem(SAVED_KEY, JSON.stringify(Array.from(this.savedIds)));
+        } catch (e) {}
     }
 
     // ─── Wire-up ──────────────────────────────────────────────
@@ -143,10 +176,14 @@ export default class extends Controller {
             this.backToTopTarget.addEventListener('click', () => {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-            window.addEventListener('scroll', () => {
-                if (!this.hasBackToTopTarget) return;
-                this.backToTopTarget.style.opacity = window.scrollY > 400 ? '1' : '0';
-            }, { passive: true });
+            window.addEventListener(
+                'scroll',
+                () => {
+                    if (!this.hasBackToTopTarget) return;
+                    this.backToTopTarget.style.opacity = window.scrollY > 400 ? '1' : '0';
+                },
+                { passive: true }
+            );
         }
     }
 
@@ -187,7 +224,9 @@ export default class extends Controller {
             this.countTarget.classList.toggle('is-danger', len > max * 0.97);
         }
         if (this.hasSubmitTarget) {
-            this.submitTarget.disabled = !(this.textTarget.value.trim().length > 0 && this.activeCat);
+            this.submitTarget.disabled = !(
+                this.textTarget.value.trim().length > 0 && this.activeCat
+            );
         }
     }
 
@@ -217,7 +256,11 @@ export default class extends Controller {
                 this.textTarget.value = '';
                 await this.loadFeed();
             } else {
-                if (window.apiToast) window.apiToast(r.data && r.data.error ? r.data.error : 'Error al publicar', 'error');
+                if (window.apiToast)
+                    window.apiToast(
+                        r.data && r.data.error ? r.data.error : 'Error al publicar',
+                        'error'
+                    );
             }
         } finally {
             this.submitTarget.textContent = origLabel;
@@ -244,9 +287,12 @@ export default class extends Controller {
             const r = await window.apiFetch(url, { silent: true });
             if (!r.ok || !r.data || !Array.isArray(r.data)) {
                 if (!append) {
-                    if (window.apiEmpty) window.apiEmpty(this.listTarget, {
-                        icon: 'cloud_off', message: 'Sin datos disponibles', size: 'illustrated',
-                    });
+                    if (window.apiEmpty)
+                        window.apiEmpty(this.listTarget, {
+                            icon: 'cloud_off',
+                            message: 'Sin datos disponibles',
+                            size: 'illustrated',
+                        });
                 }
                 this.feedHasMore = false;
                 return;
@@ -264,7 +310,8 @@ export default class extends Controller {
             }
         } catch (e) {
             if (!append && this.hasListTarget) {
-                this.listTarget.innerHTML = '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">cloud_off</span><p>Sin conexión.</p></div>';
+                this.listTarget.innerHTML =
+                    '<div class="feed-empty"><span class="material-symbols-elev feed-empty-icon">cloud_off</span><p>Sin conexión.</p></div>';
             }
             this.feedHasMore = false;
         } finally {
@@ -277,11 +324,17 @@ export default class extends Controller {
         const cat = p.cat || 'general';
         const cls = catClass(cat);
         const sig = p.signal;
-        const sigHtml = sig && typeof sig === 'object'
-            ? `<div class="feed-post-signal">${Object.entries(sig).sort(([a],[b])=>String(a).localeCompare(String(b))).slice(0,4)
-                .map(([k,v]) => `<div><div class="feed-post-signal-field-label">${esc(k.replace(/_/g,' '))}</div><div class="feed-post-signal-field-value gold">${esc(String(v))}</div></div>`)
-                .join('')}</div>`
-            : '';
+        const sigHtml =
+            sig && typeof sig === 'object'
+                ? `<div class="feed-post-signal">${Object.entries(sig)
+                      .sort(([a], [b]) => String(a).localeCompare(String(b)))
+                      .slice(0, 4)
+                      .map(
+                          ([k, v]) =>
+                              `<div><div class="feed-post-signal-field-label">${esc(k.replace(/_/g, ' '))}</div><div class="feed-post-signal-field-value gold">${esc(String(v))}</div></div>`
+                      )
+                      .join('')}</div>`
+                : '';
         const photoHtml = p.photo
             ? `<img class="feed-post-photo lightbox-trigger" data-lightbox-group="feed-post" data-lightbox-name="${esc(p.user || 'usuario')}" style="width:auto;height:auto;max-width:100%;max-height:480px;border-radius:0.5rem;" src="${esc(p.photo)}" alt="captura de ${esc(p.user || 'usuario')}" loading="lazy" decoding="async" />`
             : '';
@@ -299,9 +352,13 @@ export default class extends Controller {
                         <span>· ${esc(relTime(p.created_at))}</span>
                     </div>
                 </div>
-                ${myPost ? `<button type="button" class="feed-action feed-post-delete" data-id="${p.id}" aria-label="Eliminar publicación">
+                ${
+                    myPost
+                        ? `<button type="button" class="feed-action feed-post-delete" data-id="${p.id}" aria-label="Eliminar publicación">
                     <span class="material-symbols-elev icon-size-sm">delete</span>
-                </button>` : ''}
+                </button>`
+                        : ''
+                }
             </header>
             <div class="feed-post-body">${esc(p.text || '')}</div>
             ${sigHtml}${photoHtml}
@@ -319,7 +376,9 @@ export default class extends Controller {
                 </button>
             </div>
             <div class="feed-comments" data-id="${p.id}" data-collapsed="true">
-                ${comments.map((c) => `
+                ${comments
+                    .map(
+                        (c) => `
                     <div class="feed-comment">
                         <div class="feed-comment-avatar">${esc(initials(c.author))}</div>
                         <div class="feed-comment-body">
@@ -328,7 +387,9 @@ export default class extends Controller {
                             <span class="feed-comment-time">${esc(relTime(c.date))}</span>
                         </div>
                     </div>
-                `).join('')}
+                `
+                    )
+                    .join('')}
                 <form class="feed-comment-form" data-id="${p.id}">
                     <input type="text" data-test-id="feed-comment-input" class="feed-comment-input" placeholder="Comentá (use @CODIGO para mencionar)" maxlength="500" />
                     <button type="submit" class="feed-comment-submit">Comentar</button>
@@ -354,7 +415,10 @@ export default class extends Controller {
     }
 
     appendFeed(posts, meCode) {
-        if (!this.hasListTarget || !posts.length) { this.feedHasMore = false; return; }
+        if (!this.hasListTarget || !posts.length) {
+            this.feedHasMore = false;
+            return;
+        }
         const frag = document.createElement('div');
         frag.innerHTML = posts.map((p) => this.renderPostHtml(p, meCode)).join('');
         while (frag.firstChild) this.listTarget.appendChild(frag.firstChild);
@@ -394,7 +458,8 @@ export default class extends Controller {
             const countEl = btn.querySelector('[data-likes-count]');
             if (countEl) countEl.textContent = r.data.likes;
             btn.classList.toggle('liked');
-            if (!liked) this.likedIds.add(id); else this.likedIds.delete(id);
+            if (!liked) this.likedIds.add(id);
+            else this.likedIds.delete(id);
         }
     }
 
@@ -442,21 +507,29 @@ export default class extends Controller {
             this.loadFeed();
         } else {
             if (window.apiToast) {
-                window.apiToast(r.data && r.data.error ? r.data.error : 'Error al comentar', 'error');
+                window.apiToast(
+                    r.data && r.data.error ? r.data.error : 'Error al comentar',
+                    'error'
+                );
             }
         }
     }
 
     async deletePost(id) {
-        if (!await window.apiConfirm('¿Eliminar esta publicación?', {
-            title: 'Eliminar publicación', variant: 'danger',
-        })) return;
+        if (
+            !(await window.apiConfirm('¿Eliminar esta publicación?', {
+                title: 'Eliminar publicación',
+                variant: 'danger',
+            }))
+        )
+            return;
         try {
             const r = await window.apiFetch(`/api/feed/${id}`, { method: 'DELETE' });
             if (r.ok) {
                 this.loadFeed();
             } else {
-                if (window.apiToast) window.apiToast((r.data && r.data.error) || 'Error al eliminar', 'error');
+                if (window.apiToast)
+                    window.apiToast((r.data && r.data.error) || 'Error al eliminar', 'error');
             }
         } catch (e) {
             console.error('[feed] delete error', e);
@@ -479,15 +552,19 @@ export default class extends Controller {
         try {
             const r = await window.apiFetch('/api/chat/conversations', { silent: true });
             if (!r.ok || !r.data || !Array.isArray(r.data)) {
-                this.sideConversationsTarget.innerHTML = '<div class="feed-loading">Sin datos</div>';
+                this.sideConversationsTarget.innerHTML =
+                    '<div class="feed-loading">Sin datos</div>';
                 return;
             }
             const items = r.data.slice(0, 5);
             if (items.length === 0) {
-                this.sideConversationsTarget.innerHTML = '<div class="feed-loading" style="font-style:normal;">Sin conversaciones aún</div>';
+                this.sideConversationsTarget.innerHTML =
+                    '<div class="feed-loading" style="font-style:normal;">Sin conversaciones aún</div>';
                 return;
             }
-            this.sideConversationsTarget.innerHTML = items.map((c) => `
+            this.sideConversationsTarget.innerHTML = items
+                .map(
+                    (c) => `
                 <a class="feed-side-row" href="/chat" style="text-decoration:none;color:inherit;">
                     <div class="feed-avatar" style="width:30px;height:30px;font-size:0.75rem;">${esc(initials(c.other_user_name || c.title || c.name || 'C'))}</div>
                     <div style="flex-grow:1;min-width:0;">
@@ -495,7 +572,9 @@ export default class extends Controller {
                         <div class="feed-side-meta">${esc((c.last_message?.content || c.last_message || '').slice(0, 40))}</div>
                     </div>
                 </a>
-            `).join('');
+            `
+                )
+                .join('');
         } catch (e) {
             this.sideConversationsTarget.innerHTML = '<div class="feed-loading">Sin conexión</div>';
         }
@@ -517,17 +596,20 @@ export default class extends Controller {
                 const likes = Number(p.likes) || 0;
                 const comments = Array.isArray(p.comments)
                     ? p.comments.length
-                    : (Number(p.comment_count) || 0);
+                    : Number(p.comment_count) || 0;
                 tally[name].score += 1 + likes + 2 * comments;
             });
             const ranking = Object.entries(tally)
                 .sort((a, b) => b[1].score - a[1].score)
                 .slice(0, 5);
             if (ranking.length === 0) {
-                this.sideTopTarget.innerHTML = '<div class="feed-loading" style="font-style:normal;">Aún sin rankings</div>';
+                this.sideTopTarget.innerHTML =
+                    '<div class="feed-loading" style="font-style:normal;">Aún sin rankings</div>';
                 return;
             }
-            this.sideTopTarget.innerHTML = ranking.map(([name, info]) => `
+            this.sideTopTarget.innerHTML = ranking
+                .map(
+                    ([name, info]) => `
                 <div class="feed-side-row">
                     <div class="feed-avatar" style="width:30px;height:30px;font-size:0.75rem;">${esc(initials(name))}</div>
                     <div style="flex-grow:1;min-width:0;">
@@ -535,7 +617,9 @@ export default class extends Controller {
                         <div class="feed-side-meta">${info.posts} posts · score ${info.score}</div>
                     </div>
                 </div>
-            `).join('');
+            `
+                )
+                .join('');
         } catch (e) {
             this.sideTopTarget.innerHTML = '<div class="feed-loading">Sin conexión</div>';
         }

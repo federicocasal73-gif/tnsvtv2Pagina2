@@ -9,23 +9,32 @@ import { Controller } from '@hotwired/stimulus';
  */
 const SEVERITY_RANK = { danger: 3, warning: 2, info: 1 };
 const SEVERITY_VISUAL = {
-    danger:  { icon: 'error',   pillClass: 'status-inactive', color: '#f87171' },
-    warning: { icon: 'warning', pillClass: 'status-pending',  color: 'var(--gold-elev)' },
-    info:    { icon: 'info',    pillClass: 'status-active',   color: 'var(--violet)' },
+    danger: { icon: 'error', pillClass: 'status-inactive', color: '#f87171' },
+    warning: { icon: 'warning', pillClass: 'status-pending', color: 'var(--gold-elev)' },
+    info: { icon: 'info', pillClass: 'status-active', color: 'var(--violet)' },
 };
 const TIER_VISUAL = {
-    elite:   { label: 'ELITE',   color: '#ffe088' },
-    strong:  { label: 'STRONG',  color: 'var(--gold-elev)' },
-    steady:  { label: 'STEADY',  color: 'var(--violet)' },
+    elite: { label: 'ELITE', color: '#ffe088' },
+    strong: { label: 'STRONG', color: 'var(--gold-elev)' },
+    steady: { label: 'STEADY', color: 'var(--violet)' },
     caution: { label: 'CAUTION', color: 'var(--gold-elev)' },
-    risk:    { label: 'RISK',    color: '#f87171' },
+    risk: { label: 'RISK', color: '#f87171' },
 };
 
 export default class extends Controller {
     static targets = [
-        'refreshBtn', 'lastRefresh', 'loadingState', 'errorState',
-        'content', 'scoreValue', 'scoreTier', 'scoreBreakdown', 'scoreComputedAt',
-        'signalsList', 'signalsEmpty', 'signalCountBadge',
+        'refreshBtn',
+        'lastRefresh',
+        'loadingState',
+        'errorState',
+        'content',
+        'scoreValue',
+        'scoreTier',
+        'scoreBreakdown',
+        'scoreComputedAt',
+        'signalsList',
+        'signalsEmpty',
+        'signalCountBadge',
     ];
 
     connect() {
@@ -39,14 +48,16 @@ export default class extends Controller {
         }
     }
 
-    refresh() { this.load(); }
+    refresh() {
+        this.load();
+    }
 
     async load() {
         if (this.hasErrorStateTarget) this.errorStateTarget.hidden = true;
 
         const [signalsRes, scoreRes] = await Promise.all([
             window.apiFetch('/api/guardian/signals', { silent: true }),
-            window.apiFetch('/api/guardian/score',   { silent: true }),
+            window.apiFetch('/api/guardian/score', { silent: true }),
         ]);
 
         if (!signalsRes.ok || !scoreRes.ok) {
@@ -66,7 +77,7 @@ export default class extends Controller {
     }
 
     renderScore(data) {
-        if (this.hasScoreValueTarget) this.scoreValueTarget.textContent = (data.score ?? 0);
+        if (this.hasScoreValueTarget) this.scoreValueTarget.textContent = data.score ?? 0;
 
         const tierVisual = TIER_VISUAL[data.tier] || { label: '—', color: 'var(--outline-elev)' };
         if (this.hasScoreTierTarget) {
@@ -76,16 +87,17 @@ export default class extends Controller {
         }
 
         if (this.hasScoreValueTarget) {
-            if (data.score >= 75)        this.scoreValueTarget.style.color = tierVisual.color;
-            else if (data.score >= 40)   this.scoreValueTarget.style.color = 'var(--gold-elev)';
-            else                          this.scoreValueTarget.style.color = '#f87171';
+            if (data.score >= 75) this.scoreValueTarget.style.color = tierVisual.color;
+            else if (data.score >= 40) this.scoreValueTarget.style.color = 'var(--gold-elev)';
+            else this.scoreValueTarget.style.color = '#f87171';
         }
 
         if (this.hasScoreBreakdownTarget) {
             if (Array.isArray(data.breakdown) && data.breakdown.length > 0) {
-                this.scoreBreakdownTarget.innerHTML = data.breakdown.map((item) => {
-                    const sign = item.delta > 0 ? '+' : '';
-                    return `
+                this.scoreBreakdownTarget.innerHTML = data.breakdown
+                    .map((item) => {
+                        const sign = item.delta > 0 ? '+' : '';
+                        return `
                         <li class="flex items-start gap-2 py-1.5 border-b border-[var(--outline-variant-elev)] border-opacity-30 last:border-0">
                             <span class="material-symbols-elev icon-size-xs flex-shrink-0" style="color: #f87171;">trending_down</span>
                             <div class="flex-1 min-w-0">
@@ -95,9 +107,11 @@ export default class extends Controller {
                             <span class="font-mono text-sm flex-shrink-0" style="color: #f87171;">${sign}${item.delta}</span>
                         </li>
                     `;
-                }).join('');
+                    })
+                    .join('');
             } else {
-                this.scoreBreakdownTarget.innerHTML = '<li class="text-[var(--outline-elev)] py-2">Sin factores negativos.</li>';
+                this.scoreBreakdownTarget.innerHTML =
+                    '<li class="text-[var(--outline-elev)] py-2">Sin factores negativos.</li>';
             }
         }
 
@@ -111,7 +125,8 @@ export default class extends Controller {
     renderSignals(signals) {
         if (!this.hasSignalsListTarget) return;
         const emptyEl = this.hasSignalsEmptyTarget ? this.signalsEmptyTarget : null;
-        if (this.hasSignalCountBadgeTarget) this.signalCountBadgeTarget.textContent = signals.length;
+        if (this.hasSignalCountBadgeTarget)
+            this.signalCountBadgeTarget.textContent = signals.length;
 
         // Wipe every existing dynamic child except the empty placeholder
         Array.from(this.signalsListTarget.children).forEach((child) => {
@@ -124,20 +139,23 @@ export default class extends Controller {
         }
         if (emptyEl) emptyEl.hidden = true;
 
-        const sorted = signals.slice().sort((a, b) =>
-            (SEVERITY_RANK[b.severity] || 0) - (SEVERITY_RANK[a.severity] || 0));
+        const sorted = signals
+            .slice()
+            .sort((a, b) => (SEVERITY_RANK[b.severity] || 0) - (SEVERITY_RANK[a.severity] || 0));
 
         sorted.forEach((sig) => {
             const visual = SEVERITY_VISUAL[sig.severity] || SEVERITY_VISUAL.info;
-            const actionHtml = sig.action_label && sig.action_route
-                ? `<a href="${this.escape(sig.action_route)}" class="text-xs text-[var(--gold-elev)] hover:underline mt-2 inline-flex items-center gap-1">
+            const actionHtml =
+                sig.action_label && sig.action_route
+                    ? `<a href="${this.escape(sig.action_route)}" class="text-xs text-[var(--gold-elev)] hover:underline mt-2 inline-flex items-center gap-1">
                      ${this.escape(sig.action_label)}
                      <span class="material-symbols-elev icon-size-xs">arrow_forward</span>
                    </a>`
-                : '';
+                    : '';
 
             const card = document.createElement('div');
-            card.className = 'p-4 rounded-lg border border-[var(--outline-variant-elev)] bg-[var(--glass-bg-elev)]';
+            card.className =
+                'p-4 rounded-lg border border-[var(--outline-variant-elev)] bg-[var(--glass-bg-elev)]';
             card.innerHTML = `
                 <div class="flex items-start gap-3">
                     <span class="material-symbols-elev flex-shrink-0" style="color: ${visual.color}; font-variation-settings: 'FILL' 1;">${visual.icon}</span>

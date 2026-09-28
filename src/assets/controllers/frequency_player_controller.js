@@ -19,13 +19,22 @@ const RECENT_MAX = 5;
 
 export default class extends Controller {
     static targets = [
-        'playBtn', 'stopBtn',
-        'durationSelect', 'addFreqBtn',
-        'freqDisplay', 'freqNameDisplay',
-        'timerDisplay', 'visualizer',
-        'statMinutes', 'statHours', 'statActive',
-        'recentFreqs', 'presetsGrid', 'myFreqsList',
-        'myFreqName', 'myFreqHz',
+        'playBtn',
+        'stopBtn',
+        'durationSelect',
+        'addFreqBtn',
+        'freqDisplay',
+        'freqNameDisplay',
+        'timerDisplay',
+        'visualizer',
+        'statMinutes',
+        'statHours',
+        'statActive',
+        'recentFreqs',
+        'presetsGrid',
+        'myFreqsList',
+        'myFreqName',
+        'myFreqHz',
     ];
 
     static values = {
@@ -129,7 +138,7 @@ export default class extends Controller {
         this.selectFrequency({
             id: null,
             frequency: parseInt(btn.dataset.recentFreq, 10),
-            name: btn.dataset.recentName || (btn.dataset.recentFreq + ' Hz'),
+            name: btn.dataset.recentName || btn.dataset.recentFreq + ' Hz',
             type: 'recent',
         });
     }
@@ -140,7 +149,9 @@ export default class extends Controller {
         if (!this.hasPresetsGridTarget) return;
         const r = await window.apiFetch('/api/frequencies/presets', { silent: true });
         if (!r.ok || !r.data || !r.data.success) return;
-        const html = r.data.presets.map((p) => `
+        const html = r.data.presets
+            .map(
+                (p) => `
             <button type="button"
                 class="preset-card glass-card-elev p-4 text-left hover:gold-glow-elev transition-all"
                 data-freq="${p.frequency}" data-name="${this.escape(p.name)}"
@@ -149,7 +160,9 @@ export default class extends Controller {
                 <div class="text-sm text-[var(--on-surface-elev)] mb-2 line-clamp-2">${this.escape(p.name)}</div>
                 <div class="text-xs text-[var(--outline-elev)] uppercase tracking-wider">${this.escape(p.category || '')}</div>
             </button>
-        `).join('');
+        `
+            )
+            .join('');
         this.presetsGridTarget.innerHTML = html;
     }
 
@@ -159,10 +172,13 @@ export default class extends Controller {
         if (!r.ok || !r.data || !r.data.success) return;
         const list = r.data.frequencies || [];
         if (list.length === 0) {
-            this.myFreqsListTarget.innerHTML = '<p class="text-sm text-[var(--outline-elev)] text-center py-4">Sin frecuencias personalizadas aún.</p>';
+            this.myFreqsListTarget.innerHTML =
+                '<p class="text-sm text-[var(--outline-elev)] text-center py-4">Sin frecuencias personalizadas aún.</p>';
             return;
         }
-        this.myFreqsListTarget.innerHTML = list.map((f) => `
+        this.myFreqsListTarget.innerHTML = list
+            .map(
+                (f) => `
             <button type="button"
                 class="w-full text-left p-2 rounded glass-card-elev hover:gold-glow-elev"
                 data-freq="${f.frequency}" data-name="${this.escape(f.name)}"
@@ -172,15 +188,19 @@ export default class extends Controller {
                     <span class="text-sm font-mono text-[var(--gold-elev)]">${f.frequency} Hz</span>
                 </div>
             </button>
-        `).join('');
+        `
+            )
+            .join('');
     }
 
     async loadStats() {
         const r = await window.apiFetch('/api/frequencies/stats', { silent: true });
         if (!r.ok || !r.data || !r.data.success) return;
-        if (this.hasStatMinutesTarget) this.statMinutesTarget.textContent = r.data.totalMinutes ?? 0;
+        if (this.hasStatMinutesTarget)
+            this.statMinutesTarget.textContent = r.data.totalMinutes ?? 0;
         if (this.hasStatHoursTarget) this.statHoursTarget.textContent = r.data.totalHours ?? 0;
-        if (this.hasStatActiveTarget) this.statActiveTarget.textContent = r.data.activeSessions ?? 0;
+        if (this.hasStatActiveTarget)
+            this.statActiveTarget.textContent = r.data.activeSessions ?? 0;
     }
 
     // ─── Add custom frequency ────────────────────────────────────────
@@ -193,13 +213,15 @@ export default class extends Controller {
             if (window.apiToast) window.apiToast('Nombre y Hz (50-2000) requeridos', 'warning');
             return;
         }
-        const dup = Array.from(this.myFreqsListTarget.querySelectorAll('[data-freq]'))
-            .some((el) => parseInt(el.dataset.freq, 10) === hz);
+        const dup = Array.from(this.myFreqsListTarget.querySelectorAll('[data-freq]')).some(
+            (el) => parseInt(el.dataset.freq, 10) === hz
+        );
         if (dup) {
-            const ok = await (window.apiConfirm ? window.apiConfirm(
-                `Ya tenés una frecuencia en ${hz} Hz. ¿Crear otra igual?`,
-                { title: 'Frecuencia duplicada' }
-            ) : Promise.resolve(true));
+            const ok = await (window.apiConfirm
+                ? window.apiConfirm(`Ya tenés una frecuencia en ${hz} Hz. ¿Crear otra igual?`, {
+                      title: 'Frecuencia duplicada',
+                  })
+                : Promise.resolve(true));
             if (!ok) return;
         }
         const r = await window.apiFetch('/api/frequencies/add', {
@@ -230,7 +252,7 @@ export default class extends Controller {
         if (!freq) return;
         try {
             const list = this.getRecents().filter((r) => Number(r.frequency) !== Number(freq));
-            list.unshift({ frequency: Number(freq), name: name || (freq + ' Hz'), at: Date.now() });
+            list.unshift({ frequency: Number(freq), name: name || freq + ' Hz', at: Date.now() });
             localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, RECENT_MAX)));
             this.renderRecents();
         } catch (e) {
@@ -249,10 +271,14 @@ export default class extends Controller {
         this.recentFreqsTarget.hidden = false;
         this.recentFreqsTarget.innerHTML =
             '<span class="text-xs uppercase tracking-widest text-[var(--outline-elev)] w-full">Recientes</span>' +
-            list.map((r) => `<button type="button" class="cal-country-chip"
+            list
+                .map(
+                    (r) => `<button type="button" class="cal-country-chip"
                 data-recent-freq="${r.frequency}"
                 data-recent-name="${this.escape(r.name)}"
-                data-action="click->frequency-player#selectRecent">${r.frequency} Hz</button>`).join('');
+                data-action="click->frequency-player#selectRecent">${r.frequency} Hz</button>`
+                )
+                .join('');
     }
 
     // ─── Session lifecycle + Web Audio API ───────────────────────────
@@ -267,12 +293,15 @@ export default class extends Controller {
             method: 'POST',
             body: {
                 duration_minutes: this.selectedDuration,
-                preset_id: this.selectedFrequency.type === 'preset' ? this.selectedFrequency.id : null,
-                user_frequency_id: this.selectedFrequency.type === 'user' ? this.selectedFrequency.id : null,
+                preset_id:
+                    this.selectedFrequency.type === 'preset' ? this.selectedFrequency.id : null,
+                user_frequency_id:
+                    this.selectedFrequency.type === 'user' ? this.selectedFrequency.id : null,
             },
         });
         if (!r.ok || !r.data?.success) {
-            if (window.apiToast) window.apiToast('Error: ' + (r.data?.error || 'no se pudo iniciar'), 'error');
+            if (window.apiToast)
+                window.apiToast('Error: ' + (r.data?.error || 'no se pudo iniciar'), 'error');
             return;
         }
         this.currentSessionId = r.data.id;
@@ -322,15 +351,17 @@ export default class extends Controller {
 
         // Dispatch global event — the sonic_sanctuary_controller in
         // the shell owns the AudioContext + survives navigations.
-        window.dispatchEvent(new CustomEvent('tnsvt:freq:start', {
-            detail: {
-                sessionId: this.currentSessionId,
-                frequency: this.selectedFrequency.frequency,
-                name: this.selectedFrequency.name,
-                durationMinutes: this.selectedDuration,
-                startedAt: Date.now(),
-            },
-        }));
+        window.dispatchEvent(
+            new CustomEvent('tnsvt:freq:start', {
+                detail: {
+                    sessionId: this.currentSessionId,
+                    frequency: this.selectedFrequency.frequency,
+                    name: this.selectedFrequency.name,
+                    durationMinutes: this.selectedDuration,
+                    startedAt: Date.now(),
+                },
+            })
+        );
     }
 
     async stopSession() {
@@ -364,9 +395,11 @@ export default class extends Controller {
         await this.loadStats();
 
         // Ask the global mini-player to stop too (if mounted).
-        window.dispatchEvent(new CustomEvent('tnsvt:freq:stop', {
-            detail: { elapsedSeconds: elapsedSec },
-        }));
+        window.dispatchEvent(
+            new CustomEvent('tnsvt:freq:stop', {
+                detail: { elapsedSeconds: elapsedSec },
+            })
+        );
     }
 
     globalMiniPlayerMounted() {
@@ -387,12 +420,20 @@ export default class extends Controller {
 
     stopAudio(opts = {}) {
         if (this.oscillator) {
-            try { this.gainNode.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.5); } catch (e) {}
-            setTimeout(() => { try { this.oscillator.stop(); } catch (e) {} }, 600);
+            try {
+                this.gainNode.gain.linearRampToValueAtTime(0, this.audioCtx.currentTime + 0.5);
+            } catch (e) {}
+            setTimeout(() => {
+                try {
+                    this.oscillator.stop();
+                } catch (e) {}
+            }, 600);
             this.oscillator = null;
         }
         if (this.audioCtx) {
-            try { this.audioCtx.close(); } catch (e) {}
+            try {
+                this.audioCtx.close();
+            } catch (e) {}
             this.audioCtx = null;
         }
     }
@@ -409,8 +450,16 @@ export default class extends Controller {
     }
 
     escape(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

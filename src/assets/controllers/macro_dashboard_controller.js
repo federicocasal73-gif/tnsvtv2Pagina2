@@ -24,14 +24,20 @@ import { Controller } from '@hotwired/stimulus';
  */
 const MACRO_QUESTIONNAIRES = {
     risk_profile: {
-        card: 'risk-profile-card', body: 'risk-profile-body',
-        result: 'risk-profile-result', tierBadge: 'risk-profile-tier-badge',
-        scoreEl: 'risk-profile-score', tierEl: 'risk-profile-tier',
+        card: 'risk-profile-card',
+        body: 'risk-profile-body',
+        result: 'risk-profile-result',
+        tierBadge: 'risk-profile-tier-badge',
+        scoreEl: 'risk-profile-score',
+        tierEl: 'risk-profile-tier',
     },
     market_knowledge: {
-        card: 'market-knowledge-card', body: 'market-knowledge-body',
-        result: 'market-knowledge-result', tierBadge: 'market-knowledge-tier-badge',
-        scoreEl: 'market-knowledge-score', tierEl: 'market-knowledge-tier',
+        card: 'market-knowledge-card',
+        body: 'market-knowledge-body',
+        result: 'market-knowledge-result',
+        tierBadge: 'market-knowledge-tier-badge',
+        scoreEl: 'market-knowledge-score',
+        tierEl: 'market-knowledge-tier',
     },
 };
 
@@ -52,15 +58,30 @@ function fmtDuration(seconds) {
 const formatTime = fmtDuration;
 
 function esc(s) {
-    return String(s ?? '').replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[m]));
+    return String(s ?? '').replace(
+        /[&<>"']/g,
+        (m) =>
+            ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            })[m]
+    );
 }
 function formatBsAs(iso) {
     try {
         const d = new Date(iso);
-        return d.toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
-    } catch (e) { return iso; }
+        return d.toLocaleString('es-AR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            day: '2-digit',
+            month: 'short',
+        });
+    } catch (e) {
+        return iso;
+    }
 }
 
 export default class extends Controller {
@@ -123,7 +144,9 @@ export default class extends Controller {
         if (!grid) return;
         const tz = (this.el('bento-tz') || { value: 'America/Argentina/Buenos_Aires' }).value;
         try {
-            const r = await window.apiFetch('/api/macro/bento?tz=' + encodeURIComponent(tz), { silent: true });
+            const r = await window.apiFetch('/api/macro/bento?tz=' + encodeURIComponent(tz), {
+                silent: true,
+            });
             if (!r.ok || !r.data || !r.data.success) {
                 grid.textContent = 'Sin datos';
                 return;
@@ -149,10 +172,10 @@ export default class extends Controller {
         const el = this.el('bento-last-update');
         if (!el) return;
         const secs = Math.floor((Date.now() - this._bentoLastUpdate.getTime()) / 1000);
-        if (secs < 5)        el.textContent = 'Recién';
-        else if (secs < 60)  el.textContent = `hace ${secs}s`;
+        if (secs < 5) el.textContent = 'Recién';
+        else if (secs < 60) el.textContent = `hace ${secs}s`;
         else if (secs < 3600) el.textContent = `hace ${Math.floor(secs / 60)}m`;
-        else                 el.textContent = `hace ${Math.floor(secs / 3600)}h`;
+        else el.textContent = `hace ${Math.floor(secs / 3600)}h`;
         if (secs > 600) el.classList.add('stale');
         else el.classList.remove('stale');
     }
@@ -184,7 +207,9 @@ export default class extends Controller {
                 impactEl.classList.remove('muted');
             }
             if (titleEl) titleEl.textContent = next.title || next.original_title || '—';
-            if (countryEl) countryEl.textContent = `${next.country || ''} ${next.currency || ''}`.trim() || '—';
+            if (countryEl)
+                countryEl.textContent =
+                    `${next.country || ''} ${next.currency || ''}`.trim() || '—';
             if (timeEl) timeEl.textContent = `${next.date || ''} ${next.time || ''}`;
             if (tzEl) tzEl.textContent = data.tz_label || '—';
             if (forecastEl) forecastEl.textContent = next.forecast || '—';
@@ -192,7 +217,8 @@ export default class extends Controller {
             if (actualEl) actualEl.textContent = next.actual || '—';
             if (countdownEl && data.next_critical) {
                 if (data.next_critical.seconds_until_event > 0) {
-                    countdownEl.textContent = 'En ' + fmtDuration(data.next_critical.seconds_until_event);
+                    countdownEl.textContent =
+                        'En ' + fmtDuration(data.next_critical.seconds_until_event);
                     countdownEl.classList.remove('active');
                     countdownEl.classList.remove('cleared');
                 } else {
@@ -201,7 +227,10 @@ export default class extends Controller {
                 }
             }
         } else {
-            if (impactEl) { impactEl.textContent = '—'; impactEl.classList.add('muted'); }
+            if (impactEl) {
+                impactEl.textContent = '—';
+                impactEl.classList.add('muted');
+            }
             if (titleEl) titleEl.textContent = 'Sin eventos críticos próximos';
             if (countryEl) countryEl.textContent = '—';
             if (timeEl) timeEl.textContent = '—';
@@ -223,7 +252,10 @@ export default class extends Controller {
         if (win) {
             if (winStatusEl) winStatusEl.classList.remove('clear', 'active');
             if (win.is_active) {
-                if (winStatusEl) { winStatusEl.textContent = 'ACTIVA'; winStatusEl.classList.add('active'); }
+                if (winStatusEl) {
+                    winStatusEl.textContent = 'ACTIVA';
+                    winStatusEl.classList.add('active');
+                }
                 if (winTitleEl) winTitleEl.textContent = '⛔ NO OPERAR';
                 if (winCountdownEl) {
                     winCountdownEl.textContent = 'Ends in ' + fmtDuration(win.seconds_until_end);
@@ -239,7 +271,10 @@ export default class extends Controller {
             }
             if (winMetaEl) winMetaEl.textContent = `± 30 min · starts ${formatBsAs(win.starts_at)}`;
         } else {
-            if (winStatusEl) { winStatusEl.textContent = 'CLEAR'; winStatusEl.classList.add('clear'); }
+            if (winStatusEl) {
+                winStatusEl.textContent = 'CLEAR';
+                winStatusEl.classList.add('clear');
+            }
             if (winTitleEl) winTitleEl.textContent = 'Sin ventanas activas';
             if (winCountdownEl) {
                 winCountdownEl.textContent = '✓';
@@ -254,9 +289,10 @@ export default class extends Controller {
         if (pairsList) {
             if (pairs.length > 0 && next) {
                 if (pairsTitle) pairsTitle.textContent = `${next.currency || 'USD'} mueve:`;
-                pairsList.innerHTML = pairs.map((p) => {
-                    const w = Math.max(8, Math.min(100, p.confidence || 0));
-                    return `
+                pairsList.innerHTML = pairs
+                    .map((p) => {
+                        const w = Math.max(8, Math.min(100, p.confidence || 0));
+                        return `
                         <li class="bento-pair-row">
                             <span class="bento-pair-name">${esc(p.pair)}</span>
                             <div class="bento-pair-bar"><div class="bento-pair-bar-fill" style="width:${w}%"></div></div>
@@ -264,7 +300,8 @@ export default class extends Controller {
                             <span class="bento-pair-rationale">${esc(p.rationale)}</span>
                         </li>
                     `;
-                }).join('');
+                    })
+                    .join('');
             } else {
                 if (pairsTitle) pairsTitle.textContent = 'Sin próximo evento';
                 pairsList.innerHTML = `
@@ -287,7 +324,9 @@ export default class extends Controller {
         try {
             const perm = await Notification.requestPermission();
             return perm === 'granted';
-        } catch (e) { return false; }
+        } catch (e) {
+            return false;
+        }
     }
 
     setReminder(eventIso, remindBeforeSec = 900) {
@@ -295,9 +334,13 @@ export default class extends Controller {
         if (isNaN(eventDt)) return false;
         const remindAt = eventDt - remindBeforeSec * 1000;
         if (remindAt <= Date.now()) return false;
-        localStorage.setItem('tnsvt_bento_reminder', JSON.stringify({
-            eventIso, remindAtSec: remindBeforeSec,
-        }));
+        localStorage.setItem(
+            'tnsvt_bento_reminder',
+            JSON.stringify({
+                eventIso,
+                remindAtSec: remindBeforeSec,
+            })
+        );
         if (_bentoReminderTimer) clearTimeout(_bentoReminderTimer);
         const ms = Math.max(0, remindAt - Date.now());
         _bentoReminderTimer = setTimeout(() => this.triggerReminder(), ms);
@@ -320,7 +363,9 @@ export default class extends Controller {
                     body: `${evt.title} ${evt.currency} en 15 min · No operes durante ±30 min.`,
                     icon: '/assets/icons/icon-192.png',
                 });
-            } catch (e) { /* no-op */ }
+            } catch (e) {
+                /* no-op */
+            }
         }
     }
 
@@ -330,13 +375,16 @@ export default class extends Controller {
         if (existing) existing.remove();
         const banner = document.createElement('div');
         banner.id = 'bento-reminder-banner';
-        banner.style.cssText = 'position:sticky;top:0;z-index:50;background:rgba(248,113,113,0.18);border:1px solid #f87171;color:#fecaca;padding:0.6rem 1rem;border-radius:0.4rem;backdrop-filter:blur(8px);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;';
+        banner.style.cssText =
+            'position:sticky;top:0;z-index:50;background:rgba(248,113,113,0.18);border:1px solid #f87171;color:#fecaca;padding:0.6rem 1rem;border-radius:0.4rem;backdrop-filter:blur(8px);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;';
         banner.innerHTML = `
             <span><strong>⏰ 15 min para:</strong> ${esc(evt.title)} (${esc(evt.currency)}) · cerrá posiciones o esperá</span>
             <button type="button" id="bento-reminder-dismiss" style="background:transparent;border:1px solid #f87171;color:#fecaca;padding:0.25rem 0.5rem;border-radius:0.3rem;cursor:pointer;">OK</button>
         `;
         main.insertBefore(banner, main.firstChild);
-        document.getElementById('bento-reminder-dismiss').addEventListener('click', () => banner.remove());
+        document
+            .getElementById('bento-reminder-dismiss')
+            .addEventListener('click', () => banner.remove());
     }
 
     restoreReminderUI() {
@@ -387,12 +435,17 @@ export default class extends Controller {
 
         remindBtn.addEventListener('click', async () => {
             if (!this._bentoState || !this._bentoState.next_critical || !this._bentoState.window) {
-                if (window.apiToast) window.apiToast('No hay un próximo evento crítico para recordarte.', 'info');
+                if (window.apiToast)
+                    window.apiToast('No hay un próximo evento crítico para recordarte.', 'info');
                 return;
             }
             const existing = localStorage.getItem('tnsvt_bento_reminder');
             if (existing) {
-                if (await window.apiConfirm('¿Cancelar el recordatorio actual?', { title: 'Cancelar recordatorio' })) {
+                if (
+                    await window.apiConfirm('¿Cancelar el recordatorio actual?', {
+                        title: 'Cancelar recordatorio',
+                    })
+                ) {
                     this.clearReminder();
                     this.restoreReminderUI();
                 }
@@ -401,7 +454,11 @@ export default class extends Controller {
             await this.requestNotificationPermissionIfNeeded();
             const set = this.setReminder(this._bentoState.window.starts_at, 15 * 60);
             if (!set) {
-                if (window.apiToast) window.apiToast('El evento empieza en menos de 15 minutos. Recordatorio no aplica.', 'warning');
+                if (window.apiToast)
+                    window.apiToast(
+                        'El evento empieza en menos de 15 minutos. Recordatorio no aplica.',
+                        'warning'
+                    );
                 return;
             }
             this.restoreReminderUI();
@@ -446,7 +503,8 @@ export default class extends Controller {
 
         if (active) {
             titleEl.textContent = '🔴 No-Trade Window ACTIVA';
-            if (msgEl) msgEl.innerHTML = `<strong>${active.title}</strong> (${active.country} ${active.currency}) · impact ${active.importance}`;
+            if (msgEl)
+                msgEl.innerHTML = `<strong>${active.title}</strong> (${active.country} ${active.currency}) · impact ${active.importance}`;
             if (iconEl) iconEl.style.background = '#ff6b6b';
             if (countdownEl) countdownEl.textContent = formatTime(active.seconds_until_end);
             if (labelEl) labelEl.textContent = 'Hasta el final del window';
@@ -454,14 +512,16 @@ export default class extends Controller {
         } else if (upcoming.length > 0) {
             const next = upcoming[0];
             titleEl.textContent = 'Próximo: ' + next.title;
-            if (msgEl) msgEl.innerHTML = `${next.country} ${next.currency} · impact ${next.importance} · ${new Date(next.start).toLocaleString()}`;
+            if (msgEl)
+                msgEl.innerHTML = `${next.country} ${next.currency} · impact ${next.importance} · ${new Date(next.start).toLocaleString()}`;
             if (iconEl) iconEl.style.background = 'var(--gold-elev)';
             if (labelEl) labelEl.textContent = 'Inicia en';
             bannerEl.style.borderLeftColor = 'var(--gold-elev)';
 
             this._countdownInterval = setInterval(() => {
                 const remaining = new Date(next.start).getTime() - Date.now();
-                if (countdownEl) countdownEl.textContent = formatTime(Math.max(0, Math.floor(remaining / 1000)));
+                if (countdownEl)
+                    countdownEl.textContent = formatTime(Math.max(0, Math.floor(remaining / 1000)));
                 if (remaining <= 0) this.loadAll();
             }, 1000);
         } else {
@@ -477,7 +537,8 @@ export default class extends Controller {
     renderTimeline(windows) {
         const svg = this.el('timeline-svg');
         if (!svg) return;
-        const w = 800, h = 280;
+        const w = 800,
+            h = 280;
         const now = new Date();
         const range = 7 * 24 * 60 * 60 * 1000;
         const startMs = now.getTime();
@@ -506,12 +567,13 @@ export default class extends Controller {
             const isActive = win.is_active;
             const color = isActive ? '#ff6b6b' : 'var(--gold-elev)';
             const opacity = isActive ? '0.8' : '0.4';
-            const y = win.importance >= 3 ? yHigh : (win.importance >= 2 ? yMid : yLow);
+            const y = win.importance >= 3 ? yHigh : win.importance >= 2 ? yMid : yLow;
             const wpx = x2 - x1;
             html += `<rect x="${x1}" y="${y - 8}" width="${wpx}" height="16" fill="${color}" fill-opacity="${opacity}" rx="2"><title>${esc(win.title)} (${esc(win.country)})</title></rect>`;
             html += `<line x1="${x1}" y1="${y - 14}" x2="${x1}" y2="${y + 14}" stroke="${color}" stroke-width="1.5" />`;
             if (wpx > 40) {
-                const displayTitle = win.title.length > 18 ? win.title.substring(0, 15) + '...' : win.title;
+                const displayTitle =
+                    win.title.length > 18 ? win.title.substring(0, 15) + '...' : win.title;
                 html += `<text x="${x1 + 2}" y="${y + 3}" font-size="8" fill="white" pointer-events="none">${esc(displayTitle)}</text>`;
             }
         }
@@ -530,14 +592,17 @@ export default class extends Controller {
             .filter((w) => !w.is_active && new Date(w.start) > now)
             .sort((a, b) => new Date(a.start) - new Date(b.start));
         if (upcoming.length === 0) {
-            list.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin eventos próximos</p>';
+            list.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)] py-8">Sin eventos próximos</p>';
             return;
         }
-        list.innerHTML = upcoming.slice(0, 15).map((w) => {
-            const startDt = new Date(w.start);
-            const seconds = w.seconds_until_start;
-            const urgency = seconds < 3600 ? 'urgent' : (seconds < 21600 ? 'soon' : 'later');
-            return `
+        list.innerHTML = upcoming
+            .slice(0, 15)
+            .map((w) => {
+                const startDt = new Date(w.start);
+                const seconds = w.seconds_until_start;
+                const urgency = seconds < 3600 ? 'urgent' : seconds < 21600 ? 'soon' : 'later';
+                return `
                 <div class="flex items-center gap-3 p-2 rounded glass-card-elev border-l-2 ${urgency === 'urgent' ? 'border-red-400' : 'border-[var(--gold-elev)]'}">
                     <div class="text-center min-w-12">
                         <p class="text-2xl font-bold text-[var(--gold-elev)]">${startDt.getDate()}</p>
@@ -553,7 +618,8 @@ export default class extends Controller {
                     </div>
                 </div>
             `;
-        }).join('');
+            })
+            .join('');
     }
 
     // ══════ Oracle SVG charts ══════
@@ -571,15 +637,22 @@ export default class extends Controller {
         try {
             const code = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
             if (code) {
-                const r = await window.apiFetch(`/sanctum/api/oracle/faith-logic?code=${encodeURIComponent(code)}&days=30`, { silent: true });
-                const g = r && r.ok && r.data ? (r.data.gauge || r.data) : null;
+                const r = await window.apiFetch(
+                    `/sanctum/api/oracle/faith-logic?code=${encodeURIComponent(code)}&days=30`,
+                    { silent: true }
+                );
+                const g = r && r.ok && r.data ? r.data.gauge || r.data : null;
                 if (g && Number(g.total) > 0) {
                     const v = Number(g.faith ?? NaN);
                     if (Number.isFinite(v)) faith = Math.min(100, Math.max(0, v));
                 }
             }
-        } catch (e) { /* fall back to 50/50 */ }
-        const cx = 100, cy = 100, r = 80;
+        } catch (e) {
+            /* fall back to 50/50 */
+        }
+        const cx = 100,
+            cy = 100,
+            r = 80;
         const angle = -90 + (faith / 100) * 180;
         const rad = (angle * Math.PI) / 180;
         const needleX = cx + (r - 12) * Math.cos(rad);
@@ -606,7 +679,9 @@ export default class extends Controller {
             const y = Math.random() * 180 + 10;
             const rr = Math.random() * 4 + 2;
             const opacity = Math.random() * 0.5 + 0.3;
-            points.push(`<circle cx="${x}" cy="${y}" r="${rr}" fill="#f2ca50" fill-opacity="${opacity}" />`);
+            points.push(
+                `<circle cx="${x}" cy="${y}" r="${rr}" fill="#f2ca50" fill-opacity="${opacity}" />`
+            );
         }
         const axes = `
             <line x1="40" y1="180" x2="380" y2="180" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
@@ -659,7 +734,9 @@ export default class extends Controller {
         if (!card || !bodyEl || !tierBadge) return;
 
         const updateSummaryForType = (completed, score, tier) => {
-            const statusEl = this.el(type === 'risk_profile' ? 'macro-q-summary-rp' : 'macro-q-summary-mk');
+            const statusEl = this.el(
+                type === 'risk_profile' ? 'macro-q-summary-rp' : 'macro-q-summary-mk'
+            );
             if (!statusEl) return;
             if (completed) {
                 statusEl.textContent = `${tier.toUpperCase()} (${score}/100)`;
@@ -672,7 +749,9 @@ export default class extends Controller {
         };
 
         try {
-            const r = await window.apiFetch(`/api/macro/questionnaire/${type}?user_code=${this.macroUserCode}`);
+            const r = await window.apiFetch(
+                `/api/macro/questionnaire/${type}?user_code=${this.macroUserCode}`
+            );
             if (!r.ok || !r.data || !r.data.success) {
                 bodyEl.innerHTML = `<p class="text-center text-[var(--error-elev)] py-4">Error al cargar cuestionario</p>`;
                 updateSummaryForType(false, 0, 'unknown');
@@ -707,12 +786,18 @@ export default class extends Controller {
                 if (scoreEl) scoreEl.textContent = data.score;
                 const tierEl = this.el(cfg.tierEl);
                 if (tierEl) tierEl.textContent = tier.toUpperCase();
-                const updatedEl = this.el(cfg.scoreEl === 'risk-profile-score' ? 'risk-profile-updated' : 'market-knowledge-updated');
+                const updatedEl = this.el(
+                    cfg.scoreEl === 'risk-profile-score'
+                        ? 'risk-profile-updated'
+                        : 'market-knowledge-updated'
+                );
                 if (updatedEl && data.completed_at) {
                     try {
                         const dt = new Date(data.completed_at);
                         updatedEl.textContent = `Última actualización: ${dt.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}`;
-                    } catch (e) { /* no-op */ }
+                    } catch (e) {
+                        /* no-op */
+                    }
                 }
             } else {
                 bodyEl.innerHTML = `
@@ -735,17 +820,20 @@ export default class extends Controller {
         const title = this.el('macro-questionnaire-modal-title');
         const body = this.el('macro-questionnaire-modal-body');
         if (!modal || !title || !body) return;
-        title.textContent = type === 'risk_profile' ? 'Perfil de Riesgo' : 'Conocimiento del Mercado';
+        title.textContent =
+            type === 'risk_profile' ? 'Perfil de Riesgo' : 'Conocimiento del Mercado';
 
-        window.apiFetch(`/api/macro/questionnaire/${type}?user_code=${this.macroUserCode}`).then((r) => {
-            if (!r.ok || !r.data) {
-                body.innerHTML = '<p>Error al cargar preguntas</p>';
-                return;
-            }
-            const questions = r.data.questions;
-            const total = questions.length;
+        window
+            .apiFetch(`/api/macro/questionnaire/${type}?user_code=${this.macroUserCode}`)
+            .then((r) => {
+                if (!r.ok || !r.data) {
+                    body.innerHTML = '<p>Error al cargar preguntas</p>';
+                    return;
+                }
+                const questions = r.data.questions;
+                const total = questions.length;
 
-            let html = `
+                let html = `
                 <div class="macro-q-header">
                     <div class="macro-q-progress-info">
                         <span id="macro-q-progress-text">Pregunta 1 de ${total}</span>
@@ -757,71 +845,75 @@ export default class extends Controller {
                 </div>
                 <div class="questions-form">
             `;
-            questions.forEach((q, idx) => {
-                html += `<div class="question" data-question-idx="${idx}">
+                questions.forEach((q, idx) => {
+                    html += `<div class="question" data-question-idx="${idx}">
                     <div class="question-label">${idx + 1}. ${esc(q.label)}</div>
                     <div class="question-options">`;
-                Object.entries(q.options).forEach(([key, opt]) => {
-                    html += `<label class="question-option" data-macro-q="${q.id}" data-macro-opt="${key}">
+                    Object.entries(q.options).forEach(([key, opt]) => {
+                        html += `<label class="question-option" data-macro-q="${q.id}" data-macro-opt="${key}">
                         <input type="radio" name="${q.id}" value="${key}">
                         <span>${esc(opt.label)}</span>
                     </label>`;
+                    });
+                    html += `</div></div>`;
                 });
-                html += `</div></div>`;
-            });
-            html += '</div>';
-            body.innerHTML = html;
-            modal.dataset.type = type;
-            modal.classList.remove('hidden');
-            modal.setAttribute('aria-hidden', 'false');
-            body.scrollTop = 0;
-            const firstOpt = body.querySelector('.question-option');
-            if (firstOpt) firstOpt.focus();
+                html += '</div>';
+                body.innerHTML = html;
+                modal.dataset.type = type;
+                modal.classList.remove('hidden');
+                modal.setAttribute('aria-hidden', 'false');
+                body.scrollTop = 0;
+                const firstOpt = body.querySelector('.question-option');
+                if (firstOpt) firstOpt.focus();
 
-            const answered = new Set();
-            const updateProgress = () => {
-                const pct = Math.round((answered.size / total) * 100);
-                const progressFill = body.querySelector('#macro-q-progress-fill');
-                const progressText = body.querySelector('#macro-q-progress-text');
-                const progressPct = body.querySelector('#macro-q-progress-pct');
-                if (progressFill) progressFill.style.width = pct + '%';
-                if (progressText) progressText.textContent = `Pregunta ${Math.min(answered.size + 1, total)} de ${total}`;
-                if (progressPct) progressPct.textContent = pct + '%';
-                if (answered.size === total && progressFill) {
-                    progressFill.classList.add('complete');
-                }
-                const submitBtn = this.el('macro-questionnaire-submit-btn');
-                if (submitBtn) submitBtn.disabled = answered.size < total;
-            };
+                const answered = new Set();
+                const updateProgress = () => {
+                    const pct = Math.round((answered.size / total) * 100);
+                    const progressFill = body.querySelector('#macro-q-progress-fill');
+                    const progressText = body.querySelector('#macro-q-progress-text');
+                    const progressPct = body.querySelector('#macro-q-progress-pct');
+                    if (progressFill) progressFill.style.width = pct + '%';
+                    if (progressText)
+                        progressText.textContent = `Pregunta ${Math.min(answered.size + 1, total)} de ${total}`;
+                    if (progressPct) progressPct.textContent = pct + '%';
+                    if (answered.size === total && progressFill) {
+                        progressFill.classList.add('complete');
+                    }
+                    const submitBtn = this.el('macro-questionnaire-submit-btn');
+                    if (submitBtn) submitBtn.disabled = answered.size < total;
+                };
 
-            body.querySelectorAll('.question-option').forEach((opt) => {
-                opt.addEventListener('click', () => {
-                    const qid = opt.dataset.macroQ;
-                    body.querySelectorAll(`[data-macro-q="${qid}"]`).forEach((o) => o.classList.remove('selected'));
-                    opt.classList.add('selected');
-                    opt.querySelector('input').checked = true;
-                    answered.add(qid);
-                    updateProgress();
+                body.querySelectorAll('.question-option').forEach((opt) => {
+                    opt.addEventListener('click', () => {
+                        const qid = opt.dataset.macroQ;
+                        body.querySelectorAll(`[data-macro-q="${qid}"]`).forEach((o) =>
+                            o.classList.remove('selected')
+                        );
+                        opt.classList.add('selected');
+                        opt.querySelector('input').checked = true;
+                        answered.add(qid);
+                        updateProgress();
+                    });
                 });
+
+                const handleKeydown = (e) => {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                    if (e.repeat) return;
+                    const key = e.key;
+                    if (!/^[1-9]$/.test(key)) return;
+                    const opts = body.querySelectorAll('.question-option');
+                    if (opts.length === 0) return;
+                    const idx = parseInt(key, 10) - 1;
+                    if (idx >= opts.length) return;
+                    opts[idx].click();
+                };
+                document.addEventListener('keydown', handleKeydown);
+                modal._cleanupKeydown = () =>
+                    document.removeEventListener('keydown', handleKeydown);
+                this._submitMode = 'answer';
+
+                updateProgress();
             });
-
-            const handleKeydown = (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                if (e.repeat) return;
-                const key = e.key;
-                if (!/^[1-9]$/.test(key)) return;
-                const opts = body.querySelectorAll('.question-option');
-                if (opts.length === 0) return;
-                const idx = parseInt(key, 10) - 1;
-                if (idx >= opts.length) return;
-                opts[idx].click();
-            };
-            document.addEventListener('keydown', handleKeydown);
-            modal._cleanupKeydown = () => document.removeEventListener('keydown', handleKeydown);
-            this._submitMode = 'answer';
-
-            updateProgress();
-        });
     }
 
     closeMacroQuestionnaireModal() {
@@ -893,7 +985,10 @@ export default class extends Controller {
                 // connect listener AND an overwritten onclick both fired).
                 this._submitMode = 'close';
                 if (window.apiToast) {
-                    window.apiToast(`¡Completado! Score: ${score}/100 — Tier: ${tier.toUpperCase()}`, 'success');
+                    window.apiToast(
+                        `¡Completado! Score: ${score}/100 — Tier: ${tier.toUpperCase()}`,
+                        'success'
+                    );
                 }
             } else {
                 const msg = (r.data && r.data.error) || 'Error al guardar';
@@ -909,16 +1004,34 @@ export default class extends Controller {
 
     renderQuestionnaireResult(type, score, tier) {
         const tierColors = {
-            conservative: { color: '#4ade80', label: 'Conservador', desc: 'Prefieres preservar capital. Horizonte largo, riesgo bajo.' },
-            moderate:     { color: '#f2ca50', label: 'Moderado',     desc: 'Balance entre riesgo y retorno. Estrategia estándar.' },
-            aggressive:   { color: '#fb923c', label: 'Agresivo',     desc: 'Buscas retornos altos. Riesgo medio-alto, horizonte medio.' },
-            degen:        { color: '#f87171', label: 'Degen',        desc: 'Máximo riesgo. All-in en cada operación.' },
+            conservative: {
+                color: '#4ade80',
+                label: 'Conservador',
+                desc: 'Prefieres preservar capital. Horizonte largo, riesgo bajo.',
+            },
+            moderate: {
+                color: '#f2ca50',
+                label: 'Moderado',
+                desc: 'Balance entre riesgo y retorno. Estrategia estándar.',
+            },
+            aggressive: {
+                color: '#fb923c',
+                label: 'Agresivo',
+                desc: 'Buscas retornos altos. Riesgo medio-alto, horizonte medio.',
+            },
+            degen: {
+                color: '#f87171',
+                label: 'Degen',
+                desc: 'Máximo riesgo. All-in en cada operación.',
+            },
         };
         const tierInfo = tierColors[tier] || tierColors.moderate;
         const pct = Math.max(0, Math.min(100, score));
         const angle = -90 + (pct / 100) * 180;
         const rad = (angle * Math.PI) / 180;
-        const cx = 100, cy = 100, r = 80;
+        const cx = 100,
+            cy = 100,
+            r = 80;
         const needleX = cx + (r - 12) * Math.cos(rad);
         const needleY = cy + (r - 12) * Math.sin(rad);
 
@@ -977,8 +1090,9 @@ export default class extends Controller {
         }
         const rule = e.target.closest('.discipline-rule');
         if (rule) {
-            this.element.querySelectorAll('.discipline-rule').forEach((r) =>
-                r.classList.toggle('is-focused', r === rule));
+            this.element
+                .querySelectorAll('.discipline-rule')
+                .forEach((r) => r.classList.toggle('is-focused', r === rule));
             return;
         }
         if (e.target.closest('[data-macro-close-questionnaire]')) {
@@ -987,7 +1101,10 @@ export default class extends Controller {
     }
 
     onDocKeydown(e) {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('discipline-rule')) {
+        if (
+            (e.key === 'Enter' || e.key === ' ') &&
+            e.target.classList?.contains('discipline-rule')
+        ) {
             e.preventDefault();
             e.target.click();
         }
@@ -1016,8 +1133,16 @@ export default class extends Controller {
                 'Conocimiento del Mercado: ' + mk,
                 'Progreso: ' + pct + '%',
             ];
-            const seq = items.map((t) => '<span class="macro-ticker-item">' + t.replace(/</g, '&lt;') + '</span>').join('<span class="macro-ticker-sep">◆</span>');
-            track.innerHTML = seq + '<span class="macro-ticker-sep">◆</span>' + seq + '<span class="macro-ticker-sep">◆</span>';
+            const seq = items
+                .map(
+                    (t) => '<span class="macro-ticker-item">' + t.replace(/</g, '&lt;') + '</span>'
+                )
+                .join('<span class="macro-ticker-sep">◆</span>');
+            track.innerHTML =
+                seq +
+                '<span class="macro-ticker-sep">◆</span>' +
+                seq +
+                '<span class="macro-ticker-sep">◆</span>';
         }
     }
 

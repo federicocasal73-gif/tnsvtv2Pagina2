@@ -13,10 +13,12 @@
     justify-content: center;
     padding: 1.5rem;
 
-    background: radial-gradient(ellipse at center,
+    background: radial-gradient(
+        ellipse at center,
         rgba(10, 6, 24, 0.85) 0%,
         rgba(5, 3, 12, 0.92) 50%,
-        rgba(1, 0, 3, 0.96) 100%);
+        rgba(1, 0, 3, 0.96) 100%
+    );
     backdrop-filter: blur(12px) saturate(140%);
     -webkit-backdrop-filter: blur(12px) saturate(140%);
 
@@ -28,8 +30,14 @@
 }
 
 @keyframes onboardingFadeIn {
-    from { opacity: 0; backdrop-filter: blur(0); }
-    to   { opacity: 1; backdrop-filter: blur(12px) saturate(140%); }
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(12px) saturate(140%);
+    }
 }
 
 /* ═══ Card ═══ */
@@ -38,9 +46,7 @@
     width: 100%;
     max-width: 560px;
     padding: 3rem 2.5rem 2rem;
-    background: linear-gradient(135deg,
-        rgba(20, 12, 40, 0.95) 0%,
-        rgba(15, 8, 30, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(20, 12, 40, 0.95) 0%, rgba(15, 8, 30, 0.95) 100%);
     border: 1px solid rgba(212, 175, 55, 0.25);
     border-radius: 16px;
     box-shadow:
@@ -52,8 +58,14 @@
 }
 
 @keyframes onboardingCardIn {
-    from { opacity: 0; transform: scale(0.92) translateY(20px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* ═══ Skip button ═══ */
@@ -103,7 +115,9 @@
     opacity: 0;
     transform: translateX(40px);
     pointer-events: none;
-    transition: opacity 350ms ease, transform 400ms cubic-bezier(0.34, 1.2, 0.64, 1);
+    transition:
+        opacity 350ms ease,
+        transform 400ms cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
 .onboarding-slide.active {
@@ -131,8 +145,15 @@
 }
 
 @keyframes onboardingIconPulse {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.45)); }
-    50%      { transform: scale(1.05); filter: drop-shadow(0 0 28px rgba(212, 175, 55, 0.65)); }
+    0%,
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.45));
+    }
+    50% {
+        transform: scale(1.05);
+        filter: drop-shadow(0 0 28px rgba(212, 175, 55, 0.65));
+    }
 }
 
 /* ═══ Text ═══ */

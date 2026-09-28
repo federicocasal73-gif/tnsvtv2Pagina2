@@ -9,7 +9,7 @@
  * - Reduced-motion: skip animations
  */
 
-(function() {
+(function () {
     'use strict';
 
     const STORAGE_KEY = 'tnsvt_onboarding_v1';
@@ -36,12 +36,12 @@
         if (isCompleted()) return;
 
         // Wire buttons
-        overlay.querySelectorAll('[data-onboarding-action]').forEach(btn => {
+        overlay.querySelectorAll('[data-onboarding-action]').forEach((btn) => {
             btn.addEventListener('click', handleAction);
         });
 
         // Wire dots
-        dots.forEach(dot => {
+        dots.forEach((dot) => {
             dot.addEventListener('click', () => {
                 const target = parseInt(dot.dataset.dot, 10);
                 if (target !== currentSlide) goTo(target);
@@ -49,7 +49,7 @@
         });
 
         // Keyboard nav: Escape cierra, ArrowLeft/Right navega
-        overlay.addEventListener('keydown', e => {
+        overlay.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 e.preventDefault();
                 skip();
@@ -64,7 +64,9 @@
 
         // Reduced motion listener
         const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-        mq.addEventListener('change', e => { reducedMotion = e.matches; });
+        mq.addEventListener('change', (e) => {
+            reducedMotion = e.matches;
+        });
 
         // Trigger: mostrar cuando el usuario esté logueado
         // Espera al evento `tnsvt:user-loaded` (emitido por shell.html.twig tras auth OK)
@@ -193,7 +195,7 @@
         }
 
         // Actualizar dots
-        dots.forEach(d => {
+        dots.forEach((d) => {
             const isActive = parseInt(d.dataset.dot, 10) === target;
             d.classList.toggle('active', isActive);
             d.setAttribute('aria-selected', isActive ? 'true' : 'false');
@@ -203,18 +205,21 @@
         if (counter) counter.textContent = target;
 
         // Actualizar botones prev/next
-        if (prevBtn) prevBtn.disabled = (target === 1);
+        if (prevBtn) prevBtn.disabled = target === 1;
         if (nextBtn) {
-            nextBtn.textContent = (target === TOTAL_SLIDES) ? 'Finalizar ✓' : 'Siguiente →';
+            nextBtn.textContent = target === TOTAL_SLIDES ? 'Finalizar ✓' : 'Siguiente →';
         }
 
         currentSlide = target;
 
         // Limpiar exit-left después de la transición
-        setTimeout(() => {
-            if (currentEl) currentEl.classList.remove('exit-left');
-            isTransitioning = false;
-        }, reducedMotion ? 0 : 400);
+        setTimeout(
+            () => {
+                if (currentEl) currentEl.classList.remove('exit-left');
+                isTransitioning = false;
+            },
+            reducedMotion ? 0 : 400
+        );
     }
 
     function trapFocus(enable) {

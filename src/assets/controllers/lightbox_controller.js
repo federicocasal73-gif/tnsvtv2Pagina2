@@ -37,20 +37,14 @@ const SWIPE_MIN_PX = 40;
 const SWIPE_MAX_MS = 600;
 
 export default class extends Controller {
-    static targets = [
-        'backdrop',
-        'stage',
-        'image',
-        'caption',
-        'counter',
-    ];
+    static targets = ['backdrop', 'stage', 'image', 'caption', 'counter'];
 
     connect() {
         this._triggers = [];
         this._index = -1;
         this._scale = 1;
-        this._tx = 0;     // pan x (CSS translate)
-        this._ty = 0;     // pan y
+        this._tx = 0; // pan x (CSS translate)
+        this._ty = 0; // pan y
         this._isClosing = false;
         this._isDragging = false;
         this._dragStart = null;
@@ -92,12 +86,22 @@ export default class extends Controller {
         this._close();
     }
 
-    next() { this._navigate(1); }
-    prev() { this._navigate(-1); }
+    next() {
+        this._navigate(1);
+    }
+    prev() {
+        this._navigate(-1);
+    }
 
-    zoomIn()  { this._zoomAt(1.25); }
-    zoomOut() { this._zoomAt(1 / 1.25); }
-    zoomReset() { this._resetZoom(); }
+    zoomIn() {
+        this._zoomAt(1.25);
+    }
+    zoomOut() {
+        this._zoomAt(1 / 1.25);
+    }
+    zoomReset() {
+        this._resetZoom();
+    }
 
     onBackdrop(event) {
         if (event.target === this.backdropTarget) this._close();
@@ -209,7 +213,7 @@ export default class extends Controller {
         if (!item || !item.src) return;
         const a = document.createElement('a');
         a.href = item.src;
-        a.download = item.name || ('tnsvt-' + Date.now() + '.jpg');
+        a.download = item.name || 'tnsvt-' + Date.now() + '.jpg';
         a.rel = 'noopener';
         // data: URLs work; http(s) URLs rely on server CORS/disposition.
         document.body.appendChild(a);
@@ -272,15 +276,28 @@ export default class extends Controller {
     _onKey(event) {
         if (!this._isOpen) return;
         switch (event.key) {
-            case 'Escape':     this._close(); break;
-            case 'ArrowLeft':  this.prev();    break;
-            case 'ArrowRight': this.next();    break;
+            case 'Escape':
+                this._close();
+                break;
+            case 'ArrowLeft':
+                this.prev();
+                break;
+            case 'ArrowRight':
+                this.next();
+                break;
             case '+':
-            case '=':          this.zoomIn();  break;
+            case '=':
+                this.zoomIn();
+                break;
             case '-':
-            case '_':          this.zoomOut(); break;
-            case '0':          this.zoomReset(); break;
-            default: return;
+            case '_':
+                this.zoomOut();
+                break;
+            case '0':
+                this.zoomReset();
+                break;
+            default:
+                return;
         }
         event.preventDefault();
     }
@@ -408,7 +425,7 @@ export default class extends Controller {
             .filter(({ el }) => (el.dataset.lightboxGroup || '') === group);
         if (group && sameGroup.length > 1) {
             const localIdx = sameGroup.findIndex(({ i }) => i === this._index);
-            this.counterTarget.textContent = (localIdx + 1) + ' / ' + sameGroup.length;
+            this.counterTarget.textContent = localIdx + 1 + ' / ' + sameGroup.length;
             this.counterTarget.hidden = false;
         } else {
             this.counterTarget.textContent = '';
@@ -452,8 +469,8 @@ export default class extends Controller {
 
     _clampPan() {
         const stage = this.stageTarget.getBoundingClientRect();
-        const w = stage.width * (this._scale - 1) / 2;
-        const h = stage.height * (this._scale - 1) / 2;
+        const w = (stage.width * (this._scale - 1)) / 2;
+        const h = (stage.height * (this._scale - 1)) / 2;
         if (this._tx > w) this._tx = w;
         if (this._tx < -w) this._tx = -w;
         if (this._ty > h) this._ty = h;
@@ -463,7 +480,8 @@ export default class extends Controller {
     _applyTransform() {
         this.imageTarget.style.transform =
             'translate(' + this._tx + 'px,' + this._ty + 'px) scale(' + this._scale + ')';
-        this.imageTarget.style.cursor = this._scale > 1 ? (this._isDragging ? 'grabbing' : 'grab') : 'zoom-in';
+        this.imageTarget.style.cursor =
+            this._scale > 1 ? (this._isDragging ? 'grabbing' : 'grab') : 'zoom-in';
     }
 
     /* ───── hash routing ───── */

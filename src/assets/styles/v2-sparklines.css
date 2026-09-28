@@ -25,8 +25,14 @@
 }
 
 @keyframes v2-count-up {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* === Live pulse indicator === */
@@ -44,7 +50,9 @@
     height: 8px;
     border-radius: 50%;
     background: #4ade80;
-    box-shadow: 0 0 8px #4ade80, 0 0 16px rgba(74, 222, 128, 0.5);
+    box-shadow:
+        0 0 8px #4ade80,
+        0 0 16px rgba(74, 222, 128, 0.5);
     animation: v2-pulse-glow 1.5s ease-in-out infinite;
 }
 
@@ -56,8 +64,21 @@
 }
 
 @keyframes v2-pulse-glow {
-    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #4ade80, 0 0 16px rgba(74, 222, 128, 0.5); }
-    50% { opacity: 0.6; transform: scale(1.2); box-shadow: 0 0 12px #4ade80, 0 0 24px rgba(74, 222, 128, 0.7); }
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow:
+            0 0 8px #4ade80,
+            0 0 16px rgba(74, 222, 128, 0.5);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+        box-shadow:
+            0 0 12px #4ade80,
+            0 0 24px rgba(74, 222, 128, 0.7);
+    }
 }
 
 /* === KPI ring decoration === */
@@ -88,7 +109,11 @@
 }
 
 .quick-action:hover {
-    background: linear-gradient(135deg, var(--glass-bg-strong-elev) 0%, rgba(242, 202, 80, 0.08) 100%);
+    background: linear-gradient(
+        135deg,
+        var(--glass-bg-strong-elev) 0%,
+        rgba(242, 202, 80, 0.08) 100%
+    );
     border-color: var(--gold-elev);
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(242, 202, 80, 0.2);
@@ -115,7 +140,7 @@
     color: var(--gold-elev);
     font-weight: 600;
     font-size: 0.85rem;
-    font-family: var(--font-body-elev);, monospace;
+    font-family: var(--font-body-elev), monospace;
 }
 
 /* === Trade row hover === */
@@ -143,13 +168,23 @@
 }
 
 @keyframes v2-fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes v2-slide-up {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* === Toast notifications === */
@@ -158,8 +193,14 @@
 }
 
 @keyframes v2-slide-in-right {
-    from { opacity: 0; transform: translateX(100%); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 /* === Page load stagger === */
@@ -168,16 +209,34 @@
     animation: v2-fade-in-up 0.4s ease-out forwards;
 }
 
-.stagger-item:nth-child(1) { animation-delay: 0.05s; }
-.stagger-item:nth-child(2) { animation-delay: 0.1s; }
-.stagger-item:nth-child(3) { animation-delay: 0.15s; }
-.stagger-item:nth-child(4) { animation-delay: 0.2s; }
-.stagger-item:nth-child(5) { animation-delay: 0.25s; }
-.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+.stagger-item:nth-child(1) {
+    animation-delay: 0.05s;
+}
+.stagger-item:nth-child(2) {
+    animation-delay: 0.1s;
+}
+.stagger-item:nth-child(3) {
+    animation-delay: 0.15s;
+}
+.stagger-item:nth-child(4) {
+    animation-delay: 0.2s;
+}
+.stagger-item:nth-child(5) {
+    animation-delay: 0.25s;
+}
+.stagger-item:nth-child(6) {
+    animation-delay: 0.3s;
+}
 
 @keyframes v2-fade-in-up {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* === Selection color === */

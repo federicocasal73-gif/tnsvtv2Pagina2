@@ -23,14 +23,18 @@
 }
 
 .tnsvt-modal-overlay[hidden],
-.tnsvt-modal-overlay[style*="display: none"],
-.tnsvt-modal-overlay[style*="display:none"] {
+.tnsvt-modal-overlay[style*='display: none'],
+.tnsvt-modal-overlay[style*='display:none'] {
     display: none !important;
 }
 
 @keyframes tnsvtOverlayIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* ═══ Card ═══ */
@@ -41,20 +45,26 @@
     overflow-y: auto;
     overscroll-behavior: contain;
 
-    background: linear-gradient(135deg, rgba(20,12,40,0.97) 0%, rgba(15,8,30,0.97) 100%);
-    border: 1px solid rgba(212,175,55,0.25);
+    background: linear-gradient(135deg, rgba(20, 12, 40, 0.97) 0%, rgba(15, 8, 30, 0.97) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.25);
     border-radius: 16px;
     box-shadow:
-        0 24px 64px rgba(0,0,0,0.6),
-        0 0 80px rgba(212,175,55,0.15),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        0 24px 64px rgba(0, 0, 0, 0.6),
+        0 0 80px rgba(212, 175, 55, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 
     animation: tnsvtCardIn 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes tnsvtCardIn {
-    from { opacity: 0; transform: scale(0.92) translateY(12px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 /* ═══ Exit animations (Fase B — mirrors entry, faster) ═══ */
@@ -65,12 +75,22 @@
     animation: tnsvtCardOut 180ms ease forwards;
 }
 @keyframes tnsvtOverlayOut {
-    from { opacity: 1; }
-    to   { opacity: 0; }
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
 }
 @keyframes tnsvtCardOut {
-    from { opacity: 1; transform: scale(1) translateY(0); }
-    to   { opacity: 0; transform: scale(0.96) translateY(8px); }
+    from {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
 }
 
 /* ═══ Variants (Fase B) ═══ */
@@ -86,9 +106,9 @@
 .tnsvt-modal--danger {
     border-color: rgba(248, 113, 113, 0.45);
     box-shadow:
-        0 24px 64px rgba(0,0,0,0.6),
+        0 24px 64px rgba(0, 0, 0, 0.6),
         0 0 80px rgba(248, 113, 113, 0.18),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 .tnsvt-modal--danger .tnsvt-modal__title .material-symbols-elev {
     color: #fca5a5;
@@ -109,8 +129,14 @@
     animation-name: tnsvtDrawerIn;
 }
 @keyframes tnsvtDrawerIn {
-    from { opacity: 0; transform: translateX(48px); }
-    to   { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(48px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 .tnsvt-modal--fullscreen {
     max-width: none;
@@ -130,8 +156,14 @@
     animation-name: tnsvtSlideUp;
 }
 @keyframes tnsvtSlideUp {
-    from { opacity: 0; transform: translateY(100px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ═══ Header / Body / Footer ═══ */
@@ -163,8 +195,8 @@
     width: 36px;
     height: 36px;
     border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--outline-elev);
     display: flex;
     align-items: center;
@@ -175,8 +207,8 @@
 
 .tnsvt-modal__close:hover {
     color: var(--on-surface-elev);
-    border-color: rgba(212,175,55,0.35);
-    background: rgba(212,175,55,0.08);
+    border-color: rgba(212, 175, 55, 0.35);
+    background: rgba(212, 175, 55, 0.08);
 }
 
 .tnsvt-modal__close:focus-visible {
@@ -194,7 +226,7 @@
     gap: 0.5rem;
     padding: 0 1.5rem 1.5rem;
     margin-top: 0.5rem;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding-top: 1rem;
 }
 
@@ -203,7 +235,7 @@
     width: 6px;
 }
 .tnsvt-modal::-webkit-scrollbar-thumb {
-    background: rgba(212,175,55,0.2);
+    background: rgba(212, 175, 55, 0.2);
     border-radius: 999px;
 }
 .tnsvt-modal::-webkit-scrollbar-track {

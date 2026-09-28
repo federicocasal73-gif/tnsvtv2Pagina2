@@ -22,7 +22,7 @@
     /* === Stitch void/nebula palette === */
     --void-elev: #050308;
     --void-deep-elev: #100b1c;
-    --nebula-elev: #2D1B4E;
+    --nebula-elev: #2d1b4e;
     --nebula-glow-elev: rgba(111, 4, 228, 0.4);
 
     /* === Violet palette (Stitch secondary) === */
@@ -69,7 +69,7 @@
     --warning-elev: #fbbf24;
 
     /* === TNSVT-specific brand tokens === */
-    --starlight-white-elev: #FDFCF8;
+    --starlight-white-elev: #fdfcf8;
     --void-black-elev: #050308;
 
     /* === Glassmorphism utilities === */
@@ -98,12 +98,12 @@
     --status-pulse-duration-elev: 2s;
 
     /* === Tiers (visual badge colors) === */
-    --tier-initiate-elev: #6b7280;     /* gray-500 */
-    --tier-aspirant-elev: #3b82f6;     /* blue-500 */
-    --tier-1-elev: #8b5cf6;            /* violet-500 */
-    --tier-2-elev: #c5a028;            /* gold-elev */
-    --tier-3-zenith-elev: #f2ca50;      /* gold-bright */
-    --tier-master-elev: #fbbf24;        /* amber-400 */
+    --tier-initiate-elev: #6b7280; /* gray-500 */
+    --tier-aspirant-elev: #3b82f6; /* blue-500 */
+    --tier-1-elev: #8b5cf6; /* violet-500 */
+    --tier-2-elev: #c5a028; /* gold-elev */
+    --tier-3-zenith-elev: #f2ca50; /* gold-bright */
+    --tier-master-elev: #fbbf24; /* amber-400 */
 
     /* === Typography (F4: fixed display/label tokens to canonical fonts) ===
        display = Cinzel   : hero titles, section headings (designed in stitch UI)
@@ -111,9 +111,9 @@
        body    = Inter     : paragraphs, body text
        mono    = JetBrains : monospace numerics, code snippets */
     --font-display-elev: 'Cinzel', serif;
-    --font-body-elev:    'Inter', sans-serif;
-    --font-label-elev:   'Orbitron', sans-serif;
-    --font-mono-elev:    'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
+    --font-body-elev: 'Inter', sans-serif;
+    --font-label-elev: 'Orbitron', sans-serif;
+    --font-mono-elev: 'JetBrains Mono', 'SF Mono', 'Menlo', monospace;
 
     /* === Spacing (consolidated from tokens-elev.css) === */
     --space-xs-elev: 4px;
@@ -160,11 +160,11 @@
      * Use as `@media (min-width: 480px)` in CSS or with JS via matchMedia.
      * Tailwind-compatible naming where possible.
      */
-    --bp-sm: 480px;    /* Mobile small  */
-    --bp-md: 768px;    /* Tablet portrait / Mobile large */
-    --bp-lg: 1024px;   /* Tablet landscape / Desktop small */
-    --bp-xl: 1280px;   /* Desktop */
-    --bp-xxl: 1536px;  /* Desktop large */
+    --bp-sm: 480px; /* Mobile small  */
+    --bp-md: 768px; /* Tablet portrait / Mobile large */
+    --bp-lg: 1024px; /* Tablet landscape / Desktop small */
+    --bp-xl: 1280px; /* Desktop */
+    --bp-xxl: 1536px; /* Desktop large */
 
     /* === FASE 1 — Spacing scale (4px base, harmonized) ===
      * Replaces ad-hoc px values across components.
@@ -263,7 +263,7 @@ body.gateway-emblem #bg-shader-canvas {
     font-family: var(--font-display-elev);
     font-weight: 600;
     letter-spacing: 0.06em;
-    background: linear-gradient(135deg, #FDFCF8 0%, #ffe088 100%);
+    background: linear-gradient(135deg, #fdfcf8 0%, #ffe088 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -275,7 +275,7 @@ body.gateway-emblem #bg-shader-canvas {
  * Mantiene la identidad celestial (dorado + violeta) pero sobre fondo claro.
  * Se activa con data-theme="light" en <html>.
  * ════════════════════════════════════════════════════════════════════════ */
-[data-theme="light"] {
+[data-theme='light'] {
     /* === Surface palette — Crema celestial === */
     --void-elev: #f5f1e8;
     --void-deep-elev: #ece5d3;
@@ -355,7 +355,7 @@ html.light {
 
 /* En modo auto, el media query se aplica al <html>, no al :root con atributo */
 @media (prefers-color-scheme: light) {
-    html[data-theme="auto"] {
+    html[data-theme='auto'] {
         /* Light tokens heredados del [data-theme="light"] */
         --void-elev: #f5f1e8;
         --void-deep-elev: #ece5d3;

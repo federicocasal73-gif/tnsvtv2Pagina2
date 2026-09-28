@@ -33,17 +33,20 @@ export default class extends Controller {
         try {
             const r = await window.apiFetch('/api/wallet/transactions');
             if (!r.ok || !r.data) {
-                this.transactionsTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>';
+                this.transactionsTarget.innerHTML =
+                    '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>';
                 return;
             }
-            const txs = Array.isArray(r.data) ? r.data : (r.data.transactions || []);
+            const txs = Array.isArray(r.data) ? r.data : r.data.transactions || [];
             if (txs.length === 0) {
-                this.transactionsTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin transacciones.</p>';
+                this.transactionsTarget.innerHTML =
+                    '<p class="text-center text-[var(--outline-elev)] py-8">Sin transacciones.</p>';
                 return;
             }
             this.transactionsTarget.innerHTML = txs.map((tx) => this.renderTx(tx)).join('');
         } catch (e) {
-            this.transactionsTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>';
+            this.transactionsTarget.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)] py-8">Error al cargar.</p>';
         }
     }
 
@@ -63,8 +66,16 @@ export default class extends Controller {
     }
 
     escape(str) {
-        return String(str ?? '').replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        }[m]));
+        return String(str ?? '').replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

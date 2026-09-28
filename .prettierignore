@@ -1,0 +1,15 @@
+vendor/
+var/
+public/assets/
+public/build/
+node_modules/
+docs/
+stitch_tnsvt_app_m_vil/
+*.lock
+*.lockb
+phpstan-baseline.neon
+
+# Vendored third-party JS — keep upstream formatting to ease future
+# re-vendoring. Prettier output here would diverge from upstream and
+# create noise in any vendor update.
+src/assets/third_party/

@@ -17,9 +17,15 @@
 .vision-card:hover {
     background: rgba(255, 255, 255, 0.05);
 }
-.vision-card.signal { border-left-color: var(--gold-elev, #f2ca50); }
-.vision-card.revelation { border-left-color: var(--secondary, #d4bbff); }
-.vision-card.message { border-left-color: var(--nebula-purple, #2D1B4E); }
+.vision-card.signal {
+    border-left-color: var(--gold-elev, #f2ca50);
+}
+.vision-card.revelation {
+    border-left-color: var(--secondary, #d4bbff);
+}
+.vision-card.message {
+    border-left-color: var(--nebula-purple, #2d1b4e);
+}
 
 .vision-icon {
     width: 48px;
@@ -100,7 +106,6 @@
     border-color: var(--primary, #f2ca50);
 }
 
-
 /* ─── F5: Filter chips + bulk actions ─── */
 .notif-filters {
     display: inline-flex;
@@ -117,13 +122,16 @@
     cursor: pointer;
     transition: all 0.15s ease;
 }
-.notif-filter:hover { color: var(--on-surface-elev); }
+.notif-filter:hover {
+    color: var(--on-surface-elev);
+}
 .notif-filter.is-active {
     background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
     color: var(--on-primary-elev);
     border-color: var(--gold-elev);
 }
-.notif-bulk-btn, .notif-bulk-apply {
+.notif-bulk-btn,
+.notif-bulk-apply {
     padding: 0.4rem 0.85rem;
     border-radius: 8px;
     background: var(--glass-bg-elev);
@@ -140,8 +148,14 @@
     color: var(--on-primary-elev);
     border-color: var(--gold-elev);
 }
-.notif-bulk-apply:disabled { opacity: 0.5; cursor: not-allowed; }
-.notif-bulk-btn[hidden], .notif-bulk-apply[hidden] { display: none; }
+.notif-bulk-apply:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.notif-bulk-btn[hidden],
+.notif-bulk-apply[hidden] {
+    display: none;
+}
 .notif-bulk-checkbox {
     width: 18px;
     height: 18px;
@@ -154,7 +168,6 @@
     outline: 2px solid var(--gold-elev);
     outline-offset: -2px;
 }
-
 
 /* ─── L84: day group headers ─── */
 .notif-day-header {
@@ -172,6 +185,8 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, rgba(242,202,80,0.35), transparent);
+    background: linear-gradient(90deg, rgba(242, 202, 80, 0.35), transparent);
 }
-.notif-day-header:first-child { margin-top: 0; }
+.notif-day-header:first-child {
+    margin-top: 0;
+}

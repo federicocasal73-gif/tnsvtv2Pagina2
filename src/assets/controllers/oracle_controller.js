@@ -13,16 +13,31 @@ import { Controller } from '@hotwired/stimulus';
  *   /sanctum/api/oracle/session-performance?code=…&days=…
  */
 function escapeHtml(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-    }[m]));
+    return String(s == null ? '' : s).replace(
+        /[&<>"']/g,
+        (m) =>
+            ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+            })[m]
+    );
 }
 
 export default class extends Controller {
     static targets = [
-        'userCode', 'daysSelect', 'refreshBtn', 'verMapaBtn', 'loadingStatus',
-        'gaugeSvg', 'logicPercent', 'gaugeMeta',
-        'biasSvg', 'biasMeta',
+        'userCode',
+        'daysSelect',
+        'refreshBtn',
+        'verMapaBtn',
+        'loadingStatus',
+        'gaugeSvg',
+        'logicPercent',
+        'gaugeMeta',
+        'biasSvg',
+        'biasMeta',
         'perfSvg',
     ];
 
@@ -30,9 +45,13 @@ export default class extends Controller {
         this.loadAll();
     }
 
-    refresh() { this.loadAll(); }
+    refresh() {
+        this.loadAll();
+    }
 
-    selectDays() { this.loadAll(); }
+    selectDays() {
+        this.loadAll();
+    }
 
     submitOnEnter(event) {
         if (event.key === 'Enter') {
@@ -63,21 +82,27 @@ export default class extends Controller {
 
         try {
             const [gaugeRes, biasRes, perfRes] = await Promise.all([
-                fetch(`/sanctum/api/oracle/faith-logic?code=${encodeURIComponent(userCode)}&days=${days}`),
-                fetch(`/sanctum/api/oracle/emotional-bias?code=${encodeURIComponent(userCode)}&days=${days}`),
-                fetch(`/sanctum/api/oracle/session-performance?code=${encodeURIComponent(userCode)}&days=${days}`),
+                fetch(
+                    `/sanctum/api/oracle/faith-logic?code=${encodeURIComponent(userCode)}&days=${days}`
+                ),
+                fetch(
+                    `/sanctum/api/oracle/emotional-bias?code=${encodeURIComponent(userCode)}&days=${days}`
+                ),
+                fetch(
+                    `/sanctum/api/oracle/session-performance?code=${encodeURIComponent(userCode)}&days=${days}`
+                ),
             ]);
             const gaugeJson = await gaugeRes.json();
-            const biasJson  = await biasRes.json();
-            const perfJson  = await perfRes.json();
+            const biasJson = await biasRes.json();
+            const perfJson = await perfRes.json();
 
             this.renderGauge(gaugeJson.gauge || {});
             this.renderBiasMap(biasJson);
             this.renderPerformance(perfJson);
 
             if (this.hasLoadingStatusTarget) {
-                this.loadingStatusTarget.textContent = 'Última actualización: '
-                    + new Date().toLocaleTimeString();
+                this.loadingStatusTarget.textContent =
+                    'Última actualización: ' + new Date().toLocaleTimeString();
             }
         } catch (e) {
             console.error(e);
@@ -90,7 +115,9 @@ export default class extends Controller {
     renderGauge(g) {
         if (!this.hasGaugeSvgTarget) return;
         const svg = this.gaugeSvgTarget;
-        const cx = 110, cy = 110, r = 90;
+        const cx = 110,
+            cy = 110,
+            r = 90;
         let html = '';
         html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
             stroke="var(--glass-border-elev)" stroke-width="16" />`;
@@ -108,15 +135,15 @@ export default class extends Controller {
 
         if (this.hasLogicPercentTarget) this.logicPercentTarget.textContent = logicPct + '%';
         if (this.hasGaugeMetaTarget) {
-            this.gaugeMetaTarget.textContent =
-                `${g.total} trades · ${g.win_rate}% win rate · asset favorito: ${g.preferred_asset || '-'}`;
+            this.gaugeMetaTarget.textContent = `${g.total} trades · ${g.win_rate}% win rate · asset favorito: ${g.preferred_asset || '-'}`;
         }
     }
 
     renderBiasMap(d) {
         if (!this.hasBiasSvgTarget) return;
         const svg = this.biasSvgTarget;
-        const w = 600, h = 280;
+        const w = 600,
+            h = 280;
         const points = d.points || [];
         let html = '';
         html += `<line x1="40" y1="${h - 30}" x2="${w - 20}" y2="${h - 30}" stroke="var(--outline-variant-elev)" stroke-width="0.5" />`;
@@ -124,8 +151,8 @@ export default class extends Controller {
         html += `<text x="10" y="20" font-size="10" fill="var(--outline-elev)">Analytical</text>`;
         html += `<text x="${w - 80}" y="${h - 10}" font-size="10" fill="var(--outline-elev)">Emotional</text>`;
         for (const p of points) {
-            const x = 40 + (p.analytical * (w - 60));
-            const y = (h - 30) - (p.emotional * (h - 50));
+            const x = 40 + p.analytical * (w - 60);
+            const y = h - 30 - p.emotional * (h - 50);
             const win = p.result === 'WIN';
             const color = win ? 'var(--gold-elev)' : '#ff6b6b';
             const rDot = Math.max(3, Math.min(10, Math.abs(p.pnl) / 50 + 3));
@@ -138,17 +165,17 @@ export default class extends Controller {
         svg.innerHTML = html;
 
         if (this.hasBiasMetaTarget) {
-            const winCount   = points.filter((p) => p.result === 'WIN').length;
-            const lossCount  = points.filter((p) => p.result === 'LOSS' || p.result === 'BE').length;
-            this.biasMetaTarget.textContent =
-                `${points.length} trades · ${winCount} wins · ${lossCount} losses/BE`;
+            const winCount = points.filter((p) => p.result === 'WIN').length;
+            const lossCount = points.filter((p) => p.result === 'LOSS' || p.result === 'BE').length;
+            this.biasMetaTarget.textContent = `${points.length} trades · ${winCount} wins · ${lossCount} losses/BE`;
         }
     }
 
     renderPerformance(d) {
         if (!this.hasPerfSvgTarget) return;
         const svg = this.perfSvgTarget;
-        const w = 800, h = 240;
+        const w = 800,
+            h = 240;
         const days = d.days || [];
         if (days.length === 0) {
             svg.innerHTML = `<text x="400" y="120" text-anchor="middle" font-size="14"
@@ -157,7 +184,7 @@ export default class extends Controller {
         }
         const pnls = days.map((dd) => dd.pnl);
         const maxAbs = Math.max(100, ...pnls.map(Math.abs));
-        const yScale = (val) => h - 30 - (val / maxAbs) * (h - 50) / 2 - (h / 2 - 30);
+        const yScale = (val) => h - 30 - ((val / maxAbs) * (h - 50)) / 2 - (h / 2 - 30);
         const zeroY = h - 30;
         const xStep = (w - 80) / Math.max(1, days.length - 1);
 
@@ -168,7 +195,7 @@ export default class extends Controller {
             const day = days[i];
             if (day.pnl >= 0) {
                 const x = 40 + i * xStep;
-                const y = zeroY - (day.pnl / maxAbs) * (h - 50) / 2;
+                const y = zeroY - ((day.pnl / maxAbs) * (h - 50)) / 2;
                 const height = zeroY - y;
                 html += `<rect x="${x - 4}" y="${y}" width="8" height="${height}"
                     fill="var(--gold-elev)" fill-opacity="0.7" rx="1">
@@ -181,7 +208,7 @@ export default class extends Controller {
             if (day.pnl < 0) {
                 const x = 40 + i * xStep;
                 const y = zeroY;
-                const height = (Math.abs(day.pnl) / maxAbs) * (h - 50) / 2;
+                const height = ((Math.abs(day.pnl) / maxAbs) * (h - 50)) / 2;
                 html += `<rect x="${x - 4}" y="${y}" width="8" height="${height}"
                     fill="#ff6b6b" fill-opacity="0.7" rx="1">
                     <title>${escapeHtml(day.date)} ${day.trades}t PnL: ${day.pnl}
@@ -191,7 +218,7 @@ export default class extends Controller {
         if (days.length > 0) {
             html += `<text x="40" y="${h - 12}" font-size="9" fill="var(--outline-elev)">${days[0].date.substring(5)}</text>`;
             if (days.length > 2) {
-                html += `<text x="${40 + (days.length - 1) / 2 * xStep}" y="${h - 12}" font-size="9"
+                html += `<text x="${40 + ((days.length - 1) / 2) * xStep}" y="${h - 12}" font-size="9"
                     fill="var(--outline-elev)" text-anchor="middle">${days[Math.floor(days.length / 2)].date.substring(5)}</text>`;
             }
             html += `<text x="${40 + (days.length - 1) * xStep}" y="${h - 12}" font-size="9"

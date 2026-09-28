@@ -6,12 +6,13 @@
  * properties so the same module can power both the gateway (full) and the
  * Sanctum shell (subtle).
  */
-(function() {
+(function () {
     'use strict';
 
     const canvas = document.createElement('canvas');
     canvas.id = 'bg-shader-canvas';
-    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;';
+    canvas.style.cssText =
+        'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;';
     document.body.prepend(canvas);
 
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -26,13 +27,13 @@
     // Convert hex color to rgb vec3
     function hexToRgb(hex) {
         let h = hex.replace('#', '');
-        if (h.length === 3) h = h.split('').map(c => c + c).join('');
+        if (h.length === 3)
+            h = h
+                .split('')
+                .map((c) => c + c)
+                .join('');
         const num = parseInt(h, 16);
-        return [
-            ((num >> 16) & 255) / 255,
-            ((num >> 8) & 255) / 255,
-            (num & 255) / 255
-        ];
+        return [((num >> 16) & 255) / 255, ((num >> 8) & 255) / 255, (num & 255) / 255];
     }
     const goldRgb = hexToRgb(cssGoldRaw);
 
@@ -121,7 +122,11 @@
 
     const buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+    gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+        gl.STATIC_DRAW
+    );
 
     const posLoc = gl.getAttribLocation(program, 'position');
     gl.enableVertexAttribArray(posLoc);
@@ -155,7 +160,10 @@
         gl.uniform1f(timeLoc, time);
         gl.uniform2f(resLoc, canvas.width, canvas.height);
         // Re-read CSS props each frame so live tuning works.
-        const liveDensity = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bg-stars-density')) || cssDensity;
+        const liveDensity =
+            parseFloat(
+                getComputedStyle(document.documentElement).getPropertyValue('--bg-stars-density')
+            ) || cssDensity;
         if (liveDensity !== cachedDensity) {
             cachedDensity = liveDensity;
             gl.uniform1f(densityLoc, liveDensity);

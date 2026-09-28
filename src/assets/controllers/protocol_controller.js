@@ -2,16 +2,16 @@ import { Controller } from '@hotwired/stimulus';
 
 const SEVERITY_RANK = { danger: 3, warning: 2, info: 1 };
 const SEVERITY_VISUAL = {
-    danger:  { icon: 'error',   pill: 'status-inactive', color: '#f87171' },
-    warning: { icon: 'warning', pill: 'status-pending',  color: 'var(--gold-elev)' },
-    info:    { icon: 'info',    pill: 'status-active',   color: 'var(--violet)' },
+    danger: { icon: 'error', pill: 'status-inactive', color: '#f87171' },
+    warning: { icon: 'warning', pill: 'status-pending', color: 'var(--gold-elev)' },
+    info: { icon: 'info', pill: 'status-active', color: 'var(--violet)' },
 };
 const TIER_VISUAL = {
-    elite:   { label: 'ELITE',   color: '#ffe088' },
-    strong:  { label: 'STRONG',  color: 'var(--gold-elev)' },
-    steady:  { label: 'STEADY',  color: 'var(--violet)' },
+    elite: { label: 'ELITE', color: '#ffe088' },
+    strong: { label: 'STRONG', color: 'var(--gold-elev)' },
+    steady: { label: 'STEADY', color: 'var(--violet)' },
     caution: { label: 'CAUTION', color: 'var(--gold-elev)' },
-    risk:    { label: 'RISK',    color: '#f87171' },
+    risk: { label: 'RISK', color: '#f87171' },
 };
 
 export default class extends Controller {
@@ -77,7 +77,7 @@ export default class extends Controller {
      * TNSVT Sprint H.2 — Guardar el timestamp de dismissal (24hs).
      */
     setDismissedFor24h() {
-        const until = Date.now() + (24 * 60 * 60 * 1000); // 24 horas en ms
+        const until = Date.now() + 24 * 60 * 60 * 1000; // 24 horas en ms
         try {
             localStorage.setItem('tnsvt_protocol_dismissed_until', String(until));
         } catch (e) {
@@ -234,7 +234,10 @@ export default class extends Controller {
     }
 
     escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+        );
     }
 
     renderScore(data) {
@@ -242,17 +245,20 @@ export default class extends Controller {
         const tierVisual = TIER_VISUAL[data.tier] || { label: '—', color: 'var(--outline-elev)' };
 
         this.scoreValueTarget.textContent = score;
-        this.scoreValueTarget.style.color = score >= 75 ? tierVisual.color : (score >= 40 ? 'var(--gold-elev)' : '#f87171');
+        this.scoreValueTarget.style.color =
+            score >= 75 ? tierVisual.color : score >= 40 ? 'var(--gold-elev)' : '#f87171';
 
         this.scoreTierTarget.textContent = tierVisual.label;
         this.scoreTierTarget.style.color = tierVisual.color;
         this.scoreTierTarget.style.borderColor = tierVisual.color;
 
-        const items = (Array.isArray(data.breakdown) && data.breakdown.length > 0) ? data.breakdown : null;
+        const items =
+            Array.isArray(data.breakdown) && data.breakdown.length > 0 ? data.breakdown : null;
         this.scoreBreakdownTarget.innerHTML = items
-            ? items.map((item) => {
-                const sign = item.delta > 0 ? '+' : '';
-                return `
+            ? items
+                  .map((item) => {
+                      const sign = item.delta > 0 ? '+' : '';
+                      return `
                     <li class="protocol-breakdown-item">
                         <span class="material-symbols-elev protocol-icon-danger" aria-hidden="true">trending_down</span>
                         <div class="protocol-breakdown-text">
@@ -262,7 +268,8 @@ export default class extends Controller {
                         <span class="protocol-breakdown-delta">${sign}${item.delta}</span>
                     </li>
                 `;
-            }).join('')
+                  })
+                  .join('')
             : '<li class="protocol-breakdown-clear">Sin factores negativos.</li>';
 
         this.scoreComputedAtTarget.textContent = data.computed_at
@@ -286,18 +293,19 @@ export default class extends Controller {
         }
         emptyEl.classList.add('hidden');
 
-        const sorted = signals.slice().sort((a, b) =>
-            (SEVERITY_RANK[b.severity] || 0) - (SEVERITY_RANK[a.severity] || 0)
-        );
+        const sorted = signals
+            .slice()
+            .sort((a, b) => (SEVERITY_RANK[b.severity] || 0) - (SEVERITY_RANK[a.severity] || 0));
 
         sorted.forEach((sig) => {
             const visual = SEVERITY_VISUAL[sig.severity] || SEVERITY_VISUAL.info;
-            const actionHtml = sig.action_label && sig.action_route
-                ? `<a href="${this.escapeHtml(sig.action_route)}" class="protocol-signal-action">
+            const actionHtml =
+                sig.action_label && sig.action_route
+                    ? `<a href="${this.escapeHtml(sig.action_route)}" class="protocol-signal-action">
                        ${this.escapeHtml(sig.action_label)}
                        <span class="material-symbols-elev" aria-hidden="true">arrow_forward</span>
                    </a>`
-                : '';
+                    : '';
 
             listEl.appendChild(this.buildSignalNode(sig, visual, actionHtml));
         });

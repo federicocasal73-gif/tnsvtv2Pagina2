@@ -21,7 +21,9 @@ export default class extends Controller {
 
     async load() {
         try {
-            const r = await window.apiFetch('/api/profile/' + encodeURIComponent(this.userCodeValue));
+            const r = await window.apiFetch(
+                '/api/profile/' + encodeURIComponent(this.userCodeValue)
+            );
             const user = r?.data?.user ?? null;
             if (!user) {
                 this.renderError('Usuario no encontrado.');
@@ -38,7 +40,9 @@ export default class extends Controller {
         const avatar = u.avatar_url
             ? `<img src="${this.escape(u.avatar_url)}" alt="">`
             : `<span>${this.escape((u.name || '?').charAt(0))}</span>`;
-        const adminBadge = u.is_admin ? '<span class="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white font-semibold ml-2">ADMIN</span>' : '';
+        const adminBadge = u.is_admin
+            ? '<span class="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white font-semibold ml-2">ADMIN</span>'
+            : '';
         const wallet = u.wallet_balance ?? u.walletBalance ?? '0';
 
         this.containerTarget.innerHTML = `
@@ -71,8 +75,16 @@ export default class extends Controller {
     }
 
     escape(str) {
-        return String(str ?? '').replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        }[m]));
+        return String(str ?? '').replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

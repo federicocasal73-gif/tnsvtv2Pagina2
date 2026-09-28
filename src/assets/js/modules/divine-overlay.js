@@ -17,11 +17,13 @@
  *  - Resize handler regenera stars/particles
  */
 
-(function() {
+(function () {
     'use strict';
 
     let canvas, ctx;
-    let stars = [], particles = [], meteors = [];
+    let stars = [],
+        particles = [],
+        meteors = [];
     let rafId = null;
     let isVisible = !document.hidden;
     let reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -34,7 +36,8 @@
         canvas = document.createElement('canvas');
         canvas.id = 'divine-canvas-overlay';
         canvas.setAttribute('aria-hidden', 'true');
-        canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0;transition:opacity 600ms ease;';
+        canvas.style.cssText =
+            'position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;opacity:0;transition:opacity 600ms ease;';
         document.body.appendChild(canvas);
 
         ctx = canvas.getContext('2d');
@@ -46,12 +49,12 @@
         document.addEventListener('visibilitychange', () => {
             isVisible = !document.hidden;
             if (isVisible && !rafId) loop();
-            else if (!isVisible && rafId) cancelAnimationFrame(rafId), rafId = null;
+            else if (!isVisible && rafId) (cancelAnimationFrame(rafId), (rafId = null));
         });
 
         // Reduced-motion — pausa después de 1 frame
         const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-        mq.addEventListener('change', e => {
+        mq.addEventListener('change', (e) => {
             reducedMotion = e.matches;
             if (!rafId) loop();
         });
@@ -64,9 +67,11 @@
         });
 
         // Mobile detection
-        window.matchMedia('(max-width: 768px)').addEventListener('change', e => {
+        window.matchMedia('(max-width: 768px)').addEventListener('change', (e) => {
             isMobile = e.matches;
-            stars = []; particles = []; meteors = [];
+            stars = [];
+            particles = [];
+            meteors = [];
             resize();
         });
 
@@ -95,7 +100,7 @@
                 radius: Math.random() * 1.5 + 0.4,
                 alpha: Math.random() * 0.5 + 0.3,
                 twinkle: Math.random() * 0.02 + 0.01,
-                phase: Math.random() * Math.PI * 2
+                phase: Math.random() * Math.PI * 2,
             });
         }
 
@@ -108,7 +113,7 @@
                     radius: Math.random() * 3 + 1,
                     alpha: Math.random() * 0.6 + 0.2,
                     vy: Math.random() * 0.5 + 0.2,
-                    vx: (Math.random() - 0.5) * 0.3
+                    vx: (Math.random() - 0.5) * 0.3,
                 });
             }
         }
@@ -123,7 +128,7 @@
             vx: (Math.random() - 0.5) * 3,
             vy: Math.random() * 6 + 4,
             trail: [],
-            life: 100
+            life: 100,
         });
     }
 
@@ -143,8 +148,12 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         const grad = ctx.createRadialGradient(
-            canvas.width / 2, canvas.height / 2, 50,
-            canvas.width / 2, canvas.height / 2, canvas.width / 2
+            canvas.width / 2,
+            canvas.height / 2,
+            50,
+            canvas.width / 2,
+            canvas.height / 2,
+            canvas.width / 2
         );
         grad.addColorStop(0, '#0a0618');
         grad.addColorStop(0.5, '#05030c');
@@ -175,7 +184,10 @@
 
                 p.x += p.vx;
                 p.y += p.vy;
-                if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * canvas.width; }
+                if (p.y > canvas.height) {
+                    p.y = 0;
+                    p.x = Math.random() * canvas.width;
+                }
                 if (p.x < 0) p.x = canvas.width;
                 if (p.x > canvas.width) p.x = 0;
             }

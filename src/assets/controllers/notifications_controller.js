@@ -55,7 +55,7 @@ export default class extends Controller {
             window.addEventListener('tnsvt:user-loaded', () => this.load(), { once: true });
         }
         // F5: filter chip clicks
-        this.element.querySelectorAll('.notif-filter').forEach(btn => {
+        this.element.querySelectorAll('.notif-filter').forEach((btn) => {
             btn.addEventListener('click', () => this.setFilter(btn.dataset.filter));
         });
     }
@@ -65,7 +65,10 @@ export default class extends Controller {
     }
 
     escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
+        );
     }
 
     setFilter(name) {
@@ -98,18 +101,29 @@ export default class extends Controller {
         const undo = async () => {
             // Restore via per-id read-toggle (PUT /:id/unread).
             for (const id of ids) {
-                await window.apiFetch('/api/notifications/' + id + '/unread?user_code=' + encodeURIComponent(this.me()), {
-                    method: 'PUT', silent: true,
-                });
+                await window.apiFetch(
+                    '/api/notifications/' +
+                        id +
+                        '/unread?user_code=' +
+                        encodeURIComponent(this.me()),
+                    {
+                        method: 'PUT',
+                        silent: true,
+                    }
+                );
             }
             sel.load();
         };
         // Mark as read first
         (async () => {
             for (const id of ids) {
-                await window.apiFetch('/api/notifications/' + id + '/read?user_code=' + encodeURIComponent(this.me()), {
-                    method: 'PUT', silent: true,
-                });
+                await window.apiFetch(
+                    '/api/notifications/' + id + '/read?user_code=' + encodeURIComponent(this.me()),
+                    {
+                        method: 'PUT',
+                        silent: true,
+                    }
+                );
             }
             if (window.apiUndoToast) {
                 window.apiUndoToast({
@@ -126,9 +140,12 @@ export default class extends Controller {
     }
 
     async load() {
-        const r = await window.apiFetch('/api/notifications?user_code=' + encodeURIComponent(this.me()));
+        const r = await window.apiFetch(
+            '/api/notifications?user_code=' + encodeURIComponent(this.me())
+        );
         if (!r.ok || !Array.isArray(r.data)) {
-            this.listTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin notificaciones</p>';
+            this.listTarget.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)] py-8">Sin notificaciones</p>';
             this.unreadTarget.textContent = '0';
             return;
         }
@@ -143,11 +160,13 @@ export default class extends Controller {
 
         // Apply filter
         let notifs = this.all;
-        if (this.filter === 'unread') notifs = notifs.filter(n => !n.read);
-        else if (this.filter !== 'all') notifs = notifs.filter(n => (n.type || '').startsWith(this.filter));
+        if (this.filter === 'unread') notifs = notifs.filter((n) => !n.read);
+        else if (this.filter !== 'all')
+            notifs = notifs.filter((n) => (n.type || '').startsWith(this.filter));
 
         if (notifs.length === 0) {
-            this.listTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8">Sin notificaciones para este filtro</p>';
+            this.listTarget.innerHTML =
+                '<p class="text-center text-[var(--outline-elev)] py-8">Sin notificaciones para este filtro</p>';
             return;
         }
         const sel = this;
@@ -161,11 +180,16 @@ export default class extends Controller {
             if (!key) return '';
             const [y, m, d] = key.split('-').map(Number);
             const dt = new Date(y, m, d);
-            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             const diff = Math.round((today - dt) / 86400000);
             if (diff === 0) return 'Hoy';
             if (diff === 1) return 'Ayer';
-            return dt.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'short' });
+            return dt.toLocaleDateString('es-AR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'short',
+            });
         };
         let html = '';
         let lastKey = null;
@@ -175,7 +199,9 @@ export default class extends Controller {
             if (link.startsWith('task:')) link = '/sanctum/tasks/' + link.split(':')[1];
             if (link.startsWith('chat:')) link = '/chat';
             const time = n.ts ? new Date(n.ts).toLocaleString() : '';
-            const unreadClass = n.read ? '' : 'border-l-4 border-[var(--gold-elev)] bg-[rgba(242,202,80,0.05)]';
+            const unreadClass = n.read
+                ? ''
+                : 'border-l-4 border-[var(--gold-elev)] bg-[rgba(242,202,80,0.05)]';
             const checked = sel.bulkSelected.has(String(n.id)) ? 'is-selected' : '';
             const checkbox = sel.bulkMode
                 ? `<input type="checkbox" class="notif-bulk-checkbox" data-id="${n.id}" ${checked ? 'checked' : ''} />`
@@ -188,21 +214,24 @@ export default class extends Controller {
                 const label = dayLabel(key);
                 if (label) html += `<p class="notif-day-header">${sel.escapeHtml(label)}</p>`;
             }
-            html += `<${tagName}${hrefAttr} data-id="${n.id}" class="block glass-card-elev p-3 ${unreadClass} ${checked} hover:bg-[var(--glass-bg-elev)] transition">`
-                + `<div class="flex items-start gap-3">`
-                + checkbox
-                + `<span class="material-symbols-elev text-[var(--gold-elev)] mt-0.5">${icon}</span>`
-                + `<div class="flex-1 min-w-0">`
-                + `<p class="text-sm text-[var(--on-surface-elev)]">${sel.escapeHtml(n.text || '')}</p>`
-                + `<p class="text-xs text-[var(--outline-elev)] mt-1">${sel.escapeHtml(time)}</p>`
-                + `</div>`
-                + (n.read ? '' : '<span class="text-xs text-[var(--gold-elev)] font-semibold">NUEVO</span>')
-                + `</div>`
-                + `</${tagName}>`;
+            html +=
+                `<${tagName}${hrefAttr} data-id="${n.id}" class="block glass-card-elev p-3 ${unreadClass} ${checked} hover:bg-[var(--glass-bg-elev)] transition">` +
+                `<div class="flex items-start gap-3">` +
+                checkbox +
+                `<span class="material-symbols-elev text-[var(--gold-elev)] mt-0.5">${icon}</span>` +
+                `<div class="flex-1 min-w-0">` +
+                `<p class="text-sm text-[var(--on-surface-elev)]">${sel.escapeHtml(n.text || '')}</p>` +
+                `<p class="text-xs text-[var(--outline-elev)] mt-1">${sel.escapeHtml(time)}</p>` +
+                `</div>` +
+                (n.read
+                    ? ''
+                    : '<span class="text-xs text-[var(--gold-elev)] font-semibold">NUEVO</span>') +
+                `</div>` +
+                `</${tagName}>`;
         });
         this.listTarget.innerHTML = html;
         if (this.bulkMode) {
-            this.listTarget.querySelectorAll('.notif-bulk-checkbox').forEach(cb => {
+            this.listTarget.querySelectorAll('.notif-bulk-checkbox').forEach((cb) => {
                 cb.addEventListener('change', () => {
                     if (cb.checked) this.bulkSelected.add(cb.dataset.id);
                     else this.bulkSelected.delete(cb.dataset.id);
@@ -223,12 +252,19 @@ export default class extends Controller {
     }
 
     async markRead(id, el) {
-        const r = await window.apiFetch('/api/notifications/' + id + '/read?user_code=' + encodeURIComponent(this.me()), {
-            method: 'PUT',
-            silent: true,
-        });
+        const r = await window.apiFetch(
+            '/api/notifications/' + id + '/read?user_code=' + encodeURIComponent(this.me()),
+            {
+                method: 'PUT',
+                silent: true,
+            }
+        );
         if (r.ok && el) {
-            el.classList.remove('border-l-4', 'border-[var(--gold-elev)]', 'bg-[rgba(242,202,80,0.05)]');
+            el.classList.remove(
+                'border-l-4',
+                'border-[var(--gold-elev)]',
+                'bg-[rgba(242,202,80,0.05)]'
+            );
             const badge = el.querySelector('.font-semibold');
             if (badge) badge.remove();
         }
@@ -246,10 +282,13 @@ export default class extends Controller {
     }
 
     async markAll() {
-        const r = await window.apiFetch('/api/notifications/read-all?user_code=' + encodeURIComponent(this.me()), {
-            method: 'PUT',
-            silent: true,
-        });
+        const r = await window.apiFetch(
+            '/api/notifications/read-all?user_code=' + encodeURIComponent(this.me()),
+            {
+                method: 'PUT',
+                silent: true,
+            }
+        );
         if (r.ok) {
             if (window.apiToast) window.apiToast('Todas marcadas como leídas', 'success');
             this.load();

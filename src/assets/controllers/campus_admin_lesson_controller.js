@@ -8,8 +8,14 @@ import { Controller } from '@hotwired/stimulus';
  */
 export default class extends Controller {
     static targets = [
-        'lessonTitle', 'lessonDescription', 'lessonVideo', 'lessonOrden',
-        'videoPreview', 'videoHint', 'materialsList', 'deleteBtn',
+        'lessonTitle',
+        'lessonDescription',
+        'lessonVideo',
+        'lessonOrden',
+        'videoPreview',
+        'videoHint',
+        'materialsList',
+        'deleteBtn',
     ];
 
     static values = {
@@ -30,30 +36,40 @@ export default class extends Controller {
     async loadLesson() {
         if (!this.lessonIdValue) return;
         try {
-            const r = await fetch(`/api/campus/admin/lessons?module_id=0&lesson_id=${this.lessonIdValue}`,
-                { headers: this.headers() });
+            const r = await fetch(
+                `/api/campus/admin/lessons?module_id=0&lesson_id=${this.lessonIdValue}`,
+                { headers: this.headers() }
+            );
             // The admin API supports filtering by module; if that doesn't work
             // we fall back to fetching all lessons for the course.
             let lesson = null;
             if (r.ok) {
                 const list = await r.json();
-                lesson = list.find(l => l.id === this.lessonIdValue);
+                lesson = list.find((l) => l.id === this.lessonIdValue);
             }
             if (!lesson) {
-                const r2 = await fetch(`/api/campus/admin/lessons?course_id=${this.courseIdValue}`,
-                    { headers: this.headers() });
+                const r2 = await fetch(
+                    `/api/campus/admin/lessons?course_id=${this.courseIdValue}`,
+                    { headers: this.headers() }
+                );
                 if (r2.ok) {
                     const list2 = await r2.json();
-                    lesson = list2.find(l => l.id === this.lessonIdValue);
+                    lesson = list2.find((l) => l.id === this.lessonIdValue);
                 }
             }
             if (!lesson) {
                 // Fallback: load via the public endpoint
-                const r3 = await fetch(`/api/campus/lessons/${this.lessonIdValue}`,
-                    { headers: this.headers() });
+                const r3 = await fetch(`/api/campus/lessons/${this.lessonIdValue}`, {
+                    headers: this.headers(),
+                });
                 if (r3.ok) {
                     const data = await r3.json();
-                    lesson = { id: data.id, title: data.title, description: data.description, video_url: data.video_url };
+                    lesson = {
+                        id: data.id,
+                        title: data.title,
+                        description: data.description,
+                        video_url: data.video_url,
+                    };
                 }
             }
             if (!lesson) return;
@@ -66,7 +82,8 @@ export default class extends Controller {
 
     fillForm(lesson) {
         if (this.hasLessonTitleTarget) this.lessonTitleTarget.value = lesson.title || '';
-        if (this.hasLessonDescriptionTarget) this.lessonDescriptionTarget.value = lesson.description || '';
+        if (this.hasLessonDescriptionTarget)
+            this.lessonDescriptionTarget.value = lesson.description || '';
         if (this.hasLessonVideoTarget) this.lessonVideoTarget.value = lesson.video_url || '';
         if (this.hasLessonOrdenTarget) this.lessonOrdenTarget.value = lesson.orden ?? 0;
 
@@ -92,7 +109,8 @@ export default class extends Controller {
                     <span class="material-symbols-elev">play_circle</span>
                     <p>Pega una URL de video para ver la vista previa</p>
                 </div>`;
-            if (this.hasVideoHintTarget) this.videoHintTarget.textContent = 'YouTube, Vimeo o archivo .mp4 directo';
+            if (this.hasVideoHintTarget)
+                this.videoHintTarget.textContent = 'YouTube, Vimeo o archivo .mp4 directo';
             return;
         }
         const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
@@ -112,7 +130,8 @@ export default class extends Controller {
             this.videoPreviewTarget.innerHTML = `<video class="campus-video-native" controls preload="metadata" playsinline><source src="${this.escape(url)}"></video>`;
             return;
         }
-        if (this.hasVideoHintTarget) this.videoHintTarget.textContent = 'URL no reconocida (probá YouTube, Vimeo o .mp4)';
+        if (this.hasVideoHintTarget)
+            this.videoHintTarget.textContent = 'URL no reconocida (probá YouTube, Vimeo o .mp4)';
         this.videoPreviewTarget.innerHTML = `
             <div class="campus-admin-video-placeholder">
                 <span class="material-symbols-elev">link_off</span>
@@ -145,7 +164,13 @@ export default class extends Controller {
     }
 
     async deleteLesson() {
-        if (!await window.apiConfirm('¿Eliminar esta lección? Esta acción no se puede deshacer.', { title: 'Eliminar lección', variant: 'danger' })) return;
+        if (
+            !(await window.apiConfirm('¿Eliminar esta lección? Esta acción no se puede deshacer.', {
+                title: 'Eliminar lección',
+                variant: 'danger',
+            }))
+        )
+            return;
         try {
             const r = await fetch(`/api/campus/admin/lessons/${this.lessonIdValue}`, {
                 method: 'DELETE',
@@ -153,7 +178,10 @@ export default class extends Controller {
             });
             if (r.ok) {
                 if (window.apiToast) window.apiToast('Lección eliminada', 'success');
-                setTimeout(() => location.href = `/sanctum/campus/admin/courses/${this.courseIdValue}`, 500);
+                setTimeout(
+                    () => (location.href = `/sanctum/campus/admin/courses/${this.courseIdValue}`),
+                    500
+                );
             } else {
                 if (window.apiToast) window.apiToast('Error al eliminar', 'error');
             }
@@ -189,7 +217,9 @@ export default class extends Controller {
     async loadMaterials() {
         if (!this.hasMaterialsListTarget) return;
         try {
-            const r = await fetch(`/api/campus/admin/materials?lesson_id=${this.lessonIdValue}`, { headers: this.headers() });
+            const r = await fetch(`/api/campus/admin/materials?lesson_id=${this.lessonIdValue}`, {
+                headers: this.headers(),
+            });
             if (!r.ok) {
                 this.materialsListTarget.innerHTML = `<p class="campus-admin-empty-mini">Sin materiales aún.</p>`;
                 return;
@@ -199,7 +229,9 @@ export default class extends Controller {
                 this.materialsListTarget.innerHTML = `<p class="campus-admin-empty-mini"><span class="material-symbols-elev">attach_file</span> Sin materiales aún.</p>`;
                 return;
             }
-            this.materialsListTarget.innerHTML = materials.map(m => `
+            this.materialsListTarget.innerHTML = materials
+                .map(
+                    (m) => `
                 <div class="campus-admin-material-row" data-material-id="${m.id}">
                     <span class="material-symbols-elev">${this.materialIcon(m.type)}</span>
                     <span class="campus-admin-material-title">${this.escape(m.title)}</span>
@@ -208,7 +240,9 @@ export default class extends Controller {
                         <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">delete</span>
                     </button>
                 </div>
-            `).join('');
+            `
+                )
+                .join('');
         } catch (e) {
             console.error('[campus-admin-lesson] loadMaterials', e);
         }
@@ -216,7 +250,13 @@ export default class extends Controller {
 
     async deleteMaterial(event) {
         const id = parseInt(event.currentTarget.dataset.materialId, 10);
-        if (!await window.apiConfirm('¿Eliminar este material?', { title: 'Eliminar material', variant: 'danger' })) return;
+        if (
+            !(await window.apiConfirm('¿Eliminar este material?', {
+                title: 'Eliminar material',
+                variant: 'danger',
+            }))
+        )
+            return;
         try {
             const r = await fetch(`/api/campus/admin/materials/${id}`, {
                 method: 'DELETE',
@@ -234,7 +274,13 @@ export default class extends Controller {
     }
 
     materialIcon(type) {
-        const map = { pdf: 'picture_as_pdf', video: 'play_circle', image: 'image', link: 'link', doc: 'description' };
+        const map = {
+            pdf: 'picture_as_pdf',
+            video: 'play_circle',
+            image: 'image',
+            link: 'link',
+            doc: 'description',
+        };
         return map[type] || 'attach_file';
     }
 
@@ -243,8 +289,16 @@ export default class extends Controller {
     }
 
     escape(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

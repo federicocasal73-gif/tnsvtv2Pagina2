@@ -15,9 +15,13 @@ import { Controller } from '@hotwired/stimulus';
  */
 export default class extends Controller {
     static targets = [
-        'streakValue', 'streakToday', 'streakLongest',
-        'heatmapGrid', 'heatmapMonth',
-        'achievementsGrid', 'achievementsTotal',
+        'streakValue',
+        'streakToday',
+        'streakLongest',
+        'heatmapGrid',
+        'heatmapMonth',
+        'achievementsGrid',
+        'achievementsTotal',
     ];
 
     connect() {
@@ -35,14 +39,18 @@ export default class extends Controller {
             if (!r.ok) return;
             const data = await r.json();
             this.renderStreak(data);
-        } catch (e) { console.warn('[me-progress] loadStreak', e); }
+        } catch (e) {
+            console.warn('[me-progress] loadStreak', e);
+        }
     }
 
     renderStreak(d) {
         if (this.hasStreakValueTarget) this.streakValueTarget.textContent = d.current;
         if (this.hasStreakTodayTarget) {
             this.streakTodayTarget.classList.toggle('is-active', d.today_active);
-            this.streakTodayTarget.title = d.today_active ? 'Hoy ya sumaste actividad' : 'Hoy aún no sumaste actividad';
+            this.streakTodayTarget.title = d.today_active
+                ? 'Hoy ya sumaste actividad'
+                : 'Hoy aún no sumaste actividad';
         }
         if (this.hasStreakLongestTarget) this.streakLongestTarget.textContent = d.longest;
     }
@@ -56,21 +64,28 @@ export default class extends Controller {
             if (!r.ok) return;
             const data = await r.json();
             this.renderHeatmap(data);
-        } catch (e) { console.warn('[me-progress] loadHeatmap', e); }
+        } catch (e) {
+            console.warn('[me-progress] loadHeatmap', e);
+        }
     }
 
     renderHeatmap(d) {
         if (!this.hasHeatmapGridTarget) return;
         const days = d.days || [];
         if (!days.length) {
-            this.heatmapGridTarget.innerHTML = '<p class="text-xs text-[var(--outline-elev)]">Sin datos</p>';
+            this.heatmapGridTarget.innerHTML =
+                '<p class="text-xs text-[var(--outline-elev)]">Sin datos</p>';
             return;
         }
         // Group days into weeks (7 rows × N cols). Our `days` array is
         // a flat chronological sequence already aligned to the grid.
-        const html = days.map(d => `
+        const html = days
+            .map(
+                (d) => `
             <div class="me-heatmap-cell level-${d.level}" title="${d.date}: ${d.count} evento${d.count === 1 ? '' : 's'}"></div>
-        `).join('');
+        `
+            )
+            .join('');
         this.heatmapGridTarget.innerHTML = html;
     }
 
@@ -83,7 +98,9 @@ export default class extends Controller {
             if (!r.ok) return;
             const data = await r.json();
             this.renderAchievements(data);
-        } catch (e) { console.warn('[me-progress] loadAchievements', e); }
+        } catch (e) {
+            console.warn('[me-progress] loadAchievements', e);
+        }
     }
 
     renderAchievements(d) {
@@ -101,7 +118,9 @@ export default class extends Controller {
             `;
             return;
         }
-        this.achievementsGridTarget.innerHTML = unlocked.map(a => `
+        this.achievementsGridTarget.innerHTML = unlocked
+            .map(
+                (a) => `
             <article class="me-achievement-badge color-${a.color}" title="${this.escape(a.description || a.title)}">
                 <div class="me-achievement-icon">
                     <span class="material-symbols-elev">${this.escape(a.icon)}</span>
@@ -111,7 +130,9 @@ export default class extends Controller {
                     <div class="me-achievement-points">+${a.points} pts</div>
                 </div>
             </article>
-        `).join('');
+        `
+            )
+            .join('');
     }
 
     userCode() {
@@ -119,8 +140,16 @@ export default class extends Controller {
     }
 
     escape(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

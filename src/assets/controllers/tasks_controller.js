@@ -25,18 +25,35 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = [
         // List
-        'tabMine', 'tabCreated', 'tabAll', 'tabToday',
-        'searchInput', 'statusFilter', 'priorityFilter', 'sortSelect',
-        'list', 'listCount',
-        'countPending', 'countInProgress', 'countSubmitted', 'countApproved', 'countOverdue',
+        'tabMine',
+        'tabCreated',
+        'tabAll',
+        'tabToday',
+        'searchInput',
+        'statusFilter',
+        'priorityFilter',
+        'sortSelect',
+        'list',
+        'listCount',
+        'countPending',
+        'countInProgress',
+        'countSubmitted',
+        'countApproved',
+        'countOverdue',
         // Detail
-        'detailContainer', 'actionBar',
-        'submissionsSection', 'submissionsList',
-        'feedbackSection', 'feedbackContent', 'gradeForm',
-        'commentsList', 'commentsCount',
+        'detailContainer',
+        'actionBar',
+        'submissionsSection',
+        'submissionsList',
+        'feedbackSection',
+        'feedbackContent',
+        'gradeForm',
+        'commentsList',
+        'commentsCount',
         'submitCard',
         // New form
-        'newForm', 'newFormCard',
+        'newForm',
+        'newFormCard',
     ];
 
     static values = {
@@ -82,7 +99,7 @@ export default class extends Controller {
         this.currentView = view;
 
         // Update tab visuals (tabAll only exists for admins)
-        ['tabMine', 'tabToday', 'tabCreated', 'tabAll'].forEach(name => {
+        ['tabMine', 'tabToday', 'tabCreated', 'tabAll'].forEach((name) => {
             const getter = 'has' + name.charAt(0).toUpperCase() + name.slice(1) + 'Target';
             if (!this[getter]) return;
             const t = this[name + 'Target'];
@@ -135,11 +152,12 @@ export default class extends Controller {
         if (sortField) params.set('sort', sortField);
         if (sortOrder) params.set('order', sortOrder);
 
-        const url = this.currentView === 'created'
-            ? `/api/tasks/created-by-me?${params}`
-            : this.currentView === 'all'
-                ? `/api/tasks?${params}`
-                : this.currentView === 'today'
+        const url =
+            this.currentView === 'created'
+                ? `/api/tasks/created-by-me?${params}`
+                : this.currentView === 'all'
+                  ? `/api/tasks?${params}`
+                  : this.currentView === 'today'
                     ? `/api/tasks?scope=global&${params}`
                     : `/api/tasks/mine?${params}`;
 
@@ -160,7 +178,7 @@ export default class extends Controller {
                 this.listTarget.innerHTML = this.emptyStateHtml();
                 return;
             }
-            this.listTarget.innerHTML = tasks.map(t => this.taskCardHtml(t)).join('');
+            this.listTarget.innerHTML = tasks.map((t) => this.taskCardHtml(t)).join('');
             this.bindTaskCardEvents();
         } catch (e) {
             console.error('[tasks] loadList error', e);
@@ -187,8 +205,9 @@ export default class extends Controller {
                     ${t.comments_count > 0 ? `<span><span class="material-symbols-elev">forum</span> ${t.comments_count}</span>` : ''}
                 </div>
             </a>
-        `.replace('{{html-status-pill}}', this.statusPillHtml(t.status, t.status_label))
-         .replace('{{html-priority}}', this.priorityPillHtml(t.priority, t.priority_label));
+        `
+            .replace('{{html-status-pill}}', this.statusPillHtml(t.status, t.status_label))
+            .replace('{{html-priority}}', this.priorityPillHtml(t.priority, t.priority_label));
     }
 
     statusPillHtml(status, label) {
@@ -211,7 +230,7 @@ export default class extends Controller {
     }
 
     bindTaskCardEvents() {
-        this.listTarget.querySelectorAll('.task-card').forEach(card => {
+        this.listTarget.querySelectorAll('.task-card').forEach((card) => {
             card.addEventListener('click', (e) => {
                 if (e.metaKey || e.ctrlKey) return;
                 e.preventDefault();
@@ -261,11 +280,17 @@ export default class extends Controller {
             `;
             return;
         }
-        this.submissionsListTarget.innerHTML = subs.map(s => this.submissionItemHtml(s)).join('');
+        this.submissionsListTarget.innerHTML = subs.map((s) => this.submissionItemHtml(s)).join('');
     }
 
     submissionItemHtml(s) {
-        const statusLabel = ({ pending: 'Enviada', review: 'En revisión', approved: 'Aprobada', revision: 'Devuelta' })[s.status] || s.status;
+        const statusLabel =
+            {
+                pending: 'Enviada',
+                review: 'En revisión',
+                approved: 'Aprobada',
+                revision: 'Devuelta',
+            }[s.status] || s.status;
         return `
             <div class="task-submission-item">
                 <div class="task-submission-icon">
@@ -274,7 +299,7 @@ export default class extends Controller {
                 <div class="task-submission-body">
                     <div class="task-submission-header">
                         <strong>${this.escape(s.user_name || s.user_code)}</strong>
-                        <span class="status-pill status-pill-${s.status === 'approved' ? 'approved' : (s.status === 'revision' ? 'needs-revision' : 'in-review')} size-sm">${statusLabel}</span>
+                        <span class="status-pill status-pill-${s.status === 'approved' ? 'approved' : s.status === 'revision' ? 'needs-revision' : 'in-review'} size-sm">${statusLabel}</span>
                     </div>
                     <div class="task-submission-meta">${this.formatDateTime(s.submitted_at)}</div>
                     ${s.file_name ? `<div class="task-submission-file"><span class="material-symbols-elev">attach_file</span> ${this.escape(s.file_name)} (${this.formatBytes(s.file_size)})</div>` : ''}
@@ -306,7 +331,8 @@ export default class extends Controller {
             `;
             return;
         }
-        const gradeColor = fb.grade >= 7 ? 'success' : (fb.grade >= 4 ? 'in-progress' : 'needs-revision');
+        const gradeColor =
+            fb.grade >= 7 ? 'success' : fb.grade >= 4 ? 'in-progress' : 'needs-revision';
         this.feedbackContentTarget.innerHTML = `
             <div class="task-feedback-card">
                 <div class="task-feedback-grade">
@@ -339,13 +365,14 @@ export default class extends Controller {
     renderComments(comments) {
         if (!this.hasCommentsListTarget) return;
         if (this.hasCommentsCountTarget) {
-            this.commentsCountTarget.textContent = comments.length > 0 ? `(${comments.length})` : '';
+            this.commentsCountTarget.textContent =
+                comments.length > 0 ? `(${comments.length})` : '';
         }
         if (comments.length === 0) {
             this.commentsListTarget.innerHTML = `<p class="task-empty-mini">Sé el primero en comentar.</p>`;
             return;
         }
-        this.commentsListTarget.innerHTML = comments.map(c => this.commentItemHtml(c)).join('');
+        this.commentsListTarget.innerHTML = comments.map((c) => this.commentItemHtml(c)).join('');
     }
 
     commentItemHtml(c) {
@@ -366,8 +393,8 @@ export default class extends Controller {
         fetch(`/api/tasks/${this.taskIdValue}`, {
             headers: { 'X-Game-Code': this.userCodeValue || '' },
         })
-            .then(r => r.ok ? r.json() : null)
-            .then(data => {
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
                 if (!data) return;
                 const t = data.task;
                 const html = this.actionButtonsHtml(t);
@@ -389,7 +416,12 @@ export default class extends Controller {
                 buttons.push({ status: 'in_review', label: 'Revisar', icon: 'visibility' });
             }
             if (status === 'in_review' || status === 'submitted') {
-                buttons.push({ status: 'approved', label: 'Aprobar', icon: 'check_circle', primary: true });
+                buttons.push({
+                    status: 'approved',
+                    label: 'Aprobar',
+                    icon: 'check_circle',
+                    primary: true,
+                });
                 buttons.push({ status: 'needs_revision', label: 'Devolver', icon: 'undo' });
             }
         } else if (isAssignee) {
@@ -397,11 +429,18 @@ export default class extends Controller {
                 buttons.push({ status: 'in_progress', label: 'Empezar', icon: 'play_arrow' });
             }
             if (status === 'in_progress' || status === 'pending') {
-                buttons.push({ status: 'submitted', label: 'Marcar entregada', icon: 'check', primary: true });
+                buttons.push({
+                    status: 'submitted',
+                    label: 'Marcar entregada',
+                    icon: 'check',
+                    primary: true,
+                });
             }
         }
 
-        return buttons.map(b => `
+        return buttons
+            .map(
+                (b) => `
             <button type="button"
                     class="ui-btn ${b.primary ? 'ui-btn primary' : 'ui-btn secondary'} ui-btn-size-md"
                     data-action="click->tasks#changeStatus"
@@ -409,12 +448,14 @@ export default class extends Controller {
                 <span class="material-symbols-elev ui-btn-icon" aria-hidden="true">${b.icon}</span>
                 <span class="ui-btn-label">${b.label}</span>
             </button>
-        `).join('');
+        `
+            )
+            .join('');
     }
 
     bindActionButtons() {
         if (!this.hasActionBarTarget) return;
-        this.actionBarTarget.querySelectorAll('[data-action*="changeStatus"]').forEach(btn => {
+        this.actionBarTarget.querySelectorAll('[data-action*="changeStatus"]').forEach((btn) => {
             btn.addEventListener('click', () => {
                 this.changeStatus(btn.dataset.newStatus);
             });
@@ -434,7 +475,8 @@ export default class extends Controller {
             });
             if (!r.ok) {
                 const err = await r.json().catch(() => ({}));
-                if (window.apiToast) window.apiToast(err.error || 'Error al cambiar estado', 'error');
+                if (window.apiToast)
+                    window.apiToast(err.error || 'Error al cambiar estado', 'error');
                 return;
             }
             if (window.apiToast) window.apiToast('Estado actualizado', 'success');
@@ -534,7 +576,11 @@ export default class extends Controller {
                 if (window.apiToast) window.apiToast(err.error || 'Error al calificar', 'error');
                 return;
             }
-            if (window.apiToast) window.apiToast(decision === 'approved' ? 'Tarea aprobada' : 'Devuelta para corrección', 'success');
+            if (window.apiToast)
+                window.apiToast(
+                    decision === 'approved' ? 'Tarea aprobada' : 'Devuelta para corrección',
+                    'success'
+                );
             this.loadFeedback();
             this.renderActionBar();
         } catch (e) {
@@ -584,7 +630,9 @@ export default class extends Controller {
             priority: fd.get('priority') || 'normal',
             type: fd.get('type') || 'general',
             scope: fd.get('scope') === 'global' ? 'global' : 'personal',
-            estimated_minutes: fd.get('estimated_minutes') ? parseInt(fd.get('estimated_minutes'), 10) : null,
+            estimated_minutes: fd.get('estimated_minutes')
+                ? parseInt(fd.get('estimated_minutes'), 10)
+                : null,
             due_date: fd.get('due_date') ? new Date(fd.get('due_date')).toISOString() : null,
         };
         try {
@@ -617,16 +665,29 @@ export default class extends Controller {
 
     // ── Helpers ──
     escape(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 
     formatDateTime(iso) {
         if (!iso) return '';
         try {
             const d = new Date(iso);
-            return d.toLocaleString('es-AR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+            return d.toLocaleString('es-AR', {
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
         } catch (e) {
             return iso;
         }
@@ -656,7 +717,10 @@ export default class extends Controller {
         const units = ['B', 'KB', 'MB', 'GB'];
         let i = 0;
         let n = bytes;
-        while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+        while (n >= 1024 && i < units.length - 1) {
+            n /= 1024;
+            i++;
+        }
         return `${n.toFixed(1)} ${units[i]}`;
     }
 }

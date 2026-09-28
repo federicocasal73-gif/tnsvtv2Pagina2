@@ -13,7 +13,16 @@ import { Controller } from '@hotwired/stimulus';
  * Usage: <div data-controller="leaderboard">
  */
 export default class extends Controller {
-    static targets = ['podium', 'list', 'metricSelect', 'yourRank', 'yourRankPos', 'yourRankName', 'yourRankMetric', 'yourRankBox'];
+    static targets = [
+        'podium',
+        'list',
+        'metricSelect',
+        'yourRank',
+        'yourRankPos',
+        'yourRankName',
+        'yourRankMetric',
+        'yourRankBox',
+    ];
 
     static values = {
         refreshInterval: { type: Number, default: 60000 },
@@ -51,7 +60,7 @@ export default class extends Controller {
     async load() {
         try {
             const r = await window.apiFetch('/api/leaderboard?limit=50');
-            const data = Array.isArray(r?.data) ? r.data : (Array.isArray(r) ? r : []);
+            const data = Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
             this.all = Array.isArray(data) ? data : [];
             this.render();
         } catch (e) {
@@ -79,7 +88,7 @@ export default class extends Controller {
         const me = window.TNSVT_USER && window.TNSVT_USER.code;
         const box = document.getElementById('lb-your-rank');
         if (!box || !me) return;
-        const idx = sorted.findIndex(p => String(p.code) === String(me));
+        const idx = sorted.findIndex((p) => String(p.code) === String(me));
         if (idx === -1) {
             box.hidden = true;
             return;
@@ -93,12 +102,14 @@ export default class extends Controller {
     }
 
     renderEmpty() {
-        this.podiumTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Sin datos aún.</p>';
+        this.podiumTarget.innerHTML =
+            '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Sin datos aún.</p>';
         this.listTarget.innerHTML = '';
     }
 
     renderError() {
-        this.podiumTarget.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Error al cargar.</p>';
+        this.podiumTarget.innerHTML =
+            '<p class="text-center text-[var(--outline-elev)] py-8 col-span-3">Error al cargar.</p>';
     }
 
     scoreFor(p) {
@@ -109,23 +120,28 @@ export default class extends Controller {
     }
 
     renderPodium(top3) {
-        const podiumHTML = top3.map((p) => `
+        const podiumHTML = top3
+            .map(
+                (p) => `
             <div class="glass-card-elev podium-card">
                 <div class="podium-avatar">${this.escape((p.name || p.code || '?').charAt(0))}</div>
                 <div class="podium-name">${this.escape(p.name || p.code || '')}</div>
                 <div class="podium-score">${this.scoreFor(p)}</div>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
         this.podiumTarget.innerHTML = podiumHTML;
     }
 
     renderList(all) {
         const medals = ['gold', 'silver', 'bronze'];
-        const listHTML = all.map((p, i) => {
-            const medal = medals[i] || '';
-            const initial = this.escape((p.name || p.code || '?').charAt(0));
-            const name = this.escape(p.name || p.code || '');
-            return `
+        const listHTML = all
+            .map((p, i) => {
+                const medal = medals[i] || '';
+                const initial = this.escape((p.name || p.code || '?').charAt(0));
+                const name = this.escape(p.name || p.code || '');
+                return `
                 <div class="lb-rank">
                     <span class="lb-pos ${medal}">${i + 1}</span>
                     <span class="lb-avatar-mini">${initial}</span>
@@ -133,13 +149,22 @@ export default class extends Controller {
                     <span class="lb-score">${this.scoreFor(p)}</span>
                 </div>
             `;
-        }).join('');
+            })
+            .join('');
         this.listTarget.innerHTML = listHTML;
     }
 
     escape(str) {
-        return String(str ?? '').replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        }[m]));
+        return String(str ?? '').replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

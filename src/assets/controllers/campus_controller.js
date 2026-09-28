@@ -75,7 +75,7 @@ export default class extends Controller {
                 ? this[`${name}Target`]
                 : null;
             if (!el) return;
-            el.hidden = (name !== visibleTarget);
+            el.hidden = name !== visibleTarget;
         });
     }
 
@@ -140,12 +140,13 @@ export default class extends Controller {
             }
 
             const l = data.lesson;
-            const reasonLabel = {
-                first_lesson: 'Empieza tu primera lección',
-                next_in_module: 'Continúa este módulo',
-                next_module: 'Nuevo módulo disponible',
-                next_course: 'Siguiente curso',
-            }[data.reason] || 'Continúa aprendiendo';
+            const reasonLabel =
+                {
+                    first_lesson: 'Empieza tu primera lección',
+                    next_in_module: 'Continúa este módulo',
+                    next_module: 'Nuevo módulo disponible',
+                    next_course: 'Siguiente curso',
+                }[data.reason] || 'Continúa aprendiendo';
 
             this.continueCardTarget.innerHTML = `
                 <div class="campus-continue-header">
@@ -188,7 +189,9 @@ export default class extends Controller {
         try {
             const r = await window.apiFetch('/api/campus/courses', { silent: true });
             if (!r.ok || !r.data) {
-                this.coursesGridTarget.innerHTML = this.emptyStateHtml('Sin cursos disponibles aún.');
+                this.coursesGridTarget.innerHTML = this.emptyStateHtml(
+                    'Sin cursos disponibles aún.'
+                );
                 return;
             }
             this.allCourses = Array.isArray(r.data) ? r.data : [];
@@ -205,11 +208,15 @@ export default class extends Controller {
             this.coursesGridTarget.innerHTML = this.emptyStateHtml('No hay cursos disponibles.');
             return;
         }
-        const q = (this.hasSearchInputTarget ? this.searchInputTarget.value : '').trim().toLowerCase();
+        const q = (this.hasSearchInputTarget ? this.searchInputTarget.value : '')
+            .trim()
+            .toLowerCase();
         const filtered = q
-            ? courses.filter(c =>
-                (c.title || '').toLowerCase().includes(q) ||
-                (c.description || '').toLowerCase().includes(q))
+            ? courses.filter(
+                  (c) =>
+                      (c.title || '').toLowerCase().includes(q) ||
+                      (c.description || '').toLowerCase().includes(q)
+              )
             : courses;
         if (filtered.length === 0) {
             this.coursesGridTarget.innerHTML = this.emptyStateHtml(
@@ -217,7 +224,7 @@ export default class extends Controller {
             );
             return;
         }
-        this.coursesGridTarget.innerHTML = filtered.map(c => this.courseCardHtml(c)).join('');
+        this.coursesGridTarget.innerHTML = filtered.map((c) => this.courseCardHtml(c)).join('');
         this.bindCourseCardClicks();
     }
 
@@ -229,14 +236,14 @@ export default class extends Controller {
         const completed = c.completed_lessons || 0;
         const total = c.total_lessons || 0;
         const pct = c.progress || 0;
-        const stateClass = pct >= 100 ? 'is-completed' : (pct > 0 ? 'is-in-progress' : 'is-pending');
+        const stateClass = pct >= 100 ? 'is-completed' : pct > 0 ? 'is-in-progress' : 'is-pending';
         return `
             <a href="/campus?course=${c.id}"
                class="campus-course-card ${stateClass}"
                data-action="click->campus#navigateToCourse">
                 <div class="campus-course-card-header">
                     <span class="campus-course-emoji">${this.escapeHtml(c.emoji || '📚')}</span>
-                    <span class="status-pill status-pill-${pct >= 100 ? 'approved' : (pct > 0 ? 'in-progress' : 'pending')}">${pct}%</span>
+                    <span class="status-pill status-pill-${pct >= 100 ? 'approved' : pct > 0 ? 'in-progress' : 'pending'}">${pct}%</span>
                 </div>
                 <h4 class="campus-course-title">${this.escapeHtml(c.title || '')}</h4>
                 ${c.description ? `<p class="campus-course-desc">${this.escapeHtml(c.description)}</p>` : ''}
@@ -253,13 +260,15 @@ export default class extends Controller {
     }
 
     bindCourseCardClicks() {
-        this.coursesGridTarget.querySelectorAll('a[data-action*="navigateToCourse"]').forEach(a => {
-            a.addEventListener('click', (e) => {
-                if (e.defaultPrevented) return;
-                e.preventDefault();
-                this.navigate(a.getAttribute('href'));
+        this.coursesGridTarget
+            .querySelectorAll('a[data-action*="navigateToCourse"]')
+            .forEach((a) => {
+                a.addEventListener('click', (e) => {
+                    if (e.defaultPrevented) return;
+                    e.preventDefault();
+                    this.navigate(a.getAttribute('href'));
+                });
             });
-        });
     }
 
     async loadAssignments() {
@@ -301,7 +310,8 @@ export default class extends Controller {
 
         const totalLessons = course.modules.reduce((sum, m) => sum + m.lessons.length, 0);
         const completed = course.modules.reduce(
-            (sum, m) => sum + m.lessons.filter(l => l.completed).length, 0
+            (sum, m) => sum + m.lessons.filter((l) => l.completed).length,
+            0
         );
         const pct = totalLessons > 0 ? Math.round((completed / totalLessons) * 100) : 0;
 
@@ -325,11 +335,11 @@ export default class extends Controller {
             </div>
 
             <div class="campus-modules">
-                ${course.modules.map(m => this.moduleHtml(m)).join('')}
+                ${course.modules.map((m) => this.moduleHtml(m)).join('')}
             </div>
         `;
 
-        this.courseDetailTarget.querySelectorAll('.campus-lesson-row').forEach(row => {
+        this.courseDetailTarget.querySelectorAll('.campus-lesson-row').forEach((row) => {
             row.addEventListener('click', (e) => {
                 e.preventDefault();
                 const lessonId = parseInt(row.dataset.lessonId, 10);
@@ -339,7 +349,7 @@ export default class extends Controller {
     }
 
     moduleHtml(m) {
-        const completed = m.lessons.filter(l => l.completed).length;
+        const completed = m.lessons.filter((l) => l.completed).length;
         const total = m.lessons.length;
         const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
         return `
@@ -350,12 +360,12 @@ export default class extends Controller {
                         ${m.description ? `<p class="campus-module-desc">${this.escapeHtml(m.description)}</p>` : ''}
                     </div>
                     <div class="campus-module-progress">
-                        <span class="status-pill status-pill-${pct >= 100 ? 'approved' : (pct > 0 ? 'in-progress' : 'pending')}">${completed}/${total}</span>
+                        <span class="status-pill status-pill-${pct >= 100 ? 'approved' : pct > 0 ? 'in-progress' : 'pending'}">${completed}/${total}</span>
                         <span class="material-symbols-elev campus-module-caret">expand_more</span>
                     </div>
                 </summary>
                 <ul class="campus-module-lessons">
-                    ${m.lessons.map(l => this.lessonRowHtml(l)).join('')}
+                    ${m.lessons.map((l) => this.lessonRowHtml(l)).join('')}
                 </ul>
             </details>
         `;
@@ -364,7 +374,11 @@ export default class extends Controller {
     lessonRowHtml(l) {
         const hasAssignment = l.has_assignment;
         const icon = l.completed ? 'check_circle' : 'play_circle';
-        const stateClass = l.completed ? 'is-completed' : (l.has_assignment ? 'has-assignment' : 'is-pending');
+        const stateClass = l.completed
+            ? 'is-completed'
+            : l.has_assignment
+              ? 'has-assignment'
+              : 'is-pending';
         return `
             <li class="campus-lesson-row ${stateClass}" data-lesson-id="${l.id}" tabindex="0" role="button" aria-label="Abrir lección ${this.escapeHtml(l.title)}">
                 <span class="material-symbols-elev campus-lesson-icon">${icon}</span>
@@ -426,29 +440,37 @@ export default class extends Controller {
 
                 ${videoHtml ? `<section class="campus-lesson-video" data-target="campus.videoContainer">${videoHtml}</section>` : ''}
 
-                ${lesson.materials && lesson.materials.length > 0 ? `
+                ${
+                    lesson.materials && lesson.materials.length > 0
+                        ? `
                     <section class="campus-lesson-section" data-target="campus.materialsList">
                         <h2 class="campus-section-title">
                             <span class="material-symbols-elev">attach_file</span>
                             Materiales
                         </h2>
                         <ul class="campus-materials-list">
-                            ${lesson.materials.map(m => this.materialHtml(m)).join('')}
+                            ${lesson.materials.map((m) => this.materialHtml(m)).join('')}
                         </ul>
                     </section>
-                ` : ''}
+                `
+                        : ''
+                }
 
-                ${lesson.assignments && lesson.assignments.length > 0 ? `
+                ${
+                    lesson.assignments && lesson.assignments.length > 0
+                        ? `
                     <section class="campus-lesson-section" data-target="campus.assignmentsList">
                         <h2 class="campus-section-title">
                             <span class="material-symbols-elev">task_alt</span>
                             Tareas
                         </h2>
                         <div class="campus-assignments">
-                            ${lesson.assignments.map(a => this.assignmentHtml(a, lesson.my_submission)).join('')}
+                            ${lesson.assignments.map((a) => this.assignmentHtml(a, lesson.my_submission)).join('')}
                         </div>
                     </section>
-                ` : ''}
+                `
+                        : ''
+                }
 
                 <footer class="campus-lesson-footer">
                     <button type="button"
@@ -465,15 +487,19 @@ export default class extends Controller {
             </article>
         `;
 
-        this.lessonViewTarget.querySelectorAll('[data-action="click->campus#markComplete"]').forEach(btn => {
-            btn.addEventListener('click', () => this.markComplete(btn));
-        });
+        this.lessonViewTarget
+            .querySelectorAll('[data-action="click->campus#markComplete"]')
+            .forEach((btn) => {
+                btn.addEventListener('click', () => this.markComplete(btn));
+            });
         this.loadQuizBadge(lesson.id);
     }
 
     async loadQuizBadge(lessonId) {
         try {
-            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz`, { silent: true });
+            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz`, {
+                silent: true,
+            });
             if (!r.ok || !r.data) return;
             const quiz = r.data;
             const footer = this.lessonViewTarget.querySelector('.campus-lesson-footer');
@@ -483,7 +509,8 @@ export default class extends Controller {
             btn.className = 'ui-btn ui-btn secondary ui-btn-size-lg';
             btn.dataset.action = 'click->campus#openQuiz';
             btn.dataset.lessonId = lessonId;
-            btn.innerHTML = '<span class="material-symbols-elev ui-btn-icon" aria-hidden="true">quiz</span> Rendir quiz';
+            btn.innerHTML =
+                '<span class="material-symbols-elev ui-btn-icon" aria-hidden="true">quiz</span> Rendir quiz';
             btn.addEventListener('click', () => this.openQuiz(lessonId));
             footer.prepend(btn);
         } catch (e) {}
@@ -492,7 +519,9 @@ export default class extends Controller {
     async openQuiz(lessonId) {
         let quiz = null;
         try {
-            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz`, { silent: true });
+            const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz`, {
+                silent: true,
+            });
             if (!r.ok || !r.data) {
                 if (window.apiToast) window.apiToast('No hay quiz para esta lección', 'warning');
                 return;
@@ -534,9 +563,16 @@ export default class extends Controller {
             </div>`;
         document.body.appendChild(overlay);
         document.body.style.overflow = 'hidden';
-        const close = () => { overlay.remove(); document.body.style.overflow = ''; };
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-        overlay.querySelectorAll('[data-quiz-close]').forEach(b => b.addEventListener('click', close));
+        const close = () => {
+            overlay.remove();
+            document.body.style.overflow = '';
+        };
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) close();
+        });
+        overlay
+            .querySelectorAll('[data-quiz-close]')
+            .forEach((b) => b.addEventListener('click', close));
         overlay.querySelector('[data-quiz-submit]').addEventListener('click', async (e) => {
             await this.submitQuiz(lessonId, overlay, e.currentTarget);
         });
@@ -555,21 +591,31 @@ export default class extends Controller {
                 <input type="text" class="form-input" name="q_${qid}" autocomplete="off"></div>`;
         }
         const opts = Array.isArray(q.options) ? q.options : [];
-        return `<div class="campus-quiz-item" data-qid="${qid}">${head}` +
-            opts.map((o, oi) => `<label><input type="radio" name="q_${qid}" value="${oi}"> ${this.escapeHtml(String(o))}</label>`).join('') + `</div>`;
+        return (
+            `<div class="campus-quiz-item" data-qid="${qid}">${head}` +
+            opts
+                .map(
+                    (o, oi) =>
+                        `<label><input type="radio" name="q_${qid}" value="${oi}"> ${this.escapeHtml(String(o))}</label>`
+                )
+                .join('') +
+            `</div>`
+        );
     }
 
     async submitQuiz(lessonId, overlay, submitBtn) {
         const answers = {};
-        overlay.querySelectorAll('.campus-quiz-item[data-qid]').forEach(item => {
+        overlay.querySelectorAll('.campus-quiz-item[data-qid]').forEach((item) => {
             const qid = item.dataset.qid;
             const checked = item.querySelector(`input[name="q_${qid}"]:checked`);
             const text = item.querySelector(`input[name="q_${qid}"][type="text"]`);
             if (checked) answers[qid] = checked.value;
             else if (text && text.value.trim() !== '') answers[qid] = text.value.trim();
         });
-        const doneLoading = (typeof window.apiButtonLoading === 'function')
-            ? window.apiButtonLoading(submitBtn) : null;
+        const doneLoading =
+            typeof window.apiButtonLoading === 'function'
+                ? window.apiButtonLoading(submitBtn)
+                : null;
         try {
             const r = await window.apiFetch(`/api/campus/lessons/${lessonId}/quiz/submit`, {
                 method: 'POST',
@@ -587,10 +633,15 @@ export default class extends Controller {
             const pct = d.percent ?? 0;
             if (box) {
                 box.hidden = false;
-                box.innerHTML = `<p><strong>${d.passed ? '✓ Aprobado' : '✗ No aprobado'} — ${pct}%</strong>`
-                    + ` (intento ${d.attempts_used ?? '?'} de ${d.attempts_left != null ? (d.attempts_used ?? 0) + d.attempts_left : '?'})</p>`;
+                box.innerHTML =
+                    `<p><strong>${d.passed ? '✓ Aprobado' : '✗ No aprobado'} — ${pct}%</strong>` +
+                    ` (intento ${d.attempts_used ?? '?'} de ${d.attempts_left != null ? (d.attempts_used ?? 0) + d.attempts_left : '?'})</p>`;
             }
-            if (window.apiToast) window.apiToast(d.passed ? `Aprobado con ${pct}%` : `Resultado: ${pct}%`, d.passed ? 'success' : 'warning');
+            if (window.apiToast)
+                window.apiToast(
+                    d.passed ? `Aprobado con ${pct}%` : `Resultado: ${pct}%`,
+                    d.passed ? 'success' : 'warning'
+                );
         } catch (e) {
             if (doneLoading) doneLoading();
             console.error('[campus] submit quiz error', e);
@@ -653,18 +704,19 @@ export default class extends Controller {
     assignmentHtml(a, submission) {
         const sub = submission && submission.id ? submission : null;
         const status = sub ? sub.status : 'pending';
-        const statusLabel = {
-            pending: 'Pendiente',
-            submitted: 'Entregada',
-            corrected: 'Calificada',
-            revision: 'En revisión',
-            completed: 'Aprobada',
-        }[status] || status;
+        const statusLabel =
+            {
+                pending: 'Pendiente',
+                submitted: 'Entregada',
+                corrected: 'Calificada',
+                revision: 'En revisión',
+                completed: 'Aprobada',
+            }[status] || status;
         return `
             <article class="campus-assignment-card">
                 <header class="campus-assignment-header">
                     <h3 class="campus-assignment-title">${this.escapeHtml(a.title)}</h3>
-                    <span class="status-pill status-pill-${status === 'completed' ? 'approved' : (status === 'submitted' ? 'in-review' : (status === 'revision' ? 'needs-revision' : 'pending'))}">${statusLabel}</span>
+                    <span class="status-pill status-pill-${status === 'completed' ? 'approved' : status === 'submitted' ? 'in-review' : status === 'revision' ? 'needs-revision' : 'pending'}">${statusLabel}</span>
                 </header>
                 ${a.description ? `<p class="campus-assignment-desc">${this.escapeHtml(a.description)}</p>` : ''}
                 ${a.objective ? `<p class="campus-assignment-meta"><strong>Objetivo:</strong> ${this.escapeHtml(a.objective)}</p>` : ''}
@@ -672,10 +724,10 @@ export default class extends Controller {
                 <div class="campus-assignment-footer">
                     ${a.due_date ? `<span class="campus-assignment-due"><span class="material-symbols-elev">schedule</span> Vence: ${this.escapeHtml(new Date(a.due_date).toLocaleDateString())}</span>` : ''}
                     ${a.estimated_minutes ? `<span class="campus-assignment-time"><span class="material-symbols-elev">timer</span> ~${a.estimated_minutes} min</span>` : ''}
-                    ${(!sub || sub.status === 'revision') ? `<button type="button" class="ui-btn ui-btn-primary ui-btn-size-sm" data-action="click->campus#openSubmitAssignment" data-assignment-id="${a.id}" data-assignment-title="${this.escapeHtml(a.title || 'Tarea')}"><span class="material-symbols-elev ui-btn-icon">upload</span> ${sub ? 'Reentregar' : 'Entregar'}</button>` : ''}
+                    ${!sub || sub.status === 'revision' ? `<button type="button" class="ui-btn ui-btn-primary ui-btn-size-sm" data-action="click->campus#openSubmitAssignment" data-assignment-id="${a.id}" data-assignment-title="${this.escapeHtml(a.title || 'Tarea')}"><span class="material-symbols-elev ui-btn-icon">upload</span> ${sub ? 'Reentregar' : 'Entregar'}</button>` : ''}
                 </div>
                 ${sub && sub.comments ? `<p class="campus-assignment-my-comments">Tu entrega: ${this.escapeHtml(sub.comments)}</p>` : ''}
-                ${sub && Array.isArray(sub.files) && sub.files.length > 0 ? `<ul class="campus-assignment-files">${sub.files.map(f => `<li><a href="${this.escapeHtml(f.url || '#')}" target="_blank" rel="noopener"><span class="material-symbols-elev">attach_file</span> ${this.escapeHtml(f.name || 'archivo')}</a></li>`).join('')}</ul>` : ''}
+                ${sub && Array.isArray(sub.files) && sub.files.length > 0 ? `<ul class="campus-assignment-files">${sub.files.map((f) => `<li><a href="${this.escapeHtml(f.url || '#')}" target="_blank" rel="noopener"><span class="material-symbols-elev">attach_file</span> ${this.escapeHtml(f.name || 'archivo')}</a></li>`).join('')}</ul>` : ''}
             </article>
         `;
     }
@@ -684,8 +736,22 @@ export default class extends Controller {
     // Mirror de CampusStorage::ALLOWED_MIMES + MAX_FILE_SIZE (el servidor
     // es la autoridad y responde 400; esto solo falla rápido y lindo).
     static SUBMIT_MAX_BYTES = 50 * 1024 * 1024;
-    static SUBMIT_ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf',
-        'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'txt'];
+    static SUBMIT_ALLOWED_EXTS = [
+        'jpg',
+        'jpeg',
+        'png',
+        'gif',
+        'webp',
+        'pdf',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'csv',
+        'ppt',
+        'pptx',
+        'txt',
+    ];
 
     async openSubmitAssignment(event) {
         const btn = event.currentTarget;
@@ -697,7 +763,7 @@ export default class extends Controller {
 
     openSubmitModal(assignmentId, title) {
         this.closeSubmitModal();
-        const accept = this.constructor.SUBMIT_ALLOWED_EXTS.map(e => '.' + e).join(',');
+        const accept = this.constructor.SUBMIT_ALLOWED_EXTS.map((e) => '.' + e).join(',');
         const overlay = document.createElement('div');
         overlay.className = 'tnsvt-modal-overlay';
         overlay.setAttribute('role', 'dialog');
@@ -739,12 +805,16 @@ export default class extends Controller {
         let picked = [];
 
         const renderPicked = () => {
-            list.innerHTML = picked.map((f, i) => `
+            list.innerHTML = picked
+                .map(
+                    (f, i) => `
                 <li class="flex items-center justify-between gap-2 px-2 py-1 rounded bg-[rgba(255,255,255,0.04)]">
                     <span class="truncate">${this.escapeHtml(f.name)} <span class="text-[var(--outline-elev)]">(${(f.size / 1024).toFixed(0)} KB)</span></span>
                     <button type="button" data-pick-remove="${i}" class="text-[var(--outline-elev)] hover:text-red-400" aria-label="Quitar">✕</button>
-                </li>`).join('');
-            list.querySelectorAll('[data-pick-remove]').forEach(b => {
+                </li>`
+                )
+                .join('');
+            list.querySelectorAll('[data-pick-remove]').forEach((b) => {
                 b.addEventListener('click', () => {
                     picked.splice(parseInt(b.dataset.pickRemove, 10), 1);
                     renderPicked();
@@ -769,13 +839,15 @@ export default class extends Controller {
             renderPicked();
         });
 
-        overlay.querySelectorAll('[data-submit-close]').forEach(b =>
-            b.addEventListener('click', () => this.closeSubmitModal()));
+        overlay
+            .querySelectorAll('[data-submit-close]')
+            .forEach((b) => b.addEventListener('click', () => this.closeSubmitModal()));
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) this.closeSubmitModal();
         });
-        sendBtn.addEventListener('click', () => this.sendSubmitAssignment(
-            assignmentId, overlay, picked, sendBtn, status));
+        sendBtn.addEventListener('click', () =>
+            this.sendSubmitAssignment(assignmentId, overlay, picked, sendBtn, status)
+        );
     }
 
     closeSubmitModal() {
@@ -785,7 +857,9 @@ export default class extends Controller {
     async sendSubmitAssignment(assignmentId, overlay, picked, sendBtn, status) {
         const comments = (overlay.querySelector('[data-submit-comments]')?.value || '').trim();
         sendBtn.disabled = true;
-        const say = (t) => { if (status) status.textContent = t; };
+        const say = (t) => {
+            if (status) status.textContent = t;
+        };
         try {
             const filesMeta = [];
             for (let i = 0; i < picked.length; i++) {
@@ -815,7 +889,9 @@ export default class extends Controller {
                 body: JSON.stringify({ comments: comments || null, files: filesMeta }),
             });
             if (!r.ok || !r.data || r.data.success === false) {
-                throw new Error((r.data && (r.data.error || r.data.message)) || 'No se pudo enviar');
+                throw new Error(
+                    (r.data && (r.data.error || r.data.message)) || 'No se pudo enviar'
+                );
             }
             if (window.apiToast) window.apiToast('Entrega enviada', 'success');
             this.closeSubmitModal();
@@ -873,9 +949,17 @@ export default class extends Controller {
     }
 
     escapeHtml(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 
     emptyStateHtml(message) {

@@ -43,7 +43,8 @@ const SIDEBAR_HINT_KEY = 'tnsvt_sidebar_hint_shown';
 const RAIL_BP = 1024;
 
 function throttle(fn, wait) {
-    let last = 0, t;
+    let last = 0,
+        t;
     return function () {
         const now = Date.now();
         if (now - last >= wait) {
@@ -58,11 +59,18 @@ function throttle(fn, wait) {
 
 export default class extends Controller {
     static targets = [
-        'sidebar', 'sidebarToggle', 'navIndicator', 'sidebarSection',
-        'userAvatar', 'userName', 'userTier',
+        'sidebar',
+        'sidebarToggle',
+        'navIndicator',
+        'sidebarSection',
+        'userAvatar',
+        'userName',
+        'userTier',
         'logoutBtn',
-        'themeToggleBtn', 'themeIcon',
-        'bellBadge', 'headerNotifBadge',
+        'themeToggleBtn',
+        'themeIcon',
+        'bellBadge',
+        'headerNotifBadge',
     ];
 
     static outlets = [];
@@ -75,8 +83,7 @@ export default class extends Controller {
         this._notifPrev = 0;
         this._notifFirstLoad = true;
         this._themeAttempts = 0;
-        this._throttledPaintNavIndicator = throttle(
-            () => this.paintNavIndicator(), 100);
+        this._throttledPaintNavIndicator = throttle(() => this.paintNavIndicator(), 100);
 
         this._applyPersistedSidebarState();
         this._wireSectionToggles();
@@ -156,9 +163,13 @@ export default class extends Controller {
     // Action: data-action="click->shell#logout"
     async logout(event) {
         event.preventDefault();
-        if (!await window.apiConfirm('¿Cerrar sesión?', {
-            title: 'Cerrar sesión', variant: 'danger',
-        })) return;
+        if (
+            !(await window.apiConfirm('¿Cerrar sesión?', {
+                title: 'Cerrar sesión',
+                variant: 'danger',
+            }))
+        )
+            return;
         await window.apiFetch('/api/auth/logout', { method: 'POST', silent: true });
         window.location.href = '/';
     }
@@ -198,7 +209,9 @@ export default class extends Controller {
             if (localStorage.getItem(SIDEBAR_KEY) === '1') {
                 this.applySidebarCollapsed(true);
             }
-        } catch (_) { /* localStorage disabled — ignore */ }
+        } catch (_) {
+            /* localStorage disabled — ignore */
+        }
     }
 
     // NOTE: no _wireSidebarToggle() on purpose — the template declares
@@ -208,13 +221,15 @@ export default class extends Controller {
     applySidebarCollapsed(collapsed) {
         if (!this._hasSidebarOrToggle()) return;
         const aside = this.sidebarTarget;
-        const btn   = this.sidebarToggleTarget;
+        const btn = this.sidebarToggleTarget;
         aside.classList.toggle('sidebar-manual-collapsed', collapsed);
         btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         btn.setAttribute('aria-label', collapsed ? 'Expandir menú' : 'Colapsar menú');
         const icon = btn.querySelector('.material-symbols-elev');
         if (icon) icon.textContent = collapsed ? 'chevron_right' : 'chevron_left';
-        try { localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0'); } catch (_) {}
+        try {
+            localStorage.setItem(SIDEBAR_KEY, collapsed ? '1' : '0');
+        } catch (_) {}
         if (collapsed) {
             try {
                 if (!localStorage.getItem(SIDEBAR_HINT_KEY)) {
@@ -230,10 +245,15 @@ export default class extends Controller {
     _findActiveLink() {
         const path = (window.location.pathname || '/').replace(/\/+$/, '') || '/';
         const links = this.element.querySelectorAll('#sanctum-sidebar .sanctum-link[data-page]');
-        let best = null, bestLen = -1;
+        let best = null,
+            bestLen = -1;
         links.forEach((a) => {
             const href = (a.getAttribute('href') || '').replace(/\/+$/, '') || '/';
-            if (path === href || path.startsWith(href + '/') || (href === '/' && path.startsWith('/'))) {
+            if (
+                path === href ||
+                path.startsWith(href + '/') ||
+                (href === '/' && path.startsWith('/'))
+            ) {
                 if (href.length > bestLen) {
                     best = a;
                     bestLen = href.length;
@@ -254,8 +274,7 @@ export default class extends Controller {
         if (!this.hasNavIndicatorTarget) return;
         const active = this.element.querySelector('#sanctum-sidebar .sanctum-link.active');
         if (!active) return;
-        this.navIndicatorTarget.style.transform =
-            'translateY(' + active.offsetTop + 'px)';
+        this.navIndicatorTarget.style.transform = 'translateY(' + active.offsetTop + 'px)';
         this.navIndicatorTarget.style.height = active.offsetHeight + 'px';
         this.navIndicatorTarget.style.opacity = '1';
     }
@@ -337,8 +356,7 @@ export default class extends Controller {
     _wireNotifPoll() {
         this.refreshNotifBadge();
         if (typeof window.apiPoller === 'function') {
-            this._notifPollId = window.apiPoller(
-                () => this.refreshNotifBadge(), 60000);
+            this._notifPollId = window.apiPoller(() => this.refreshNotifBadge(), 60000);
         }
     }
 
@@ -361,17 +379,25 @@ export default class extends Controller {
             this._notifFirstLoad = false;
         };
         if (window.apiFetch) {
-            const r = await window.apiFetch('/api/notifications/count', {
-                silent: true, redirectOn401: false,
-            }).catch(() => null);
-            if (r && r.ok && r.data) { doPaint(r.data); return; }
+            const r = await window
+                .apiFetch('/api/notifications/count', {
+                    silent: true,
+                    redirectOn401: false,
+                })
+                .catch(() => null);
+            if (r && r.ok && r.data) {
+                doPaint(r.data);
+                return;
+            }
         }
         // Fallback: raw fetch. Kept for legacy callers.
         try {
             const fr = await fetch('/notifications/unread-count');
             const json = fr.ok ? await fr.json() : { count: 0 };
             doPaint(json);
-        } catch (_) { /* offline — fine, last value stays */ }
+        } catch (_) {
+            /* offline — fine, last value stays */
+        }
     }
 
     _triggerBadgePop(el) {
@@ -399,18 +425,21 @@ export default class extends Controller {
     paintUserInfo(u) {
         const code = (u.code || '??').slice(0, 2);
         if (this.hasUserAvatarTarget) this.userAvatarTarget.textContent = code;
-        if (this.hasUserNameTarget)    this.userNameTarget.textContent = u.name || u.code || 'Invitado';
+        if (this.hasUserNameTarget)
+            this.userNameTarget.textContent = u.name || u.code || 'Invitado';
         if (this.hasUserTierTarget) {
             const tier = u.tier || 'INITIATE';
             this.userTierTarget.textContent = tier;
-            this.userTierTarget.className = 'tier-badge-elev tier-' +
-                tier.toLowerCase().replace(/_/g, '-');
+            this.userTierTarget.className =
+                'tier-badge-elev tier-' + tier.toLowerCase().replace(/_/g, '-');
         }
     }
 
     // ─── Rail tooltip (sidebar collapsed <1024px) ───────────
 
-    static get shouldMountRailTooltip() { return true; }
+    static get shouldMountRailTooltip() {
+        return true;
+    }
     /* The rail tooltip is initialized in connect() but uses raw DOM
        manipulation since it's a singleton floating element with no
        Stimulus-managed mount. */
@@ -435,7 +464,7 @@ export default class extends Controller {
             tip.textContent = label.textContent;
             tip.classList.add('visible');
             const r = link.getBoundingClientRect();
-            tip.style.left = (r.right + 12) + 'px';
+            tip.style.left = r.right + 12 + 'px';
             tip.style.top = Math.round(r.top + r.height / 2) + 'px';
         };
         const hide = () => tip.classList.remove('visible');

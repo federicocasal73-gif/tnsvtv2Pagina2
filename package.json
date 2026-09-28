@@ -1,19 +1,27 @@
 {
-  "name": "tnsvt-e2e",
+  "name": "tnsvt-v2",
+  "version": "2.0.5",
   "private": true,
-  "version": "0.1.0",
-  "description": "End-to-end tests for TNSVT Sanctum (Symfony + Stimulus/Turbo).",
+  "description": "T.N.S.V.T Sanctum trading platform — JS/CSS tooling",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:report": "playwright show-report",
-    "test:chromium": "playwright test --project=chromium",
-    "lint:e2e": "node tests/e2e/lint-no-mutations.mjs"
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"src/assets/**/*.{js,css}\"",
+    "format:check": "prettier --check \"src/assets/**/*.{js,css}\"",
+    "stylelint": "stylelint \"src/assets/**/*.css\"",
+    "stylelint:fix": "stylelint \"src/assets/**/*.css\" --fix",
+    "test:a11y": "playwright test a11y/",
+    "lighthouse": "lhci autorun",
+    "audit": "npm audit --omit=dev"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "@lhci/cli": "^0.14.0",
     "@playwright/test": "^1.47.0",
-    "typescript": "^5.5.0",
-    "ts-node": "^10.9.2"
+    "eslint": "^8.57.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.3.0",
+    "stylelint": "^16.0.0",
+    "stylelint-config-standard": "^36.0.0"
   }
 }

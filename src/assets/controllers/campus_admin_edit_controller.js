@@ -9,10 +9,20 @@ import { Controller } from '@hotwired/stimulus';
  */
 export default class extends Controller {
     static targets = [
-        'courseTitle', 'courseDescription', 'courseEmoji', 'courseThumbnail',
-        'courseActive', 'courseSaveBtn',
-        'modulesList', 'modulesCard',
-        'preview', 'previewEmoji', 'previewTitle', 'previewDesc', 'previewModules', 'previewLessons',
+        'courseTitle',
+        'courseDescription',
+        'courseEmoji',
+        'courseThumbnail',
+        'courseActive',
+        'courseSaveBtn',
+        'modulesList',
+        'modulesCard',
+        'preview',
+        'previewEmoji',
+        'previewTitle',
+        'previewDesc',
+        'previewModules',
+        'previewLessons',
     ];
 
     static values = {
@@ -35,18 +45,22 @@ export default class extends Controller {
 
     // ── Preview binding (works for both new and edit) ──
     bindPreview() {
-        ['courseTitle', 'courseDescription', 'courseEmoji'].forEach(target => {
+        ['courseTitle', 'courseDescription', 'courseEmoji'].forEach((target) => {
             this[`has${target.charAt(0).toUpperCase() + target.slice(1)}Target`] &&
-            this[`${target}Target`].addEventListener('input', () => this.updatePreview());
+                this[`${target}Target`].addEventListener('input', () => this.updatePreview());
         });
         this.updatePreview();
     }
 
     updatePreview() {
         if (!this.hasPreviewTarget) return;
-        const title = this.hasCourseTitleTarget ? (this.courseTitleTarget.value || 'Nuevo curso') : 'Nuevo curso';
-        const desc = this.hasCourseDescriptionTarget ? (this.courseDescriptionTarget.value || 'Sin descripción aún.') : 'Sin descripción aún.';
-        const emoji = this.hasCourseEmojiTarget ? (this.courseEmojiTarget.value || '📚') : '📚';
+        const title = this.hasCourseTitleTarget
+            ? this.courseTitleTarget.value || 'Nuevo curso'
+            : 'Nuevo curso';
+        const desc = this.hasCourseDescriptionTarget
+            ? this.courseDescriptionTarget.value || 'Sin descripción aún.'
+            : 'Sin descripción aún.';
+        const emoji = this.hasCourseEmojiTarget ? this.courseEmojiTarget.value || '📚' : '📚';
         if (this.hasPreviewTitleTarget) this.previewTitleTarget.textContent = title;
         if (this.hasPreviewDescTarget) this.previewDescTarget.textContent = desc;
         if (this.hasPreviewEmojiTarget) this.previewEmojiTarget.textContent = emoji;
@@ -62,7 +76,7 @@ export default class extends Controller {
                 return;
             }
             const all = await r.json();
-            const course = all.find(c => c.id === this.courseIdValue);
+            const course = all.find((c) => c.id === this.courseIdValue);
             if (!course) {
                 this.modulesListTarget.innerHTML = `<p class="campus-admin-error">Curso no encontrado.</p>`;
                 return;
@@ -80,18 +94,23 @@ export default class extends Controller {
 
     fillCourseForm(course) {
         if (this.hasCourseTitleTarget) this.courseTitleTarget.value = course.title || '';
-        if (this.hasCourseDescriptionTarget) this.courseDescriptionTarget.value = course.description || '';
+        if (this.hasCourseDescriptionTarget)
+            this.courseDescriptionTarget.value = course.description || '';
         if (this.hasCourseEmojiTarget) this.courseEmojiTarget.value = course.emoji || '';
-        if (this.hasCourseThumbnailTarget) this.courseThumbnailTarget.value = course.thumbnail || '';
+        if (this.hasCourseThumbnailTarget)
+            this.courseThumbnailTarget.value = course.thumbnail || '';
         if (this.hasCourseActiveTarget) this.courseActiveTarget.checked = !!course.is_active;
         if (this.hasPreviewTitleTarget) this.previewTitleTarget.textContent = course.title || '';
-        if (this.hasPreviewDescTarget) this.previewDescTarget.textContent = course.description || 'Sin descripción aún.';
+        if (this.hasPreviewDescTarget)
+            this.previewDescTarget.textContent = course.description || 'Sin descripción aún.';
         if (this.hasPreviewEmojiTarget) this.previewEmojiTarget.textContent = course.emoji || '📚';
     }
 
     async loadModules() {
         try {
-            const r = await fetch(`/api/campus/admin/modules?course_id=${this.courseIdValue}`, { headers: this.headers() });
+            const r = await fetch(`/api/campus/admin/modules?course_id=${this.courseIdValue}`, {
+                headers: this.headers(),
+            });
             if (!r.ok) {
                 this.modulesListTarget.innerHTML = `<p class="campus-admin-error">Error al cargar módulos (${r.status})</p>`;
                 return;
@@ -99,7 +118,7 @@ export default class extends Controller {
             const modules = await r.json();
             this.renderModules(modules);
             // Load lessons for each module
-            await Promise.all(modules.map(m => this.loadLessons(m.id)));
+            await Promise.all(modules.map((m) => this.loadLessons(m.id)));
         } catch (e) {
             console.error('[campus-admin-edit] loadModules', e);
         }
@@ -115,7 +134,9 @@ export default class extends Controller {
             `;
             return;
         }
-        this.modulesListTarget.innerHTML = modules.map(m => `
+        this.modulesListTarget.innerHTML = modules
+            .map(
+                (m) => `
             <div class="campus-admin-module" data-module-id="${m.id}" draggable="true">
                 <header class="campus-admin-module-header">
                     <span class="campus-admin-module-drag material-symbols-elev">drag_indicator</span>
@@ -135,20 +156,26 @@ export default class extends Controller {
                     <li class="campus-admin-loading"><span class="material-symbols-elev">progress_activity</span> Cargando lecciones…</li>
                 </ul>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
         this.bindModuleDrag();
     }
 
     async loadLessons(moduleId) {
         try {
-            const r = await fetch(`/api/campus/admin/lessons?module_id=${moduleId}`, { headers: this.headers() });
+            const r = await fetch(`/api/campus/admin/lessons?module_id=${moduleId}`, {
+                headers: this.headers(),
+            });
             if (!r.ok) return;
             const lessons = await r.json();
             const ul = this.modulesListTarget.querySelector(`[data-module-lessons="${moduleId}"]`);
             if (lessons.length === 0) {
                 ul.innerHTML = `<li class="campus-admin-empty-mini"><span class="material-symbols-elev">school</span> Aún no hay lecciones en este módulo.</li>`;
             } else {
-                ul.innerHTML = lessons.map(l => `
+                ul.innerHTML = lessons
+                    .map(
+                        (l) => `
                     <li class="campus-admin-lesson" data-lesson-id="${l.id}">
                         <a href="/sanctum/campus/admin/courses/${this.courseIdValue}/lessons/${l.id}" class="campus-admin-lesson-link">
                             <span class="material-symbols-elev">play_circle</span>
@@ -156,10 +183,15 @@ export default class extends Controller {
                             <span class="campus-admin-lesson-arrow material-symbols-elev">chevron_right</span>
                         </a>
                     </li>
-                `).join('');
+                `
+                    )
+                    .join('');
             }
-            const countEl = this.modulesListTarget.querySelector(`[data-lessons-count="${moduleId}"]`);
-            if (countEl) countEl.textContent = `${lessons.length} lección${lessons.length === 1 ? '' : 'es'}`;
+            const countEl = this.modulesListTarget.querySelector(
+                `[data-lessons-count="${moduleId}"]`
+            );
+            if (countEl)
+                countEl.textContent = `${lessons.length} lección${lessons.length === 1 ? '' : 'es'}`;
         } catch (e) {
             console.error('[campus-admin-edit] loadLessons', e);
         }
@@ -176,7 +208,9 @@ export default class extends Controller {
             is_active: this.courseActiveTarget.checked,
         };
         const isNew = this.courseIdValue === 0;
-        const url = isNew ? '/api/campus/admin/courses' : `/api/campus/admin/courses/${this.courseIdValue}`;
+        const url = isNew
+            ? '/api/campus/admin/courses'
+            : `/api/campus/admin/courses/${this.courseIdValue}`;
         const method = isNew ? 'POST' : 'PUT';
         try {
             const r = await fetch(url, {
@@ -189,7 +223,8 @@ export default class extends Controller {
                 return;
             }
             const data = await r.json();
-            if (window.apiToast) window.apiToast(isNew ? 'Curso creado' : 'Cambios guardados', 'success');
+            if (window.apiToast)
+                window.apiToast(isNew ? 'Curso creado' : 'Cambios guardados', 'success');
             if (isNew && data.id) {
                 location.href = `/sanctum/campus/admin/courses/${data.id}`;
             }
@@ -240,7 +275,13 @@ export default class extends Controller {
     async deleteModule(event) {
         const btn = event.currentTarget;
         const moduleId = parseInt(btn.dataset.moduleId, 10);
-        if (!await window.apiConfirm('¿Eliminar este módulo y todas sus lecciones? Esta acción no se puede deshacer.', { title: 'Eliminar módulo', variant: 'danger' })) return;
+        if (
+            !(await window.apiConfirm(
+                '¿Eliminar este módulo y todas sus lecciones? Esta acción no se puede deshacer.',
+                { title: 'Eliminar módulo', variant: 'danger' }
+            ))
+        )
+            return;
         try {
             const r = await fetch(`/api/campus/admin/modules/${moduleId}`, {
                 method: 'DELETE',
@@ -260,7 +301,7 @@ export default class extends Controller {
     bindModuleDrag() {
         const list = this.modulesListTarget;
         let draggedId = null;
-        list.querySelectorAll('.campus-admin-module').forEach(mod => {
+        list.querySelectorAll('.campus-admin-module').forEach((mod) => {
             mod.addEventListener('dragstart', (e) => {
                 draggedId = mod.dataset.moduleId;
                 e.dataTransfer.effectAllowed = 'move';
@@ -283,15 +324,16 @@ export default class extends Controller {
 
     async reorderModules(fromId, toId) {
         const mods = Array.from(this.modulesListTarget.querySelectorAll('.campus-admin-module'));
-        const fromIdx = mods.findIndex(m => m.dataset.moduleId === fromId);
-        const toIdx = mods.findIndex(m => m.dataset.moduleId === toId);
+        const fromIdx = mods.findIndex((m) => m.dataset.moduleId === fromId);
+        const toIdx = mods.findIndex((m) => m.dataset.moduleId === toId);
         if (fromIdx === -1 || toIdx === -1) return;
         const moved = mods[fromIdx];
         moved.remove();
         this.modulesListTarget.insertBefore(moved, mods[toIdx]);
 
-        const order = Array.from(this.modulesListTarget.querySelectorAll('.campus-admin-module'))
-            .map(m => parseInt(m.dataset.moduleId, 10));
+        const order = Array.from(
+            this.modulesListTarget.querySelectorAll('.campus-admin-module')
+        ).map((m) => parseInt(m.dataset.moduleId, 10));
         try {
             await fetch('/api/campus/admin/modules/reorder', {
                 method: 'POST',
@@ -334,8 +376,16 @@ export default class extends Controller {
     }
 
     escape(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        }[m]));
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

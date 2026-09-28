@@ -43,7 +43,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -55,7 +55,7 @@
     font-size: 1.1rem;
 }
 .chip {
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.45rem 0.85rem;
@@ -66,7 +66,10 @@
     cursor: pointer;
     transition: all 0.15s ease;
 }
-.chip:hover { color: var(--on-surface-elev); border-color: var(--gold-elev); }
+.chip:hover {
+    color: var(--on-surface-elev);
+    border-color: var(--gold-elev);
+}
 .chip.active {
     background: rgba(242, 202, 80, 0.15);
     color: var(--gold-elev);
@@ -79,7 +82,7 @@
     gap: 0.5rem;
     padding: 1.1rem 1rem;
     border-radius: 0.5rem;
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-weight: 700;
     font-size: 1rem;
     letter-spacing: 0.05em;
@@ -89,14 +92,14 @@
     cursor: pointer;
     transition: all 0.15s ease;
 }
-.dir-btn[data-dir="BUY"]:hover,
-.dir-btn[data-dir="BUY"].active {
+.dir-btn[data-dir='BUY']:hover,
+.dir-btn[data-dir='BUY'].active {
     background: rgba(74, 222, 128, 0.12);
     border-color: #4ade80;
     color: #4ade80;
 }
-.dir-btn[data-dir="SELL"]:hover,
-.dir-btn[data-dir="SELL"].active {
+.dir-btn[data-dir='SELL']:hover,
+.dir-btn[data-dir='SELL'].active {
     background: rgba(248, 113, 113, 0.12);
     border-color: #f87171;
     color: #f87171;
@@ -104,7 +107,7 @@
 .result-btn {
     padding: 0.65rem 0.5rem;
     border-radius: 0.4rem;
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-weight: 700;
     font-size: 0.78rem;
     letter-spacing: 0.08em;
@@ -114,22 +117,22 @@
     cursor: pointer;
     transition: all 0.15s ease;
 }
-.result-btn[data-result="WIN"].active {
+.result-btn[data-result='WIN'].active {
     background: rgba(74, 222, 128, 0.18);
     border-color: #4ade80;
     color: #4ade80;
 }
-.result-btn[data-result="LOSS"].active {
+.result-btn[data-result='LOSS'].active {
     background: rgba(248, 113, 113, 0.18);
     border-color: #f87171;
     color: #f87171;
 }
-.result-btn[data-result="BE"].active {
+.result-btn[data-result='BE'].active {
     background: rgba(251, 191, 36, 0.15);
     border-color: #fbbf24;
     color: #fbbf24;
 }
-.result-btn[data-result="OPEN"].active {
+.result-btn[data-result='OPEN'].active {
     background: rgba(138, 60, 255, 0.15);
     border-color: #8a3cff;
     color: #c4a0ff;
@@ -147,7 +150,7 @@
     color: var(--outline-elev);
     display: block;
     margin-top: 0.4rem;
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-weight: 400;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -161,7 +164,7 @@
     color: #c4a0ff;
     cursor: pointer;
     transition: all 0.15s ease;
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
 }
 .tip-chip:hover {
     background: rgba(138, 60, 255, 0.25);
@@ -193,7 +196,9 @@
     font-size: 0.85rem;
     display: none;
 }
-.form-error.visible { display: block; }
+.form-error.visible {
+    display: block;
+}
 .form-success {
     background: rgba(74, 222, 128, 0.12);
     border: 1px solid #4ade80;
@@ -204,7 +209,9 @@
     font-size: 0.85rem;
     display: none;
 }
-.form-success.visible { display: block; }
+.form-success.visible {
+    display: block;
+}
 .form-submit-primary {
     display: inline-flex;
     align-items: center;
@@ -219,7 +226,10 @@
     border: none;
     border-radius: 0.4rem;
     cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+    transition:
+        transform 0.15s,
+        box-shadow 0.15s,
+        opacity 0.15s;
     box-shadow: 0 4px 16px rgba(242, 202, 80, 0.25);
 }
 .form-submit-primary:hover:not(:disabled) {
@@ -234,7 +244,7 @@
     padding: 0.7rem 1.2rem;
     background: transparent;
     color: var(--outline-elev);
-    font-family: var(--font-body-elev);, sans-serif;
+    font-family: var(--font-body-elev), sans-serif;
     font-weight: 600;
     font-size: 0.85rem;
     border: 1px solid var(--glass-border-elev);
@@ -250,8 +260,12 @@
 }
 
 @media (max-width: 640px) {
-    .trade-form-header h1 { font-size: 1.3rem; }
-    .form-section { padding: 1rem; }
+    .trade-form-header h1 {
+        font-size: 1.3rem;
+    }
+    .form-section {
+        padding: 1rem;
+    }
 }
 
 /* ══════ F2 v2 — Photo drag-drop zone ══════ */
@@ -329,7 +343,9 @@
     transition: background 0.15s;
     padding: 0;
 }
-.photo-remove:hover { background: rgba(248, 113, 113, 0.8); }
+.photo-remove:hover {
+    background: rgba(248, 113, 113, 0.8);
+}
 .photo-thumb-label {
     position: absolute;
     bottom: 0;
@@ -344,7 +360,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
 
 /* ─── Trade success overlay (fullscreen checkmark + progress) ─── */
 .trade-success-overlay {
@@ -366,14 +381,16 @@
     pointer-events: auto;
 }
 .trade-success-card {
-    background: linear-gradient(135deg, rgba(20,12,40,0.97) 0%, rgba(15,8,30,0.97) 100%);
+    background: linear-gradient(135deg, rgba(20, 12, 40, 0.97) 0%, rgba(15, 8, 30, 0.97) 100%);
     border: 1px solid rgba(74, 222, 128, 0.45);
     border-radius: 16px;
     padding: 2rem 2.5rem;
     min-width: 320px;
     max-width: 90vw;
     text-align: center;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 60px rgba(74, 222, 128, 0.18);
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(74, 222, 128, 0.18);
     transform: scale(0.92) translateY(12px);
     transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -385,9 +402,18 @@
     animation: trade-success-pop 600ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @keyframes trade-success-pop {
-    0%   { transform: scale(0.4) rotate(-12deg); opacity: 0; }
-    60%  { transform: scale(1.1) rotate(4deg);   opacity: 1; }
-    100% { transform: scale(1)    rotate(0deg);   opacity: 1; }
+    0% {
+        transform: scale(0.4) rotate(-12deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.1) rotate(4deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
 }
 .trade-success-title {
     margin: 0.5rem 0 0.25rem;
@@ -415,14 +441,22 @@
     animation: trade-success-progress-fill 1.1s linear forwards;
 }
 @keyframes trade-success-progress-fill {
-    from { width: 0; }
-    to   { width: 100%; }
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
-    .trade-success-check { animation: none; }
-    .trade-success-overlay, .trade-success-card { transition: none; }
+    .trade-success-check {
+        animation: none;
+    }
+    .trade-success-overlay,
+    .trade-success-card {
+        transition: none;
+    }
 }
-
 
 /* ─── Trade form stepper (L23) + RR warning (L27) ─── */
 .form-stepper {
@@ -477,14 +511,25 @@
     background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
     color: var(--on-primary-elev);
 }
-.form-step-label { white-space: nowrap; }
+.form-step-label {
+    white-space: nowrap;
+}
 @media (max-width: 640px) {
-    .form-stepper { gap: 0.25rem; }
-    .form-step-label { display: none; }
-    .form-step { justify-content: center; padding: 0.35rem 0; }
+    .form-stepper {
+        gap: 0.25rem;
+    }
+    .form-step-label {
+        display: none;
+    }
+    .form-step {
+        justify-content: center;
+        padding: 0.35rem 0;
+    }
 }
 @media (prefers-reduced-motion: reduce) {
-    .form-step { transition: none; }
+    .form-step {
+        transition: none;
+    }
 }
 
 /* L27: Risk:Reward warning */
@@ -500,20 +545,36 @@
     color: #fca5a5;
     font-size: 0.78rem;
 }
-.rr-warning[hidden] { display: none; }
-.rr-warning .material-symbols-elev { font-size: 1rem; color: #f87171; }
-
+.rr-warning[hidden] {
+    display: none;
+}
+.rr-warning .material-symbols-elev {
+    font-size: 1rem;
+    color: #f87171;
+}
 
 /* ─── F6: wizard ─── */
-.form-footer-wizard .wizard-spacer { flex: 1; }
+.form-footer-wizard .wizard-spacer {
+    flex: 1;
+}
 #trade-form .form-section[data-wizard] {
     animation: wizardStepIn 240ms ease;
 }
 @keyframes wizardStepIn {
-    from { opacity: 0; transform: translateX(14px); }
-    to   { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
-#trade-form-stepper .form-step { user-select: none; }
+#trade-form-stepper .form-step {
+    user-select: none;
+}
 @media (prefers-reduced-motion: reduce) {
-    #trade-form .form-section[data-wizard] { animation: none; }
+    #trade-form .form-section[data-wizard] {
+        animation: none;
+    }
 }

@@ -62,9 +62,10 @@ export default class extends Controller {
     }
 
     renderDatabase(d) {
-        const status = d.status === 'ok'
-            ? '<span class="status-pill status-active">OK</span>'
-            : '<span class="status-pill status-inactive">ERR</span>';
+        const status =
+            d.status === 'ok'
+                ? '<span class="status-pill status-active">OK</span>'
+                : '<span class="status-pill status-inactive">ERR</span>';
         return `
         <div class="glass-card-elev p-6">
             <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
@@ -85,9 +86,12 @@ export default class extends Controller {
     }
 
     renderPhp(p, op) {
-        const opcacheStatus = op.status === 'enabled'
-            ? '<span class="status-pill status-active">ON</span>'
-            : (op.status === 'disabled' ? '<span class="status-pill status-inactive">OFF</span>' : '<span class="status-pill">N/A</span>');
+        const opcacheStatus =
+            op.status === 'enabled'
+                ? '<span class="status-pill status-active">ON</span>'
+                : op.status === 'disabled'
+                  ? '<span class="status-pill status-inactive">OFF</span>'
+                  : '<span class="status-pill">N/A</span>';
         return `
         <div class="glass-card-elev p-6">
             <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
@@ -102,22 +106,30 @@ export default class extends Controller {
                 <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Timezone</dt><dd class="font-mono">${p.date_timezone}</dd></div>
                 <div class="border-t border-[var(--outline-variant-elev)] my-3"></div>
                 <div class="flex justify-between items-center"><dt class="text-[var(--outline-elev)]">Opcache</dt><dd>${opcacheStatus}</dd></div>
-                ${op.status === 'enabled' ? `
+                ${
+                    op.status === 'enabled'
+                        ? `
                 <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Memory used</dt><dd class="font-mono">${op.memory_used_mb} MB / ${op.memory_free_mb} MB free</dd></div>
                 <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Cached scripts</dt><dd class="font-mono text-[var(--gold-elev)]">${op.cached_scripts}</dd></div>
                 <div class="flex justify-between"><dt class="text-[var(--outline-elev)]">Hits / Misses</dt><dd class="font-mono">${op.hits} / ${op.misses}</dd></div>
-                ` : ''}
+                `
+                        : ''
+                }
             </dl>
         </div>`;
     }
 
     renderBusiness(b) {
-        const rows = Object.entries(b).map(([k, v]) => `
+        const rows = Object.entries(b)
+            .map(
+                ([k, v]) => `
             <div class="flex justify-between">
                 <dt class="text-[var(--outline-elev)]">${k.replace(/_/g, ' ')}</dt>
                 <dd class="font-mono text-[var(--gold-elev)]">${v}</dd>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
         return `
         <div class="glass-card-elev p-6">
             <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
@@ -129,12 +141,17 @@ export default class extends Controller {
     }
 
     renderSecurity(s, audit) {
-        const auditRows = audit.slice(0, 5).map(a => `
+        const auditRows = audit
+            .slice(0, 5)
+            .map(
+                (a) => `
             <div class="flex items-center justify-between p-2 rounded glass-card-elev text-xs">
                 <span><span class="text-[var(--outline-elev)]">${a.time}</span> <span class="font-mono">${a.admin}</span></span>
                 <span class="${a.result === 'success' ? 'text-[var(--gold-elev)]' : 'text-red-400'}">${a.action}</span>
             </div>
-        `).join('');
+        `
+            )
+            .join('');
         return `
         <div class="glass-card-elev p-6 col-span-full">
             <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
@@ -157,9 +174,16 @@ export default class extends Controller {
     }
 
     renderErrors(errors) {
-        const errRows = errors.length === 0
-            ? '<p class="text-xs text-[var(--gold-elev)]">No recent errors</p>'
-            : errors.slice(0, 5).map(e => `<p class="text-xs text-red-400 font-mono break-all mb-1">${e.substring(0, 200)}</p>`).join('');
+        const errRows =
+            errors.length === 0
+                ? '<p class="text-xs text-[var(--gold-elev)]">No recent errors</p>'
+                : errors
+                      .slice(0, 5)
+                      .map(
+                          (e) =>
+                              `<p class="text-xs text-red-400 font-mono break-all mb-1">${e.substring(0, 200)}</p>`
+                      )
+                      .join('');
         return `
         <div class="glass-card-elev p-6 col-span-full">
             <h3 class="text-lg font-semibold mb-4 text-[var(--on-surface-elev)] flex items-center gap-2">
