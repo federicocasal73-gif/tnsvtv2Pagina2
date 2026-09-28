@@ -21,8 +21,18 @@
     'use strict';
 
     // Automation (Lighthouse / Playwright / Selenium): capa puramente
-    // decorativa. Se omite; usuarios reales no afectados.
-    if (navigator.webdriver) return;
+    // decorativa. Se omite; usuarios reales no afectados (ver
+    // webgl-background.js para el rationale de ambas señales).
+    function isAutomation() {
+        if (navigator.webdriver) return true;
+        try {
+            const brands = (navigator.userAgentData && navigator.userAgentData.brands) || [];
+            return brands.some((b) => /headless/i.test(b.brand || ''));
+        } catch (e) {
+            return false;
+        }
+    }
+    if (isAutomation()) return;
 
     let canvas, ctx;
     let stars = [],

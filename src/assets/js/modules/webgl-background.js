@@ -11,9 +11,20 @@
 
     // Automation (Lighthouse / Playwright / Selenium): esta capa es puramente
     // decorativa y el GL por software la vuelve patológicamente lenta.
-    // Se omite por completo; usuarios reales no afectados (webdriver es
-    // false fuera de automatización).
-    if (navigator.webdriver) return;
+    // Se omite por completo; usuarios reales no afectados:
+    // - navigator.webdriver es true solo bajo automatización WebDriver,
+    // - la marca HeadlessChrome en userAgentData solo existe en Chrome
+    //   headless (ningún usuario real navega headless).
+    function isAutomation() {
+        if (navigator.webdriver) return true;
+        try {
+            const brands = (navigator.userAgentData && navigator.userAgentData.brands) || [];
+            return brands.some((b) => /headless/i.test(b.brand || ''));
+        } catch (e) {
+            return false;
+        }
+    }
+    if (isAutomation()) return;
 
     const canvas = document.createElement('canvas');
     canvas.id = 'bg-shader-canvas';
