@@ -21,7 +21,7 @@
                 <button class="chat-tab"        data-tab="unread" type="button">No leídos</button>
                 <button class="chat-tab"        data-tab="groups" type="button">Grupos</button>
             </div>
-            <input type="text" class="chat-search" id="chat-search" data-chat-target="search" placeholder="Buscar..." />
+            <input type="text" class="chat-search" id="chat-search" data-chat-target="search" placeholder="Buscar..." aria-label="Buscar conversaciones" />
             <button type="button" class="chat-new-dm-btn" id="chat-new-dm-btn" data-chat-target="newDmBtn">
                 <span class="material-symbols-elev icon-size-sm">add_comment</span>
                 Nuevo DM
@@ -76,7 +76,7 @@
             </button>
         </div>
         <div class="tnsvt-modal__body">
-            <input type="text" id="chat-dm-search" data-chat-target="dmSearch" class="form-input" style="width:100%;margin-bottom:0.75rem;"
+            <input type="text" id="chat-dm-search" data-chat-target="dmSearch" class="form-input" style="width:100%;margin-bottom:0.75rem;" aria-label="Buscar usuario para mensaje directo"
                    placeholder="Buscar por código o nombre..." autocomplete="off" />
             <div id="chat-dm-results" data-chat-target="dmResults">
                 <p class="chat-list-empty">Escribí un código o nombre para buscar...</p>

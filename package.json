@@ -10,14 +10,14 @@
     "format:check": "prettier --check \"src/assets/**/*.{js,css}\"",
     "stylelint": "stylelint \"src/assets/**/*.css\"",
     "stylelint:fix": "stylelint \"src/assets/**/*.css\" --fix",
-    "test:a11y": "playwright test a11y/",
+    "test:a11y": "playwright test --config=a11y/playwright.config.js",
     "lighthouse": "lhci autorun",
     "audit": "npm audit --omit=dev"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
     "@lhci/cli": "^0.14.0",
-    "@playwright/test": "^1.47.0",
+    "@playwright/test": "^1.61.0",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.0",
     "prettier": "^3.3.0",
