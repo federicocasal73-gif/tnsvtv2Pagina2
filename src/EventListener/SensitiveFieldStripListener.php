@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\EventListener;
 
+use App\Entity\User;
+
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 /**
  * kernel.response — strips sensitive User fields from JSON responses.
@@ -68,12 +71,21 @@ final class SensitiveFieldStripListener
 
     public function __construct(
         private readonly LoggerInterface $logger,
+        private readonly TokenStorageInterface $tokenStorage,
     ) {}
 
     #[AsEventListener(event: KernelEvents::RESPONSE)]
     public function __invoke(ResponseEvent $event): void
     {
         if (!$event->isMainRequest()) {
+            return;
+        }
+
+        // Admin API paths are ROLE_ADMIN-only by route guards; admins are
+        // authorized for PII (the users panel renders emails). Scrubbing
+        // here would silently break admin tooling (and did: u.email always
+        // empty). The net stays up for every user-facing endpoint.
+        if ($this->isAdminApiRequest($event) && $this->isAdmin()) {
             return;
         }
 
@@ -152,5 +164,24 @@ final class SensitiveFieldStripListener
             }
         }
         return false;
+    }
+
+    private function isAdminApiRequest(ResponseEvent $event): bool
+    {
+        $path = $event->getRequest()->getPathInfo();
+
+        return str_starts_with($path, '/sanctum/api/') || str_starts_with($path, '/api/admin/');
+    }
+
+    private function isAdmin(): bool
+    {
+        try {
+            $token = $this->tokenStorage->getToken();
+            $user = $token?->getUser();
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return $user instanceof User && $user->getIsAdmin();
     }
 }

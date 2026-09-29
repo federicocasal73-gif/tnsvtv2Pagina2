@@ -89,6 +89,7 @@ class LoginRateLimitLoadTest extends ApiTestCase
         $result = $this->jsonRequest('POST', '/api/auth/login', [
             'code' => 'resetok01',
             'name' => 'Reset OK',
+            'password' => 'TestPassword123!',
         ]);
 
         $this->assertSame(200, $result['status']);

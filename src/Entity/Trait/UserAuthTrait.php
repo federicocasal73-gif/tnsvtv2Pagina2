@@ -46,6 +46,17 @@ trait UserAuthTrait
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $refreshTokenRotatedAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $emailVerifiedAt = null;
+
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $twoFactorEnabled = false;
+
+    // Service accounts (e2e, APK grandfathered): skip 2FA challenge.
+    // Admin-only flag, audited on change.
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $twoFactorExempt = false;
+
     public function getId(): ?int { return $this->id; }
 
     public function getCode(): ?string { return $this->code; }
@@ -91,4 +102,14 @@ trait UserAuthTrait
 
     public function getUserIdentifier(): string { return $this->code ?? ''; }
     public function eraseCredentials(): void {}
+
+    public function getEmailVerifiedAt(): ?\DateTimeImmutable { return $this->emailVerifiedAt; }
+    public function setEmailVerifiedAt(?\DateTimeImmutable $d): static { $this->emailVerifiedAt = $d; return $this; }
+    public function hasVerifiedEmail(): bool { return null !== $this->emailVerifiedAt && null !== $this->email && '' !== trim($this->email); }
+
+    public function isTwoFactorEnabled(): bool { return $this->twoFactorEnabled; }
+    public function setTwoFactorEnabled(bool $v): static { $this->twoFactorEnabled = $v; return $this; }
+
+    public function isTwoFactorExempt(): bool { return $this->twoFactorExempt; }
+    public function setTwoFactorExempt(bool $v): static { $this->twoFactorExempt = $v; return $this; }
 }

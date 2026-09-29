@@ -61,6 +61,9 @@ class UsersController extends AbstractController
                 'roles'       => $u->getRoles(),
                 'active'      => $u->isActive(),
                 'email'       => $u->getEmail(),
+                'email_verified' => $u->hasVerifiedEmail(),
+                'two_factor_enabled' => $u->isTwoFactorEnabled(),
+                'two_factor_exempt' => $u->isTwoFactorExempt(),
                 'last_login'  => $u->getLastLogin()?->format('c'),
             ];
         }, $users);
@@ -113,6 +116,54 @@ class UsersController extends AbstractController
         $this->em->flush();
 
         return $this->json(['success' => true, 'active' => $user->isActive()]);
+    }
+
+    #[Route('/{code}/security', name: 'sanctum_api_users_security', methods: ['PATCH'])]
+    public function updateSecurity(string $code, Request $request): JsonResponse
+    {
+        if ($err = $this->requireAdmin()) return $err;
+
+        $user = $this->userRepository->findOneBy(['code' => $code]);
+        if (!$user) return $this->json(['success' => false, 'error' => 'Not found'], 404);
+
+        $data = json_decode($request->getContent(), true);
+        if (!is_array($data)) {
+            return $this->json(['success' => false, 'error' => 'Invalid JSON'], 400);
+        }
+
+        if (array_key_exists('email', $data)) {
+            $email = strtolower(trim((string) $data['email']));
+            if ('' !== $email) {
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    return $this->json(['success' => false, 'error' => 'Mail inválido'], 400);
+                }
+                $taken = $this->userRepository->findOneBy(['email' => $email]);
+                if ($taken instanceof User && $taken->getId() !== $user->getId()) {
+                    return $this->json(['success' => false, 'error' => 'Ese mail ya está en uso'], 409);
+                }
+                $user->setEmail($email);
+                // Admin-set mail still needs user verification (unverified).
+                $user->setEmailVerifiedAt(null);
+            } else {
+                $user->setEmail(null);
+                $user->setEmailVerifiedAt(null);
+                $user->setTwoFactorEnabled(false);
+            }
+        }
+
+        if (array_key_exists('two_factor_exempt', $data)) {
+            $user->setTwoFactorExempt((bool) $data['two_factor_exempt']);
+        }
+
+        $this->em->flush();
+
+        return $this->json(['success' => true, 'user' => [
+            'code' => $user->getCode(),
+            'email' => $user->getEmail(),
+            'email_verified' => $user->hasVerifiedEmail(),
+            'two_factor_enabled' => $user->isTwoFactorEnabled(),
+            'two_factor_exempt' => $user->isTwoFactorExempt(),
+        ]]);
     }
 
     #[Route('/{code}', name: 'sanctum_api_users_delete', methods: ['DELETE'])]

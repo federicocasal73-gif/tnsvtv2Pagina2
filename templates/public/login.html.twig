@@ -87,19 +87,87 @@
                                placeholder="Nombre del usuario (Demo, Juan, etc.)" />
                     </div>
                     <div class="form-field" id="login-password-field">
-                        <label for="login-password">Contraseña (solo admins)</label>
+                        <label for="login-password">Contraseña</label>
                         <input type="password" id="login-password" name="password" autocomplete="current-password"
-                               placeholder="Solo requerida si tu código empieza con ADMIN" />
+                               placeholder="Requerida para admins; opcional si definiste una" />
                     </div>
                     <button type="submit" class="login-submit" id="login-submit-btn">
                         <span id="login-btn-text">Entrar</span>
                     </button>
                     <div class="login-error" id="login-error" role="alert" aria-live="assertive"></div>
                     <div class="login-success" id="login-success" role="status" aria-live="polite"></div>
+                    <p class="login-forgot"><button type="button" id="login-forgot-link" class="linklike">¿Olvidaste tu contraseña?</button></p>
                 </form>
+
+                {# ─── Paso 2: código de 6 dígitos ─── #}
+                <div id="login-2fa" style="display:none;" aria-live="polite">
+                    <h3>Verificación en dos pasos</h3>
+                    <p class="login-2fa-sub">Te enviamos un código a <strong id="tfa-email">tu mail</strong>. Vale 10 minutos.</p>
+                    <div class="form-field">
+                        <label for="tfa-code">Código de 6 dígitos</label>
+                        <input type="text" id="tfa-code" inputmode="numeric" autocomplete="one-time-code"
+                               maxlength="6" placeholder="000000" />
+                    </div>
+                    <button type="button" class="login-submit" id="tfa-verify-btn">Verificar y entrar</button>
+                    <p class="login-2fa-row">
+                        <button type="button" id="tfa-resend-btn" class="linklike" disabled>Reenviar código (<span id="tfa-timer">60</span>s)</button>
+                        <button type="button" id="tfa-back-btn" class="linklike">Volver</button>
+                    </p>
+                    <div class="login-error" id="tfa-error" role="alert" aria-live="assertive"></div>
+                </div>
+
+                {# ─── Enrolamiento: cargar mail ─── #}
+                <div id="login-enroll" style="display:none;" aria-live="polite">
+                    <h3>Protegé tu cuenta</h3>
+                    <p class="login-2fa-sub">Cargá tu mail para activar la verificación en dos pasos.</p>
+                    <div class="form-field">
+                        <label for="enroll-email">Tu mail</label>
+                        <input type="email" id="enroll-email" autocomplete="email" placeholder="vos@mail.com" />
+                    </div>
+                    <button type="button" class="login-submit" id="enroll-send-btn">Enviarme el código</button>
+                    <p class="login-2fa-row">
+                        <button type="button" id="enroll-back-btn" class="linklike">Volver</button>
+                    </p>
+                    <div class="login-error" id="enroll-error" role="alert" aria-live="assertive"></div>
+                </div>
+
+                {# ─── Recupero: pedir código ─── #}
+                <div id="login-recover" style="display:none;" aria-live="polite">
+                    <h3>Recuperar contraseña</h3>
+                    <p class="login-2fa-sub">Ingresá tu código de adepto. Si tiene mail verificado, te mandamos un código.</p>
+                    <div class="form-field">
+                        <label for="recover-code">Código de acceso</label>
+                        <input type="text" id="recover-code" autocomplete="username" placeholder="TU CÓDIGO" />
+                    </div>
+                    <button type="button" class="login-submit" id="recover-send-btn">Enviar código</button>
+                    <p class="login-2fa-row">
+                        <button type="button" id="recover-back-btn" class="linklike">Volver al login</button>
+                    </p>
+                    <div class="login-error" id="recover-error" role="alert" aria-live="assertive"></div>
+                </div>
+
+                {# ─── Recupero: código + nueva contraseña ─── #}
+                <div id="login-reset" style="display:none;" aria-live="polite">
+                    <h3>Nueva contraseña</h3>
+                    <p class="login-2fa-sub">Mínimo 10 caracteres. Al guardarla se cierran tus otras sesiones.</p>
+                    <div class="form-field">
+                        <label for="reset-code">Código recibido</label>
+                        <input type="text" id="reset-code" inputmode="numeric" autocomplete="one-time-code"
+                               maxlength="6" placeholder="000000" />
+                    </div>
+                    <div class="form-field">
+                        <label for="reset-pass">Nueva contraseña</label>
+                        <input type="password" id="reset-pass" autocomplete="new-password" placeholder="Mínimo 10 caracteres" />
+                    </div>
+                    <button type="button" class="login-submit" id="reset-save-btn">Guardar y entrar</button>
+                    <p class="login-2fa-row">
+                        <button type="button" id="reset-back-btn" class="linklike">Volver al login</button>
+                    </p>
+                    <div class="login-error" id="reset-error" role="alert" aria-live="assertive"></div>
+                </div>
                 <div class="login-hint">
                     <strong>Cómo funciona:</strong> ADMIN01 = admin (necesita contraseña).<br>
-                    <code>DEMO</code> con nombre <code>Demo</code> = usuario normal (sin contraseña).<br>
+                    Usuarios: código + nombre (y contraseña solo si definiste una en tu perfil).<br>
                     Tu sesión queda activa hasta cerrar el navegador.
                 </div>
             </div>
@@ -223,12 +291,9 @@
         codeInput.addEventListener('input', function () {
             var v = codeInput.value.trim();
             if (isAdmin(v)) {
-                passField.style.display = '';
                 nameLabel.textContent = 'Nombre (opcional para admins)';
                 nameInput.placeholder = 'Nombre del admin (opcional)';
             } else {
-                passField.style.display = 'none';
-                passInput.value = '';
                 nameLabel.textContent = 'Nombre (requerido para usuarios)';
                 nameInput.placeholder = 'Ej: Demo';
             }
@@ -251,7 +316,237 @@
             var code = codeInput.value.trim();
             if (!code) {
                 showError('Ingresá tu código de acceso');
-                codeInput.focus();
+        function loginOk(user) {
+            user = user || {};
+            showSuccess('Bienvenido ' + (user.name || user.code) + '. Redirigiendo…');
+            try { localStorage.setItem('tnsvt_user', JSON.stringify(user)); } catch (_) {}
+            var target = user.isAdmin ? '/sanctum' : '/journal';
+            setTimeout(function () { window.location.href = target; }, 600);
+        }
+
+        // ─── Paso 2 / enrolamiento / recupero (verificación por mail) ───
+        var tfaState = { challengeId: null, mode: 'login', timer: null, cooldown: null };
+
+        function showPanel(id) {
+            ['login-form', 'login-2fa', 'login-enroll', 'login-recover', 'login-reset'].forEach(function (pid) {
+                var el = document.getElementById(pid);
+                if (el) el.style.display = pid === id ? '' : 'none';
+            });
+        }
+
+        function startCooldown(sec) {
+            var btn = document.getElementById('tfa-resend-btn');
+            var label = document.getElementById('tfa-timer');
+            clearInterval(tfaState.cooldown);
+            var left = sec;
+            btn.disabled = true;
+            label.textContent = left;
+            tfaState.cooldown = setInterval(function () {
+                left -= 1;
+                if (left <= 0) {
+                    clearInterval(tfaState.cooldown);
+                    btn.disabled = false;
+                    btn.innerHTML = 'Reenviar código';
+                } else {
+                    label.textContent = left;
+                }
+            }, 1000);
+        }
+
+        function enterStep2(challengeId, maskedEmail, mode) {
+            tfaState.challengeId = challengeId;
+            tfaState.mode = mode;
+            document.getElementById('tfa-email').textContent = maskedEmail || 'tu mail';
+            document.getElementById('tfa-code').value = '';
+            document.getElementById('tfa-error').style.display = 'none';
+            showPanel('login-2fa');
+            startCooldown(60);
+            document.getElementById('tfa-code').focus();
+        }
+
+        function tfaError(msg) {
+            var el = document.getElementById('tfa-error');
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+
+        document.getElementById('tfa-verify-btn').addEventListener('click', function () {
+            var code = document.getElementById('tfa-code').value.trim();
+            if (code.length < 6) { tfaError('Ingresá los 6 dígitos'); return; }
+            fetch('/api/auth/2fa/verify', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challenge_id: tfaState.challengeId, code: code })
+            })
+            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (resp) {
+                if (resp.status === 200 && resp.data && resp.data.success) {
+                    loginOk(resp.data.user);
+                } else if (resp.status === 410) {
+                    tfaError('El código venció. Pedí uno nuevo abajo.');
+                } else {
+                    tfaError((resp.data && resp.data.error) || 'Código incorrecto');
+                }
+            })
+            .catch(function () { tfaError('Sin conexión con el servidor'); });
+        });
+
+        document.getElementById('tfa-resend-btn').addEventListener('click', function () {
+            fetch('/api/auth/2fa/resend', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challenge_id: tfaState.challengeId })
+            })
+            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (resp) {
+                if (resp.status === 200) {
+                    startCooldown(60);
+                    tfaError('');
+                    document.getElementById('tfa-error').style.display = 'none';
+                } else {
+                    tfaError((resp.data && resp.data.error) || 'Esperá unos segundos');
+                }
+            })
+            .catch(function () { tfaError('Sin conexión con el servidor'); });
+        });
+
+        function backToLogin() {
+            clearInterval(tfaState.cooldown);
+            tfaState.challengeId = null;
+            if (doneLoading) doneLoading(); else submitBtn.disabled = false;
+            btnText.textContent = 'Entrar';
+            showPanel('login-form');
+        }
+        document.getElementById('tfa-back-btn').addEventListener('click', backToLogin);
+        document.getElementById('enroll-back-btn').addEventListener('click', backToLogin);
+        document.getElementById('recover-back-btn').addEventListener('click', backToLogin);
+        document.getElementById('reset-back-btn').addEventListener('click', backToLogin);
+
+        // Enter en el código verifica directo.
+        document.getElementById('tfa-code').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('tfa-verify-btn').click();
+            }
+        });
+        // Solo dígitos en el código.
+        document.getElementById('tfa-code').addEventListener('input', function (e) {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 6);
+        });
+
+        // ─── Enrolamiento ───
+        document.getElementById('enroll-send-btn').addEventListener('click', function () {
+            var email = document.getElementById('enroll-email').value.trim();
+            var code = codeInput.value.trim().toUpperCase();
+            var err = document.getElementById('enroll-error');
+            if (!email || email.indexOf('@') < 0) {
+                err.textContent = 'Ingresá un mail válido';
+                err.style.display = 'block';
+                return;
+            }
+            err.style.display = 'none';
+            fetch('/api/auth/2fa/enroll/start', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code, email: email })
+            })
+            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (resp) {
+                if (resp.status === 200 && resp.data && resp.data.success) {
+                    enterStep2(resp.data.challenge_id, resp.data.masked_email, 'enroll');
+                } else {
+                    err.textContent = (resp.data && resp.data.error) || 'No se pudo enviar';
+                    err.style.display = 'block';
+                }
+            })
+            .catch(function () {
+                err.textContent = 'Sin conexión con el servidor';
+                err.style.display = 'block';
+            });
+        });
+
+        // ─── Recupero ───
+        var resetChallengeId = null;
+        document.getElementById('login-forgot-link').addEventListener('click', function () {
+            var code = codeInput.value.trim().toUpperCase();
+            if (code) document.getElementById('recover-code').value = code;
+            showPanel('login-recover');
+        });
+        document.getElementById('recover-send-btn').addEventListener('click', function () {
+            var code = document.getElementById('recover-code').value.trim().toUpperCase();
+            var err = document.getElementById('recover-error');
+            if (!code) {
+                err.textContent = 'Ingresá tu código de adepto';
+                err.style.display = 'block';
+                return;
+            }
+            err.style.display = 'none';
+            fetch('/api/auth/password/forgot', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            })
+            .then(function () {
+                // Respuesta genérica a propósito: no revela si el código existe.
+                resetChallengeId = null;
+                showPanel('login-reset');
+            })
+            .catch(function () {
+                err.textContent = 'Sin conexión con el servidor';
+                err.style.display = 'block';
+            });
+        });
+        document.getElementById('reset-save-btn').addEventListener('click', function () {
+            var err = document.getElementById('reset-error');
+            var code = document.getElementById('reset-code').value.trim();
+            var pass = document.getElementById('reset-pass').value;
+            if (code.length < 6) {
+                err.textContent = 'Ingresá el código de 6 dígitos de tu mail';
+                err.style.display = 'block';
+                return;
+            }
+            if (pass.length < 10) {
+                err.textContent = 'La contraseña debe tener al menos 10 caracteres';
+                err.style.display = 'block';
+                return;
+            }
+            err.style.display = 'none';
+            // El challenge_id viaja implícito: el último activo de recupero.
+            // Pedimos challenge por código+mail es inseguro; el server lo
+            // resuelve por (usuario del forgot, propósito reset).
+            fetch('/api/auth/password/reset-by-code', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    code: document.getElementById('recover-code').value.trim().toUpperCase(),
+                    email_code: code,
+                    new_password: pass
+                })
+            })
+            .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
+            .then(function (resp) {
+                if (resp.status === 200 && resp.data && resp.data.success) {
+                    showPanel('login-form');
+                    showSuccess('Contraseña actualizada. Iniciá sesión con tu código y la nueva contraseña.');
+                    if (doneLoading) doneLoading(); else submitBtn.disabled = false;
+                    btnText.textContent = 'Entrar';
+                } else {
+                    err.textContent = (resp.data && resp.data.error) || 'No se pudo guardar';
+                    err.style.display = 'block';
+                }
+            })
+            .catch(function () {
+                err.textContent = 'Sin conexión con el servidor';
+                err.style.display = 'block';
+            });
+        });
+
+        codeInput.focus();
                 return;
             }
 
@@ -274,6 +569,8 @@
                     return;
                 }
                 payload.name = name;
+                // Contraseña opcional: si el usuario definió una, el server la exige.
+                if (passInput.value) payload.password = passInput.value;
             }
 
             var doneLoading = (typeof window.apiButtonLoading === 'function')
@@ -291,14 +588,15 @@
             .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; }); })
             .then(function (resp) {
                 if (resp.ok && resp.data && resp.data.success) {
-                    var user = resp.data.user || {};
-                    showSuccess('Bienvenido ' + (user.name || user.code) + '. Redirigiendo…');
-                    try { localStorage.setItem('tnsvt_user', JSON.stringify(user)); } catch (_) {}
-                    var target = user.isAdmin ? '/sanctum' : '/journal';
-                    setTimeout(function () { window.location.href = target; }, 600);
+                    loginOk(resp.data.user);
+                } else if (resp.data && resp.data.error_code === 'two_factor_required') {
+                    enterStep2(resp.data.challenge_id, resp.data.masked_email, 'login');
+                } else if (resp.data && resp.data.error_code === 'enrollment_required') {
+                    showPanel('login-enroll');
                 } else {
                     var msg = (resp.data && resp.data.error) || 'Error ' + resp.status;
                     showError(msg);
+                    if (resp.data && resp.data.error_code === 'password_invalid') passInput.focus();
                     if (doneLoading) doneLoading(); else submitBtn.disabled = false;
                     btnText.textContent = 'Entrar';
                 }

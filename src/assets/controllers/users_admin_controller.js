@@ -78,6 +78,10 @@ export default class extends Controller {
             if (!e.target.matches('[data-action="delete-user"]')) return;
             this.deleteUser(e.target);
         });
+        document.addEventListener('click', (e) => {
+            if (!e.target.matches('[data-action="toggle-exempt"]')) return;
+            this.toggleExempt(e.target);
+        });
     }
 
     async loadUsers() {
@@ -163,6 +167,9 @@ export default class extends Controller {
                     <button class="text-xs px-2 py-1 rounded ${u.active ? 'bg-red-900/30 text-red-400 hover:bg-red-900/50' : 'bg-green-900/30 text-green-400 hover:bg-green-900/50'} transition-colors" data-user-code="${this.escapeHtml(u.code || '')}" data-action="toggle-user">
                         ${u.active ? 'Desactivar' : 'Activar'}
                     </button>
+                    <button class="text-xs px-2 py-1 rounded bg-yellow-900/30 text-yellow-300 hover:bg-yellow-900/50 transition-colors" data-user-code="${this.escapeHtml(u.code || '')}" data-action="toggle-exempt" title="Eximir de verificación en dos pasos (cuentas de servicio)">
+                        ${u.two_factor_exempt ? '2FA eximido' : 'Eximir 2FA'}
+                    </button>
                     <button class="text-xs px-2 py-1 rounded bg-red-950/40 text-red-300 border border-red-900/40 hover:bg-red-900/50 transition-colors" data-user-code="${this.escapeHtml(u.code || '')}" data-action="delete-user" title="Borrar definitivamente">
                         Eliminar
                     </button>
@@ -183,6 +190,42 @@ export default class extends Controller {
             );
             const data = r.data;
             if (r.ok && data && data.success) {
+                this.loadUsers();
+            } else {
+                if (window.apiToast)
+                    window.apiToast('Error: ' + ((data && data.error) || 'desconocido'), 'error');
+                btn.disabled = false;
+            }
+        } catch (err) {
+            if (window.apiToast) window.apiToast('Error: ' + err.message, 'error');
+            btn.disabled = false;
+        }
+    }
+
+    async toggleExempt(btn) {
+        const code = btn.dataset.userCode;
+        if (!code) return;
+        btn.disabled = true;
+        try {
+            // Lee el estado actual de la grilla para invertirlo.
+            const current = (this.allUsers || []).find((u) => u.code === code);
+            const r = await window.apiFetch(
+                '/sanctum/api/users/' + encodeURIComponent(code) + '/security',
+                {
+                    method: 'PATCH',
+                    body: { two_factor_exempt: !(current && current.two_factor_exempt) },
+                }
+            );
+            const data = r.data;
+            if (r.ok && data && data.success) {
+                if (window.apiToast)
+                    window.apiToast(
+                        '2FA ' +
+                            (data.user.two_factor_exempt ? 'eximido' : 'exigido') +
+                            ' para ' +
+                            code,
+                        'success'
+                    );
                 this.loadUsers();
             } else {
                 if (window.apiToast)

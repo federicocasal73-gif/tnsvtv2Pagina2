@@ -637,6 +637,12 @@ parameters:
 			path: src/Entity/TradingAccount.php
 
 		-
+			message: '#^Property App\\Entity\\TwoFactorChallenge\:\:\$id \(int\|null\) is never assigned int so it can be removed from the property type\.$#'
+			identifier: property.unusedType
+			count: 1
+			path: src/Entity/TwoFactorChallenge.php
+
+		-
 			message: '#^Property App\\Entity\\User\:\:\$journalSetting \(App\\Entity\\JournalSetting\|null\) is never assigned App\\Entity\\JournalSetting so it can be removed from the property type\.$#'
 			identifier: property.unusedType
 			count: 1

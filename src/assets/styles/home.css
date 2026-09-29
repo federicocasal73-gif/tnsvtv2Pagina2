@@ -1373,3 +1373,39 @@ body {
         padding: 8px 10px;
     }
 }
+
+/* ─── Login 2FA / recupero (paso 2, enrolamiento, nueva contraseña) ─── */
+.linklike {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--gold-elev);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.linklike:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+.login-forgot {
+    margin-top: 0.75rem;
+    text-align: center;
+}
+.login-2fa-sub {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    margin: 0.5rem 0 1rem;
+}
+.login-2fa-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+}
+#login-2fa h3,
+#login-enroll h3,
+#login-recover h3,
+#login-reset h3 {
+    margin: 0 0 0.25rem;
+}

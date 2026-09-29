@@ -69,6 +69,53 @@
 {# api_helper MUST be included BEFORE any {% block content %} to ensure window.apiFetch is defined #}
 {% include '_partials/api_helper.html.twig' with {} %}
 
+{# Banner de enrolamiento 2FA: visible solo si el login avisó gracia pendiente. #}
+<div id="enrollment-banner" class="hidden" role="status" style="position:sticky;top:0;z-index:9000;background:rgba(212,175,55,.12);border-bottom:1px solid var(--glass-border-gold-elev);padding:.5rem 1rem;font-size:.85rem;text-align:center;">
+    <span id="enrollment-banner-msg">Protegé tu cuenta: cargá tu mail en tu <a href="/sanctum/profile" style="color:var(--gold-elev);">perfil</a>.</span>
+    <button type="button" id="enrollment-banner-close" aria-label="Ocultar" style="margin-left:.75rem;">✕</button>
+</div>
+<script nonce="{{ csp_nonce('script') }}">
+(function () {
+    'use strict';
+    var closeBtn = document.getElementById('enrollment-banner-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            var banner = document.getElementById('enrollment-banner');
+            if (banner) banner.classList.add('hidden');
+        });
+    }
+    function show(days) {
+        var banner = document.getElementById('enrollment-banner');
+        if (!banner) return;
+        var msg = document.getElementById('enrollment-banner-msg');
+        if (msg) {
+            msg.innerHTML = days === null || days === undefined
+                ? 'Protegé tu cuenta: cargá tu mail en tu <a href="/sanctum/profile" style="color:var(--gold-elev);">perfil</a>.'
+                : 'Protegé tu cuenta: te quedan ' + days + ' días para cargar tu mail en tu <a href="/sanctum/profile" style="color:var(--gold-elev);">perfil</a>.';
+        }
+        banner.classList.remove('hidden');
+    }
+    function check() {
+        if (typeof window.apiFetch !== 'function') return;
+        window.apiFetch('/api/auth/check', { silent: true }).then(function (r) {
+            var u = (r && r.data && r.data.user) || {};
+            if (!r.ok || u.enrollment_warning_days === undefined || u.enrollment_warning_days === null) {
+                // El check no trae el aviso (o no hay sesión): probar el login payload es imposible aquí;
+                // el banner también se muestra si el flag two_factor_required llega como pendiente.
+                if (u.two_factor_required) show(null);
+                return;
+            }
+            show(u.enrollment_warning_days);
+        }).catch(function () {});
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', check);
+    } else {
+        check();
+    }
+})();
+</script>
+
 {# ═══ FASE 0 — Emblema 3D del gateway (solo home) ═══ #}
 {% block gateway_emblem %}{% endblock %}
 

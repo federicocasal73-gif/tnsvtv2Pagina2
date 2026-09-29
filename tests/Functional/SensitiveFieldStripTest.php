@@ -198,9 +198,27 @@ class SensitiveFieldStripTest extends ApiTestCase
         $this->assertArrayNotHasKey('email', $userBlock);
         $this->assertArrayNotHasKey('currentRefreshTokenHash', $userBlock);
         $this->assertArrayNotHasKey('lastLoginIp', $userBlock);
-        // Allowed: code, name, isAdmin.
+        // Allowed: code, name, isAdmin + 2FA status (masked email, booleans).
         foreach (array_keys($userBlock) as $k) {
-            $this->assertContains($k, ['code', 'name', 'isAdmin'], "Unexpected key $k in /api/auth/check response");
+            $this->assertContains($k, ['code', 'name', 'isAdmin', 'email_masked', 'email_verified', 'two_factor_enabled', 'two_factor_required', 'enrollment_warning_days'], "Unexpected key $k in /api/auth/check response");
         }
+    }
+
+    public function testAdminPathsAreExemptFromScrubbing(): void
+    {
+        // /sanctum/api/* es ROLE_ADMIN-only: el admin VE el mail (el panel
+        // lo renderiza). Sin la exención, u.email llegaba siempre vacío.
+        $admin = $this->createAdmin(['code' => 'STRIPADM', 'email' => 'admin@x.com']);
+        $this->createUser(['code' => 'STRIPU01', 'name' => 'Strip', 'email' => 'stripu01@x.com']);
+        $this->loginAs($admin);
+
+        $r = $this->jsonRequest('GET', '/sanctum/api/users');
+
+        $this->assertSame(200, $r['status']);
+        $byCode = [];
+        foreach ($r['data']['users'] as $u) {
+            $byCode[$u['code']] = $u;
+        }
+        $this->assertSame('stripu01@x.com', $byCode['STRIPU01']['email'] ?? null);
     }
 }

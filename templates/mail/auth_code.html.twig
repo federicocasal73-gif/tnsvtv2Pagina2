@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<body style="font-family: sans-serif; background: #0b0713; color: #f5f0e1; padding: 24px;">
+  <div style="max-width: 480px; margin: 0 auto; background: #171226; border: 1px solid #d4af37; border-radius: 12px; padding: 32px; text-align: center;">
+    <p style="color: #d4af37; letter-spacing: 3px; font-size: 12px;">T.N.S.V.T · SANCTUM</p>
+    {% if purpose == 'reset' %}
+      <h2>Recuperá tu contraseña</h2>
+      <p>Usá este código para definir una nueva contraseña (válido {{ minutes }} minutos):</p>
+    {% elseif purpose == 'enroll' %}
+      <h2>Verificá tu mail</h2>
+      <p>Usá este código para activar la verificación en dos pasos (válido {{ minutes }} minutos):</p>
+    {% else %}
+      <h2>Tu código de acceso</h2>
+      <p>Usá este código para entrar al Sanctum (válido {{ minutes }} minutos):</p>
+    {% endif %}
+    <p style="font-size: 36px; letter-spacing: 8px; font-weight: bold; color: #f5f0e1;">{{ code }}</p>
+    <p style="font-size: 13px; color: #9a8fb5;">Si no fuiste vos, ignorá este mail y avisá a un administrador.</p>
+  </div>
+</body>
+</html>

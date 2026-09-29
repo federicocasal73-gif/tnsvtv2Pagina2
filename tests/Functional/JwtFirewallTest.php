@@ -120,7 +120,7 @@ class JwtFirewallTest extends ApiTestCase
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['code' => 'PRIOUSER', 'name' => 'Priority']),
+            json_encode(['code' => 'PRIOUSER', 'name' => 'Priority', 'password' => 'TestPassword123!']),
         );
         $loginResponse = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertTrue($loginResponse['success'] ?? false, 'CodeAuthenticator still works for login');

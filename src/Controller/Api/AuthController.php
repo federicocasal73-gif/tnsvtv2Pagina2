@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\Auth\JwtService;
 use App\Service\Auth\RefreshTokenService;
+use App\Service\TwoFactorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +27,7 @@ class AuthController extends AbstractController
     public function __construct(
         private JwtService $jwtService,
         private RefreshTokenService $refreshTokenService,
+        private TwoFactorService $twoFactor,
     ) {}
 
     private function jsonError(string $message, int $status, string $errorCode = ''): Response
@@ -129,6 +131,52 @@ class AuthController extends AbstractController
                 $remaining,
                 $resetAt,
             );
+        } elseif (null !== $user->getPassword() && '' !== $user->getPassword()) {
+            // El usuario definió contraseña (perfil o recupero): se exige
+            // además del nombre. Usuarios sin password entran como siempre.
+            if (empty($password) || !$passwordHasher->isPasswordValid($user, $password)) {
+                return $this->withRateLimitHeaders(
+                    $this->jsonError('Contraseña incorrecta', Response::HTTP_UNAUTHORIZED, 'password_invalid'),
+                    $remaining,
+                    $resetAt,
+                );
+            }
+        }
+
+        // ===== 2FA por mail (solo si aplica al usuario) =====
+        $graceWarning = null;
+        if ($this->twoFactor->isEnforcedFor($user)) {
+            if (!$user->hasVerifiedEmail()) {
+                if ($this->twoFactor->inGrace()) {
+                    $left = $this->twoFactor->graceDaysLeft();
+                    $graceWarning = [
+                        'days_left' => $left,
+                        'message' => null === $left
+                            ? 'Protegé tu cuenta: cargá tu mail en tu perfil.'
+                            : sprintf('Protegé tu cuenta: te quedan %d días para cargar tu mail.', $left),
+                    ];
+                } else {
+                    return $this->json([
+                        'success' => false,
+                        'error' => 'Protegé tu cuenta: cargá tu mail para seguir entrando.',
+                        'error_code' => 'enrollment_required',
+                    ]);
+                }
+            } else {
+                [$challenge] = $this->twoFactor->issue($user, \App\Entity\TwoFactorChallenge::PURPOSE_LOGIN);
+                if (null === $challenge) {
+                    return $this->jsonError('No se pudo enviar el código', Response::HTTP_INTERNAL_SERVER_ERROR, 'mail_failed');
+                }
+
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Te enviamos un código de 6 dígitos a tu mail.',
+                    'error_code' => 'two_factor_required',
+                    'challenge_id' => $challenge->getId(),
+                    'masked_email' => $this->twoFactor->maskedEmail($user->getEmail()),
+                    'expires_in' => \App\Entity\TwoFactorChallenge::TTL_SECONDS,
+                ]);
+            }
         }
 
         $user->setLastLogin(new \DateTimeImmutable());
@@ -150,6 +198,9 @@ class AuthController extends AbstractController
         // - X-Game-Code (legacy header)
         $payload = $this->jwtService->buildLoginResponse($user);
         $payload['refresh_token'] = $this->refreshTokenService->issue($user);
+        if (null !== $graceWarning) {
+            $payload['enrollment_warning'] = $graceWarning;
+        }
 
         $response = $this->json($payload);
         // Tras un login exitoso reseteamos el rate-limit (ver linea 110),
@@ -251,6 +302,13 @@ class AuthController extends AbstractController
                 'code' => $user->getCode(),
                 'name' => $user->getName(),
                 'isAdmin' => in_array('ROLE_ADMIN', $user->getRoles(), true),
+                'email_masked' => $this->twoFactor->maskedEmail($user->getEmail()),
+                'email_verified' => $user->hasVerifiedEmail(),
+                'two_factor_enabled' => $user->isTwoFactorEnabled(),
+                'two_factor_required' => $this->twoFactor->isEnforcedFor($user) && !$user->hasVerifiedEmail() && !$this->twoFactor->inGrace(),
+                'enrollment_warning_days' => $this->twoFactor->isEnforcedFor($user) && !$user->hasVerifiedEmail()
+                    ? $this->twoFactor->graceDaysLeft()
+                    : null,
             ],
         ]);
     }

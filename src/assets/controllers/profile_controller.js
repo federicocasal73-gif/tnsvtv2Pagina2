@@ -4,6 +4,9 @@ export default class extends Controller {
     connect() {
         this.loadProfile();
         this.loadJournalStats();
+        this.loadSecurity();
+        this._secChallengeId = null;
+        this._secTimer = null;
 
         const avatarInput = document.getElementById('avatar-input');
         if (avatarInput) {
@@ -23,6 +26,35 @@ export default class extends Controller {
         const shareBtn = document.getElementById('profile-share');
         if (shareBtn) {
             shareBtn.addEventListener('click', () => this.shareProfile());
+        }
+
+        const emailSend = document.getElementById('sec-email-send');
+        if (emailSend) {
+            emailSend.addEventListener('click', () => this.sendEmailCode());
+        }
+        const emailVerify = document.getElementById('sec-email-verify');
+        if (emailVerify) {
+            emailVerify.addEventListener('click', () => this.verifyEmailCode());
+        }
+        const emailResend = document.getElementById('sec-email-resend');
+        if (emailResend) {
+            emailResend.addEventListener('click', () => this.sendEmailCode());
+        }
+        const passSave = document.getElementById('sec-pass-save');
+        if (passSave) {
+            passSave.addEventListener('click', () => this.savePassword());
+        }
+        const emailCode = document.getElementById('sec-email-code');
+        if (emailCode) {
+            emailCode.addEventListener('input', () => {
+                emailCode.value = emailCode.value.replace(/\D/g, '').slice(0, 6);
+            });
+            emailCode.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.verifyEmailCode();
+                }
+            });
         }
     }
 
@@ -214,5 +246,141 @@ export default class extends Controller {
                     'text-lg font-bold ' + (pnl >= 0 ? 'text-green-400' : 'text-red-400');
             }
         } catch (e) {}
+    }
+
+    // ─── Mail y verificación en dos pasos ─────────────────────────
+    async loadSecurity() {
+        try {
+            const r = await fetch('/api/auth/check', { credentials: 'same-origin' });
+            const data = await r.json();
+            const u = (data && data.user) || {};
+            const badge = document.getElementById('sec-email-badge');
+            if (badge) {
+                if (u.email_verified) {
+                    badge.textContent = '✓ verificado';
+                    badge.style.color = 'var(--success, #34d399)';
+                } else if (u.email_masked) {
+                    badge.textContent = 'pendiente de verificación';
+                    badge.style.color = 'var(--gold-elev)';
+                } else {
+                    badge.textContent = 'sin cargar';
+                    badge.style.color = 'var(--outline-elev)';
+                }
+            }
+            const status = document.getElementById('sec-2fa-status');
+            if (status) {
+                status.textContent =
+                    'Verificación en dos pasos: ' +
+                    (u.two_factor_enabled ? 'ACTIVADA' : 'desactivada') +
+                    (u.two_factor_required ? ' — requerida: cargá tu mail' : '');
+            }
+        } catch (e) {}
+    }
+
+    async sendEmailCode() {
+        const input = document.getElementById('sec-email');
+        const email = input ? input.value.trim() : '';
+        if (!email || email.indexOf('@') < 0) {
+            if (window.apiToast) window.apiToast('Ingresá un mail válido', 'warning');
+            return;
+        }
+        try {
+            const r = await fetch('/api/profile/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email }),
+            });
+            const data = await r.json();
+            if (data.success) {
+                this._secChallengeId = data.challenge_id;
+                const row = document.getElementById('sec-email-code-row');
+                if (row) row.style.display = '';
+                this.startResendCooldown(60);
+                if (window.apiToast)
+                    window.apiToast('Código enviado a ' + (data.masked_email || email), 'success');
+            } else if (window.apiToast) {
+                window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            if (window.apiToast) window.apiToast('Sin conexión con el servidor', 'error');
+        }
+    }
+
+    async verifyEmailCode() {
+        const input = document.getElementById('sec-email-code');
+        const code = input ? input.value.trim() : '';
+        if (code.length < 6) {
+            if (window.apiToast) window.apiToast('Ingresá los 6 dígitos', 'warning');
+            return;
+        }
+        try {
+            const r = await fetch('/api/profile/email/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ challenge_id: this._secChallengeId, code: code }),
+            });
+            const data = await r.json();
+            if (data.success) {
+                const row = document.getElementById('sec-email-code-row');
+                if (row) row.style.display = 'none';
+                clearInterval(this._secTimer);
+                this.loadSecurity();
+                if (window.apiToast) window.apiToast('Mail verificado ✓', 'success');
+            } else if (window.apiToast) {
+                window.apiToast('Error: ' + (data.error || 'código incorrecto'), 'error');
+            }
+        } catch (e) {
+            if (window.apiToast) window.apiToast('Sin conexión con el servidor', 'error');
+        }
+    }
+
+    startResendCooldown(sec) {
+        const btn = document.getElementById('sec-email-resend');
+        const label = document.getElementById('sec-email-timer');
+        if (!btn) return;
+        clearInterval(this._secTimer);
+        let left = sec;
+        btn.disabled = true;
+        if (label) label.textContent = left;
+        this._secTimer = setInterval(() => {
+            left -= 1;
+            if (left <= 0) {
+                clearInterval(this._secTimer);
+                btn.disabled = false;
+                btn.innerHTML = 'Reenviar';
+            } else if (label) {
+                label.textContent = left;
+            }
+        }, 1000);
+    }
+
+    async savePassword() {
+        const currentEl = document.getElementById('sec-pass-current');
+        const newEl = document.getElementById('sec-pass-new');
+        const fresh = newEl ? newEl.value : '';
+        if (fresh.length < 10) {
+            if (window.apiToast) window.apiToast('Mínimo 10 caracteres', 'warning');
+            return;
+        }
+        try {
+            const r = await fetch('/api/profile/password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    current_password: currentEl ? currentEl.value : '',
+                    new_password: fresh,
+                }),
+            });
+            const data = await r.json();
+            if (data.success) {
+                if (currentEl) currentEl.value = '';
+                if (newEl) newEl.value = '';
+                if (window.apiToast) window.apiToast('Contraseña actualizada', 'success');
+            } else if (window.apiToast) {
+                window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            if (window.apiToast) window.apiToast('Sin conexión con el servidor', 'error');
+        }
     }
 }

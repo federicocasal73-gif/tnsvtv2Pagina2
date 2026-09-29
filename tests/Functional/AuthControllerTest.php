@@ -17,6 +17,7 @@ class AuthControllerTest extends ApiTestCase
         $result = $this->jsonRequest('POST', '/api/auth/login', [
             'code' => 'auth001',
             'name' => 'Auth Tester',
+            'password' => 'TestPass123!',
         ]);
 
         $this->assertSame(200, $result['status'], 'Body: ' . json_encode($result['data']));
@@ -99,6 +100,7 @@ class AuthControllerTest extends ApiTestCase
         $loginResult = $this->jsonRequest('POST', '/api/auth/login', [
             'code' => 'REFRESH01',
             'name' => 'Refresh',
+            'password' => 'TestPass123!',
         ]);
         $this->assertSame(200, $loginResult['status']);
         $this->assertNotEmpty($loginResult['data']['refresh_token'] ?? null,
@@ -114,6 +116,7 @@ class AuthControllerTest extends ApiTestCase
         $loginResult = $this->jsonRequest('POST', '/api/auth/login', [
             'code' => 'REFRESH03',
             'name' => 'Refresh3',
+            'password' => 'TestPass123!',
         ]);
         $this->assertSame(200, $loginResult['status']);
         $refreshToken = $loginResult['data']['refresh_token'] ?? null;
@@ -202,7 +205,10 @@ class AuthControllerTest extends ApiTestCase
 
     public function testLoginReturnsRateLimitHeadersOnSuccess(): void
     {
+        // Usuario SIN password (como la mayoría en prod): entra solo con nombre.
         $user = $this->createUser(['code' => 'RATEOK1', 'name' => 'Rate OK']);
+        $user->setPassword(null);
+        $this->em->flush();
 
         $this->jsonRequest('POST', '/api/auth/login', [
             'code' => 'rateok1',

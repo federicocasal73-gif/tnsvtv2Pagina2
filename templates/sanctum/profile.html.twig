@@ -129,6 +129,42 @@
         {{ progress.achievements_widget() }}
     </div>
 
+    {# ─── Mail y Contraseña (verificación en dos pasos) ─── #}
+    <div class="glass-card-elev">
+        <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span class="material-symbols-elev">mark_as_unread</span>
+            Mail y Contraseña
+        </h3>
+        <div class="space-y-4">
+            <div>
+                <label class="form-label" for="sec-email">Mail <span id="sec-email-badge" class="text-xs"></span></label>
+                <div class="flex gap-2">
+                    <input id="sec-email" type="email" class="form-input flex-1" autocomplete="email" placeholder="vos@mail.com">
+                    <button id="sec-email-send" type="button" class="ui-btn ui-btn-secondary">Enviar código</button>
+                </div>
+            </div>
+            <div id="sec-email-code-row" style="display:none;">
+                <label class="form-label" for="sec-email-code">Código de 6 dígitos</label>
+                <div class="flex gap-2">
+                    <input id="sec-email-code" type="text" class="form-input flex-1" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+                    <button id="sec-email-verify" type="button" class="ui-btn ui-btn-primary">Verificar</button>
+                </div>
+                <p class="text-xs text-[var(--outline-elev)] mt-1">Vale 10 minutos. <button type="button" id="sec-email-resend" class="linklike" disabled>Reenviar (<span id="sec-email-timer">60</span>s)</button></p>
+            </div>
+            <div class="text-xs text-[var(--outline-elev)]" id="sec-2fa-status">Verificación en dos pasos: —</div>
+            <hr class="border-[var(--outline-variant-elev)]">
+            <div>
+                <label class="form-label" for="sec-pass-current">Contraseña actual <span class="text-xs text-[var(--outline-elev)]">(vacío si aún no tenés)</span></label>
+                <input id="sec-pass-current" type="password" class="form-input" autocomplete="current-password" placeholder="••••••••••">
+            </div>
+            <div>
+                <label class="form-label" for="sec-pass-new">Nueva contraseña <span class="text-xs text-[var(--outline-elev)]">(mínimo 10 caracteres)</span></label>
+                <input id="sec-pass-new" type="password" class="form-input" autocomplete="new-password" placeholder="Mínimo 10 caracteres">
+            </div>
+            <button id="sec-pass-save" type="button" class="ui-btn ui-btn-primary w-full">Guardar contraseña</button>
+        </div>
+    </div>
+
     {# ─── Security Settings ─── #}
     <div class="glass-card-elev">
         <h3 class="text-sm font-semibold text-[var(--gold-elev)] uppercase tracking-wider mb-4 flex items-center gap-2">
