@@ -25,7 +25,7 @@ import { Controller } from '@hotwired/stimulus';
  * <body>) is removed from the DOM. data-turbo-permanent on the shell
  *     regions keeps the <body> alive across <main>-only navigations, so
  * disconnect only fires when the user navigates AWAY from the shell
- *     entirely (e.g. to /frequencies or /macro). Listeners stay single-
+ *     entirely (e.g. to /macro). Listeners stay single-
  *     instance.
  *
  * SAFE GUARDS:
@@ -448,7 +448,7 @@ export default class extends Controller {
     _initRailTooltip() {
         // Idempotent: if the singleton tooltip element already exists from a
         // previous mount, reuse it. This handles the edge case where a user
-        // visits a shell page, navigates to /frequencies (where this
+        // visits a shell page, navigates to /macro (where this
         // controller is disconnected), then returns to the shell.
         let tip = document.getElementById('sanctum-rail-tooltip');
         if (!tip) {

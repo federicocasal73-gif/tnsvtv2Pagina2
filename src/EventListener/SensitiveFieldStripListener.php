@@ -40,10 +40,7 @@ final class SensitiveFieldStripListener
      *
      * NOTE: `sessionId` is intentionally NOT here — the term is used
      * ambiguously across the codebase. PHP's PHPSESSID cookie is
-     * already httpOnly + secure, never reaches the JSON body. The
-     * `sessionId` field returned by `/api/frequencies/session/active`
-     * is a public integer identifier (frequency session ID), not a
-     * credential. Stripping it would break the frequency timer's UX.
+     * already httpOnly + secure, never reaches the JSON body.
      * If a future endpoint returns a sensitive session identifier under
      * a different key, add THAT key here.
      */

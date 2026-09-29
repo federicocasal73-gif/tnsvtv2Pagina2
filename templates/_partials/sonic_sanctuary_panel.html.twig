@@ -1,5 +1,9 @@
 {# templates/_partials/sonic_sanctuary_panel.html.twig
-   Partial: el panel lateral del Sonic Sanctuary.
+   Partial: el panel lateral del Sonic Sanctuary (modo solo-global).
+   Fuente única: playlist admin via /api/music/current + /api/music/stream.
+   (Tabs Templo/Mías + uploads eliminados con el módulo Frecuencias 2026-09-29.
+   Esta es la base para la futura sección Meditación.)
+
    Es incluido desde templates/shell.html.twig dentro de #sanctum-floats,
    que es data-turbo-permanent — el panel sobrevive navegaciones Turbo.
 
@@ -36,30 +40,12 @@
                 aria-label="Visualizador de audio"></canvas>
     </div>
 
-    {# Tabs: Templo / Mías / Global #}
+    {# Fuente única: playlist global del Cónclave #}
     <div class="sonic-tabs" role="tablist" aria-label="Fuentes de audio">
         <button type="button"
                 class="sonic-tab is-active"
                 role="tab"
                 aria-selected="true"
-                data-tab="templo"
-                data-sonic-sanctuary-target="temploTab"
-                data-action="click->sonic-sanctuary#selectTab">
-            🌐 Templo
-        </button>
-        <button type="button"
-                class="sonic-tab"
-                role="tab"
-                aria-selected="false"
-                data-tab="mine"
-                data-sonic-sanctuary-target="mineTab"
-                data-action="click->sonic-sanctuary#selectTab">
-            📂 Mías
-        </button>
-        <button type="button"
-                class="sonic-tab"
-                role="tab"
-                aria-selected="false"
                 data-tab="global"
                 data-sonic-sanctuary-target="globalTab"
                 data-action="click->sonic-sanctuary#selectTab">
@@ -67,28 +53,15 @@
         </button>
     </div>
 
-    {# Listas de tracks por tab — todas en DOM, solo la activa es visible #}
+    {# Lista de tracks global #}
     <div class="sonic-list">
-        <div data-sonic-sanctuary-target="temploList">
-            <p class="sonic-empty">Cargando frecuencias del Templo…</p>
-        </div>
-        <div data-sonic-sanctuary-target="mineList" hidden>
-            <p class="sonic-empty">Cargando tus frecuencias…</p>
-        </div>
-        <div data-sonic-sanctuary-target="globalList" hidden>
+        <div data-sonic-sanctuary-target="globalList">
             <p class="sonic-empty">Cargando playlist global…</p>
         </div>
     </div>
 
-    {# Footer con controles: upload + loop + volumen #}
+    {# Footer con controles: loop + volumen #}
     <div class="sonic-controls">
-        <button type="button"
-                class="sonic-btn sonic-btn-primary"
-                data-action="click->sonic-sanctuary#triggerUpload"
-                title="Subir archivo de audio (.mp3, .wav, .ogg, máx 10MB)">
-            <span class="material-symbols-elev" aria-hidden="true">upload</span>
-            Subir
-        </button>
         <button type="button"
                 class="sonic-btn sonic-loop-btn"
                 data-sonic-sanctuary-target="loopBtn"
@@ -124,18 +97,4 @@
         <span><kbd>←</kbd><kbd>→</kbd> prev/next</span>
         <span><kbd>E</kbd> panel</span>
     </div>
-
-    {# File input (oculto) — se activa via triggerUpload() #}
-    <input type="file"
-           accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/x-vorbis+ogg"
-           multiple
-           hidden
-           data-sonic-sanctuary-target="fileInput"
-           data-action="change->sonic-sanctuary#pickFile"
-           aria-label="Subir archivo de audio" />
-
-    {# Drop overlay (hidden por default; visible durante drag) #}
-    <div class="sonic-drop-overlay"
-         data-sonic-sanctuary-target="dropOverlay"
-         aria-hidden="true"></div>
 </div>

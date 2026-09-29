@@ -12,9 +12,6 @@ use App\Entity\CampusEnrollment;
 use App\Entity\CampusFeedback;
 use App\Entity\CampusLessonProgress;
 use App\Entity\CampusSubmission;
-use App\Entity\Clan;
-use App\Entity\ClanMember;
-use App\Entity\ClanMessage;
 use App\Entity\ClassBooking;
 use App\Entity\Connection;
 use App\Entity\ConversationParticipant;
@@ -23,7 +20,6 @@ use App\Entity\Device;
 use App\Entity\DiaryEntry;
 use App\Entity\EconomicReminder;
 use App\Entity\FeedPost;
-use App\Entity\FrequencySession;
 use App\Entity\JournalEntry;
 use App\Entity\JournalPermission;
 use App\Entity\JournalSetting;
@@ -42,7 +38,6 @@ use App\Entity\TaskSubmission;
 use App\Entity\TraderProfile;
 use App\Entity\TradingAccount;
 use App\Entity\User;
-use App\Entity\UserFrequency;
 use App\Entity\WalletTransaction;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -57,8 +52,6 @@ use Doctrine\ORM\EntityManagerInterface;
  * - Las conversaciones COMPARTIDAS no se borran: solo salen las filas del
  *   usuario (sus mensajes + su participación). Los mensajes de otros quedan.
  * - Los Task donde es assignee o creador SE borran aunque afecten a otros.
- * - Los clanes que lidera con OTROS miembros BLOQUEAN el purgado (409):
- *   primero hay que transferir/disolver el clan a mano.
  * - No se puede purgar a uno mismo (el controller lo frena antes: 400).
  * - Archivos físicos (campus, chat, avatar) se borran DESPUÉS del commit,
  *   solo si la DB quedó limpia.
@@ -73,15 +66,11 @@ final class UserPurgeService
 
     /**
      * @return array<string,int> conteo por bloque + ['user' => 1]
-     *
-     * @throws PurgeBlockedException
      */
     public function purge(User $user): array
     {
         $code = $user->getCode();
         $counts = [];
-
-        $this->guardClanLeadership($user);
 
         // Archivos de campus del usuario: hay que leerlos ANTES de borrar
         // las filas (después ya no sabemos los storage_name).
@@ -154,14 +143,6 @@ final class UserPurgeService
                 'DELETE FROM ' . JournalSetting::class . ' j WHERE j.user = :u',
                 ['u' => $user]
             );
-            $counts['user_frequencies'] = $this->dqlDelete(
-                'DELETE FROM ' . UserFrequency::class . ' f WHERE f.user = :u',
-                ['u' => $user]
-            );
-            $counts['frequency_sessions'] = $this->dqlDelete(
-                'DELETE FROM ' . FrequencySession::class . ' s WHERE s.user = :u',
-                ['u' => $user]
-            );
             $counts['macro_questionnaires'] = $this->dqlDelete(
                 'DELETE FROM ' . MacroQuestionnaire::class . ' m WHERE m.user = :u',
                 ['u' => $user]
@@ -175,26 +156,13 @@ final class UserPurgeService
                 ['u' => $user]
             );
 
-            // 5) Social / clanes / calendario / bookings / access.
+            // 5) Social / calendario / bookings / access.
             $counts['connections'] = $this->dqlDelete(
                 'DELETE FROM ' . Connection::class . ' c WHERE c.user = :u OR c.connectedUser = :u',
                 ['u' => $user]
             );
             $counts['blocks'] = $this->dqlDelete(
                 'DELETE FROM ' . Block::class . ' b WHERE b.blocker = :u OR b.blocked = :u',
-                ['u' => $user]
-            );
-            $counts['clan_messages'] = $this->dqlDelete(
-                'DELETE FROM ' . ClanMessage::class . ' m WHERE m.sender = :u',
-                ['u' => $user]
-            );
-            $counts['clan_members'] = $this->dqlDelete(
-                'DELETE FROM ' . ClanMember::class . ' m WHERE m.user = :u',
-                ['u' => $user]
-            );
-            // Solo llegan clanes sin otros miembros (el guard frenó el resto).
-            $counts['clans_led'] = $this->dqlDelete(
-                'DELETE FROM ' . Clan::class . ' c WHERE c.leader = :u',
                 ['u' => $user]
             );
             $counts['calendar_events'] = $this->dqlDelete(
@@ -296,31 +264,6 @@ final class UserPurgeService
         }
 
         return (int) $q->execute();
-    }
-
-    /**
-     * @throws PurgeBlockedException
-     */
-    private function guardClanLeadership(User $user): void
-    {
-        $led = $this->em->getRepository(Clan::class)->findBy(['leader' => $user]);
-        foreach ($led as $clan) {
-            $others = $this->em->createQueryBuilder()
-                ->select('COUNT(m.id)')
-                ->from(ClanMember::class, 'm')
-                ->where('m.clan = :clan')
-                ->andWhere('m.user != :u')
-                ->setParameter('clan', $clan)
-                ->setParameter('u', $user)
-                ->getQuery()
-                ->getSingleScalarResult();
-            if ((int) $others > 0) {
-                throw new PurgeBlockedException(sprintf(
-                    'Lidera el clan "%s" con otros miembros: transferí el liderazgo o disolvé el clan primero.',
-                    method_exists($clan, 'getName') ? (string) $clan->getName() : ('#' . $clan->getId())
-                ));
-            }
-        }
     }
 
     /**

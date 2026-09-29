@@ -152,13 +152,6 @@
                         <span class="gw-tile-sub">Conversaciones y grupos</span>
                     </span>
                 </a>
-                <a class="gw-bento gw-bento-tile gw-fade" style="animation-delay: .7s" href="{{ is_auth ? '/frequencies' : '/login' }}">
-                    <span class="material-symbols-elev" aria-hidden="true">music_note</span>
-                    <span>
-                        <span class="gw-tile-title">Frecuencias</span>
-                        <span class="gw-tile-sub">Sanctum sonoro 432hz</span>
-                    </span>
-                </a>
             </div>
         </section>
 
@@ -191,15 +184,6 @@
 {% endblock %}
 
 {% block floats %}
-    {# ─── Floating minimalist audio chip (Frecuencias module) ─── #}
-    <a class="gw-audio" href="{{ is_auth ? '/frequencies' : '/login' }}" aria-label="Santuario de Frecuencias">
-        <span class="material-symbols-elev gw-audio-icon" aria-hidden="true">music_note</span>
-        <span class="gw-audio-text">
-            <span class="gw-audio-title">Frecuencia 432hz</span>
-            <span class="gw-audio-sub">TNSVT Sanctum</span>
-        </span>
-        <span class="material-symbols-elev" aria-hidden="true">play_arrow</span>
-    </a>
 {% endblock %}
 
 {% block javascripts %}

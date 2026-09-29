@@ -196,14 +196,6 @@ class SanctumModuleController extends AbstractController
         return $this->render('sanctum/leaderboard.html.twig');
     }
 
-    // ──── CLAN ────
-
-    #[Route('/clan', name: 'sanctum_clan', methods: ['GET'])]
-    public function clan(): Response
-    {
-        return $this->render('sanctum/clan.html.twig');
-    }
-
     // ──── WALLET ────
 
     #[Route('/wallet', name: 'sanctum_wallet', methods: ['GET'])]

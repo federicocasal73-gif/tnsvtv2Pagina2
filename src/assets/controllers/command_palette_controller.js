@@ -95,14 +95,6 @@ const NAV = [
         keys: 'diario cuaderno reflexiones alma',
     },
     {
-        id: 'nav-frequencies',
-        label: 'Ir a Frecuencias',
-        hint: '432Hz',
-        icon: 'graphic_eq',
-        url: '/frequencies',
-        keys: 'frecuencias sonido 432hz santuario musica',
-    },
-    {
         id: 'nav-campus',
         label: 'Ir a Campus',
         hint: 'Cursos',
@@ -133,14 +125,6 @@ const NAV = [
         icon: 'chat',
         url: '/chat',
         keys: 'chat mensajes dm conversacion',
-    },
-    {
-        id: 'nav-clan',
-        label: 'Ir a Clan',
-        hint: 'Hermandad',
-        icon: 'groups',
-        url: '/clan',
-        keys: 'clan hermandad grupo',
     },
     {
         id: 'nav-tasks',

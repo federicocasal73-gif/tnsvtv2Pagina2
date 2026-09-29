@@ -29,7 +29,6 @@ $publicPaths = [
     '/macro',
     '/macro/academy',
     '/oracle',
-    '/frequencies',
     '/og/image',
 ];
 

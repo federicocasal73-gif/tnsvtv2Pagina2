@@ -17,9 +17,6 @@ class SanctumAdminAccessTest extends ApiTestCase
             'conversations',
             'conversation',
             'diary_entries',
-            'frequency_sessions',
-            'clan_members',
-            'clans',
         ]);
     }
 
@@ -318,17 +315,13 @@ class SanctumAdminAccessTest extends ApiTestCase
         $msg->setContent('borrame');
         $this->em->persist($msg);
 
-        // Diary entry + frequency session for doomed.
+        // Diary entry for doomed.
         $entry = new \App\Entity\DiaryEntry();
         $entry->setUser($doomed);
         $entry->setEncryptedData('enc');
         $entry->setIv('iv');
         $entry->setCreatedAt(new \DateTimeImmutable());
         $this->em->persist($entry);
-        $session = new \App\Entity\FrequencySession();
-        $session->setUser($doomed);
-        $session->setDurationMinutes(10);
-        $this->em->persist($session);
 
         $this->em->flush();
         $this->em->clear();
@@ -361,71 +354,4 @@ class SanctumAdminAccessTest extends ApiTestCase
         );
     }
 
-    public function testForcePurgeBlockedWhenLeadingClanWithMembers(): void
-    {
-        $admin = $this->createAdmin(['code' => 'ADMPURGE2']);
-        $leader = $this->createUser(['code' => 'LEADER01', 'name' => 'Leader']);
-        $member = $this->createUser(['code' => 'MEMBER01', 'name' => 'Member']);
-
-        $clan = new \App\Entity\Clan();
-        $clan->setName('Clan Test');
-        $clan->setLeader($leader);
-        $this->em->persist($clan);
-        foreach ([$leader, $member] as $u) {
-            $m = new \App\Entity\ClanMember();
-            $m->setClan($clan);
-            $m->setUser($u);
-            $m->setRole('member');
-            $m->setContribution(0);
-            $this->em->persist($m);
-        }
-        $this->em->flush();
-        $this->em->clear();
-        $this->loginAs($admin);
-
-        $this->client->request('DELETE', '/sanctum/api/users/LEADER01?force=1');
-
-        $response = $this->client->getResponse();
-        $this->assertSame(409, $response->getStatusCode(), 'Response: ' . $response->getContent());
-
-        $this->em->clear();
-        $this->assertNotNull(
-            $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'LEADER01']),
-            'Leader must survive a blocked purge'
-        );
-    }
-
-    public function testForcePurgeSoleMemberClanDeletesClanToo(): void
-    {
-        $admin = $this->createAdmin(['code' => 'ADMPURGE3']);
-        $loner = $this->createUser(['code' => 'LONER01', 'name' => 'Loner']);
-
-        $clan = new \App\Entity\Clan();
-        $clan->setName('Clan Solo');
-        $clan->setLeader($loner);
-        $this->em->persist($clan);
-        $m = new \App\Entity\ClanMember();
-        $m->setClan($clan);
-        $m->setUser($loner);
-        $m->setRole('member');
-        $m->setContribution(0);
-        $this->em->persist($m);
-        $this->em->flush();
-        $this->em->clear();
-        $this->loginAs($admin);
-
-        $this->client->request('DELETE', '/sanctum/api/users/LONER01?force=1');
-
-        $response = $this->client->getResponse();
-        $this->assertSame(200, $response->getStatusCode(), 'Response: ' . $response->getContent());
-
-        $this->em->clear();
-        $this->assertNull(
-            $this->em->getRepository(\App\Entity\User::class)->findOneBy(['code' => 'LONER01'])
-        );
-        $this->assertNull(
-            $this->em->getRepository(\App\Entity\Clan::class)->findOneBy(['name' => 'Clan Solo']),
-            'Sole-member clan must go down with its leader'
-        );
-    }
 }

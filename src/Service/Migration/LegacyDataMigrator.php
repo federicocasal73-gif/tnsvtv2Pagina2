@@ -89,9 +89,6 @@ class LegacyDataMigrator
         'ModuleProgress' => 'module_progress',
         'DailyChallengeEntry' => 'daily_challenge_entries',
         'EventMissionProgress' => 'event_mission_progress',
-        'ClanMember' => 'clan_members',
-        'ClanObjective' => 'clan_objectives',
-        'ClanMessage' => 'clan_messages',
 
         // Tier 3: updates
         'ConversationParticipantLastReadAt' => 'conversation_participants',

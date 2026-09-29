@@ -149,10 +149,6 @@
                 <span class="material-symbols-elev">menu_book</span>
                 <span class="sanctum-link-label">Diario</span>
             </a>
-            <a href="{{ path('frequencies_hub') }}" class="sanctum-link" data-page="frequencies">
-                <span class="material-symbols-elev">graphic_eq</span>
-                <span class="sanctum-link-label">Frecuencias</span>
-            </a>
 
             <div class="sanctum-section-title"
                  data-shell-target="sidebarSection"
@@ -233,10 +229,6 @@
             <a href="{{ path('sanctum_chat') }}" class="sanctum-link" data-page="chat">
                 <span class="material-symbols-elev">chat</span>
                 <span class="sanctum-link-label">Chat</span>
-            </a>
-            <a href="{{ path('sanctum_clan') }}" class="sanctum-link" data-page="clan">
-                <span class="material-symbols-elev">groups</span>
-                <span class="sanctum-link-label">Clanes</span>
             </a>
         </nav>
 
@@ -407,14 +399,12 @@
 <div id="sanctum-floats" class="fixed inset-0 pointer-events-none z-50" data-turbo-permanent>
     {% block floats %}{% endblock %}
 
-    {# ─── Sonic Sanctuary — reproductor unificado cross-page (Phase 1+2+3).
-       Reemplaza el antiguo frequency_mini_player. Tres fuentes:
-         - Templo (osciladores del Cónclave)
-         - Mías (uploads del usuario via /api/frequencies/stream/{id})
-         - Global (admin playlist via /api/music/stream?id=…)
+    {# ─── Sonic Sanctuary — reproductor global cross-page.
+       Fuente única: playlist admin via /api/music/stream?id=…
        Persiste cross-page gracias a data-turbo-permanent en #sanctum-floats.
-       Solo se muestra a usuarios autenticados (los anónimos no tienen
-       ni presets ni subidas que reproducir). #}
+       (Tabs Templo/Mías eliminados con el módulo Frecuencias 2026-09-29;
+       la futura sección Meditación reusará esta base.)
+       Solo se muestra a usuarios autenticados. #}
     {% if app.user %}
     <div data-controller="sonic-sanctuary"
          data-sonic-sanctuary-open-panel-value="false"

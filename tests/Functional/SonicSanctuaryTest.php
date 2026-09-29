@@ -17,7 +17,8 @@ use Symfony\Component\Filesystem\Filesystem;
  *   - shell.html.twig mounts sonic-sanctuary with all expected targets
  *   - shell.html.twig only mounts the player when app.user is set
  *   - shell.html.twig links sonic-sanctuary.css
- *   - the partial _partials/sonic_sanctuary_panel.html.twig has the 3 tabs
+ *   - the partial _partials/sonic_sanctuary_panel.html.twig has the global tab
+ *     (modo solo-global desde 2026-09-29: Templo/Mías eliminados con Frecuencias)
  *   - users.html.twig wires the Global Temple Broadcast to sonic:global-*
  *   - sonic_sanctuary_controller.js declares every target the template uses
  *   - sonic-sanctuary.css defines the classes the template references
@@ -99,51 +100,28 @@ class SonicSanctuaryTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
 
     // ─── panel partial ──────────────────────────────────────────────
 
-    public function testPanelHasThreeTabs(): void
+    public function testPanelHasGlobalTabOnly(): void
     {
-        // The 3 tabs are the user's mental model for the player. Without
-        // them, the panel is just a blank panel.
+        // Modo solo-global (2026-09-29): Templo/Mías eliminados con Frecuencias.
+        // El panel solo expone la playlist admin.
         $partial = $this->read('templates/_partials/sonic_sanctuary_panel.html.twig');
-        foreach (['temploTab', 'mineTab', 'globalTab'] as $tab) {
-            $this->assertStringContainsString(
-                "data-sonic-sanctuary-target=\"$tab\"",
-                $partial,
-                "panel partial must declare target: $tab"
-            );
-        }
-        // The Templo tab is the default — verify the button carrying
-        // data-tab="templo" also has the is-active class (any attribute order).
+        $this->assertStringContainsString(
+            'data-sonic-sanctuary-target="globalTab"',
+            $partial,
+            'panel partial must declare target: globalTab'
+        );
+        $this->assertStringNotContainsString('temploTab', $partial, 'Templo tab must be gone.');
+        $this->assertStringNotContainsString('mineTab', $partial, 'Mías tab must be gone.');
+        $this->assertStringNotContainsString('temploList', $partial, 'Templo list must be gone.');
+        $this->assertStringNotContainsString('mineList', $partial, 'Mine list must be gone.');
+        // The Global tab is the default — verify the button carrying
+        // data-tab="global" also has the is-active class (any attribute order).
         $this->assertMatchesRegularExpression(
-            '/<button(?=[^>]*\bdata-tab="templo")(?=[^>]*\bclass="[^"]*\bis-active\b)[^>]*>/',
+            '/<button(?=[^>]*\bdata-tab="global")(?=[^>]*\bclass="[^"]*\bis-active\b)[^>]*>/',
             $partial,
-            'panel partial must mark the Templo tab as the default active tab on first load.'
+            'panel partial must mark the Global tab as the default active tab on first load.'
         );
-        // Each tab has a distinct icon + label so users can find their source
-        $this->assertStringContainsString('Templo', $partial);
-        $this->assertStringContainsString('Mías', $partial);
         $this->assertStringContainsString('Global', $partial);
-    }
-
-    public function testPanelHasDropZone(): void
-    {
-        // Drag-drop is the killer feature; verify the partial wires up the
-        // file input + drop overlay + upload button.
-        $partial = $this->read('templates/_partials/sonic_sanctuary_panel.html.twig');
-        $this->assertStringContainsString(
-            'data-sonic-sanctuary-target="dropOverlay"',
-            $partial,
-            'panel partial must declare dropOverlay target so drag-drop visual feedback works.'
-        );
-        $this->assertStringContainsString(
-            'data-sonic-sanctuary-target="fileInput"',
-            $partial,
-            'panel partial must declare fileInput target so triggerUpload() can open the picker.'
-        );
-        $this->assertStringContainsString(
-            'triggerUpload',
-            $partial,
-            'panel partial must wire a "Subir" button to click->sonic-sanctuary#triggerUpload.'
-        );
     }
 
     public function testPanelHasKeyboardHints(): void
@@ -165,16 +143,14 @@ class SonicSanctuaryTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
         }
     }
 
-    public function testPanelAcceptsAudioMimeTypes(): void
+    public function testPanelHasNoUploadTargets(): void
     {
-        // The drag-drop file input must accept only audio formats. If we
-        // loosen to "image/*" by accident, users would see confusing errors.
+        // Uploads vivían en /api/frequencies/upload (eliminado). El panel
+        // solo-global no debe referenciarlos.
         $partial = $this->read('templates/_partials/sonic_sanctuary_panel.html.twig');
-        $this->assertStringContainsString(
-            'accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/x-vorbis+ogg"',
-            $partial,
-            'file input must restrict to audio MIME types (mp3, wav, ogg).'
-        );
+        $this->assertStringNotContainsString('dropOverlay', $partial);
+        $this->assertStringNotContainsString('fileInput', $partial);
+        $this->assertStringNotContainsString('triggerUpload', $partial);
     }
 
     // ─── sonic_sanctuary_controller.js ──────────────────────────────
@@ -252,23 +228,16 @@ class SonicSanctuaryTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
         }
     }
 
-    public function testControllerCallsStopCurrentOnDeleteMine(): void
+    public function testControllerHasNoFrequencyCalls(): void
     {
-        // B3 from Sprint 4.1: deleteMine() must call stopCurrent() when
-        // the deleted track is currently playing. Otherwise audio keeps
-        // streaming from the now-deleted entity.
+        // El módulo Frecuencias murió: el controller no debe llamar a
+        // /api/frequencies/* ni escuchar eventos del hub.
         $controller = $this->read('src/assets/controllers/sonic_sanctuary_controller.js');
-        $this->assertStringContainsString(
-            'async deleteMine(',
-            $controller,
-            'sonic_sanctuary_controller.js must expose deleteMine().'
-        );
-        // Locate the deleteMine method body and check for stopCurrent() call.
-        $this->assertMatchesRegularExpression(
-            '/async\s+deleteMine[\s\S]*?if\s*\(\s*this\.activeSource\s*===\s*[\'"]mine[\'"][\s\S]*?this\.stopCurrent\(\)/m',
-            $controller,
-            'deleteMine() must call stopCurrent() when the deleted id matches activeTrackId in source "mine".'
-        );
+        $this->assertStringNotContainsString('/api/frequencies/', $controller);
+        $this->assertStringNotContainsString('tnsvt:freq:', $controller);
+        $this->assertStringNotContainsString('deleteMine', $controller);
+        $this->assertStringContainsString('/api/music/current', $controller);
+        $this->assertStringContainsString('/api/music/stream', $controller);
     }
 
     public function testControllerCleansUpBodyClassOnDisconnect(): void
@@ -325,17 +294,13 @@ class SonicSanctuaryTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
             'sonic-tab',
             'sonic-list',
             'sonic-track',
-            'sonic-track-row',
-            'sonic-track-delete',
             'sonic-visualizer',
             'sonic-controls',
             'sonic-volume',
             'sonic-mute-btn',
             'sonic-loop-btn',
             'sonic-keyboard',
-            'sonic-drop-overlay',
             'sonic-empty',
-            'sonic-empty-cta',
         ] as $class) {
             $this->assertMatchesRegularExpression(
                 '/\.' . preg_quote($class, '/') . '\b/',

@@ -35,7 +35,6 @@ security:
         - { path: ^/api/chat, roles: PUBLIC_ACCESS }
         - { path: ^/api/tasks, roles: PUBLIC_ACCESS }
         - { path: ^/api/academia, roles: PUBLIC_ACCESS }
-        - { path: ^/api/frequencies/presets, roles: PUBLIC_ACCESS }
         # TNSVT Sprint C — Cuestionarios Macro requieren autenticación
         # TEMPORAL: usar IS_AUTHENTICATED_FULLY para evitar problemas con ROLE_USER en este firewall
         - { path: ^/api/macro/questionnaire, roles: IS_AUTHENTICATED_FULLY }
