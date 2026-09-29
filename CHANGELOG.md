@@ -4,6 +4,63 @@ All notable changes to the **T.N.S.V.T Sanctum** project.
 
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased] - Design system unification + SSH deploy + backend audit
+
+### Added (backend audit 2026-09-29, commit `1dcedd7`)
+
+- **Fase 0 (validación)**: confirmado B1 (`Setting` entity bug) vía
+  `doctrine:query:dql --show-sql` (genera `s0_.setting_key` vs columna
+  real `key` en MySQL prod).
+- **Fase 1.1 — B1 fix**: `src/Entity/Setting.php:20` cambia
+  `name: 'setting_key'` → `name: 'key'` (matchea la migración).
+  Test: `tests/Functional/SettingRepositoryTest.php`.
+- **Fase 1.2 — B2 fix**: `src/Controller/Api/AdminWalletController.php`
+  cambia 4 SQL literales `"user"` → `users` (la tabla real).
+- **Fase 1.3 — B3 fix**: `src/Controller/Api/Sanctum/DashboardController.php`
+  deja de consultar `tournament_trades` (tabla eliminada por
+  `Version20260822000000`). Devuelve `globalPnl=0` + warning explícito.
+  Bonus: queries reescritas de MySQL-específico (`DATE_SUB(NOW(), INTERVAL ...)`)
+  a DQL Doctrine para portabilidad sqlite/MySQL.
+  Test: `tests/Functional/DashboardControllerTest.php`.
+- **Fase 2.1 — B4 fix**: `LegacyHeaderAuthenticator` registrado en
+  `config/packages/security.yaml` (estaba implementado pero no se usaba).
+  Nuevo `src/Security/GameCodeResolver.php` consolida el fallback
+  duplicado (header → query → body) en 6 controllers. Migrados a
+  usarlo: `ChatController`, `ChatUploadController`,
+  `CampusUploadController`.
+  Test: `tests/Functional/GameCodeAuthTest.php`.
+- **Fase 2.2 — B5 fix (IDOR)**: `OracleController::resolveUserCode()`
+  valida ownership: un ROLE_USER pidiendo `?code=OTHER` recibe 403;
+  ROLE_ADMIN conserva acceso total.
+  Test: `tests/Functional/OracleIdorTest.php`.
+- **Fase 2.3 — JWT keys**: `config/jwt/README.md` documenta rotación
+  y primer setup. `bin/deploy.sh` ahora llama `bin/generate-jwt-keys.php`
+  si `config/jwt/private.pem` falta en el server.
+- **Fase 3.1 — Schedule consolidation**: eliminado `src/Schedule.php`
+  legacy. `MarkTasksOverdueMessage` consolidado en
+  `src/Scheduler/MainSchedule.php` (único transport `scheduler_main`,
+  stateful + cache).
+- **Fase 3.3 — AGENTS.md actualizado** con nueva sección "Recent audit &
+  fixes (2026-09-29 session)" + correcciones a observaciones outdated
+  (JWT keys, UsersController shadowing, Mercure/Firebase reality).
+
+### Test stats
+
+- **+14 tests nuevos** (Setting: 3, Dashboard: 2, GameCode: 5, Oracle: 4).
+- Suite: **253 tests, 774 assertions, 0 failures, 3 skipped**.
+- PHPStan: **0 errores** en archivos modificados.
+- `lint:twig`, `lint:yaml`, `lint:container`, `app:lint:entity-migrations`: todos OK.
+
+### No aplicado (decisión consciente)
+
+- **RateLimiterTrait** — el reporte inicial lo marcó como muerto pero
+  tiene 4 callers (CampusController, CampusUploadController,
+  FeedController, SocialController). Mantenido.
+- **~45 entidades sin `CREATE TABLE` migration**: diferido. Cambio de
+  mayor envergadura, requiere backup + dry-run + ventana de mantenimiento.
+- **Tailwind classes sin pipeline** (bug visual preexistente): fuera de
+  scope backend.
+
 ## [Unreleased] - Design system unification + SSH deploy
 
 ### Added
