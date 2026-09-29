@@ -76,7 +76,7 @@ class AdminWalletController extends AbstractController
         $this->em->getConnection()->beginTransaction();
         try {
             $affected = $this->em->getConnection()->executeStatement(
-                'UPDATE users SET wallet_balance = CAST(wallet_balance AS REAL) + :amount WHERE id = :id',
+                'UPDATE users SET wallet_balance = wallet_balance + :amount WHERE id = :id',
                 ['amount' => $amount, 'id' => $user->getId()]
             );
             if ($affected === 0) {
@@ -149,7 +149,7 @@ class AdminWalletController extends AbstractController
         $this->em->getConnection()->beginTransaction();
         try {
             $affected = $this->em->getConnection()->executeStatement(
-                'UPDATE users SET wallet_balance = CAST(wallet_balance AS REAL) - :amount WHERE id = :id AND CAST(wallet_balance AS REAL) >= :amount2',
+                'UPDATE users SET wallet_balance = wallet_balance - :amount WHERE id = :id AND wallet_balance >= :amount2',
                 ['amount' => $amount, 'id' => $user->getId(), 'amount2' => $amount]
             );
             if ($affected === 0) {
@@ -282,7 +282,7 @@ class AdminWalletController extends AbstractController
         $this->em->getConnection()->beginTransaction();
         try {
             $affected = $this->em->getConnection()->executeStatement(
-                'UPDATE users SET wallet_balance = CAST(wallet_balance AS REAL) + :amount WHERE id = :id',
+                'UPDATE users SET wallet_balance = wallet_balance + :amount WHERE id = :id',
                 ['amount' => $amount, 'id' => $user->getId()]
             );
             if ($affected === 0) {
