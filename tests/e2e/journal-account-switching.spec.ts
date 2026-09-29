@@ -16,7 +16,6 @@ import { test, expect } from '@playwright/test';
 import { login, logout, TEST_USERS } from './login';
 
 test.describe('Journal account-switching', () => {
-
     test.beforeEach(async ({ context }) => {
         await logout(context);
     });
@@ -35,11 +34,15 @@ test.describe('Journal account-switching', () => {
             const url = res.url();
             const idx = fetches.findIndex((f) => f.url === url);
             if (idx >= 0 && res.status() === 200) {
-                try { fetches[idx].body = await res.json(); } catch { /* ignore */ }
+                try {
+                    fetches[idx].body = await res.json();
+                } catch {
+                    /* ignore */
+                }
             }
         });
 
-        await page.goto('/sanctum/journal');
+        await page.goto('/journal');
         await expect(page).toHaveURL(/journal/);
 
         // Wait for the chip strip + initial render.
@@ -53,12 +56,16 @@ test.describe('Journal account-switching', () => {
         const todasFetches = [...fetches];
         expect(todasFetches.length, 'expected fetch(es) after Todas click').toBeGreaterThan(0);
         for (const f of todasFetches) {
-            expect(f.url, `url=${f.url} should NOT contain account_id`).not.toContain('account_id=');
+            expect(f.url, `url=${f.url} should NOT contain account_id`).not.toContain(
+                'account_id='
+            );
         }
         fetches.length = 0;
 
         // ── Step 2: select one of the user's accounts (find first non-empty chip).
-        const accountChips = page.locator('#account-chips [data-account-id]:not([data-account-id=""])');
+        const accountChips = page.locator(
+            '#account-chips [data-account-id]:not([data-account-id=""])'
+        );
         const firstChip = accountChips.first();
         const expectedAccountId = await firstChip.getAttribute('data-account-id');
         expect(expectedAccountId, 'no trading accounts configured').toBeTruthy();
@@ -69,7 +76,8 @@ test.describe('Journal account-switching', () => {
         const after = [...fetches];
         expect(after.length, 'expected fetch(es) after account click').toBeGreaterThan(0);
         for (const f of after) {
-            expect.soft(f.url, `url=${f.url} should contain account_id=${expectedAccountId}`)
+            expect
+                .soft(f.url, `url=${f.url} should contain account_id=${expectedAccountId}`)
                 .toContain(`account_id=${expectedAccountId}`);
         }
 
@@ -85,7 +93,7 @@ test.describe('Journal account-switching', () => {
 
     test('activate() does not trigger duplicate fetches (Bug #2)', async ({ page }) => {
         await login(page, TEST_USERS.admin);
-        await page.goto('/sanctum/journal');
+        await page.goto('/journal');
         await page.waitForSelector('#account-chips', { timeout: 10_000 });
 
         const fetches: string[] = [];
@@ -93,7 +101,9 @@ test.describe('Journal account-switching', () => {
             if (req.url().includes('/api/journal')) fetches.push(req.url());
         });
 
-        const accountChips = page.locator('#account-chips [data-account-id]:not([data-account-id=""])');
+        const accountChips = page.locator(
+            '#account-chips [data-account-id]:not([data-account-id=""])'
+        );
         const count = await accountChips.count();
         test.skip(count === 0, 'no trading accounts configured');
 
@@ -114,14 +124,16 @@ test.describe('Journal account-switching', () => {
 
     test('the equity curve in "Todas" mode sums all account_size (Bug #5)', async ({ page }) => {
         await login(page, TEST_USERS.admin);
-        await page.goto('/sanctum/journal');
+        await page.goto('/journal');
         await page.waitForSelector('#account-chips', { timeout: 10_000 });
 
         // Intercept /api/accounts to count account_size sum independently.
         let total = 0;
         page.on('response', async (res) => {
             if (res.url().includes('/api/accounts') && res.status() === 200) {
-                const j = await res.json().catch(() => null) as { accounts?: { account_size?: number }[] } | null;
+                const j = (await res.json().catch(() => null)) as {
+                    accounts?: { account_size?: number }[];
+                } | null;
                 if (j?.accounts) {
                     total = j.accounts.reduce((s, a) => s + Number(a.account_size || 0), 0);
                 }
@@ -143,20 +155,23 @@ test.describe('Journal account-switching', () => {
         const url = new URL(last);
         const accSizeParam = Number(url.searchParams.get('account_size') ?? '0');
         // Either equals the sum OR is 0 (no accounts) — but MUST NOT be 10000 hardcode.
-        expect.soft(accSizeParam, 'baseline should not be hardcoded $10K anymore')
-            .not.toBe(10000);
+        expect.soft(accSizeParam, 'baseline should not be hardcoded $10K anymore').not.toBe(10000);
         // If the user has multiple accounts, baseline should equal their sum.
         if (total > 0) {
             expect(accSizeParam).toBe(total);
         }
     });
 
-    test('race condition: rapid account toggling does not paint stale data (Bug #4)', async ({ page }) => {
+    test('race condition: rapid account toggling does not paint stale data (Bug #4)', async ({
+        page,
+    }) => {
         await login(page, TEST_USERS.admin);
-        await page.goto('/sanctum/journal');
+        await page.goto('/journal');
         await page.waitForSelector('#account-chips', { timeout: 10_000 });
 
-        const accountChips = page.locator('#account-chips [data-account-id]:not([data-account-id=""])');
+        const accountChips = page.locator(
+            '#account-chips [data-account-id]:not([data-account-id=""])'
+        );
         const count = await accountChips.count();
         test.skip(count < 2, 'need 2+ accounts to test rapid toggling');
 
@@ -164,9 +179,10 @@ test.describe('Journal account-switching', () => {
         // Each click should bump _journalFetchSeq; only the latest response paints.
         const lastUrlPerPass: string[] = [];
         for (let pass = 0; pass < 3; pass++) {
-            for (let i = 0; i < count + 1; i++) { // +1 for "Todas" at index 0
+            for (let i = 0; i < count + 1; i++) {
+                // +1 for "Todas" at index 0
                 const chip = page.locator('#account-chips [data-account-id]').nth(i);
-                if (await chip.count() === 0) continue;
+                if ((await chip.count()) === 0) continue;
                 const accId = await chip.getAttribute('data-account-id');
                 const expectedAccountId = accId || '';
                 await chip.click();
@@ -180,8 +196,10 @@ test.describe('Journal account-switching', () => {
         // Concretely the assertion is: the account_id displayed on the
         // currently-active chip must equal the LAST expected one.
         const lastExpected = lastUrlPerPass[lastUrlPerPass.length - 1] || '';
-        const activeChip = page.locator('#account-chips .chip.is-active, #account-chips .chip.active').first();
-        const activeChipValue = await activeChip.getAttribute('data-account-id') ?? '';
+        const activeChip = page
+            .locator('#account-chips .chip.is-active, #account-chips .chip.active')
+            .first();
+        const activeChipValue = (await activeChip.getAttribute('data-account-id')) ?? '';
         expect.soft(activeChipValue).toBe(lastExpected);
 
         // Also: the /api/journal/stats response body (if we capture it) should
@@ -228,12 +246,13 @@ test.describe('Journal account-switching', () => {
 // ─────────────────────────────────────────────────────────────────────
 
 test.describe('K3 helper: chat-presence ping fires POST /api/chat/ping', () => {
-
     test.beforeEach(async ({ context }) => {
         await logout(context);
     });
 
-    test('a logged-in user pings /api/chat/ping within 65s of being on the page', async ({ page }) => {
+    test('a logged-in user pings /api/chat/ping within 65s of being on the page', async ({
+        page,
+    }) => {
         // ── Regression for /api/me/heatmap and /api/me/streak 500s ──
         // The chat widget (and chat page) now pings presence every 60s
         // so User::isOnline() reflects reality. This test waits for the
@@ -243,7 +262,10 @@ test.describe('K3 helper: chat-presence ping fires POST /api/chat/ping', () => {
         const pingResponses: { status: number; body: unknown }[] = [];
         page.on('response', async (res) => {
             if (res.request().method() === 'POST' && res.url().includes('/api/chat/ping')) {
-                pingResponses.push({ status: res.status(), body: await res.json().catch(() => null) });
+                pingResponses.push({
+                    status: res.status(),
+                    body: await res.json().catch(() => null),
+                });
             }
         });
 
@@ -251,8 +273,8 @@ test.describe('K3 helper: chat-presence ping fires POST /api/chat/ping', () => {
         // We trigger a ping immediately by triggering the controller's
         // startPresencePing() via DOMContentLoaded. The simplest way to
         // confirm the controller is mounted is to navigate to a page
-        // that includes it (e.g., /sanctum/journal) and wait ~2s.
-        await page.goto('/sanctum/journal');
+        // that includes it (e.g., /journal) and wait ~2s.
+        await page.goto('/journal');
         await page.waitForTimeout(2500); // > immediate first ping (0ms) + grace
 
         // We don't strictly require the ping within 2s (it can be 60s
@@ -263,7 +285,9 @@ test.describe('K3 helper: chat-presence ping fires POST /api/chat/ping', () => {
         // For Sanity: at minimum, /api/chat/users should reflect 'online'
         // for the currently-logged-in user once a ping happens.
         // Cross-check with a direct request:
-        const cookieHeader = (await page.context().cookies()).map((c) => `${c.name}=${c.value}`).join('; ');
+        const cookieHeader = (await page.context().cookies())
+            .map((c) => `${c.name}=${c.value}`)
+            .join('; ');
         const res = await page.request.get(page.url().split('/sanctum')[0] + '/api/chat/users', {
             headers: { Cookie: cookieHeader },
         });
@@ -274,7 +298,11 @@ test.describe('K3 helper: chat-presence ping fires POST /api/chat/ping', () => {
         const me = users.find((u) => u.code === TEST_USERS.regularA.code);
         // After the immediate ping (within 2s of connecting), me should be online.
         // If this flakes, increase the wait.
-        expect.soft(me?.online ?? false, `${TEST_USERS.regularA.code} should be online after presence ping`)
+        expect
+            .soft(
+                me?.online ?? false,
+                `${TEST_USERS.regularA.code} should be online after presence ping`
+            )
             .toBe(true);
     });
 });

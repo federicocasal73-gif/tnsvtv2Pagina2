@@ -85,7 +85,8 @@ export async function login(page: Page, user: TestCredentials): Promise<void> {
     }
 
     await page.locator('button[type="submit"], input[type="submit"]').first().click();
-    await page.waitForURL(/\/(sanctum|$)/, { timeout: 15_000 });
+    // Admins land on /sanctum, regular users on /journal (see login form JS).
+    await page.waitForURL(/\/(sanctum|journal|$)/, { timeout: 15_000 });
 }
 
 /**
