@@ -27,16 +27,28 @@ trading platform. Read this **before** making non-trivial changes.
 
 ## CI pipeline (`.github/workflows/ci.yml`)
 
-6 jobs, all must pass:
+9 jobs, all must pass:
 
 | Job | What it does |
 |---|---|
-| `lint-php` | PHPStan level 5 against `phpstan-baseline.neon` |
-| `tests` | PHPUnit 92 tests in sqlite `var/test.db` |
+| `lint-php` | PHPStan level 5 against `phpstan-baseline.neon` + `openapi:generate` + `lint:yaml sentry.yaml` |
+| `tests` | PHPUnit 237 tests in sqlite `var/test.db` |
 | `lint-twig` | `php bin/console lint:twig templates` |
-| `lint-js` | `node --check` on every JS in `src/assets/controllers` |
-| `security-audit` | `composer audit` (no vulnerabilities) |
+| `lint-js` | ESLint + Prettier check + Stylelint + `node --check` on standalone JS + inline `<script>` lint via `bin/lint-inline-js.py` |
+| `security-audit` | `composer audit` (only the ignored phpunit dev advisory) |
 | `messenger-consumer` | Smoke-test `messenger:consume async` for 5s |
+| `lint-entity-migrations` | `app:lint:entity-migrations` (every entity needs a migration) |
+| `a11y-axe` | axe-core via Playwright against prod `/` + `/login` (needs `lint-php`) |
+| `lighthouse` | LHCI against prod `/`, `/login`, `/sanctum` — gates a11y≥0.95, best-practices≥0.9, seo≥0.9; perf is measured but NOT gated (SwiftShader lab, see below) |
+
+Separate workflow `.github/workflows/e2e.yml` runs the TS Playwright
+suite (`tests/e2e/`, root `playwright.config.ts`) against prod. It needs
+repo secrets `TNSVT_ADMIN_CODE` + `TNSVT_ADMIN_PASSWORD` (real prod admin
+creds — the specs log in as a real user; `tests/e2e/login.ts` reads them
+with dev fallbacks). Optional `TNSVT_USERA_CODE/NAME`,
+`TNSVT_USERB_CODE/NAME` for regular-user tests. Without the secrets the
+login step times out and the suite fails — set them in GitHub Settings →
+Secrets before trusting a red e2e run.
 
 ### Critical CI requirements (every job that boots the kernel)
 
@@ -169,10 +181,23 @@ to use `appleboy/ssh-action@v1.0.3` to deploy, but the current SSH
 deploy is run by the agent directly (not via GitHub Actions) so we
 have full control over what happens.
 
-`.github/workflows/ci.yml` runs the 6 CI jobs (PHPStan, PHPUnit,
-twig lint, JS lint, composer audit, messenger smoke test) on every
+`.github/workflows/ci.yml` runs the 9 CI jobs (PHPStan, PHPUnit,
+twig lint, JS lint, composer audit, messenger smoke test,
+entity-migrations lint, axe-core, Lighthouse) on every
 push to `main` or PR. **Deploy does NOT happen from CI** — only from
-the agent. CI is green when all 6 jobs pass.
+the agent. CI is green when all 9 jobs pass.
+
+### Lighthouse 403 from CI runners ⚠️
+
+The `lighthouse` job measures **production** (`https://tnsvt.com`).
+GitHub runner egress IPs intermittently get HTTP 403 from Hostinger's
+edge (CDN `hcdn` bot mitigation) while residential IPs and Playwright
+runs from the same runners get 200 — the app itself never 403s `/`
+(check `security.yaml`: `^/` is `PUBLIC_ACCESS`, and no rate limiter
+covers page loads). If the job fails with `ERRORED_DOCUMENT_REQUEST
+(Status code: 403)`, re-run the failed job first (`gh run rerun <id>
+--failed` — fresh VM, fresh IP) before investigating code. Do NOT
+weaken app rate limits to accommodate CI.
 
 ### Hostinger proc_open limitation ⚠️
 
