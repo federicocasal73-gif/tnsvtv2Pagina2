@@ -288,7 +288,7 @@ test.describe('K3 helper: chat-presence ping fires POST /api/chat/ping', () => {
         const cookieHeader = (await page.context().cookies())
             .map((c) => `${c.name}=${c.value}`)
             .join('; ');
-        const res = await page.request.get(page.url().split('/sanctum')[0] + '/api/chat/users', {
+        const res = await page.request.get(new URL('/api/chat/users', page.url()).href, {
             headers: { Cookie: cookieHeader },
         });
         expect(res.status()).toBe(200);

@@ -56,6 +56,17 @@ export const TEST_USERS = {
  * contain PHPSESSID and the JWT Bearer cookie.
  */
 export async function login(page: Page, user: TestCredentials): Promise<void> {
+    // El tour de onboarding (onboarding.js, flag `tnsvt_onboarding_v1` en
+    // localStorage) tapa la página con un modal en la primera visita y
+    // rompe clicks/selectores del suite. Lo marcamos completado antes de
+    // navegar para que ningún test lo vea.
+    await page.addInitScript(() => {
+        try {
+            window.localStorage.setItem('tnsvt_onboarding_v1', 'completed');
+        } catch {
+            /* localStorage no disponible — el tour decidirá solo */
+        }
+    });
     await page.goto('/login');
     await page.waitForSelector('input[name="code"], input[name="name"]', { timeout: 10_000 });
 
