@@ -15,6 +15,13 @@ use App\Entity\Device;
  */
 class DeviceRegisterTest extends ApiTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // devices_register allows 5/hour/IP — reset so runs are hermetic.
+        static::getContainer()->get('limiter.devices_register')->create('127.0.0.1')->reset();
+    }
+
     public function testMissingFieldsReturn400(): void
     {
         $r = $this->jsonRequest('POST', '/api/devices/register', ['user_code' => 'X']);
