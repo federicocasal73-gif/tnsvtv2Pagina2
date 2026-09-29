@@ -8,7 +8,8 @@
 #
 # Usage:
 #   TNSVT_ADMIN_CODE=ADMIN01 \
-#   TNSVT_ADMIN_PASSWORD='<X-Admin-Password from .env.local>' \
+#   TNSVT_ADMIN_USER_PASSWORD='<password for ADMIN01 user login>' \
+#   TNSVT_ADMIN_PASSWORD='<X-Admin-Password env var from .env.local>' \
 #   TNSVT_USER_VICTIM_CODE=VICTIM01 \
 #   bash bin/post-audit-smoke.sh https://tnsvt.com
 #
@@ -41,10 +42,13 @@ code=$(curl -sS -o /dev/null -w '%{http_code}' "$BASE_URL/api/public/stats" --ma
 code=$(curl -sS -o /dev/null -w '%{http_code}' "$BASE_URL/login" --max-time 15 || echo 000)
 [[ "$code" == "200" ]] && ok "GET /login → 200" || bad "GET /login → $code"
 
-# 2) Login as admin
+# 2) Login as admin (uses USER password, not the ADMIN_PASSWORD env var
+# which is the legacy header secret for X-Admin-Password endpoints).
+# Optional TNSVT_ADMIN_USER_PASSWORD for that; falls back to TNSVT_ADMIN_PASSWORD.
+TNSVT_ADMIN_USER_PASSWORD="${TNSVT_ADMIN_USER_PASSWORD:-$TNSVT_ADMIN_PASSWORD}"
 step "2/6 Admin login"
 login_resp=$(curl -sS -X POST -H "Content-Type: application/json" \
-    -d "{\"code\":\"$TNSVT_ADMIN_CODE\",\"password\":\"$TNSVT_ADMIN_PASSWORD\"}" \
+    -d "{\"code\":\"$TNSVT_ADMIN_CODE\",\"password\":\"$TNSVT_ADMIN_USER_PASSWORD\"}" \
     "$BASE_URL/api/auth/login" --max-time 15 || echo '{}')
 echo "  Login response: ${login_resp:0:200}"
 
