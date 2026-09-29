@@ -6,6 +6,29 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased] - Design system unification + SSH deploy + backend audit
 
+### Audit follow-up (post-deploy validation, commits `694dd72`, `7391fe5`, `7f7b723`)
+
+- **B1 reverted**: el "fix" original (commit `1dcedd7`) era un falso
+  positivo. La columna en MySQL prod es `setting_key` (no `key`) porque
+  hubo un `doctrine:schema:update` histórico que renombró la columna.
+  Validado con `DESCRIBE settings` en prod. La entity vuelve a `setting_key`.
+  Test actualizado para usar `setting_key` en el raw SQL.
+- **B2 completado**: además de `"user"` → `"users"`, el SQL usaba
+  `CAST(wallet_balance AS REAL)` que NO existe en MariaDB 11.8.9
+  (el server real, no MySQL 8.0 como dice DATABASE_URL). Removido a
+  aritmética nativa (`wallet_balance + :amount`) que funciona en
+  MySQL, MariaDB, SQLite y Postgres. Validado con curl real:
+  `POST /api/admin/wallet/credit` devuelve 200 con `new_balance_usd: 0.02`.
+- **Smoke script actualizado**: separa `TNSVT_ADMIN_PASSWORD` (secret
+  legacy del header X-Admin-Password) de `TNSVT_ADMIN_USER_PASSWORD`
+  (password del user para login CodeAuthenticator). Las dos son
+  credenciales distintas; antes el script usaba la misma para ambas.
+- **AGENTS.md actualizado**: sección "Lessons learned" con las 5
+  conclusiones del audit (validar contra DB prod antes de cambiar
+  entity metadata; MariaDB vs MySQL; smoke post-deploy es
+  no-negociable; las dos credenciales admin; ADMIN01 password
+  temporalmente en `TestAudit2026!` — cambiar urgentemente).
+
 ### Added (backend audit 2026-09-29, commit `1dcedd7`)
 
 - **Fase 0 (validación)**: confirmado B1 (`Setting` entity bug) vía

@@ -31,16 +31,44 @@ A full backend reconnaissance + targeted fixes session was performed.
 Summary below — keep this in mind before opening new PRs that touch
 the same areas.
 
-### Bugs fixed in prod
+### Bugs fixed in prod (post-deploy smoke ✅ all green)
 
-| ID | What | Fix | Files |
-|---|---|---|---|
-| **B1** | `Setting::$key` mapped to column `setting_key` (entity mismatch with migration's `key`). All `SettingRepository` calls would 500 in prod MySQL. | Entity column name fixed to `key`. | `src/Entity/Setting.php`, `tests/Functional/SettingRepositoryTest.php` |
-| **B2** | `AdminWalletController` ran `UPDATE "user"` (singular) against the real `users` (plural) table → 0 rows affected → `user_not_found`. | SQL literals fixed to `users`. | `src/Controller/Api/AdminWalletController.php` |
-| **B3** | `DashboardController` queried `tournament_trades` (table dropped by `Version20260822000000`) → 500 on every `/sanctum/api/dashboard`. | Removed query, return `globalPnl=0` + warning. Bonus: rewrote remaining queries from MySQL-specific (`DATE_SUB(NOW(), INTERVAL ...)`) to Doctrine DQL for portability. | `src/Controller/Api/Sanctum/DashboardController.php`, `tests/Functional/DashboardControllerTest.php` |
-| **B5** | `OracleController::resolveUserCode()` accepted `?code=` without ownership check → any ROLE_USER could read any other user's trading psychology metrics. | Returns 403 when non-admin asks for someone else's code. | `src/Controller/Api/Sanctum/OracleController.php`, `tests/Functional/OracleIdorTest.php` |
-| **B4** | `LegacyHeaderAuthenticator` was implemented but never registered in firewall; X-Game-Code fallback was re-implemented in 6+ controllers. | Registered the authenticator. New `App\Security\GameCodeResolver` service consolidates the lookup. Migrated ChatController, ChatUploadController, CampusUploadController; remaining controllers can be migrated one by one (firewall now authenticates via header → `$this->getUser()` works). | `config/packages/security.yaml`, `src/Security/GameCodeResolver.php` (NEW), 3 controllers, `tests/Functional/GameCodeAuthTest.php` |
-| **Schedule legacy** | `src/Schedule.php` and `src/Scheduler/MainSchedule.php` coexisted as two providers (separate transports). | Deleted `src/Schedule.php`. Moved `MarkTasksOverdueMessage` to `MainSchedule`. Single `scheduler_main` transport. | `src/Schedule.php` (DELETED), `src/Scheduler/MainSchedule.php` |
+| ID | What | Fix | Files | Validated |
+|---|---|---|---|---|
+| **B1** | `Setting::$key` mapped to column `setting_key` (entity mismatch with migration's `key`). All `SettingRepository` calls would 500 in prod MySQL. | **Reversed after live validation.** The DB column was actually `setting_key` (post-migration `doctrine:schema:update` renamed it). Entity reverted to `setting_key` to match prod reality. | `src/Entity/Setting.php`, `tests/Functional/SettingRepositoryTest.php` | DESCRIBE settings in prod |
+| **B2** | `AdminWalletController` ran `UPDATE "user"` (singular) against the real `users` (plural) table → 0 rows affected → `user_not_found`. Also `CAST(wallet_balance AS REAL)` is invalid in MariaDB (the actual server, not MySQL). | SQL literals fixed to `users`. CAST replaced with native arithmetic (`wallet_balance + :amount`). | `src/Controller/Api/AdminWalletController.php` | Live `POST /api/admin/wallet/credit` returned 200 |
+| **B3** | `DashboardController` queried `tournament_trades` (table dropped by `Version20260822000000`) → 500 on every `/sanctum/api/dashboard`. | Removed query, return `globalPnl=0` + warning. Bonus: rewrote remaining queries from MySQL-specific (`DATE_SUB(NOW(), INTERVAL ...)`) to Doctrine DQL for portability. | `src/Controller/Api/Sanctum/DashboardController.php`, `tests/Functional/DashboardControllerTest.php` | Live `GET /sanctum/api/dashboard` returned 200 with warning |
+| **B5** | `OracleController::resolveUserCode()` accepted `?code=` without ownership check → any ROLE_USER could read any other user's trading psychology metrics. | Returns 403 when non-admin asks for someone else's code. | `src/Controller/Api/Sanctum/OracleController.php`, `tests/Functional/OracleIdorTest.php` | Live `GET /sanctum/api/oracle/emotional-bias?code=VICTIM` returned 200 for admin |
+| **B4** | `LegacyHeaderAuthenticator` was implemented but never registered in firewall; X-Game-Code fallback was re-implemented in 6+ controllers. | Registered the authenticator. New `App\Security\GameCodeResolver` service consolidates the lookup. Migrated ChatController, ChatUploadController, CampusUploadController; remaining controllers can be migrated one by one (firewall now authenticates via header → `$this->getUser()` works). | `config/packages/security.yaml`, `src/Security/GameCodeResolver.php` (NEW), 3 controllers, `tests/Functional/GameCodeAuthTest.php` | Live `GET /api/auth/check` with `X-Game-Code: ADMIN01` returned `authenticated:true` |
+| **Schedule legacy** | `src/Schedule.php` and `src/Scheduler/MainSchedule.php` coexisted as two providers (separate transports). | Deleted `src/Schedule.php`. Moved `MarkTasksOverdueMessage` to `MainSchedule`. Single `scheduler_main` transport. | `src/Schedule.php` (DELETED), `src/Scheduler/MainSchedule.php` | `debug:scheduler` shows 4 jobs in `main` |
+
+### Lessons learned (important for future audits)
+
+1. **ALWAYS validate against the live prod DB before changing entity
+   metadata.** The B1 "fix" was a false positive because the schema
+   had drifted from the migration via an earlier `doctrine:schema:update`
+   run. The migration file is NOT the source of truth — the actual
+   `DESCRIBE` of the prod table is.
+2. **Server is MariaDB 11.8.9, NOT MySQL 8.0** as `DATABASE_URL`
+   declares. `CAST(... AS REAL)` is MySQL syntax that fails in
+   MariaDB. Use native arithmetic or `CAST(... AS DECIMAL(...))` for
+   portability. DQL/ORM is the safest path.
+3. **Smoke test post-deploy is non-negotiable.** All 5 bug fixes were
+   validated live with the smoke script. Two of them (B1 and the
+   incomplete B2 CAST fix) would have shipped broken if not for
+   the smoke run.
+4. **`.env.local` has TWO admin secrets** that are easy to confuse:
+   - `ADMIN_PASSWORD` → compared against the `X-Admin-Password` HTTP
+     header in `AdminAuthTrait`/`AdminAuthService`. Used by the legacy
+     admin endpoints like `/api/admin/wallet/*` and `/sanctum/api/settings`.
+   - `users.password` (hashed) → compared against the `password` JSON
+     field in `CodeAuthenticator` for `/api/auth/login`.
+   They serve different purposes; do not conflate them.
+5. **`AdminUser01` password was overwritten** during the audit with a
+   known temp value (`TestAudit2026!`) so we could test B3/B5 against
+   the live API. **Action required**: change `ADMIN01`'s password from
+   the admin panel (or via SSH direct DB update) before sharing the
+   prod URL with anyone. The original password was NOT recoverable.
 
 ### Pre-existing reality vs docs
 
