@@ -56,7 +56,7 @@ class SeedJournalDemoCommand extends Command
             $direction = $directions[array_rand($directions)];
 
             // Entry/SL/TP (realistic prices)
-            $entry = match ($asset) {
+            $price = match ($asset) {
                 'BTCUSD' => rand(42000, 68000),
                 'NAS100' => rand(17000, 21000),
                 'US30' => rand(37000, 42000),
@@ -65,12 +65,12 @@ class SeedJournalDemoCommand extends Command
             };
             
             $sl = $direction === JournalEntry::DIRECTION_BUY 
-                ? $entry * (1 - rand(1, 3) / 100) 
-                : $entry * (1 + rand(1, 3) / 100);
+                ? $price * (1 - rand(1, 3) / 100) 
+                : $price * (1 + rand(1, 3) / 100);
                 
             $tp = $direction === JournalEntry::DIRECTION_BUY 
-                ? $entry * (1 + rand(1, 4) / 100) 
-                : $entry * (1 - rand(1, 4) / 100);
+                ? $price * (1 + rand(1, 4) / 100) 
+                : $price * (1 - rand(1, 4) / 100);
 
             // Result with weighted random
             $r = rand(1, 100);
@@ -86,8 +86,8 @@ class SeedJournalDemoCommand extends Command
             }
 
             // Ratio
-            $risk = abs($entry - $sl);
-            $reward = abs($tp - $entry);
+            $risk = abs($price - $sl);
+            $reward = abs($tp - $price);
             $ratio = $risk > 0 ? round($reward / $risk, 1) : 0;
 
             $entry = new JournalEntry();
@@ -95,15 +95,15 @@ class SeedJournalDemoCommand extends Command
             $entry->setAsset($asset);
             $entry->setDirection($direction);
             $entry->setDate($date);
-            $entry->setEntry(number_format($entry, 2, '.', ''));
+            $entry->setEntry(number_format($price, 2, '.', ''));
             $entry->setSl(number_format($sl, 2, '.', ''));
             $entry->setTp(number_format($tp, 2, '.', ''));
             $entry->setResult($result);
             $entry->setPnl(number_format($pnl, 4, '.', ''));
             $entry->setRatio($ratio);
             $entry->setNotes("Demo trade #" . ($i + 1));
-            $entry->setCreatedAt($date);
-            $entry->setUpdatedAt($date);
+            // createdAt/updatedAt are stamped by the entity constructor;
+            // the historical date lives in ->setDate() above.
 
             $this->em->persist($entry);
             $created++;
