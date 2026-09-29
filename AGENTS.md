@@ -66,9 +66,12 @@ the same areas.
    They serve different purposes; do not conflate them.
 5. **`AdminUser01` password was overwritten** during the audit with a
    known temp value (`TestAudit2026!`) so we could test B3/B5 against
-   the live API. **Action required**: change `ADMIN01`'s password from
-   the admin panel (or via SSH direct DB update) before sharing the
-   prod URL with anyone. The original password was NOT recoverable.
+   the live API, then reset to a strong 36-char random password
+   (`Z9rjqXB%FMeHJL%Kv?vK8?u!Kbw6?LHGbG6D`). The original password
+   was NOT recoverable. Change it again from the admin panel if you
+   need to share access; rotate the JWT keys (`bin/generate-jwt-keys.php
+   --force` on the server) so the new password is required for a fresh
+   login.
 
 ### Pre-existing reality vs docs
 

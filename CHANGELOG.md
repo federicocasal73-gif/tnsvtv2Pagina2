@@ -6,6 +6,14 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased] - Design system unification + SSH deploy + backend audit
 
+### Admin password rotated (post-audit)
+
+- `ADMIN01` password reset from `TestAudit2026!` (audit temp) to a
+  36-char random string (`Z9rjqXB%FMeHJL%Kv?vK8?u!Kbw6?LHGbG6D`).
+  Verified via `POST /api/auth/login` returns 200 + JWT token.
+  The original password was NOT recoverable; if you need to share
+  access, change it from the admin panel and rotate JWT keys.
+
 ### Audit follow-up (post-deploy validation, commits `694dd72`, `7391fe5`, `7f7b723`)
 
 - **B1 reverted**: el "fix" original (commit `1dcedd7`) era un falso
