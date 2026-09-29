@@ -149,6 +149,33 @@
             }
         }
 
+        // Serialize plain-object bodies as JSON. Without this, fetch coerces
+        // them to "[object Object]" and the backend can't read any field
+        // (bug 2026-09-29: widget startDmWith → 400 'other_code requerido',
+        // plus message send / emoji / typing / read / subscribe broken the
+        // same way). FormData/Blob/URLSearchParams/strings pass through
+        // untouched; an explicit caller Content-Type always wins.
+        const _b = opts.body;
+        if (
+            _b &&
+            typeof _b === 'object' &&
+            !(typeof FormData !== 'undefined' && _b instanceof FormData) &&
+            !(typeof Blob !== 'undefined' && _b instanceof Blob) &&
+            !(typeof URLSearchParams !== 'undefined' && _b instanceof URLSearchParams) &&
+            !(typeof ArrayBuffer !== 'undefined' && _b instanceof ArrayBuffer) &&
+            !(typeof ArrayBuffer !== 'undefined' && ArrayBuffer.isView(_b))
+        ) {
+            opts.body = JSON.stringify(_b);
+            const _h = opts.headers;
+            const _hasCT =
+                _h &&
+                (typeof _h['Content-Type'] !== 'undefined' ||
+                    typeof _h['content-type'] !== 'undefined');
+            if (!_hasCT && (!_h || _h.constructor === Object)) {
+                opts.headers = Object.assign({ 'Content-Type': 'application/json' }, _h || {});
+            }
+        }
+
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -525,11 +552,24 @@
         });
     }
     // Re-scan when DOM mutates (new loading-pulse elements added).
+    // NOTE: this partial is included in <head>, where document.body is
+    // still null. Observing null throws and aborts the whole inline
+    // script, leaving window.apiSetupModal et al. undefined (bug
+    // 2026-09-29: dead "Agregar adepto" button). Defer until body exists.
     if (window.MutationObserver) {
-        new MutationObserver(apiA11yLoading).observe(document.body, {
-            childList: true,
-            subtree: true,
-        });
+        const observeBody = () => {
+            if (document.body) {
+                new MutationObserver(apiA11yLoading).observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                });
+            }
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', observeBody, { once: true });
+        } else {
+            observeBody();
+        }
     }
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', apiA11yLoading);

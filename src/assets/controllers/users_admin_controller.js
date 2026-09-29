@@ -38,7 +38,15 @@ export default class extends Controller {
                     if (nameEl) nameEl.value = '';
                 },
             });
-            addBtn.addEventListener('click', () => this._addUserModal.open());
+            addBtn.addEventListener('click', () => {
+                try {
+                    this._addUserModal.open();
+                } catch (err) {
+                    if (window.apiToast)
+                        window.apiToast('No se pudo abrir el modal: ' + err.message, 'error');
+                    else console.error(err);
+                }
+            });
             const closeBtn = document.getElementById('add-user-close');
             if (closeBtn) closeBtn.addEventListener('click', () => this._addUserModal.close());
             const cancelBtn = document.getElementById('add-user-cancel');

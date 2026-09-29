@@ -175,9 +175,9 @@ class SensitiveFieldStripTest extends ApiTestCase
             $this->assertArrayNotHasKey('apiKey', $u);
             $this->assertArrayNotHasKey('email', $u);
             $this->assertArrayNotHasKey('lastLoginIp', $u);
-            // code/name/is_me/is_admin/online are the only allowed keys.
+            // code/name/is_me/is_admin/online/last_activity_at are the only allowed keys.
             foreach (array_keys($u) as $k) {
-                $this->assertContains($k, ['code', 'name', 'is_me', 'is_admin', 'online'], "Unexpected key $k in /api/chat/users response");
+                $this->assertContains($k, ['code', 'name', 'is_me', 'is_admin', 'online', 'last_activity_at'], "Unexpected key $k in /api/chat/users response");
             }
         }
     }

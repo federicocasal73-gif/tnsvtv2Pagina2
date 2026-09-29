@@ -642,7 +642,7 @@ export default class extends Controller {
             .filter((u) => u.code !== this.knownUserCode)
             .map(
                 (u) =>
-                    `<button class="chat-widget-user-item" data-user-code="${this.esc(u.code)}"><span class="chat-widget-user-name">${this.esc(u.name)}</span><span class="chat-widget-user-meta">${this.esc(u.code)} · ${u.online ? '🟢' : 'off'}</span></button>`
+                    `<button class="chat-widget-user-item" data-user-code="${this.esc(u.code)}"><span class="chat-widget-user-name">${this.esc(u.name || u.code)}</span><span class="chat-widget-user-meta">${this.esc(u.code)} · ${this.esc(this.presenceLabel(u))}</span></button>`
             )
             .join('');
         this.usersTarget.querySelectorAll('.chat-widget-user-item').forEach((b) => {
@@ -782,6 +782,17 @@ export default class extends Controller {
             /[&<>"']/g,
             (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
         );
+    }
+    presenceLabel(u) {
+        if (u.online) return '🟢 en línea';
+        const ts = u.last_activity_at ? Date.parse(u.last_activity_at) : NaN;
+        if (Number.isNaN(ts)) return 'off';
+        const mins = Math.max(0, Math.round((Date.now() - ts) / 60000));
+        if (mins < 1) return 'hace un momento';
+        if (mins < 60) return `hace ${mins} min`;
+        const hours = Math.round(mins / 60);
+        if (hours < 24) return `hace ${hours} h`;
+        return `hace ${Math.round(hours / 24)} d`;
     }
     relativeTime(iso) {
         if (!iso) return '';

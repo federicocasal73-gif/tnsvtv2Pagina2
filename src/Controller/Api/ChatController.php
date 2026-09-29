@@ -532,6 +532,7 @@ class ChatController extends AbstractController
                 'is_me' => $u->getId() === $me->getId(),
                 'is_admin' => in_array('ROLE_ADMIN', $u->getRoles()),
                 'online' => $u->isOnline(),
+                'last_activity_at' => $u->getLastActivityAt()?->format('c'),
             ];
         }, $users);
 
