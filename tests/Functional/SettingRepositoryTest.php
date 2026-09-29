@@ -24,16 +24,16 @@ final class SettingRepositoryTest extends ApiTestCase
         $conn = $this->em->getConnection();
 
         $conn->executeStatement(
-            'DELETE FROM settings WHERE "key" IN (?, ?)',
+            'DELETE FROM settings WHERE setting_key IN (?, ?)',
             ['test.foo.bar', 'test.baz.qux']
         );
 
         $conn->executeStatement(
-            'INSERT INTO settings ("key", value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO settings (setting_key, value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
             ['test.foo.bar', 'value1', 'test', 'First test setting', '2026-01-01 00:00:00']
         );
         $conn->executeStatement(
-            'INSERT INTO settings ("key", value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO settings (setting_key, value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
             ['test.baz.qux', 'value2', 'test', 'Second test setting', '2026-01-01 00:00:00']
         );
 
@@ -53,9 +53,9 @@ final class SettingRepositoryTest extends ApiTestCase
     public function testGetValueAndGetBoolHelpers(): void
     {
         $conn = $this->em->getConnection();
-        $conn->executeStatement('DELETE FROM settings WHERE "key" = ?', ['test.helper.bool']);
+        $conn->executeStatement('DELETE FROM settings WHERE setting_key = ?', ['test.helper.bool']);
         $conn->executeStatement(
-            'INSERT INTO settings ("key", value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
+            'INSERT INTO settings (setting_key, value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
             ['test.helper.bool', '1', 'test', 'Boolean helper', '2026-01-01 00:00:00']
         );
 
@@ -73,7 +73,7 @@ final class SettingRepositoryTest extends ApiTestCase
         $conn->executeStatement('DELETE FROM settings WHERE category = ?', ['test_order_cat']);
         foreach (['zzz', 'aaa', 'mmm'] as $key) {
             $conn->executeStatement(
-                'INSERT INTO settings ("key", value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
+                'INSERT INTO settings (setting_key, value, category, description, updated_at) VALUES (?, ?, ?, ?, ?)',
                 ['test_order_cat.' . $key, 'v', 'test_order_cat', 'desc', '2026-01-01 00:00:00']
             );
         }
