@@ -11,15 +11,43 @@ import type { Page, BrowserContext } from '@playwright/test';
 export interface TestCredentials {
     code: string;
     password?: string;
+    /** Required for non-admin logins (server matches code+name). */
+    name?: string;
     /** If true, user has ROLE_ADMIN and requires the password field. */
     admin?: boolean;
 }
 
+/**
+ * Env override with fallback. E2E runs against PRODUCTION, so the
+ * credentials must match real prod accounts — never hardcode real
+ * secrets here. Set TNSVT_ADMIN_CODE / TNSVT_ADMIN_PASSWORD (and the
+ * optional TNSVT_USER*_CODE/NAME) as GitHub Actions secrets; locally
+ * the dev-seed fallbacks below apply.
+ */
+function env(name: string, fallback: string): string {
+    const v = process.env[name];
+    return v && v.length > 0 ? v : fallback;
+}
+
 /** Real test accounts seeded by the V1 import (src/Command/V1ImportCommand.php). */
 export const TEST_USERS = {
-    admin:      { code: 'ADMIN01',               password: 'admin',          admin: true } as TestCredentials,
-    regularA:   { code: 'AXEL9927',              password: '',                admin: false } as TestCredentials,
-    regularB:   { code: 'ELENTEOSCURO979',       password: '',                admin: false } as TestCredentials,
+    admin: {
+        code: env('TNSVT_ADMIN_CODE', 'ADMIN01'),
+        password: env('TNSVT_ADMIN_PASSWORD', 'admin'),
+        admin: true,
+    } as TestCredentials,
+    regularA: {
+        code: env('TNSVT_USERA_CODE', 'AXEL9927'),
+        name: env('TNSVT_USERA_NAME', 'axelvaldez'),
+        password: '',
+        admin: false,
+    } as TestCredentials,
+    regularB: {
+        code: env('TNSVT_USERB_CODE', 'ELENTEOSCURO979'),
+        name: env('TNSVT_USERB_NAME', ''),
+        password: '',
+        admin: false,
+    } as TestCredentials,
 } as const;
 
 /**
@@ -33,11 +61,26 @@ export async function login(page: Page, user: TestCredentials): Promise<void> {
 
     // TNSVT login form has fields "code" (or "name" in some templates)
     // and "password" only for admin. The fill tries both naming conventions.
-    const codeInput = page.locator('input[name="code"]').or(page.locator('input[name="name"]')).first();
+    const codeInput = page
+        .locator('input[name="code"]')
+        .or(page.locator('input[name="name"]'))
+        .first();
     await codeInput.fill(user.code);
 
+    // Non-admin logins require the name to match (CodeAuthenticator).
+    // Admins ignore the name field server-side.
+    if (user.name) {
+        const nameInput = page.locator('input[name="name"]').first();
+        if ((await nameInput.count()) > 0) {
+            await nameInput.fill(user.name);
+        }
+    }
+
     if (user.admin || user.password) {
-        const passInput = page.locator('input[name="password"]').or(page.locator('input[type="password"]')).first();
+        const passInput = page
+            .locator('input[name="password"]')
+            .or(page.locator('input[type="password"]'))
+            .first();
         await passInput.fill(user.password || '');
     }
 
