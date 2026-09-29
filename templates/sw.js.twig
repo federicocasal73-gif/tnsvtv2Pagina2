@@ -133,3 +133,55 @@ async function networkFirstWithOffline(request) {
 self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
+
+// ─── Web push (FCM) ─────────────────────────────────────────────
+// The backend sends FCM v1 messages with a `notification` payload, which
+// Chrome would auto-display. Handling `push` ourselves gives control over
+// icon/tag/data (and calling showNotification here suppresses the
+// auto-display, so there are no duplicates). Payload shape from
+// PushNotificationService: { notification: {title, body}, data: {...} }.
+self.addEventListener('push', (event) => {
+    let title = 'Sanctum';
+    let body = '';
+    let data = {};
+    try {
+        const payload = event.data ? event.data.json() : {};
+        if (payload.notification) {
+            title = payload.notification.title || title;
+            body = payload.notification.body || '';
+        }
+        data = payload.data || {};
+    } catch (e) {
+        // keep defaults
+    }
+    event.waitUntil(
+        self.registration.showNotification(title, {
+            body: body,
+            icon: '/favicon.ico',
+            badge: '/favicon.ico',
+            tag: data.conversation_id ? `chat-${data.conversation_id}` : 'sanctum',
+            data: data,
+        })
+    );
+});
+
+// Tapping the notification focuses the chat (or opens it).
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const target = (event.notification.data && event.notification.data.url) || '/chat';
+    event.waitUntil(
+        self.clients
+            .matchAll({ type: 'window', includeUncontrolled: true })
+            .then((clients) => {
+                for (const client of clients) {
+                    if (client.url.includes('/chat') && 'focus' in client) {
+                        return client.focus();
+                    }
+                }
+                if (self.clients.openWindow) {
+                    return self.clients.openWindow(target);
+                }
+                return undefined;
+            })
+    );
+});

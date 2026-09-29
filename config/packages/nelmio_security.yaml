@@ -99,6 +99,10 @@ nelmio_security:
                 - "'self'"
                 - 'https://*.hostingersite.com'
                 - 'https://tnsvt.com'
+                # Firebase web push: FCM token minting (page) goes through
+                # these Google endpoints (push_controller.js).
+                - 'https://fcmregistrations.googleapis.com'
+                - 'https://firebaseinstallations.googleapis.com'
             object-src: ["'none'"]
             frame-ancestors: ["'none'"]
             base-uri: ["'self'"]

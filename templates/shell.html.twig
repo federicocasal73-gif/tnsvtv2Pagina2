@@ -55,7 +55,7 @@
 </head>
 
 <body class="bg-[var(--void-elev)] text-[var(--on-surface-elev)] font-['Space_Grotesk'] min-h-screen antialiased relative"
-      data-controller="pwa shell"
+      data-controller="pwa shell push"
       {% if app.user %}data-user-code="{{ app.user.code }}" data-user-tier="{{ app.user.tier|default('INITIATE') }}"{% endif %}>
 
 <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
