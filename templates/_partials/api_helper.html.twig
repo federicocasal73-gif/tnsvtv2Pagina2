@@ -718,6 +718,7 @@
         function doHide() {
             modalEl.style.display = 'none';
             modalEl.setAttribute('hidden', '');
+            modalEl.classList.add('hidden');
             document.body.style.overflow = '';
             if (trapHandler) modalEl.removeEventListener('keydown', trapHandler);
             escHandler = null;
@@ -773,7 +774,14 @@
                 modalEl.classList.remove('is-closing');
                 prevFocus = document.activeElement;
                 document.body.style.overflow = 'hidden';
+                // 2026-09-29: remove BOTH the hidden attribute AND the hidden
+                // class. Some templates mount the modal with class="... hidden"
+                // (no attribute); leaving the class on meant visibility hinged
+                // on inline-style-vs-class cascade order in the client.
                 modalEl.removeAttribute('hidden');
+                modalEl.classList.remove('hidden');
+                // Force reflow so entry animations restart deterministically.
+                void modalEl.offsetWidth;
                 modalEl.style.display = modalEl.dataset.modalDisplay || 'flex';
                 (opts.open || function () {})();
                 const items = focusables();
@@ -812,6 +820,7 @@
             modalEl.classList.remove('is-closing');
             modalEl.style.display = 'none';
             modalEl.setAttribute('hidden', '');
+            modalEl.classList.add('hidden');
             document.body.style.overflow = '';
             return;
         }
@@ -820,6 +829,7 @@
             modalEl.classList.remove('is-closing');
             modalEl.style.display = 'none';
             modalEl.setAttribute('hidden', '');
+            modalEl.classList.add('hidden');
             document.body.style.overflow = '';
         }, 180);
     }

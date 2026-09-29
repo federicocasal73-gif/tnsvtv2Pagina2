@@ -29,22 +29,31 @@ export default class extends Controller {
         // ─── Modal: Agregar adepto → POST /api/admin/users ───
         const addBtn = document.getElementById('add-user-btn');
         const modal = document.getElementById('add-user-modal');
+        const loudFail = (msg) => {
+            if (window.apiToast) window.apiToast(msg, 'error');
+            else console.error(msg);
+        };
         if (addBtn && modal && typeof window.apiSetupModal === 'function') {
-            this._addUserModal = window.apiSetupModal(modal, {
-                open: () => {
-                    const codeEl = document.getElementById('add-user-code');
-                    const nameEl = document.getElementById('add-user-name');
-                    if (codeEl) codeEl.value = '';
-                    if (nameEl) nameEl.value = '';
-                },
-            });
+            try {
+                this._addUserModal = window.apiSetupModal(modal, {
+                    open: () => {
+                        const codeEl = document.getElementById('add-user-code');
+                        const nameEl = document.getElementById('add-user-name');
+                        if (codeEl) codeEl.value = '';
+                        if (nameEl) nameEl.value = '';
+                    },
+                });
+            } catch (err) {
+                loudFail('Modal no disponible: ' + err.message + ' — recargá la página');
+                this._addUserModal = null;
+            }
             addBtn.addEventListener('click', () => {
                 try {
+                    if (!this._addUserModal)
+                        throw new Error('modal no inicializado — recargá la página');
                     this._addUserModal.open();
                 } catch (err) {
-                    if (window.apiToast)
-                        window.apiToast('No se pudo abrir el modal: ' + err.message, 'error');
-                    else console.error(err);
+                    loudFail('No se pudo abrir el modal: ' + err.message);
                 }
             });
             const closeBtn = document.getElementById('add-user-close');
@@ -53,6 +62,12 @@ export default class extends Controller {
             if (cancelBtn) cancelBtn.addEventListener('click', () => this._addUserModal.close());
             const submitBtn = document.getElementById('add-user-submit');
             if (submitBtn) submitBtn.addEventListener('click', () => this.createUser());
+        } else if (addBtn) {
+            // Loud fallback: never leave the button silently dead (bug
+            // 2026-09-29). If the modal helper is missing, say so.
+            addBtn.addEventListener('click', () => {
+                loudFail('Modal no disponible (helper sin cargar) — recargá la página');
+            });
         }
 
         document.addEventListener('click', (e) => {
