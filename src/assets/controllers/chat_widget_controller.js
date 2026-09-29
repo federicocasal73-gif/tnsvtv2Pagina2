@@ -45,6 +45,8 @@ export default class extends Controller {
         this.presenceTimer = null; // periodic POST /api/chat/ping → keeps lastActivityAt fresh
         this.mercure = null; // EventSource for /chat/{id}
         this.typingEventSource = null; // EventSource for /chat/{id}/typing
+        this.mercureToken = null; // JWT from /api/mercure/subscribe-token, shared by both streams
+        this.mercureUnavailable = false; // sticky per session: token failed → SSE off, polling only
         this.typingMap = {}; // {code: timestamp}
         this.typingDebounce = null;
         this.knownUserCode = null;
@@ -237,22 +239,20 @@ export default class extends Controller {
         this.listTarget.innerHTML = filtered
             .map(
                 (c) => `
-      <button type="button" class="chat-widget-conv" data-conv-id="${c.id}">
-        <div class="chat-widget-conv-avatar">${this.esc((c.other_user_name || c.title || '?').slice(0, 1).toUpperCase())}</div>
-        <div class="chat-widget-conv-meta">
-          <div class="chat-widget-conv-row">
-            <span class="chat-widget-conv-name">${this.esc(c.other_user_name || c.title || 'Conversación')}</span>
-            <span class="chat-widget-conv-time">${this.relativeTime(c.last_message_at)}</span>
+      <button type="button" class="chat-widget-item${c.unread_count ? ' unread' : ''}" data-conv-id="${c.id}">
+        <div class="chat-widget-item-avatar">${this.esc((c.other_user_name || c.title || '?').slice(0, 1).toUpperCase())}</div>
+        <div class="chat-widget-item-body">
+          <div class="chat-widget-item-head">
+            <span class="chat-widget-item-name">${this.esc(c.other_user_name || c.title || 'Conversación')}</span>
+            <span class="chat-widget-item-time">${this.relativeTime(c.last_message_at)}</span>
           </div>
-          <div class="chat-widget-conv-row">
-            <span class="chat-widget-conv-preview">${this.esc(c.last_message_preview || '').slice(0, 50)}</span>
-            ${c.unread_count ? `<span class="chat-widget-conv-badge">${c.unread_count > 99 ? '99+' : c.unread_count}</span>` : ''}
-          </div>
+          <div class="chat-widget-item-preview">${this.esc(c.last_message_preview || '').slice(0, 50)}</div>
         </div>
+        ${c.unread_count ? `<span class="chat-widget-item-badge">${c.unread_count > 99 ? '99+' : c.unread_count}</span>` : ''}
       </button>`
             )
             .join('');
-        this.listTarget.querySelectorAll('.chat-widget-conv').forEach((btn) => {
+        this.listTarget.querySelectorAll('.chat-widget-item').forEach((btn) => {
             btn.addEventListener('click', () => this.openConv(parseInt(btn.dataset.convId, 10)));
         });
         if (!filtered.length) {
@@ -261,10 +261,13 @@ export default class extends Controller {
     }
 
     async openConv(id) {
+        if (this.activeConvId !== id) this.mercureToken = null; // token is scoped to conv topics
         this.activeConvId = id;
         this.lastMessageId = 0;
+        this.reconnectAttempts = 0;
         this.convPanelTarget.classList.remove('hidden');
         this.convPanelTarget.classList.add('is-open');
+        if (this.hasListTarget) this.listTarget.classList.add('hidden');
         const conv = (this.conversations || []).find((c) => c.id === id);
         this.convNameTarget.textContent = conv?.other_user_name || conv?.title || 'Conversación';
         this.convAvatarTarget.textContent = (conv?.other_user_name || conv?.title || '?')
@@ -280,8 +283,10 @@ export default class extends Controller {
     backToList() {
         this.activeConvId = null;
         this.lastMessageId = 0;
+        this.mercureToken = null;
         this.convPanelTarget?.classList.add('hidden');
         this.convPanelTarget?.classList.remove('is-open');
+        if (this.hasListTarget) this.listTarget.classList.remove('hidden');
         this.closeMercure();
         this.closeTypingEventSource();
         this.clearTypingIndicator();
@@ -353,14 +358,31 @@ export default class extends Controller {
     }
 
     // ─── Realtime Mercure ─────────────────────────────────────
-    async openMercure(convId) {
-        this.closeMercure();
+    // Best-effort: one token per conversation covers both the messages
+    // stream and the typing stream. If the token endpoint fails (no hub,
+    // 503 degraded, …) SSE stays off for the whole session and the widget
+    // lives on polling — never retry the token in a loop (bug 2026-09-29:
+    // 2 failing POSTs per openConv × infinite reconnect backoff = console
+    // spam of 500s).
+    async _fetchMercureToken(topics) {
+        if (this.mercureUnavailable || this.mercureToken) return this.mercureToken;
         const tokenR = await window.apiFetch('/api/mercure/subscribe-token', {
             method: 'POST',
-            body: { topics: [`/chat/${convId}`] },
+            body: { topics },
+            silent: true,
         });
-        if (!tokenR.ok || !tokenR.data?.token) return;
-        const url = `${this._mercureHubUrl()}?topic=${encodeURIComponent(`/chat/${convId}`)}&access_token=${encodeURIComponent(tokenR.data.token)}`;
+        if (tokenR.ok && tokenR.data?.token) {
+            this.mercureToken = tokenR.data.token;
+            return this.mercureToken;
+        }
+        this.mercureUnavailable = true;
+        return null;
+    }
+    async openMercure(convId) {
+        this.closeMercure();
+        const token = await this._fetchMercureToken([`/chat/${convId}`, `/chat/${convId}/typing`]);
+        if (!token) return;
+        const url = `${this._mercureHubUrl()}?topic=${encodeURIComponent(`/chat/${convId}`)}&access_token=${encodeURIComponent(token)}`;
         this.mercure = new EventSource(url);
         this.mercure.onmessage = (e) => this._handleMercureEvent(e);
         this.mercure.onerror = () => this._scheduleMercureReconnect(convId);
@@ -387,6 +409,7 @@ export default class extends Controller {
     _scheduleMercureReconnect(convId) {
         this.closeMercure();
         if (!this.activeConvId || this.activeConvId !== convId) return;
+        if (this.mercureUnavailable || this.reconnectAttempts >= 5) return;
         const delay = Math.min(30000, 1000 * Math.pow(2, this.reconnectAttempts++));
         setTimeout(() => this.openMercure(convId), delay);
     }
@@ -398,12 +421,9 @@ export default class extends Controller {
     // ─── Typing real ──────────────────────────────────────────
     async openTypingEventSource(convId) {
         this.closeTypingEventSource();
-        const tokenR = await window.apiFetch('/api/mercure/subscribe-token', {
-            method: 'POST',
-            body: { topics: [`/chat/${convId}/typing`] },
-        });
-        if (!tokenR.ok || !tokenR.data?.token) return;
-        const url = `${this._mercureHubUrl()}?topic=${encodeURIComponent(`/chat/${convId}/typing`)}&access_token=${encodeURIComponent(tokenR.data.token)}`;
+        const token = await this._fetchMercureToken([`/chat/${convId}`, `/chat/${convId}/typing`]);
+        if (!token) return;
+        const url = `${this._mercureHubUrl()}?topic=${encodeURIComponent(`/chat/${convId}/typing`)}&access_token=${encodeURIComponent(token)}`;
         this.typingEventSource = new EventSource(url);
         this.typingEventSource.onmessage = (e) => {
             try {
