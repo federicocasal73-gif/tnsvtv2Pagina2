@@ -288,13 +288,22 @@ test.describe('K3 helper: chat-presence ping fires POST /api/chat/ping', () => {
         const cookieHeader = (await page.context().cookies())
             .map((c) => `${c.name}=${c.value}`)
             .join('; ');
+        // resolveUser() order: X-Game-Code header > ?user_code= query >
+        // POST/JSON body. Session cookies alone are NOT enough (400
+        // 'user_code requerido'), so send the header explicitly.
         const res = await page.request.get(new URL('/api/chat/users', page.url()).href, {
-            headers: { Cookie: cookieHeader },
+            headers: {
+                Cookie: cookieHeader,
+                'X-Game-Code': TEST_USERS.regularA.code,
+            },
         });
         expect(res.status()).toBe(200);
         const body = await res.json();
-        // Body shape: { success, users: [{code, online, ...}] }
-        const users = (body as { users?: { code?: string; online?: boolean }[] }).users || [];
+        // Body shape: bare array [{code, online, ...}] (see ChatController::listUsers).
+        const users = (Array.isArray(body) ? body : (body as { users?: unknown }).users || []) as {
+            code?: string;
+            online?: boolean;
+        }[];
         const me = users.find((u) => u.code === TEST_USERS.regularA.code);
         // After the immediate ping (within 2s of connecting), me should be online.
         // If this flakes, increase the wait.
