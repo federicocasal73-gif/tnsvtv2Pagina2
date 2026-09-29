@@ -10,6 +10,7 @@ use App\Message\ChatMessageSent;
 use App\Repository\ConversationRepository;
 use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
+use App\Security\GameCodeResolver;
 use App\Service\ChatAttachmentSigner;
 use App\Service\ImageValidationService;
 use App\Service\MercurePublisher;
@@ -41,6 +42,7 @@ class ChatController extends AbstractController
         private MessageBusInterface $bus,
         private ChatAttachmentSigner $signer,
         private LoggerInterface $logger,
+        private GameCodeResolver $gameCodeResolver,
     ) {
         $this->avatarDir = dirname(__DIR__, 3) . '/public/uploads/avatars';
     }
@@ -59,21 +61,11 @@ class ChatController extends AbstractController
 
     private function resolveUser(Request $request): ?User
     {
-        // Order: X-Game-Code header > ?user_code= query > POST user_code > JSON user_code
-        // The apiFetch JS helper auto-attaches the header, so this is the
-        // primary path. The query/body fallbacks remain for callers that
-        // don't go through apiFetch (raw fetch, curl, etc.).
-        $code = $request->headers->get('X-Game-Code', '');
-        if (!$code) {
-            $code = $request->query->get('user_code') ?? ($request->request->get('user_code'));
-        }
-        if (!$code) {
-            $data = json_decode($request->getContent(), true);
-            $code = $data['user_code'] ?? null;
-        }
-        if (!$code) return null;
-        $user = $this->userRepository->findByCode(strtoupper(trim($code)));
-        return ($user && $user->isActive()) ? $user : null;
+        // Firewall-authenticated user first (X-Game-Code header path).
+        // Query/body fallback only when the firewall did not authenticate.
+        $user = $this->getUser();
+        if ($user instanceof User) return $user;
+        return $this->gameCodeResolver->resolveUser($request);
     }
 
     private function serializeConversation(Conversation $conv, ?Message $lastMessage, int $unreadCount, ?User $me): array

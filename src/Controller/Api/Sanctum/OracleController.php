@@ -7,13 +7,19 @@ use App\Service\Oracle\OracleMetricsService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * Oráculo de Métricas API — Phase 4.
- * All endpoints require authentication. The "self" scope reads
- * the current logged-in user; otherwise pass ?code=USR_xxx.
+ * All endpoints require authentication.
+ *
+ * SECURITY (B5 fix): non-admin users can only query metrics for their
+ * own code. Passing ?code=OTHER returns 403 unless the caller has
+ * ROLE_ADMIN. Without this check any authenticated user could read
+ * the trading psychology data (emotional bias / faith vs logic /
+ * session performance) of any other user.
  */
 #[Route('/sanctum/api/oracle', name: 'sanctum_api_oracle_')]
 class OracleController extends AbstractController
@@ -22,14 +28,39 @@ class OracleController extends AbstractController
         private OracleMetricsService $oracle,
     ) {}
 
+    /**
+     * @throws AccessDeniedHttpException when the caller asks for
+     *                                   another user's metrics
+     *                                   without ROLE_ADMIN.
+     */
     private function resolveUserCode(Request $request): string
     {
         $code = $request->query->get('code');
-        if ($code) return $code;
         /** @var User|null $user */
         $user = $this->getUser();
-        if ($user) return $user->getCode();
-        return 'DEMO'; // fallback
+        $ownCode = $user?->getCode();
+
+        if ($code !== null && $code !== '' && $code !== $ownCode) {
+            // Caller is asking for someone else's metrics.
+            $isAdmin = $this->isGranted('ROLE_ADMIN');
+            if (!$isAdmin) {
+                throw new AccessDeniedHttpException(
+                    'No podés consultar las métricas de otro usuario. ' .
+                    'Pasá ?code= con tu propio código o dejalo sin ?code=.'
+                );
+            }
+            return $code;
+        }
+
+        if ($code !== null && $code !== '') {
+            return $code; // matches own code
+        }
+
+        if ($ownCode !== null) {
+            return $ownCode;
+        }
+
+        return 'DEMO'; // fallback (shouldn't be reached — firewall requires auth)
     }
 
     private function resolveRange(Request $request): array

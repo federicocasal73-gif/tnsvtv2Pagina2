@@ -25,6 +25,61 @@ trading platform. Read this **before** making non-trivial changes.
 | `/sanctum/api/users` | `App\Controller\Api\Sanctum\UsersController` | Also exists; route is shadowed by the one above. Kept for reference / phase-1a tests. |
 | `/sanctum` (HTML) | `App\Controller\Sanctum\HomeController` | Dashboard redirect, requires auth |
 
+## Recent audit & fixes (2026-09-29 session)
+
+A full backend reconnaissance + targeted fixes session was performed.
+Summary below — keep this in mind before opening new PRs that touch
+the same areas.
+
+### Bugs fixed in prod
+
+| ID | What | Fix | Files |
+|---|---|---|---|
+| **B1** | `Setting::$key` mapped to column `setting_key` (entity mismatch with migration's `key`). All `SettingRepository` calls would 500 in prod MySQL. | Entity column name fixed to `key`. | `src/Entity/Setting.php`, `tests/Functional/SettingRepositoryTest.php` |
+| **B2** | `AdminWalletController` ran `UPDATE "user"` (singular) against the real `users` (plural) table → 0 rows affected → `user_not_found`. | SQL literals fixed to `users`. | `src/Controller/Api/AdminWalletController.php` |
+| **B3** | `DashboardController` queried `tournament_trades` (table dropped by `Version20260822000000`) → 500 on every `/sanctum/api/dashboard`. | Removed query, return `globalPnl=0` + warning. Bonus: rewrote remaining queries from MySQL-specific (`DATE_SUB(NOW(), INTERVAL ...)`) to Doctrine DQL for portability. | `src/Controller/Api/Sanctum/DashboardController.php`, `tests/Functional/DashboardControllerTest.php` |
+| **B5** | `OracleController::resolveUserCode()` accepted `?code=` without ownership check → any ROLE_USER could read any other user's trading psychology metrics. | Returns 403 when non-admin asks for someone else's code. | `src/Controller/Api/Sanctum/OracleController.php`, `tests/Functional/OracleIdorTest.php` |
+| **B4** | `LegacyHeaderAuthenticator` was implemented but never registered in firewall; X-Game-Code fallback was re-implemented in 6+ controllers. | Registered the authenticator. New `App\Security\GameCodeResolver` service consolidates the lookup. Migrated ChatController, ChatUploadController, CampusUploadController; remaining controllers can be migrated one by one (firewall now authenticates via header → `$this->getUser()` works). | `config/packages/security.yaml`, `src/Security/GameCodeResolver.php` (NEW), 3 controllers, `tests/Functional/GameCodeAuthTest.php` |
+| **Schedule legacy** | `src/Schedule.php` and `src/Scheduler/MainSchedule.php` coexisted as two providers (separate transports). | Deleted `src/Schedule.php`. Moved `MarkTasksOverdueMessage` to `MainSchedule`. Single `scheduler_main` transport. | `src/Schedule.php` (DELETED), `src/Scheduler/MainSchedule.php` |
+
+### Pre-existing reality vs docs
+
+- **`config/jwt/*.pem` is ALREADY gitignored** (`.gitignore:12-14`). The
+  earlier AGENTS.md warning about committed keys was outdated; the
+  files were removed from tracking previously but stayed on disk.
+  See `config/jwt/README.md` for the rotation procedure and
+  `bin/deploy.sh` for the first-time generation step.
+- **`RateLimiterTrait` IS used** by CampusController, CampusUploadController,
+  FeedController, SocialController (4 callers). The earlier reconnaissance
+  report that flagged it as dead was wrong. Trait stays.
+- **`App\Controller\Api\Sanctum\UsersController`** does NOT exist; the
+  route `/sanctum/api/users` is served by `App\Controller\Sanctum\UsersController`.
+  The AGENTS.md table line about a shadowed controller is a leftover.
+- **Push notifications (backend)**: `PushNotificationService` reads
+  `FCM_SERVICE_ACCOUNT` or `FCM_SERVER_KEY` (NOT the `FIREBASE_*`
+  env vars documented in `.env.example`). Mismatch kept for now.
+- **Mercure hub is NOT running** in Hostinger shared; chat SSE/typing
+  silently fall back to polling. `.env.local` has a placeholder URL
+  (`https://default?token=...`).
+- **Scheduler cron is NOT installed** on Hostinger shared. Jobs
+  defined but never run unless operator configures hPanel Cron.
+
+### Deferred (decided NOT to change in this session)
+
+- **Frontend orphans**: `feed-module.js`, `redirect.css`, `cf-widget.css`,
+  `mf-module.css`, `music-bar.css`, `topbar.css` — never loaded.
+  Cosmetic; safe to delete in a separate PR.
+- **Tailwind classes without Tailwind**: `shell.html.twig` and others
+  use `bg-[var(--void-elev)]` etc. without a Tailwind pipeline. No
+  CDN declared. The pages render but those utility classes don't
+  apply. Out of scope for backend review.
+- **`kreait/firebase-php` declared but unused**: composer.json line 13.
+  The hand-rolled `PushNotificationService` covers everything.
+- **`~45 entities without `CREATE TABLE` migration**: works because
+  prod MySQL was populated via `doctrine:schema:create` originally.
+  Generating a comprehensive initial migration is a multi-hour task
+  with rollback complexity; defer.
+
 ## CI pipeline (`.github/workflows/ci.yml`)
 
 9 jobs, all must pass:

@@ -16,6 +16,7 @@ security:
             custom_authenticators:
                 - App\Security\JwtAuthenticator
                 - App\Security\CodeAuthenticator
+                - App\Security\LegacyHeaderAuthenticator
             # Logout path removed — AuthController::logout handles it directly to
             # return a JSON response instead of Symfony's default 302 redirect
             entry_point: App\Security\CodeAuthenticator

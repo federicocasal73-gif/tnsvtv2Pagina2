@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Security\GameCodeResolver;
 use App\Security\RateLimiterTrait;
 use App\Service\CampusStorage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,22 +17,19 @@ class CampusUploadController extends AbstractController
     use RateLimiterTrait;
 
     public function __construct(
-        private UserRepository $userRepository,
         private CampusStorage $storage,
+        private GameCodeResolver $gameCodeResolver,
     ) {}
 
     /**
-     * Identifica al usuario autenticado SOLO por X-Game-Code + verificación DB.
-     * user_code enviado por query/body NO es autoritativo.
+     * Identifica al usuario autenticado.
+     * Prioridad: firewall-authenticated user → X-Game-Code → query/body fallback.
      */
     private function resolveUser(Request $request): ?User
     {
         $user = $this->getUser();
         if ($user instanceof User) return $user;
-        $code = trim((string) $request->headers->get('X-Game-Code', ''));
-        if ($code === '') return null;
-        $u = $this->userRepository->findByCode($code);
-        return ($u && $u->isActive()) ? $u : null;
+        return $this->gameCodeResolver->resolveUser($request);
     }
 
     #[Route('/upload', name: 'campus_upload', methods: ['POST'])]

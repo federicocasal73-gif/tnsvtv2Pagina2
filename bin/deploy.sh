@@ -90,6 +90,12 @@ composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
 echo "▸ Clearing + warming Symfony cache..."
 APP_ENV=prod php bin/console cache:clear --no-warmup
+
+echo "▸ Ensuring JWT keypair exists (config/jwt/*.pem are gitignored)..."
+if [ ! -f config/jwt/private.pem ] || [ ! -f config/jwt/public.pem ]; then
+    php bin/generate-jwt-keys.php || echo "! JWT key generation failed. Set JWT_PASSPHRASE in .env.local and re-run."
+fi
+
 APP_ENV=prod php bin/console cache:warmup
 
 echo "▸ Installing assets (asset-mapper)..."

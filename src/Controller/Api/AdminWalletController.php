@@ -76,7 +76,7 @@ class AdminWalletController extends AbstractController
         $this->em->getConnection()->beginTransaction();
         try {
             $affected = $this->em->getConnection()->executeStatement(
-                'UPDATE "user" SET wallet_balance = CAST(wallet_balance AS REAL) + :amount WHERE id = :id',
+                'UPDATE users SET wallet_balance = CAST(wallet_balance AS REAL) + :amount WHERE id = :id',
                 ['amount' => $amount, 'id' => $user->getId()]
             );
             if ($affected === 0) {
@@ -149,13 +149,13 @@ class AdminWalletController extends AbstractController
         $this->em->getConnection()->beginTransaction();
         try {
             $affected = $this->em->getConnection()->executeStatement(
-                'UPDATE "user" SET wallet_balance = CAST(wallet_balance AS REAL) - :amount WHERE id = :id AND CAST(wallet_balance AS REAL) >= :amount2',
+                'UPDATE users SET wallet_balance = CAST(wallet_balance AS REAL) - :amount WHERE id = :id AND CAST(wallet_balance AS REAL) >= :amount2',
                 ['amount' => $amount, 'id' => $user->getId(), 'amount2' => $amount]
             );
             if ($affected === 0) {
                 $this->em->getConnection()->rollBack();
                 $currentBalance = $this->em->getConnection()->fetchOne(
-                    'SELECT wallet_balance FROM "user" WHERE id = :id', ['id' => $user->getId()]
+                    'SELECT wallet_balance FROM users WHERE id = :id', ['id' => $user->getId()]
                 );
                 return new JsonResponse([
                     'error' => 'wallet_insufficient',
@@ -282,7 +282,7 @@ class AdminWalletController extends AbstractController
         $this->em->getConnection()->beginTransaction();
         try {
             $affected = $this->em->getConnection()->executeStatement(
-                'UPDATE "user" SET wallet_balance = CAST(wallet_balance AS REAL) + :amount WHERE id = :id',
+                'UPDATE users SET wallet_balance = CAST(wallet_balance AS REAL) + :amount WHERE id = :id',
                 ['amount' => $amount, 'id' => $user->getId()]
             );
             if ($affected === 0) {

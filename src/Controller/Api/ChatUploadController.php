@@ -2,7 +2,7 @@
 
 namespace App\Controller\Api;
 
-use App\Repository\UserRepository;
+use App\Security\GameCodeResolver;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,7 +22,7 @@ class ChatUploadController extends AbstractController
     ];
 
     public function __construct(
-        private UserRepository $userRepository,
+        private GameCodeResolver $gameCodeResolver,
     ) {
         $this->uploadDir = dirname(__DIR__, 3) . '/public/uploads/chat';
         if (!is_dir($this->uploadDir)) {
@@ -32,12 +32,9 @@ class ChatUploadController extends AbstractController
 
     private function resolveUser(Request $request): ?\App\Entity\User
     {
-        $code = $request->query->get('user_code') ?? ($request->request->get('user_code') ?? $request->getContent() ? json_decode($request->getContent(), true)['user_code'] ?? null : null);
-        $data = $request->request->all();
-        $code = $data['user_code'] ?? $code;
-        if (!$code) return null;
-        $user = $this->userRepository->findByCode(strtoupper(trim($code)));
-        return ($user && $user->isActive()) ? $user : null;
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) return $user;
+        return $this->gameCodeResolver->resolveUser($request);
     }
 
     #[Route('/upload', name: 'api_chat_upload', methods: ['POST'])]
