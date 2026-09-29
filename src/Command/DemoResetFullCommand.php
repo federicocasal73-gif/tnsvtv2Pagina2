@@ -74,9 +74,18 @@ class DemoResetFullCommand extends Command
         $tables = $conn->createSchemaManager()->listTableNames();
         $tables = array_values(array_filter($tables, static fn (string $t) => $t !== 'doctrine_migration_versions' && $t !== 'users'));
 
+        // NOTE: no explicit transaction on MySQL — TRUNCATE is DDL and
+        // causes an implicit commit, which would kill the outer
+        // transaction ("There is no active transaction"). Each TRUNCATE
+        // is atomic on its own; sqlite keeps the transactional path.
+        $inTransaction = false;
         $conn->beginTransaction();
+        $inTransaction = true;
         try {
             if ($isMysql) {
+                // Drop the transaction immediately: DDL auto-commits anyway.
+                $conn->commit();
+                $inTransaction = false;
                 $conn->executeStatement('SET FOREIGN_KEY_CHECKS=0');
             } else {
                 $conn->executeStatement('PRAGMA foreign_keys = OFF');
@@ -94,11 +103,14 @@ class DemoResetFullCommand extends Command
                 $conn->executeStatement('SET FOREIGN_KEY_CHECKS=1');
             } else {
                 $conn->executeStatement('PRAGMA foreign_keys = ON');
+                $conn->commit();
+                $inTransaction = false;
             }
-            $conn->commit();
         } catch (\Throwable $e) {
-            $conn->rollBack();
-            $output->writeln('<error>Wipe failed, rolled back: ' . $e->getMessage() . '</error>');
+            if ($inTransaction) {
+                $conn->rollBack();
+            }
+            $output->writeln('<error>Wipe failed' . ($inTransaction ? ', rolled back' : '') . ': ' . $e->getMessage() . '</error>');
 
             return Command::FAILURE;
         }
