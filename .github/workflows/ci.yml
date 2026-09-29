@@ -179,37 +179,12 @@ jobs:
               run: find src/assets/controllers src/assets/js -name '*.js' -print0 | xargs -0 -n 1 node --check
 
             - name: Inline <script> Syntax (Twig templates)
-              # Extracts <script>…</script> bodies without Twig tags from
-              # templates and runs node --check on each. Catches the class
-              # of bug where an edit leaves template JS unparseable
+              # Lints <script>…</script> bodies without Twig tags inside
+              # templates via bin/lint-inline-js.py (kept out of YAML so the
+              # heredoc can't break the workflow file again). Catches the
+              # class of bug where an edit leaves template JS unparseable
               # (lint:twig only validates Twig syntax, not the JS inside).
-              run: |
-                fail=0
-                while IFS= read -r f; do
-                  python3 - "$f" <<'EOF'
-                  import re, sys, subprocess, tempfile, os
-                  path = sys.argv[1]
-                  html = open(path, encoding='utf-8', errors='replace').read()
-                  blocks = re.findall(r'<script>(.*?)</script>', html, re.S)
-                  rc = 0
-                  for i, body in enumerate(blocks):
-                      if '{{' in body or '{%' in body:
-                          continue
-                      if not body.strip():
-                          continue
-                      with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as tf:
-                          tf.write(body)
-                          tf.flush()
-                          r = subprocess.run(['node', '--check', tf.name])
-                          os.unlink(tf.name)
-                          if r.returncode != 0:
-                              print(f'INLINE JS SYNTAX ERROR in {path} block {i}')
-                              rc = 1
-                  sys.exit(rc)
-                  EOF
-                  if [ $? -ne 0 ]; then fail=1; fi
-                done < <(grep -rl '<script>' templates --include='*.twig')
-                exit $fail
+              run: python3 bin/lint-inline-js.py templates
 
     a11y-axe:
         name: axe-core (a11y)

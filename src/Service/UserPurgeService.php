@@ -47,12 +47,6 @@ use App\Entity\WalletTransaction;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Thrown when a purge is refused for a business rule (NOT a crash):
- * the caller maps it to 409 with the message.
- */
-final class PurgeBlockedException extends \RuntimeException {}
-
-/**
  * Purgado total e irreversible de un usuario y TODO lo asociado.
  *
  * Estrategia: borrados DQL en bloque (sin hidratar) en orden hoja→raíz,

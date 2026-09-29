@@ -54,6 +54,8 @@ bin/__pycache__/
 # Ad-hoc Python debug scripts (consolidation leftovers).
 # Use bin/console for Symfony debugging.
 bin/*.py
+# CI helper (lint inline <script> in Twig) — versioned, not ad-hoc.
+!bin/lint-inline-js.py
 # Ad-hoc PHP debug scripts (JWT, lexik) — same category as bin/*.py.
 bin/diag_*.php
 bin/test_jwt_*.php

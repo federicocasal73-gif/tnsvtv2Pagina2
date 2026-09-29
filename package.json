@@ -10,7 +10,13 @@
     "format:check": "prettier --check \"src/assets/**/*.{js,css}\"",
     "stylelint": "stylelint \"src/assets/**/*.css\"",
     "stylelint:fix": "stylelint \"src/assets/**/*.css\" --fix",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:chromium": "playwright test --project=chromium",
     "test:a11y": "playwright test --config=a11y/playwright.config.js",
+    "lint:e2e": "node tests/e2e/lint-no-mutations.mjs",
     "lighthouse": "lhci autorun",
     "audit": "npm audit --omit=dev"
   },
