@@ -159,7 +159,9 @@ class MonitoringService
             'messages_total' => (int)$conn->fetchOne('SELECT COUNT(*) FROM messages'),
             'conversations_total' => (int)$conn->fetchOne('SELECT COUNT(*) FROM conversations'),
             'tasks_active' => (int)$conn->fetchOne('SELECT COUNT(*) FROM tasks WHERE active = 1'),
-            'frequency_presets' => (int)$conn->fetchOne('SELECT COUNT(*) FROM frequency_presets'),
+            // Frequencies module removed 2026-09-29 (commit edbc9e2).
+            // Keep the key with value 0 so any frontend that expects it doesn't break.
+            'frequency_presets' => 0,
             'economic_reminders' => (int)$conn->fetchOne('SELECT COUNT(*) FROM economic_reminders'),
             'devices' => (int)$conn->fetchOne('SELECT COUNT(*) FROM devices'),
         ];
