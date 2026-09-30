@@ -624,3 +624,31 @@ body.sonic-panel-open {
         transition: none;
     }
 }
+
+/* Gestión de playlist (admin): link a /meditacion, el panel es solo reproducción. */
+.sonic-manage {
+    display: flex;
+    justify-content: center;
+    padding: 0.6rem 1rem 0.9rem;
+}
+.sonic-manage-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--outline-elev);
+    text-decoration: none;
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 999px;
+    padding: 0.35rem 0.9rem;
+    transition:
+        color 0.15s,
+        border-color 0.15s;
+}
+.sonic-manage-link:hover {
+    color: var(--gold-elev);
+    border-color: var(--gold-elev);
+}
+.sonic-manage-link .material-symbols-elev {
+    font-size: 1rem;
+}

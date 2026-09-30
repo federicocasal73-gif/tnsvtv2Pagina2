@@ -6,6 +6,7 @@ export default class extends Controller {
         this.currentFilter = { search: '', tier: '' };
 
         this.loadUsers();
+        this.loadBroadcast();
 
         const refreshBtn = document.getElementById('refresh-btn');
         if (refreshBtn) refreshBtn.addEventListener('click', () => this.loadUsers());
@@ -243,6 +244,35 @@ export default class extends Controller {
             /[&<>"']/g,
             (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]
         );
+    }
+
+    // ─── Global Temple Broadcast: nombre real del track ──────────
+    // El widget tenía textos hardcodeados ("Sinfonía Atmosférica Nro. 4").
+    // Ahora refleja /api/music/current; si la playlist está vacía invita
+    // a /meditacion en vez de mentir.
+    async loadBroadcast() {
+        const nameEl = document.getElementById('broadcast-track-name');
+        const subEl = document.getElementById('broadcast-track-sub');
+        if (!nameEl || !subEl) return;
+        try {
+            const r = await window.apiFetch('/api/music/current', { silent: true });
+            const d = r && r.ok && r.data ? r.data : null;
+            const tracks = d && Array.isArray(d.playlist) ? d.playlist : [];
+            if (!d || !d.hasMusic || tracks.length === 0) {
+                nameEl.textContent = 'Sin transmisión';
+                subEl.innerHTML =
+                    'Playlist vacía — <a href="/meditacion" class="underline">sincronizá en Meditación</a>';
+                return;
+            }
+            const idx = Math.min(Math.max(d.activeIndex || 0, 0), tracks.length - 1);
+            const t = tracks[idx] || tracks[0];
+            nameEl.textContent = t.name || 'Transmisión del Cónclave';
+            subEl.textContent =
+                tracks.length +
+                (tracks.length === 1 ? ' canción en playlist' : ' canciones en playlist');
+        } catch (_) {
+            nameEl.textContent = 'Santuario Sonoro';
+        }
     }
 
     async deleteUser(btn) {

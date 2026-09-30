@@ -277,6 +277,51 @@ class SonicSanctuaryTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
         );
     }
 
+    public function testUsersBroadcastShowsRealTrackName(): void
+    {
+        // The widget used hardcoded text ("Sinfonía Atmosférica Nro. 4").
+        // Now it renders placeholders filled by users_admin_controller.js
+        // from /api/music/current, with an empty-state linking /meditacion.
+        $tpl = $this->read('templates/sanctum/users.html.twig');
+        $this->assertStringContainsString(
+            'id="broadcast-track-name"',
+            $tpl,
+            'users.html.twig must render a broadcast-track-name placeholder.'
+        );
+        $this->assertStringContainsString(
+            'id="broadcast-track-sub"',
+            $tpl,
+            'users.html.twig must render a broadcast-track-sub placeholder.'
+        );
+        $this->assertStringNotContainsString(
+            'Sinfonía Atmosférica',
+            $tpl,
+            'users.html.twig must not hardcode the fake track name anymore.'
+        );
+    }
+
+    public function testPanelLinksManagePlaylistForAdmins(): void
+    {
+        // The side panel is playback-only; playlist management lives in
+        // /meditacion. Admins get a link, gated by ROLE_ADMIN.
+        $partial = $this->read('templates/_partials/sonic_sanctuary_panel.html.twig');
+        $this->assertStringContainsString(
+            'Gestionar playlist',
+            $partial,
+            'panel partial must link playlist management.'
+        );
+        $this->assertStringContainsString(
+            'sanctum_meditacion',
+            $partial,
+            'panel manage link must point to the meditacion route.'
+        );
+        $this->assertStringContainsString(
+            'ROLE_ADMIN',
+            $partial,
+            'panel manage link must be gated behind ROLE_ADMIN.'
+        );
+    }
+
     // ─── sonic-sanctuary.css ────────────────────────────────────────
 
     public function testCssDefinesAllClassesTemplateReferences(): void
@@ -301,6 +346,8 @@ class SonicSanctuaryTest extends \Symfony\Bundle\FrameworkBundle\Test\KernelTest
             'sonic-loop-btn',
             'sonic-keyboard',
             'sonic-empty',
+            'sonic-manage',
+            'sonic-manage-link',
         ] as $class) {
             $this->assertMatchesRegularExpression(
                 '/\.' . preg_quote($class, '/') . '\b/',

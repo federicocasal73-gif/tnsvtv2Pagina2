@@ -34,20 +34,6 @@
             </div>
         </div>
 
-        {# Alert Mode Switch #}
-        <div class="glass-card-elev">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-500/10 rounded-lg flex items-center justify-center border border-red-500/20">
-                    <span class="material-symbols-elev text-red-400">warning</span>
-                </div>
-                <div class="flex-1">
-                    <p class="font-label-md text-label-md font-bold text-[var(--on-surface-elev)]">Modo Alerta Alta Precisión</p>
-                    <p class="text-[10px] text-[var(--outline-elev)] uppercase tracking-wider">Protocolo de Emergencia</p>
-                </div>
-                <div class="alert-toggle" id="alert-mode-toggle" aria-disabled="true" title="Próximamente"></div>
-            </div>
-        </div>
-
         {# Audio Player Mini — cableado al Sonic Sanctuary (Phase 3).
            Antes era decorativo puro. Ahora el botón ▶ emite el evento
            `sonic:open-and-play-global` que el sonic-sanctuary controller
@@ -69,8 +55,8 @@
                         <span class="text-[10px] font-bold text-[var(--primary)] uppercase tracking-widest">Global Temple Broadcast</span>
                         <span class="w-1.5 h-1.5 rounded-full bg-[var(--primary)] pulse-gold"></span>
                     </div>
-                    <p class="font-title-md text-title-md font-bold text-[var(--starlight-white,#FDFCF8)] leading-tight">Sinfonía Atmosférica Nro. 4</p>
-                    <p class="text-xs text-[var(--outline-elev)]">Frecuencia de Cónclave · 432Hz</p>
+                    <p class="font-title-md text-title-md font-bold text-[var(--starlight-white,#FDFCF8)] leading-tight" id="broadcast-track-name">Cargando playlist…</p>
+                    <p class="text-xs text-[var(--outline-elev)]" id="broadcast-track-sub">Santuario Sonoro</p>
                 </div>
             </div>
             <div class="flex items-center justify-center gap-6 relative z-10">
@@ -150,7 +136,7 @@
                 <label class="oracle-label block mb-1" for="add-user-name">Nombre</label>
                 <input id="add-user-name" type="text" placeholder="Nombre del adepto" autocomplete="off"
                        class="w-full px-3 py-2 rounded bg-[var(--glass-bg-elev)] border border-[var(--outline-variant-elev)] text-[var(--on-surface-elev)] text-sm focus:outline-none focus:border-[var(--gold-elev)]" />
-                <p class="text-xs text-[var(--outline-elev)] mt-3">Se crea activo con rol USER. Después podés cambiarle el tier desde su tarjeta.</p>
+                <p class="text-xs text-[var(--outline-elev)] mt-3">Se crea activo con rol USER y tier INITIATE, sin contraseña (entra con código + nombre). Después podés activarlo/desactivarlo o eximirlo de 2FA desde su tarjeta.</p>
             </div>
             <footer class="tnsvt-modal__footer">
                 <button type="button" class="ui-btn ui-btn ghost" id="add-user-cancel">Cancelar</button>

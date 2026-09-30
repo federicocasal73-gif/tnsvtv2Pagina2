@@ -97,4 +97,15 @@
         <span><kbd>←</kbd><kbd>→</kbd> prev/next</span>
         <span><kbd>E</kbd> panel</span>
     </div>
+
+    {# Gestión de playlist (admin): la subida/sync vive en /meditacion,
+       el panel es solo reproducción. #}
+    {% if is_granted('ROLE_ADMIN') %}
+    <div class="sonic-manage">
+        <a href="{{ path('sanctum_meditacion') }}" class="sonic-manage-link">
+            <span class="material-symbols-elev" aria-hidden="true">settings</span>
+            Gestionar playlist
+        </a>
+    </div>
+    {% endif %}
 </div>

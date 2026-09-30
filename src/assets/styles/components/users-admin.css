@@ -28,34 +28,6 @@
     margin-top: 0.25rem;
 }
 
-.alert-toggle {
-    position: relative;
-    width: 56px;
-    height: 28px;
-    background: var(--glass-border-elev, rgba(255, 255, 255, 0.1));
-    border-radius: 14px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    flex-shrink: 0;
-}
-.alert-toggle.active {
-    background: var(--gold-elev, #f2ca50);
-}
-.alert-toggle::after {
-    content: '';
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 22px;
-    height: 22px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.3s ease;
-}
-.alert-toggle.active::after {
-    transform: translateX(28px);
-}
-
 .audio-player-mini {
     position: relative;
     background: linear-gradient(135deg, rgba(45, 27, 78, 0.5), rgba(22, 17, 33, 0.7));
