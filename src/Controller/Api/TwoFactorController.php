@@ -177,8 +177,39 @@ class TwoFactorController extends AbstractController
         // Respuesta genérica SIEMPRE: no revelar si el código existe.
         $data = json_decode($request->getContent(), true);
         $code = strtoupper(trim((string) ($data['code'] ?? '')));
-        $user = '' !== $code ? $this->users->findByCode($code) : null;
-        if ($user instanceof User && $user->isActive() && $user->hasVerifiedEmail()) {
+
+        // Hot-fix 2026-09-30: bypass Doctrine ORM entirely. The repo
+        // findByCode() (which calls findOneBy → hydrates User entity) was
+        // throwing 42S22 on prod because the cached metadata predates
+        // the bb9fd migration that added email_verified_at + two_factor_*.
+        // The container compiled cache + OPCache persist old metadata
+        // for the worker lifetime; we cannot invalidate them remotely.
+        // Native SQL sidesteps the proxy entirely. When the next warmup
+        // + worker restart happens naturally (next deploy), the fix can
+        // be reverted by restoring $this->users->findByCode().
+        $conn = $this->users->getEntityManager()->getConnection();
+        $row = $conn->fetchAssociative(
+            'SELECT id, email, email_verified_at, active FROM users WHERE code = :c LIMIT 1',
+            ['c' => $code]
+        );
+        $emailVerified = $row
+            && (int) ($row['active'] ?? 0) === 1
+            && !empty($row['email'])
+            && !empty($row['email_verified_at']);
+
+        if ($emailVerified) {
+            // Reconstruct a User entity for the mailer without going
+            // through the ORM proxy hydration.
+            $user = (new \ReflectionClass(User::class))->newInstanceWithoutConstructor();
+            $idRef = (new \ReflectionProperty(User::class, 'id'));
+            $idRef->setAccessible(true);
+            $idRef->setValue($user, (int) $row['id']);
+            $codeRef = (new \ReflectionProperty(User::class, 'code'));
+            $codeRef->setAccessible(true);
+            $codeRef->setValue($user, $code);
+            $emailRef = (new \ReflectionProperty(User::class, 'email'));
+            $emailRef->setAccessible(true);
+            $emailRef->setValue($user, $row['email']);
             $this->twoFactor->issue($user, TwoFactorChallenge::PURPOSE_RESET);
         }
 
