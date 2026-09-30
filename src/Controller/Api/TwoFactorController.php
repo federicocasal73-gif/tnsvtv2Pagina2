@@ -198,19 +198,38 @@ class TwoFactorController extends AbstractController
             && !empty($row['email_verified_at']);
 
         if ($emailVerified) {
-            // Reconstruct a User entity for the mailer without going
-            // through the ORM proxy hydration.
-            $user = (new \ReflectionClass(User::class))->newInstanceWithoutConstructor();
-            $idRef = (new \ReflectionProperty(User::class, 'id'));
-            $idRef->setAccessible(true);
-            $idRef->setValue($user, (int) $row['id']);
-            $codeRef = (new \ReflectionProperty(User::class, 'code'));
-            $codeRef->setAccessible(true);
-            $codeRef->setValue($user, $code);
-            $emailRef = (new \ReflectionProperty(User::class, 'email'));
-            $emailRef->setAccessible(true);
-            $emailRef->setValue($user, $row['email']);
-            $this->twoFactor->issue($user, TwoFactorChallenge::PURPOSE_RESET);
+            // Native insert bypassing ORM entirely. The TwoFactorService
+            // uses two_factor_enabled + two_factor_exempt columns that
+            // are part of the same stale-metadata cache as email_verified_at;
+            // using ORM would re-trigger 42S22. Native SQL is the only
+            // safe path while the workers lsphp hold the stale bytecode.
+            //
+            // The code below mirrors App\Service\TwoFactorService::issue()
+            // but skips all ORM hydration. AppMailer::sendCode() also
+            // takes primitives (to, code, purpose) and doesn't need a
+            // User entity.
+            $code = (string) random_int(0, 999999);
+            $code = str_pad($code, 6, '0', STR_PAD_LEFT);
+            $codeHash = hash('sha256', $code);
+            $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+            $expiresAt = (new \DateTimeImmutable('+10 minutes'))->format('Y-m-d H:i:s');
+            $conn->insert('two_factor_challenges', [
+                'user_id' => (int) $row['id'],
+                'purpose' => 'reset',
+                'code_hash' => $codeHash,
+                'expires_at' => $expiresAt,
+                'attempts' => 0,
+                'consumed_at' => null,
+                'last_sent_at' => $now,
+                'resend_count' => 0,
+                'created_at' => $now,
+            ]);
+            // Send the mail via the symfony Mailer (no ORM dependency).
+            $mailer = $this->users->getEntityManager()->getConnection()->getDatabasePlatform();
+            // Use the existing AppMailer service directly — bypass
+            // TwoFactorService since that uses ORM-managed User too.
+            $appMailer = $this->getContainer()->get(\App\Service\AppMailer::class);
+            $appMailer->sendCode((string) $row['email'], $code, 'reset');
         }
 
         return $this->json([
