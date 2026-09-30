@@ -311,10 +311,18 @@
             errorEl.style.display = 'none';
         }
 
-        function loginOk(user) {
+        function loginOk(user, tokens) {
             user = user || {};
             showSuccess('Bienvenido ' + (user.name || user.code) + '. Redirigiendo…');
             try { localStorage.setItem('tnsvt_user', JSON.stringify(user)); } catch (_) {}
+            // Persist JWT + refresh_token for apiFetch silent refresh
+            // (Authorization: Bearer on every call, one retry via
+            // /api/auth/refresh on 401 before bouncing to '/').
+            try {
+                if (tokens && tokens.token && tokens.refresh_token && typeof window.apiSaveTokens === 'function') {
+                    window.apiSaveTokens({ code: user.code, token: tokens.token, refresh_token: tokens.refresh_token });
+                }
+            } catch (_) {}
             var target = user.isAdmin ? '/sanctum' : '/journal';
             setTimeout(function () { window.location.href = target; }, 600);
         }
@@ -386,7 +394,7 @@
             .then(function (r) { return r.json().then(function (d) { return { status: r.status, data: d }; }); })
             .then(function (resp) {
                 if (resp.status === 200 && resp.data && resp.data.success) {
-                    loginOk(resp.data.user);
+                    loginOk(resp.data.user, resp.data);
                 } else if (resp.status === 410) {
                     tfaError('El código venció. Pedí uno nuevo abajo.');
                 } else {
@@ -588,7 +596,7 @@
             .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, data: d }; }); })
             .then(function (resp) {
                 if (resp.ok && resp.data && resp.data.success) {
-                    loginOk(resp.data.user);
+                    loginOk(resp.data.user, resp.data);
                 } else if (resp.data && resp.data.error_code === 'two_factor_required') {
                     enterStep2(resp.data.challenge_id, resp.data.masked_email, 'login');
                 } else if (resp.data && resp.data.error_code === 'enrollment_required') {

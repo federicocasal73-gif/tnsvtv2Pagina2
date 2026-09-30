@@ -171,6 +171,13 @@ export default class extends Controller {
         )
             return;
         await window.apiFetch('/api/auth/logout', { method: 'POST', silent: true });
+        // Drop client tokens/user so a later refresh attempt can't
+        // resurrect this session (and stale Bearers stop being sent).
+        try {
+            if (typeof window.apiClearTokens === 'function') window.apiClearTokens();
+            localStorage.removeItem('tnsvt_user');
+        } catch (_) {}
+        window.TNSVT_USER = null;
         window.location.href = '/';
     }
 

@@ -15,24 +15,7 @@ class UserRepository extends ServiceEntityRepository
 
     public function findByCode(string $code): ?User
     {
-        // Native lookup: bypass Doctrine entity proxy hydration that pulls
-        // columns whose metadata is stale on prod (post-bb9fd warmup).
-        // We do a scalar SELECT first; if a row exists we hydrate via
-        // find() which is safer than findOneBy() for fields that might be
-        // missing in the cached metadata. If even find() 500s, the
-        // exception bubbles and the controller can fall back gracefully.
-        try {
-            $exists = (bool) $this->getEntityManager()->getConnection()->fetchOne(
-                'SELECT 1 FROM users WHERE code = :c LIMIT 1',
-                ['c' => $code]
-            );
-            if (!$exists) {
-                return null;
-            }
-            return $this->findOneBy(['code' => $code]);
-        } catch (\Throwable) {
-            return null;
-        }
+        return $this->findOneBy(['code' => $code]);
     }
 
     public function findByCodeLike(string $q): array

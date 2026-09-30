@@ -108,9 +108,16 @@ class MonitoringService
         if (!$status) {
             return ['status' => 'disabled'];
         }
-        $memoryUsage = is_numeric($status['memory_usage'] ?? 0) ? (int)$status['memory_usage'] : 0;
-        $freeMemory = is_numeric($status['free_memory'] ?? 0) ? (int)$status['free_memory'] : 0;
-        $memoryConsumption = is_numeric($status['memory_consumption'] ?? 0) ? (int)$status['memory_consumption'] : 0;
+        // PHP 8 nests memory counters inside memory_usage[]; top-level
+        // free_memory/memory_consumption keys don't exist (2026-09-30 prod
+        // warnings: Undefined array key "free_memory").
+        $mem = $status['memory_usage'] ?? [];
+        $memoryUsage = is_numeric($mem['used_memory'] ?? null) ? (int) $mem['used_memory'] : 0;
+        $freeMemory = is_numeric($mem['free_memory'] ?? null) ? (int) $mem['free_memory'] : 0;
+        // memory_consumption = configured total (ini), not reported by
+        // opcache_get_status(); derive used+free+wasted instead.
+        $wasted = is_numeric($mem['wasted_memory'] ?? null) ? (int) $mem['wasted_memory'] : 0;
+        $memoryConsumption = $memoryUsage + $freeMemory + $wasted;
         $stats = $status['opcache_statistics'] ?? [];
         return [
             'status' => $status['opcache_enabled'] ? 'enabled' : 'disabled',

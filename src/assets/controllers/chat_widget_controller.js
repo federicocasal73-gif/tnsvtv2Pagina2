@@ -364,8 +364,31 @@ export default class extends Controller {
     // lives on polling — never retry the token in a loop (bug 2026-09-29:
     // 2 failing POSTs per openConv × infinite reconnect backoff = console
     // spam of 500s).
+    // 2026-09-30: the hub itself 404s on Hostinger shared (no Mercure
+    // running) while the token endpoint still mints tokens. EventSource
+    // exposes no HTTP status, so we probe the hub once per page load with
+    // a plain fetch: on non-OK we mark SSE unavailable for the session and
+    // never open streams (fail-fast, zero console spam). Polling already
+    // covers messages + typing fallback.
+    async _hubReachable() {
+        if (typeof this._hubProbe === 'boolean') return this._hubProbe;
+        try {
+            const r = await fetch(this._mercureHubUrl() + '?topic=' + encodeURIComponent('probe'), {
+                method: 'GET',
+                credentials: 'same-origin',
+            });
+            // Any 2xx/3xx with event-stream content means a live hub.
+            // 404/5xx/network error → hub missing → polling only.
+            this._hubProbe = r.ok;
+        } catch (_) {
+            this._hubProbe = false;
+        }
+        if (!this._hubProbe) this.mercureUnavailable = true;
+        return this._hubProbe;
+    }
     async _fetchMercureToken(topics) {
         if (this.mercureUnavailable || this.mercureToken) return this.mercureToken;
+        if (!(await this._hubReachable())) return null;
         const tokenR = await window.apiFetch('/api/mercure/subscribe-token', {
             method: 'POST',
             body: { topics },

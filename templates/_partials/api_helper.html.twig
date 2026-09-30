@@ -122,6 +122,69 @@
         _activeToasts.set(node, t);
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+       SILENT JWT REFRESH (2026-09-30)
+       Web UI authenticates via session cookie + X-Game-Code, but login
+       also issues a JWT (900s) + refresh_token that the frontend used to
+       discard. apiFetch now sends `Authorization: Bearer` when tokens are
+       stored, and on 401 attempts ONE silent refresh before giving up.
+       A shared in-flight promise prevents poller stampedes hitting the
+       refresh endpoint (which is rate-limited) concurrently.
+       Storage: localStorage 'tnsvt_tokens' = {code, token, refresh_token}.
+       Never redirect-loop: refresh itself runs with redirectOn401=false,
+       and a failed refresh clears tokens + falls through to the normal
+       401 handling below.
+       ─────────────────────────────────────────────────────────────── */
+    let _refreshInflight = null;
+
+    function _storedTokens() {
+        try {
+            const raw = localStorage.getItem('tnsvt_tokens');
+            if (!raw) return null;
+            const t = JSON.parse(raw);
+            if (!t || !t.refresh_token || !t.code) return null;
+            return t;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    function _saveTokens(t) {
+        try {
+            if (!t) localStorage.removeItem('tnsvt_tokens');
+            else localStorage.setItem('tnsvt_tokens', JSON.stringify(t));
+        } catch (_) {}
+    }
+
+    async function _silentRefresh() {
+        if (_refreshInflight) return _refreshInflight;
+        _refreshInflight = (async () => {
+            try {
+                const t = _storedTokens();
+                if (!t) return false;
+                const r = await fetch('/api/auth/refresh', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: t.code, refresh_token: t.refresh_token }),
+                });
+                if (!r.ok) return false;
+                const d = await r.json().catch(() => null);
+                if (!d || !d.success || !d.token || !d.refresh_token) return false;
+                _saveTokens({ code: t.code, token: d.token, refresh_token: d.refresh_token });
+                return true;
+            } catch (_) {
+                return false;
+            } finally {
+                _refreshInflight = null;
+            }
+        })();
+        return _refreshInflight;
+    }
+
+    window.apiSaveTokens = _saveTokens;
+    window.apiClearTokens = function () { _saveTokens(null); };
+
     /**
      * Robust fetch wrapper.
      * @param {string} url
@@ -147,6 +210,22 @@
             if (code) {
                 opts.headers = Object.assign({}, opts.headers || {}, { 'X-Game-Code': code });
             }
+        }
+
+        // Attach Bearer JWT when available (login stores it via
+        // window.apiSaveTokens). Lets JwtAuthenticator cover requests
+        // whose PHP session already expired (gc), without user friction.
+        // Never attach/refresh for the auth endpoints themselves.
+        const _isAuthCall = typeof url === 'string' &&
+            (url.indexOf('/api/auth/login') !== -1 ||
+             url.indexOf('/api/auth/refresh') !== -1);
+        if (!_isAuthCall && (!opts.headers || !('Authorization' in opts.headers))) {
+            try {
+                const _tok = (_storedTokens() || {}).token;
+                if (_tok) {
+                    opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + _tok });
+                }
+            } catch (_) {}
         }
 
         // Serialize plain-object bodies as JSON. Without this, fetch coerces
@@ -231,9 +310,52 @@
             }
 
             if (status === 401 && redirectOn401) {
+                // One silent refresh attempt before bouncing to '/':
+                // covers expired JWT/session without user friction.
+                // _retried marks the single retry; auth calls never retry.
+                if (!_isAuthCall && !opts._retried) {
+                    const refreshed = await _silentRefresh();
+                    if (refreshed) {
+                        const retryOpts = Object.assign({}, opts, { _retried: true });
+                        // Drop only the stale Bearer; keep X-Game-Code and
+                        // any caller headers — the recursive call re-attaches
+                        // the fresh token.
+                        if (retryOpts.headers) {
+                            const h = Object.assign({}, retryOpts.headers);
+                            delete h['Authorization'];
+                            delete h['authorization'];
+                            retryOpts.headers = h;
+                        }
+                        return apiFetch(url, retryOpts);
+                    }
+                    // Refresh failed (revoked/expired): drop stale tokens so
+                    // later calls don't keep sending a dead Bearer.
+                    _saveTokens(null);
+                }
                 hideBanner();
                 window.location.href = '/';
                 return { ok: false, status: 401, data: null };
+            }
+
+            if (status === 401) {
+                // redirectOn401 === false callers (polls, loadUserInfo):
+                // still drop dead tokens after a failed refresh attempt so
+                // the next tick retries cleanly instead of spamming 401s.
+                if (!_isAuthCall && !opts._retried) {
+                    const refreshed = await _silentRefresh();
+                    if (refreshed) {
+                        const retryOpts = Object.assign({}, opts, { _retried: true });
+                        if (retryOpts.headers) {
+                            const h = Object.assign({}, retryOpts.headers);
+                            delete h['Authorization'];
+                            delete h['authorization'];
+                            retryOpts.headers = h;
+                        }
+                        return apiFetch(url, retryOpts);
+                    }
+                    _saveTokens(null);
+                }
+                return { ok: false, status: 401, data: data };
             }
 
             if (status >= 500) {

@@ -4,6 +4,12 @@ framework:
 
     # Note that the session will be started ONLY if you read or write from it.
     session:
+        # 7-day persistent session: the default PHP gc_maxlifetime (1440s)
+        # logged users out after ~24min idle, which surfaced as random 401s
+        # on /api/auth/check + /api/notifications/count (2026-09-30).
+        # Deactivation server-side still revokes access on next refreshUser.
+        cookie_lifetime: 604800
+        gc_maxlifetime: 604800
         # SameSite=Lax provides CSRF protection by ensuring session cookies are
         # only sent on same-site requests or top-level navigations (GET).
         # JSON POSTs from cross-origin forms are blocked by the browser.

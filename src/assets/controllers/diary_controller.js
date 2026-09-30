@@ -768,6 +768,14 @@ export default class extends Controller {
     }
 
     async resetDiary() {
+        // Graceful when the session died (2026-09-30: users hit a generic
+        // toast because user_code went out as undefined → backend 401).
+        if (!window.TNSVT_USER?.code) {
+            const msg = 'Tu sesión venció. Volvé a entrar para resetear el Cuaderno.';
+            if (window.apiToast) window.apiToast(msg, 'warning');
+            else this.showMessage(msg, 'error');
+            return;
+        }
         const ok = await window.apiConfirm(
             '⚠ Esto BORRARÁ todas tus entradas cifradas y la clave maestra. No se puede deshacer. ¿Continuar?',
             {
