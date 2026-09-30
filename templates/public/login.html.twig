@@ -324,6 +324,7 @@
             var code = codeInput.value.trim();
             if (!code) {
                 showError('Ingresá tu código de acceso');
+                codeInput.focus();
                 return;
             }
 
@@ -548,10 +549,6 @@
                 err.style.display = 'block';
             });
         });
-
-        codeInput.focus();
-                return;
-            }
 
             var payload = { code: code.toUpperCase() };
             if (isAdmin(code)) {
