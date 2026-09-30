@@ -2,8 +2,12 @@
 
 namespace App\Controller\Api;
 
+use App\Service\GoogleDriveClient;
+use App\Service\GoogleDriveException;
+use App\Service\MusicPlaylistService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,115 +17,31 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/api/music')]
 class MusicController extends AbstractController
 {
-    private const PLAYLIST_VERSION = 2;
+    private const ALLOWED_AUDIO_EXTS = ['mp3', 'wav', 'ogg', 'mp4'];
+    private const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
 
-    private function audioDir(): string
-    {
-        return $this->getParameter('kernel.project_dir') . '/var/audio';
-    }
-
-    /**
-     * Lee current.json y devuelve la playlist normalizada.
-     * Si el archivo viejo no tiene formato playlist, lo migra.
-     */
-    private function readPlaylist(): array
-    {
-        $dir = $this->audioDir();
-        $metaPath = $dir . '/current.json';
-        if (!is_file($metaPath)) {
-            return ['version' => self::PLAYLIST_VERSION, 'tracks' => [], 'activeIndex' => 0, 'loop' => 'all'];
-        }
-        $data = json_decode((string) file_get_contents($metaPath), true);
-        if (!is_array($data)) {
-            return ['version' => self::PLAYLIST_VERSION, 'tracks' => [], 'activeIndex' => 0, 'loop' => 'all'];
-        }
-        // Migración desde formato viejo (single track)
-        if (isset($data['source']) && !isset($data['tracks'])) {
-            $track = $this->buildTrackFromLegacy($data);
-            $data = [
-                'version' => self::PLAYLIST_VERSION,
-                'tracks' => $track ? [$track] : [],
-                'activeIndex' => 0,
-                'loop' => 'all',
-            ];
-            file_put_contents($metaPath, json_encode($data, JSON_PRETTY_PRINT));
-        }
-        if (!isset($data['tracks']) || !is_array($data['tracks'])) {
-            $data['tracks'] = [];
-        }
-        $data['version'] = $data['version'] ?? self::PLAYLIST_VERSION;
-        $data['activeIndex'] = max(0, min((int) ($data['activeIndex'] ?? 0), max(0, count($data['tracks']) - 1)));
-        $data['loop'] = in_array($data['loop'] ?? 'all', ['all', 'one', 'off'], true) ? $data['loop'] : 'all';
-        return $data;
-    }
-
-    private function buildTrackFromLegacy(array $data): ?array
-    {
-        if (empty($data['source'])) return null;
-        $track = [
-            'id' => substr(bin2hex(random_bytes(6)), 0, 8),
-            'name' => $data['originalName'] ?? 'Track',
-            'source' => $data['source'],
-            'mime' => $data['mime'] ?? ($data['source'] === 'external' ? 'audio/mpeg' : 'audio/mpeg'),
-            'addedAt' => $data['uploadedAt'] ?? (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            'addedBy' => $data['uploadedBy'] ?? 'admin',
-        ];
-        if ($data['source'] === 'external') {
-            $track['url'] = $data['url'] ?? null;
-            $track['downloadUrl'] = $data['downloadUrl'] ?? $data['url'] ?? null;
-        } else {
-            $track['filename'] = $data['filename'] ?? null;
-            if (!$track['filename'] || !is_file($this->audioDir() . '/' . $track['filename'])) {
-                return null;
-            }
-            $track['size'] = filesize($this->audioDir() . '/' . $track['filename']);
-        }
-        return $track;
-    }
-
-    private function currentTrack(array $playlist): ?array
-    {
-        if (empty($playlist['tracks'])) return null;
-        $idx = $playlist['activeIndex'] ?? 0;
-        return $playlist['tracks'][$idx] ?? null;
-    }
-
-    // ========================================================================
-    // ENDPOINTS PÚBLIC
-    // ========================================================================
+    public function __construct(
+        private readonly MusicPlaylistService $playlist,
+    ) {}
 
     #[Route('/current', name: 'api_music_current', methods: ['GET'])]
     public function current(): JsonResponse
     {
-        $playlist = $this->readPlaylist();
-        $current = $this->currentTrack($playlist);
-        return $this->json([
-            'hasMusic' => $current !== null,
-            'current' => $current,
-            'activeIndex' => $playlist['activeIndex'],
-            'total' => count($playlist['tracks']),
-            'loop' => $playlist['loop'] ?? 'all',
-            'playlist' => $playlist['tracks'],
-        ]);
+        return $this->json($this->playlist->toClientResponse());
     }
 
     #[Route('/stream', name: 'api_music_stream', methods: ['GET'])]
     public function streamFile(Request $request): Response
     {
-        $playlist = $this->readPlaylist();
+        $playlist = $this->playlist->load();
         $trackId = $request->query->get('id');
         $track = null;
         if ($trackId) {
-            $byId = [];
-            foreach ($playlist['tracks'] as $idx => $t) {
-                if (($t['id'] ?? null) === $trackId) {
-                    $byId = ['index' => $idx, 'track' => $t];
-                    break;
-                }
+            foreach ($playlist['tracks'] as $t) {
+                if (($t['id'] ?? null) === $trackId) { $track = $t; break; }
             }
-            $track = $byId['track'] ?? null;
         } else {
-            $track = $this->currentTrack($playlist);
+            $track = $this->playlist->currentTrack($playlist);
         }
         if (!$track) {
             return new JsonResponse(['error' => 'No hay música configurada'], Response::HTTP_NOT_FOUND);
@@ -129,23 +49,131 @@ class MusicController extends AbstractController
         if (($track['source'] ?? '') === 'external') {
             return $this->proxyExternal($track, $request);
         }
-        $path = $this->audioDir() . '/' . ($track['filename'] ?? '');
+
+        // source === 'upload': local file
+        $path = $this->playlist->audioDir() . '/' . ($track['filename'] ?? '');
         if (!is_file($path)) {
             return new JsonResponse(['error' => 'Archivo no encontrado en disco'], Response::HTTP_NOT_FOUND);
         }
-        $response = new BinaryFileResponse($path);
-        $response->headers->set('Content-Type', $track['mime'] ?? 'audio/mpeg');
-        $response->headers->set('Accept-Ranges', 'bytes');
-        $response->setContentDisposition(
-            ResponseHeaderBag::DISPOSITION_INLINE,
-            $track['name'] ?? $track['filename']
-        );
-        $response->setPublic();
-        $response->setMaxAge(0);
-        $response->headers->addCacheControlDirective('no-cache', true);
-        $response->headers->addCacheControlDirective('must-revalidate', true);
-        return $response;
+        return $this->buildAudioResponse($path, $track);
     }
+
+    #[Route('/upload', name: 'api_music_upload', methods: ['POST'])]
+    public function upload(Request $request): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $file = $request->files->get('file');
+        if (!$file instanceof UploadedFile) {
+            return $this->json(['success' => false, 'error' => 'file (multipart) requerido'], 400);
+        }
+        if (!$file->isValid()) {
+            return $this->json(['success' => false, 'error' => 'upload failed: ' . $file->getErrorMessage()], 400);
+        }
+
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (!in_array($ext, self::ALLOWED_AUDIO_EXTS, true)) {
+            return $this->json([
+                'success' => false,
+                'error' => 'unsupported audio type (allowed: ' . implode(', ', self::ALLOWED_AUDIO_EXTS) . ')',
+            ], 415);
+        }
+        if ($file->getSize() > self::MAX_UPLOAD_BYTES) {
+            return $this->json(['success' => false, 'error' => 'file too large (max 10MB)'], 413);
+        }
+
+        $hash = bin2hex(random_bytes(8));
+        $relativeDir = 'uploads/' . $hash;
+        $targetDir = $this->playlist->audioDir() . '/' . $relativeDir;
+        if (!is_dir($targetDir) && !mkdir($targetDir, 0775, true) && !is_dir($targetDir)) {
+            return $this->json(['success' => false, 'error' => 'cannot create upload dir'], 500);
+        }
+        $filename = $hash . '.' . $ext;
+        $file->move($targetDir, $filename);
+
+        $mime = match ($ext) {
+            'mp3' => 'audio/mpeg',
+            'wav' => 'audio/wav',
+            'ogg' => 'audio/ogg',
+            default => 'audio/mp4',  // mp4 es el único que llega a default (ya validado arriba)
+        };
+
+        $track = $this->playlist->addTrack([
+            'id' => 'local:' . $hash,
+            'name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME) ?: 'Track',
+            'source' => 'upload',
+            'mime' => $mime,
+            'addedBy' => 'admin',
+            'filename' => $relativeDir . '/' . $filename,
+            'size' => filesize($targetDir . '/' . $filename),
+        ]);
+
+        return $this->json([
+            'success' => true,
+            'id' => $track['id'],
+            'name' => $track['name'],
+            'mime' => $track['mime'],
+            'size' => $track['size'],
+        ], 201);
+    }
+
+    #[Route('/sync-from-drive', name: 'api_music_sync_drive', methods: ['POST'])]
+    public function syncFromDrive(Request $request, GoogleDriveClient $drive): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $data = json_decode($request->getContent(), true) ?? [];
+        $folderInput = trim((string) ($data['folder'] ?? ''));
+        if ($folderInput === '') {
+            return $this->json(['success' => false, 'error' => 'folder requerido'], 400);
+        }
+
+        try {
+            $folderId = $drive->extractFolderId($folderInput);
+        } catch (\InvalidArgumentException) {
+            return $this->json(['success' => false, 'error' => 'URL/folder ID inválido'], 400);
+        }
+
+        try {
+            $files = $drive->listAudioInFolder($folderId);
+        } catch (GoogleDriveException $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Drive: ' . $e->getMessage(),
+                'code' => $e->getCode(),
+            ], 502);
+        }
+
+        $added = [];
+        $skipped = [];
+        foreach ($files as $file) {
+            $driveId = 'drive:' . $file['id'];
+            if ($this->playlist->findTrack($driveId) !== null) {
+                $skipped[] = $file['name'];
+                continue;
+            }
+            $this->playlist->addTrack([
+                'id' => $driveId,
+                'name' => $file['name'],
+                'source' => 'external',
+                'mime' => $file['mime'],
+                'addedBy' => 'admin',
+                'url' => $drive->fileMediaUrl($file['id']),
+                'downloadUrl' => $drive->fileMediaUrl($file['id']),
+            ]);
+            $added[] = $file['name'];
+        }
+
+        return $this->json([
+            'success' => true,
+            'folder_id' => $folderId,
+            'added' => $added,
+            'skipped' => $skipped,
+            'total' => count($files),
+        ]);
+    }
+
+    // ─── Stream (external) ───────────────────────────────────────────
 
     private function proxyExternal(array $track, Request $request): Response
     {
@@ -154,7 +182,7 @@ class MusicController extends AbstractController
             return new JsonResponse(['error' => 'URL externa inválida'], Response::HTTP_BAD_REQUEST);
         }
         $trackId = $track['id'] ?? 'default';
-        $dir = $this->audioDir();
+        $dir = $this->playlist->audioDir();
         $cachedPath = $dir . '/cache-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $trackId) . '.bin';
         $metaCache = $cachedPath . '.meta.json';
 
@@ -169,7 +197,9 @@ class MusicController extends AbstractController
         if ($needDownload) {
             $bytes = $this->downloadToFile($src, $cachedPath);
             if ($bytes === false || $bytes === 0) {
-                return new JsonResponse(['error' => 'No se pudo descargar el audio desde la URL externa. Verificá que sea público o probá subir el archivo.'], Response::HTTP_BAD_GATEWAY);
+                return new JsonResponse([
+                    'error' => 'No se pudo descargar el audio desde la URL externa. Verificá que sea público o probá subir el archivo.',
+                ], Response::HTTP_BAD_GATEWAY);
             }
             $mime = $this->detectAudioMime($cachedPath);
             file_put_contents($metaCache, json_encode([
@@ -218,6 +248,22 @@ class MusicController extends AbstractController
         fclose($fh);
 
         return new Response($body !== false ? $body : '', $statusCode, $headers);
+    }
+
+    private function buildAudioResponse(string $path, array $track): BinaryFileResponse
+    {
+        $response = new BinaryFileResponse($path);
+        $response->headers->set('Content-Type', $track['mime'] ?? 'audio/mpeg');
+        $response->headers->set('Accept-Ranges', 'bytes');
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_INLINE,
+            ($track['name'] ?? $track['filename']) . '.' . pathinfo($path, PATHINFO_EXTENSION)
+        );
+        $response->setPublic();
+        $response->setMaxAge(0);
+        $response->headers->addCacheControlDirective('no-cache', true);
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+        return $response;
     }
 
     private function downloadToFile(string $url, string $destPath): int|false

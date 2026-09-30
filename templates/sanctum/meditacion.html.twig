@@ -1,0 +1,111 @@
+{% extends 'shell.html.twig' %}
+
+{% block title %}Meditación · T.N.S.V.T{% endblock %}
+
+{% block meta_description %}Santuario Sonoro: sincroniza una carpeta de Google Drive o subí audios para meditar con audio ambiente.{% endblock %}
+
+{% block topbar_title %}Meditación{% endblock %}
+{% block topbar_subtitle %}El Santuario Sonoro · silencio + sonido{% endblock %}
+
+{% block content %}
+<div class="meditacion-wrap" data-controller="meditacion">
+    <header class="meditacion-header">
+        <h1>MEDITACIÓN</h1>
+        <p>El sonido como puente entre la mente y el cuerpo.</p>
+    </header>
+
+    {# ─── Estado + status ─── #}
+    <section class="meditacion-status" aria-live="polite">
+        <p class="meditacion-status-line">
+            <span class="meditacion-status-label">Playlist actual:</span>
+            <strong data-meditacion-target="status">—</strong>
+        </p>
+        <p class="meditacion-status-hint">
+            El mini-player flotante del Santuario Sonoro sigue disponible abajo a la derecha en toda la app.
+            Esta página es para gestionar la playlist, no para reproducirla.
+        </p>
+    </section>
+
+    {# ─── Drive sync (admin) ─── #}
+    {% if is_granted('ROLE_ADMIN') %}
+    <section class="meditacion-card">
+        <header class="meditacion-card-header">
+            <span class="material-symbols-elev meditacion-card-icon" aria-hidden="true">cloud_sync</span>
+            <div>
+                <h2>Sincronizar desde Google Drive</h2>
+                <p>Pegá el link público de una carpeta de Drive. Se importan mp3, wav, ogg y mp4 (sin duplicar).</p>
+            </div>
+        </header>
+        <div class="meditacion-form">
+            <input type="text"
+                   data-meditacion-target="folderInput"
+                   class="meditacion-input"
+                   placeholder="https://drive.google.com/drive/folders/…  o ID de carpeta"
+                   aria-label="URL o ID de carpeta de Google Drive" />
+            <button type="button" class="meditacion-btn meditacion-btn-primary"
+                    data-meditacion-target="syncBtn"
+                    data-action="click->meditacion#syncDrive">
+                <span class="material-symbols-elev" aria-hidden="true">play_arrow</span>
+                Sincronizar ahora
+            </button>
+        </div>
+        <div data-meditacion-target="syncResult" class="meditacion-result" hidden></div>
+    </section>
+    {% endif %}
+
+    {# ─── Upload (admin) ─── #}
+    {% if is_granted('ROLE_ADMIN') %}
+    <section class="meditacion-card">
+        <header class="meditacion-card-header">
+            <span class="material-symbols-elev meditacion-card-icon" aria-hidden="true">upload_file</span>
+            <div>
+                <h2>Subir desde tu dispositivo</h2>
+                <p>mp3, wav, ogg o mp4 · máximo 10 MB · se agrega al final del playlist.</p>
+            </div>
+        </header>
+        <form class="meditacion-form" enctype="multipart/form-data"
+              data-meditacion-target="uploadForm"
+              data-action="submit->meditacion#upload">
+            <label class="meditacion-dropzone"
+                   data-meditacion-target="dropZone"
+                   data-action="click->meditacion#triggerUpload dragover->meditacion#onDragOver dragleave->meditacion#onDragLeave drop->meditacion#onDrop">
+                <span class="material-symbols-elev meditacion-dropzone-icon" aria-hidden="true">audio_file</span>
+                <span class="meditacion-dropzone-text">Arrastrá un archivo de audio acá o hacé click para elegir</span>
+                <input type="file"
+                       data-meditacion-target="fileInput"
+                       accept="audio/mpeg,audio/mp3,audio/wav,audio/x-wav,audio/ogg,audio/x-vorbis+ogg,audio/mp4"
+                       hidden
+                       data-action="change->meditacion#pickFile"
+                       aria-label="Elegir archivo de audio" />
+            </label>
+            <button type="submit" class="meditacion-btn meditacion-btn-primary"
+                    data-meditacion-target="uploadBtn"
+                    disabled>
+                <span class="material-symbols-elev" aria-hidden="true">cloud_upload</span>
+                Subir
+            </button>
+        </form>
+        <div data-meditacion-target="uploadResult" class="meditacion-result" hidden></div>
+    </section>
+    {% endif %}
+
+    {# ─── Playlist visible ─── #}
+    <section class="meditacion-card">
+        <header class="meditacion-card-header">
+            <span class="material-symbols-elev meditacion-card-icon" aria-hidden="true">queue_music</span>
+            <div>
+                <h2>Playlist</h2>
+                <p>Lo que está sonando (o va a sonar) en el Santuario.</p>
+            </div>
+            <button type="button" class="meditacion-btn meditacion-btn-ghost"
+                    data-action="click->meditacion#loadStatus">
+                <span class="material-symbols-elev" aria-hidden="true">refresh</span>
+                Actualizar
+            </button>
+        </header>
+        <div data-meditacion-target="tracksList" class="meditacion-tracks">
+            <p class="meditacion-empty">Cargando playlist…</p>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -56,5 +56,10 @@ services:
         alias: 'doctrine.migrations.dependency_factory'
         public: true
 
+    # ─── Music / Meditación (Tracks C+D, 2026-09-29) ───
+    App\Service\GoogleDriveClient:
+        arguments:
+            $apiKey: '%env(GOOGLE_DRIVE_API_KEY)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

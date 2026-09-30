@@ -196,6 +196,14 @@ class SanctumModuleController extends AbstractController
         return $this->render('sanctum/leaderboard.html.twig');
     }
 
+    // ──── MEDITACIÓN ────
+
+    #[Route('/meditacion', name: 'sanctum_meditacion', methods: ['GET'])]
+    public function meditacion(): Response
+    {
+        return $this->render('sanctum/meditacion.html.twig');
+    }
+
     // ──── WALLET ────
 
     #[Route('/wallet', name: 'sanctum_wallet', methods: ['GET'])]

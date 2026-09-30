@@ -95,6 +95,14 @@ const NAV = [
         keys: 'diario cuaderno reflexiones alma',
     },
     {
+        id: 'nav-meditacion',
+        label: 'Ir a Meditación',
+        hint: 'Santuario sonoro',
+        icon: 'self_improvement',
+        url: '/meditacion',
+        keys: 'meditacion santuario sonoro musica drive',
+    },
+    {
         id: 'nav-campus',
         label: 'Ir a Campus',
         hint: 'Cursos',
