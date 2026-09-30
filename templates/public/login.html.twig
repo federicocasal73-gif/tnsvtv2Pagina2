@@ -311,11 +311,6 @@
             errorEl.style.display = 'none';
         }
 
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            var code = codeInput.value.trim();
-            if (!code) {
-                showError('Ingresá tu código de acceso');
         function loginOk(user) {
             user = user || {};
             showSuccess('Bienvenido ' + (user.name || user.code) + '. Redirigiendo…');
@@ -323,6 +318,14 @@
             var target = user.isAdmin ? '/sanctum' : '/journal';
             setTimeout(function () { window.location.href = target; }, 600);
         }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var code = codeInput.value.trim();
+            if (!code) {
+                showError('Ingresá tu código de acceso');
+                return;
+            }
 
         // ─── Paso 2 / enrolamiento / recupero (verificación por mail) ───
         var tfaState = { challengeId: null, mode: 'login', timer: null, cooldown: null };
