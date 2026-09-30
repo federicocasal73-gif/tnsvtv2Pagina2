@@ -45,12 +45,6 @@
                     <span class="material-symbols-outlined" style="font-size:1rem;">lock_open</span>
                     Desbloquear
                 </button>
-                <button type="button" class="diary-btn-secondary"
-                        data-diary-target="fingerprintBtn"
-                        id="diary-fingerprint-btn"
-                        title="Huella biométrica (próxima iteración)">
-                    <span class="material-symbols-outlined" style="font-size:1rem;">fingerprint</span>
-                </button>
             </div>
             <p class="diary-lock-tip">
                 <span class="material-symbols-outlined align-middle" style="font-size:0.95rem;">info</span>
@@ -80,7 +74,19 @@
                    data-diary-target="listSummary"
                    id="diary-list-summary">— entradas cifradas</p>
             </div>
-            <div class="flex gap-2">
+            <div class="diary-filters">
+                <select data-diary-target="monthFilter"
+                        data-action="change->diary#onFilterChange"
+                        class="diary-month-filter"
+                        aria-label="Filtrar entradas por mes">
+                    <option value="">Todos los meses</option>
+                </select>
+                <input type="search"
+                       data-diary-target="searchInput"
+                       data-action="input->diary#onFilterChange"
+                       class="diary-search-input"
+                       placeholder="Buscar en tus entradas..."
+                       aria-label="Buscar en tus entradas cifradas" />
                 <button type="button" class="diary-btn-primary"
                         data-diary-target="newBtn"
                         id="diary-new-btn"
@@ -206,6 +212,7 @@
                 <textarea id="diary-editor-textarea"
                           data-diary-target="editorTextarea"
                           class="diary-editor-textarea"
+                          maxlength="50000"
                           placeholder="Empezá a escribir lo que sentís, aprendiste, o querés recordar..."></textarea>
 
                 <div class="diary-prompts">

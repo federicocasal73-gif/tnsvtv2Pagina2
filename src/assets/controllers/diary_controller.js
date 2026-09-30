@@ -31,6 +31,91 @@ function escapeHtml(s) {
     );
 }
 
+/**
+ * Markdown subset for the diary preview (XSS-safe via escapeHtml first):
+ *   # / ## / ### headings
+ *   **bold**, *italic*, `inline code`
+ *   - unordered, 1. ordered lists
+ *   [text](url) links (http(s)/mailto only)
+ *   ``` fenced code blocks ```
+ *   paragraph breaks on blank lines
+ */
+function renderMarkdown(src) {
+    let s = escapeHtml(src);
+    const lines = s.split(/\r?\n/);
+    const out = [];
+    let i = 0;
+    while (i < lines.length) {
+        const line = lines[i];
+
+        const fence = line.match(/^```(\w+)?\s*$/);
+        if (fence) {
+            const codeLines = [];
+            i++;
+            while (i < lines.length && !/^```\s*$/.test(lines[i])) {
+                codeLines.push(escapeHtml(String(lines[i])
+                    .replace(/&amp;/g, '&')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&quot;/g, '"')
+                    .replace(/&#39;/g, "'")));
+                i++;
+            }
+            i++;
+            out.push(`<pre class="diary-md-code"><code>${codeLines.join('\n')}</code></pre>`);
+            continue;
+        }
+
+        const h = line.match(/^(#{1,3})\s+(.+)$/);
+        if (h) {
+            const lvl = h[1].length;
+            out.push(`<h${lvl + 2} class="diary-md-h">${inline(h[2])}</h${lvl + 2}>`);
+            i++;
+            continue;
+        }
+
+        const ul = line.match(/^[-*]\s+(.+)$/);
+        const ol = line.match(/^\d+\.\s+(.+)$/);
+        if (ul || ol) {
+            const tag = ul ? 'ul' : 'ol';
+            const items = [];
+            const re = ul ? /^[-*]\s+(.+)$/ : /^\d+\.\s+(.+)$/;
+            while (i < lines.length && re.test(lines[i])) {
+                items.push(`<li>${inline(lines[i].replace(re, '$1'))}</li>`);
+                i++;
+            }
+            out.push(`<${tag} class="diary-md-list">${items.join('')}</${tag}>`);
+            continue;
+        }
+
+        if (line.trim() === '') { i++; continue; }
+
+        const para = [line];
+        i++;
+        while (i < lines.length && lines[i].trim() !== '' &&
+               !/^(#{1,3})\s+/.test(lines[i]) &&
+               !/^```/.test(lines[i]) &&
+               !/^[-*]\s+/.test(lines[i]) &&
+               !/^\d+\.\s+/.test(lines[i])) {
+            para.push(lines[i]);
+            i++;
+        }
+        out.push(`<p class="diary-md-p">${inline(para.join(' '))}</p>`);
+    }
+    return out.join('');
+
+    function inline(t) {
+        const out = t
+            .replace(/`([^`\n]+)`/g, '<code class="diary-md-inline">$1</code>')
+            .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+            .replace(/\b_([^_\n]+)_\b/g, '<em>$1</em>')
+            .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+            .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,
+                '<a class="diary-md-link" href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        return out;
+    }
+}
+
 export default class extends Controller {
     static targets = [
         'message',
@@ -40,7 +125,6 @@ export default class extends Controller {
         'stateEditing',
         'passInput',
         'unlockBtn',
-        'fingerprintBtn',
         'lockSubtitle',
         'resetLockedBtn',
         'newBtn',
@@ -63,6 +147,8 @@ export default class extends Controller {
         'backBtn',
         'viewTabs',
         'promptChips',
+        'monthFilter',
+        'searchInput',
     ];
 
     connect() {
@@ -395,10 +481,56 @@ export default class extends Controller {
 
     renderList() {
         if (!this.hasEntriesGridTarget) return;
-        if (this.hasListSummaryTarget) {
-            this.listSummaryTarget.textContent = `${this.entries.length} ${this.entries.length === 1 ? 'entrada cifrada' : 'entradas cifradas'}`;
+        const monthSet = new Set();
+        this.entries.forEach((e) => {
+            const d = new Date(e.created_at);
+            if (!isNaN(d)) monthSet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        });
+        const months = Array.from(monthSet).sort().reverse();
+
+        if (this.hasMonthFilterTarget) {
+            const current = this.monthFilterTarget.value || '';
+            this.monthFilterTarget.innerHTML =
+                `<option value="">Todos los meses</option>` +
+                months.map((m) => {
+                    const [y, mo] = m.split('-');
+                    const label = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1)
+                        .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+                    return `<option value="${m}">${label}</option>`;
+                }).join('');
+            this.monthFilterTarget.value = months.includes(current) ? current : '';
         }
-        this.entriesGridTarget.innerHTML = this.entries
+
+        const month = this.hasMonthFilterTarget ? this.monthFilterTarget.value : '';
+        const query = (this.hasSearchInputTarget ? this.searchInputTarget.value : '').trim().toLowerCase();
+        const filtered = this.entries.filter((e) => {
+            if (month) {
+                const d = new Date(e.created_at);
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                if (key !== month) return false;
+            }
+            if (query) {
+                const hay = `${e.title || ''}\n${e.body || ''}`.toLowerCase();
+                if (!hay.includes(query)) return false;
+            }
+            return true;
+        });
+
+        if (this.hasListSummaryTarget) {
+            const total = this.entries.length;
+            const shown = filtered.length;
+            this.listSummaryTarget.textContent = total === shown
+                ? `${total} ${total === 1 ? 'entrada cifrada' : 'entradas cifradas'}`
+                : `${shown} de ${total} ${total === 1 ? 'entrada cifrada' : 'entradas cifradas'}`;
+        }
+
+        if (filtered.length === 0) {
+            this.entriesGridTarget.innerHTML =
+                `<p class="diary-empty-filter">No hay entradas con ese filtro.</p>`;
+            return;
+        }
+
+        this.entriesGridTarget.innerHTML = filtered
             .map((e) => {
                 const d = this.fmtDate(e.created_at);
                 const wc = this.wordCount(e.body);
@@ -445,6 +577,10 @@ export default class extends Controller {
                 }
             });
         });
+    }
+
+    onFilterChange() {
+        this.renderList();
     }
 
     // ─── EDITING state ────────────────────────────────────────────
@@ -501,13 +637,7 @@ export default class extends Controller {
                 preview.innerHTML =
                     '<p class="diary-editor-preview-empty">La vista previa aparece en cuanto escribas...</p>';
             } else {
-                const html = escapeHtml(v)
-                    .replace(/^# (.+)$/gm, '<h3>$1</h3>')
-                    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
-                    .replace(/\n\n/g, '</p><p>')
-                    .replace(/\n/g, '<br>');
-                preview.innerHTML = '<p>' + html + '</p>';
+                preview.innerHTML = renderMarkdown(v);
             }
             preview.classList.remove('is-fading');
         }, 120);
