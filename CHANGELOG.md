@@ -6,6 +6,18 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased] - Design system unification + SSH deploy + backend audit
 
+### Added — "Olvidé mi código" (recupero self-service por mail, 2026-09-30)
+
+- `POST /api/auth/code/forgot`: respuesta genérica siempre (no enumera);
+  envía el código de adepto al mail solo si existe, activo y verificado.
+  Rate limit `code_forgot:<ip>` 5/h. Sin challenge/entidad nueva: el
+  payload ES el código (permanente, no expira). Test: `CodeForgotTest`.
+- Mail `purpose='code'` permanente en subject + cuerpo HTML/texto
+  (`AppMailer`, `templates/mail/auth_code.html.twig`).
+- Login: link "¿Olvidaste tu código?", panel `login-recover-code`
+  (mail verificado + nota admin para quien no tiene mail).
+- Bump `APP_VERSION` a `2.0.23` (CODE 521).
+
 ### Admin password rotated (post-audit)
 
 - `ADMIN01` password reset from `TestAudit2026!` (audit temp) to a

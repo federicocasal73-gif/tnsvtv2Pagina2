@@ -81,6 +81,23 @@ HomeController::index()
 - `localStorage.tnsvt_user` is used as a cache, not the source of truth. OK, but
   should not contain sensitive fields (verify).
 
+### 2.1 "Olvidé mi código" (self-service por mail, real)
+
+```
+[Login] click "¿Olvidaste tu código?" → panel #login-recover-code
+   │
+   ▼ ingresa mail + "Enviar mi código"
+   POST /api/auth/code/forgot {email} → 200 genérico SIEMPRE
+   │
+   ├── mail verificado+activo → mailbox/SMTP con purpose='code',
+   │   payload = código de adepto (permanente, no expira)
+   └── mail desconocido / no verificado / inactivo → 200 genérico, sin mail
+```
+
+- Rate limit `code_forgot:<ip>` 5/h → 429.
+- Sin mail verificado: "pedíselo a un administrador" (admin lo ve en
+  `/sanctum/users` y puede cargar el mail vía `PATCH .../security`).
+
 ---
 
 ## 3. Sanctum entry flow (target)

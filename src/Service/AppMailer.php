@@ -49,9 +49,11 @@ class AppMailer
             'login' => 'Tu código de acceso al Sanctum',
             'enroll' => 'Verificá tu mail del Sanctum',
             'reset' => 'Recuperá tu contraseña del Sanctum',
+            'code' => 'Recuperá tu código de adepto',
         ];
         $subject = ($subjects[$purpose] ?? $subjects['login']) . ' · ' . $code;
 
+        $isCodeRecovery = 'code' === $purpose;
         try {
             $html = $this->twig->render('mail/auth_code.html.twig', [
                 'code' => $code,
@@ -60,9 +62,13 @@ class AppMailer
             ]);
         } catch (\Throwable $e) {
             $this->logger->warning('[MAIL] template render failed, using fallback', ['error' => $e->getMessage()]);
-            $html = '<p>Tu código es <strong>' . htmlspecialchars($code, ENT_QUOTES) . '</strong> (válido 10 minutos).</p>';
+            $html = $isCodeRecovery
+                ? '<p>Tu código de adepto es <strong>' . htmlspecialchars($code, ENT_QUOTES) . '</strong>. Es permanente, guardalo en un lugar seguro.</p>'
+                : '<p>Tu código es <strong>' . htmlspecialchars($code, ENT_QUOTES) . '</strong> (válido 10 minutos).</p>';
         }
-        $text = "Tu código del Sanctum es {$code} (válido 10 minutos). Si no fuiste vos, ignorá este mail.";
+        $text = $isCodeRecovery
+            ? "Tu código de adepto es {$code}. Es permanente, guardalo en un lugar seguro. Si no fuiste vos, ignorá este mail."
+            : "Tu código del Sanctum es {$code} (válido 10 minutos). Si no fuiste vos, ignorá este mail.";
 
         if ($this->isMailboxMode()) {
             return $this->dumpToMailbox($to, $subject, $text, $code, $purpose);

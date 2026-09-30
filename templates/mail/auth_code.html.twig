@@ -9,6 +9,9 @@
     {% elseif purpose == 'enroll' %}
       <h2>Verificá tu mail</h2>
       <p>Usá este código para activar la verificación en dos pasos (válido {{ minutes }} minutos):</p>
+    {% elseif purpose == 'code' %}
+      <h2>Tu código de adepto</h2>
+      <p>Este es tu código de acceso al Sanctum. Es permanente, guardalo en un lugar seguro:</p>
     {% else %}
       <h2>Tu código de acceso</h2>
       <p>Usá este código para entrar al Sanctum (válido {{ minutes }} minutos):</p>

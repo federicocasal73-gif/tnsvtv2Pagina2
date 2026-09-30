@@ -8,6 +8,7 @@ use App\Entity\TwoFactorChallenge;
 use App\Entity\User;
 use App\Repository\TwoFactorChallengeRepository;
 use App\Repository\UserRepository;
+use App\Service\AppMailer;
 use App\Service\Auth\JwtService;
 use App\Service\Auth\RefreshTokenService;
 use App\Service\RateLimiterService;
@@ -43,6 +44,7 @@ class TwoFactorController extends AbstractController
         private UserPasswordHasherInterface $hasher,
         private TokenStorageInterface $tokenStorage,
         private RateLimiterService $rateLimiter,
+        private AppMailer $mailer,
     ) {
     }
 
@@ -185,6 +187,30 @@ class TwoFactorController extends AbstractController
         return $this->json([
             'success' => true,
             'message' => 'Si el código existe y tiene mail verificado, enviamos un código de recuperación.',
+        ]);
+    }
+
+    #[Route('/code/forgot', name: 'api_auth_code_forgot', methods: ['POST'])]
+    public function codeForgot(Request $request): JsonResponse
+    {
+        $ip = $request->getClientIp() ?? '127.0.0.1';
+        if ($this->rateLimiter->checkAndHit('code_forgot:' . $ip, 5, 3600) <= 0) {
+            return $this->json(['success' => false, 'error' => 'Demasiados intentos. Probá en una hora.'], Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
+        // Respuesta genérica SIEMPRE: no revelar si el mail existe.
+        $data = json_decode($request->getContent(), true);
+        $email = strtolower(trim((string) ($data['email'] ?? '')));
+        if ('' !== $email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $user = $this->users->findOneBy(['email' => $email]);
+            if ($user instanceof User && $user->isActive() && $user->hasVerifiedEmail()) {
+                $this->mailer->sendCode($email, (string) $user->getCode(), 'code');
+            }
+        }
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Si el mail existe y está verificado, enviamos tu código.',
         ]);
     }
 

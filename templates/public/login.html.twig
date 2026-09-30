@@ -96,7 +96,7 @@
                     </button>
                     <div class="login-error" id="login-error" role="alert" aria-live="assertive"></div>
                     <div class="login-success" id="login-success" role="status" aria-live="polite"></div>
-                    <p class="login-forgot"><button type="button" id="login-forgot-link" class="linklike">¿Olvidaste tu contraseña?</button></p>
+                    <p class="login-forgot"><button type="button" id="login-forgot-link" class="linklike">¿Olvidaste tu contraseña?</button> · <button type="button" id="login-code-forgot-link" class="linklike">¿Olvidaste tu código?</button></p>
                 </form>
 
                 {# ─── Paso 2: código de 6 dígitos ─── #}
@@ -164,6 +164,22 @@
                         <button type="button" id="reset-back-btn" class="linklike">Volver al login</button>
                     </p>
                     <div class="login-error" id="reset-error" role="alert" aria-live="assertive"></div>
+                </div>
+
+                {# ─── Recupero de código de adepto (por mail verificado) ─── #}
+                <div id="login-recover-code" style="display:none;" aria-live="polite">
+                    <h3>Recuperar código</h3>
+                    <p class="login-2fa-sub">Ingresá tu mail verificado y te enviamos tu código de adepto. Si no tenés mail verificado, pedíselo a un administrador.</p>
+                    <div class="form-field">
+                        <label for="recover-code-email">Tu mail</label>
+                        <input type="email" id="recover-code-email" autocomplete="email" placeholder="vos@mail.com" />
+                    </div>
+                    <button type="button" class="login-submit" id="recover-code-send-btn">Enviar mi código</button>
+                    <p class="login-2fa-row">
+                        <button type="button" id="recover-code-back-btn" class="linklike">Volver al login</button>
+                    </p>
+                    <div class="login-error" id="recover-code-error" role="alert" aria-live="assertive"></div>
+                    <div class="login-success" id="recover-code-success" role="status" aria-live="polite" style="display:none;"></div>
                 </div>
                 <div class="login-hint">
                     <strong>Cómo funciona:</strong> ADMIN01 = admin (necesita contraseña).<br>
@@ -340,7 +356,7 @@
         var tfaState = { challengeId: null, mode: 'login', timer: null, cooldown: null };
 
         function showPanel(id) {
-            ['login-form', 'login-2fa', 'login-enroll', 'login-recover', 'login-reset'].forEach(function (pid) {
+            ['login-form', 'login-2fa', 'login-enroll', 'login-recover', 'login-reset', 'login-recover-code'].forEach(function (pid) {
                 var el = document.getElementById(pid);
                 if (el) el.style.display = pid === id ? '' : 'none';
             });
@@ -435,6 +451,7 @@
         document.getElementById('enroll-back-btn').addEventListener('click', backToLogin);
         document.getElementById('recover-back-btn').addEventListener('click', backToLogin);
         document.getElementById('reset-back-btn').addEventListener('click', backToLogin);
+        document.getElementById('recover-code-back-btn').addEventListener('click', backToLogin);
 
         // Enter en el código verifica directo.
         document.getElementById('tfa-code').addEventListener('keydown', function (e) {
@@ -486,6 +503,37 @@
             var code = codeInput.value.trim().toUpperCase();
             if (code) document.getElementById('recover-code').value = code;
             showPanel('login-recover');
+        });
+        document.getElementById('login-code-forgot-link').addEventListener('click', function () {
+            showPanel('login-recover-code');
+        });
+        document.getElementById('recover-code-send-btn').addEventListener('click', function () {
+            var email = document.getElementById('recover-code-email').value.trim();
+            var err = document.getElementById('recover-code-error');
+            var ok = document.getElementById('recover-code-success');
+            if (!email || email.indexOf('@') < 0) {
+                err.textContent = 'Ingresá un mail válido';
+                err.style.display = 'block';
+                ok.style.display = 'none';
+                return;
+            }
+            err.style.display = 'none';
+            ok.style.display = 'none';
+            fetch('/api/auth/code/forgot', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            })
+            .then(function () {
+                // Respuesta genérica a propósito: no revela si el mail existe.
+                ok.textContent = 'Si el mail existe y está verificado, enviamos tu código.';
+                ok.style.display = 'block';
+            })
+            .catch(function () {
+                err.textContent = 'Sin conexión con el servidor';
+                err.style.display = 'block';
+            });
         });
         document.getElementById('recover-send-btn').addEventListener('click', function () {
             var code = document.getElementById('recover-code').value.trim().toUpperCase();
