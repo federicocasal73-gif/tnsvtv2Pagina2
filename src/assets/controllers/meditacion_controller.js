@@ -59,15 +59,14 @@ export default class extends Controller {
             const { added = [], skipped = [], total = 0 } = r.data;
             const lines = [];
             if (added.length) lines.push(`✓ Añadidos (${added.length}): ${added.join(', ')}`);
-            if (skipped.length) lines.push(`· Ya estaban (${skipped.length}): ${skipped.join(', ')}`);
+            if (skipped.length)
+                lines.push(`· Ya estaban (${skipped.length}): ${skipped.join(', ')}`);
             lines.push(`Total en Drive: ${total}`);
             this.showResult(this.syncResultTarget, lines.join('\n'), 'success');
             if (window.apiToast) {
                 window.apiToast(
-                    added.length
-                        ? `Drive: ${added.length} nuevos`
-                        : 'Drive: nada nuevo',
-                    'success',
+                    added.length ? `Drive: ${added.length} nuevos` : 'Drive: nada nuevo',
+                    'success'
                 );
             }
             this.loadStatus();
@@ -147,14 +146,14 @@ export default class extends Controller {
                 this.showResult(
                     this.uploadResultTarget,
                     'Error: ' + (data.error || r.statusText),
-                    'error',
+                    'error'
                 );
                 return;
             }
             this.showResult(
                 this.uploadResultTarget,
                 `✓ Subido: ${data.name} (${Math.round((data.size || 0) / 1024)} KB)`,
-                'success',
+                'success'
             );
             if (window.apiToast) window.apiToast(`Audio añadido: ${data.name}`, 'success');
             this.fileInputTarget.value = '';
@@ -204,8 +203,7 @@ export default class extends Controller {
                 .join('');
         } catch (e) {
             this.statusTarget.textContent = 'error';
-            this.tracksListTarget.innerHTML =
-                '<p class="meditacion-empty">Error de red.</p>';
+            this.tracksListTarget.innerHTML = '<p class="meditacion-empty">Error de red.</p>';
         }
     }
 
@@ -213,7 +211,8 @@ export default class extends Controller {
 
     refreshUIState() {
         if (this.hasUploadBtnTarget) {
-            this.uploadBtnTarget.disabled = !this.hasFileInputTarget || !this.fileInputTarget.files?.length;
+            this.uploadBtnTarget.disabled =
+                !this.hasFileInputTarget || !this.fileInputTarget.files?.length;
         }
     }
 
@@ -225,8 +224,16 @@ export default class extends Controller {
     }
 
     esc(s) {
-        return String(s == null ? '' : s).replace(/[&<>"']/g, (m) => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-        })[m]);
+        return String(s == null ? '' : s).replace(
+            /[&<>"']/g,
+            (m) =>
+                ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[m]
+        );
     }
 }

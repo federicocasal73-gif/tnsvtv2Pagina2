@@ -53,12 +53,16 @@ function renderMarkdown(src) {
             const codeLines = [];
             i++;
             while (i < lines.length && !/^```\s*$/.test(lines[i])) {
-                codeLines.push(escapeHtml(String(lines[i])
-                    .replace(/&amp;/g, '&')
-                    .replace(/&lt;/g, '<')
-                    .replace(/&gt;/g, '>')
-                    .replace(/&quot;/g, '"')
-                    .replace(/&#39;/g, "'")));
+                codeLines.push(
+                    escapeHtml(
+                        String(lines[i])
+                            .replace(/&amp;/g, '&')
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&quot;/g, '"')
+                            .replace(/&#39;/g, "'")
+                    )
+                );
                 i++;
             }
             i++;
@@ -88,15 +92,21 @@ function renderMarkdown(src) {
             continue;
         }
 
-        if (line.trim() === '') { i++; continue; }
+        if (line.trim() === '') {
+            i++;
+            continue;
+        }
 
         const para = [line];
         i++;
-        while (i < lines.length && lines[i].trim() !== '' &&
-               !/^(#{1,3})\s+/.test(lines[i]) &&
-               !/^```/.test(lines[i]) &&
-               !/^[-*]\s+/.test(lines[i]) &&
-               !/^\d+\.\s+/.test(lines[i])) {
+        while (
+            i < lines.length &&
+            lines[i].trim() !== '' &&
+            !/^(#{1,3})\s+/.test(lines[i]) &&
+            !/^```/.test(lines[i]) &&
+            !/^[-*]\s+/.test(lines[i]) &&
+            !/^\d+\.\s+/.test(lines[i])
+        ) {
             para.push(lines[i]);
             i++;
         }
@@ -110,8 +120,10 @@ function renderMarkdown(src) {
             .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
             .replace(/\b_([^_\n]+)_\b/g, '<em>$1</em>')
             .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
-            .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,
-                '<a class="diary-md-link" href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+            .replace(
+                /\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g,
+                '<a class="diary-md-link" href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+            );
         return out;
     }
 }
@@ -484,7 +496,8 @@ export default class extends Controller {
         const monthSet = new Set();
         this.entries.forEach((e) => {
             const d = new Date(e.created_at);
-            if (!isNaN(d)) monthSet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+            if (!isNaN(d))
+                monthSet.add(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
         });
         const months = Array.from(monthSet).sort().reverse();
 
@@ -492,17 +505,24 @@ export default class extends Controller {
             const current = this.monthFilterTarget.value || '';
             this.monthFilterTarget.innerHTML =
                 `<option value="">Todos los meses</option>` +
-                months.map((m) => {
-                    const [y, mo] = m.split('-');
-                    const label = new Date(parseInt(y, 10), parseInt(mo, 10) - 1, 1)
-                        .toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-                    return `<option value="${m}">${label}</option>`;
-                }).join('');
+                months
+                    .map((m) => {
+                        const [y, mo] = m.split('-');
+                        const label = new Date(
+                            parseInt(y, 10),
+                            parseInt(mo, 10) - 1,
+                            1
+                        ).toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+                        return `<option value="${m}">${label}</option>`;
+                    })
+                    .join('');
             this.monthFilterTarget.value = months.includes(current) ? current : '';
         }
 
         const month = this.hasMonthFilterTarget ? this.monthFilterTarget.value : '';
-        const query = (this.hasSearchInputTarget ? this.searchInputTarget.value : '').trim().toLowerCase();
+        const query = (this.hasSearchInputTarget ? this.searchInputTarget.value : '')
+            .trim()
+            .toLowerCase();
         const filtered = this.entries.filter((e) => {
             if (month) {
                 const d = new Date(e.created_at);
@@ -519,14 +539,14 @@ export default class extends Controller {
         if (this.hasListSummaryTarget) {
             const total = this.entries.length;
             const shown = filtered.length;
-            this.listSummaryTarget.textContent = total === shown
-                ? `${total} ${total === 1 ? 'entrada cifrada' : 'entradas cifradas'}`
-                : `${shown} de ${total} ${total === 1 ? 'entrada cifrada' : 'entradas cifradas'}`;
+            this.listSummaryTarget.textContent =
+                total === shown
+                    ? `${total} ${total === 1 ? 'entrada cifrada' : 'entradas cifradas'}`
+                    : `${shown} de ${total} ${total === 1 ? 'entrada cifrada' : 'entradas cifradas'}`;
         }
 
         if (filtered.length === 0) {
-            this.entriesGridTarget.innerHTML =
-                `<p class="diary-empty-filter">No hay entradas con ese filtro.</p>`;
+            this.entriesGridTarget.innerHTML = `<p class="diary-empty-filter">No hay entradas con ese filtro.</p>`;
             return;
         }
 

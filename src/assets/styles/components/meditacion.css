@@ -118,19 +118,27 @@
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
+    transition:
+        border-color 0.15s,
+        color 0.15s;
 }
 .meditacion-btn:hover:not(:disabled) {
     border-color: var(--gold-elev);
     color: var(--gold-elev);
 }
-.meditacion-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.meditacion-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 .meditacion-btn-primary {
     background: linear-gradient(135deg, var(--gold-elev), var(--gold-bright-elev));
     color: var(--on-primary-elev);
     border-color: transparent;
 }
-.meditacion-btn-primary:hover:not(:disabled) { color: var(--on-primary-elev); opacity: 0.9; }
+.meditacion-btn-primary:hover:not(:disabled) {
+    color: var(--on-primary-elev);
+    opacity: 0.9;
+}
 .meditacion-btn-ghost {
     background: transparent;
     flex: 0 0 auto;
@@ -146,8 +154,14 @@
     border-left: 3px solid var(--gold-elev);
     background: rgba(0, 0, 0, 0.25);
 }
-.meditacion-result[data-kind="error"] { border-left-color: #f87171; color: #fca5a5; }
-.meditacion-result[data-kind="success"] { border-left-color: #4ade80; color: #bbf7d0; }
+.meditacion-result[data-kind='error'] {
+    border-left-color: #f87171;
+    color: #fca5a5;
+}
+.meditacion-result[data-kind='success'] {
+    border-left-color: #4ade80;
+    color: #bbf7d0;
+}
 
 .meditacion-dropzone {
     flex: 1 1 22rem;
@@ -161,15 +175,22 @@
     cursor: pointer;
     color: var(--outline-elev);
     text-align: center;
-    transition: border-color 0.15s, background 0.15s;
+    transition:
+        border-color 0.15s,
+        background 0.15s;
 }
-.meditacion-dropzone:hover, .meditacion-dropzone.is-active {
+.meditacion-dropzone:hover,
+.meditacion-dropzone.is-active {
     border-color: var(--gold-elev);
     color: var(--gold-elev);
     background: rgba(212, 175, 55, 0.06);
 }
-.meditacion-dropzone-icon { font-size: 1.6rem; }
-.meditacion-dropzone-text { font-size: 0.85rem; }
+.meditacion-dropzone-icon {
+    font-size: 1.6rem;
+}
+.meditacion-dropzone-text {
+    font-size: 0.85rem;
+}
 
 .meditacion-tracks {
     display: flex;
