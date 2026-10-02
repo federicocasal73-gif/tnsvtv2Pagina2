@@ -1538,7 +1538,12 @@
         const url = `/api/journal/calendar-monthly?year=${year}&month=${month}${accountQueryParam()}`;
         const r = await apiFetch(url, { silent: true });
         if (mySeq !== _journalFetchSeq) return;
-        if (!r.ok || !r.data || !r.data.success) return;
+        if (!r.ok || !r.data || !r.data.success) {
+            grid.innerHTML = '<div class="col-span-7 text-center text-[var(--outline-elev)] py-6 text-xs">No se pudo cargar el calendario.</div>';
+            const wrap = document.getElementById('monthly-pnl-chart');
+            if (wrap) wrap.innerHTML = '<p class="text-center text-[var(--outline-elev)] py-8 text-xs">No se pudo cargar el gráfico.</p>';
+            return;
+        }
 
         _CALstate = { year: r.data.year, month: r.data.month_num };
 

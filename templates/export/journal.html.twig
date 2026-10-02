@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{# Export printable del journal (HTML). Sin shell: autónomo para imprimir/guardar como PDF. #}
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Journal {{ user.code }} · T.N.S.V.T</title>
+    <style>
+        body { font-family: sans-serif; background: #fff; color: #111; margin: 2rem; }
+        h1 { font-size: 1.4rem; }
+        p.meta { color: #555; font-size: 0.85rem; }
+        table { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
+        th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+        th { background: #f0ead6; }
+    </style>
+</head>
+<body>
+<h1>Trading Journal · {{ user.code }} ({{ user.name }})</h1>
+<p class="meta">Generado {{ generated|date('Y-m-d H:i') }} · {{ trades|length }} operaciones</p>
+<table>
+    <thead>
+    <tr><th>Fecha</th><th>Cuenta</th><th>Activo</th><th>Dir</th><th>Entry</th><th>SL</th><th>TP</th><th>Resultado</th><th>P&amp;L</th><th>R:R</th><th>Notas</th></tr>
+    </thead>
+    <tbody>
+    {% for t in trades %}
+        <tr>
+            <td>{{ t.date|date('Y-m-d H:i') }}</td>
+            <td>{{ accountIndex[t.accountId] ?? '' }}</td>
+            <td>{{ t.asset }}</td>
+            <td>{{ t.direction }}</td>
+            <td>{{ t.entry ?? '' }}</td>
+            <td>{{ t.sl ?? '' }}</td>
+            <td>{{ t.tp ?? '' }}</td>
+            <td>{{ t.result ?? '' }}</td>
+            <td>{{ t.pnl ?? '' }}</td>
+            <td>{{ t.ratio ?? '' }}</td>
+            <td>{{ t.notes ?? '' }}</td>
+        </tr>
+    {% else %}
+        <tr><td colspan="11">Sin operaciones.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

@@ -1,5 +1,7 @@
 /**
- * TNSVT Tailwind entry — utilities layer ONLY (no preflight, no reset).
+ * TNSVT Tailwind entry — theme defaults + utilities ONLY (no preflight,
+ * no reset). The theme import is required: without it the sm/md/lg
+ * breakpoint variants are not generated.
  *
  * The design system lives in tokens.css + components.css; this file only
  * generates the Tailwind-style utility classes used across templates
@@ -15,10 +17,8 @@
  * The TNSVT typography scale (headline/title/label) is hand-defined
  * below — Tailwind has no such names.
  */
+@import 'tailwindcss/theme';
 @import 'tailwindcss/utilities';
-
-@source "../../templates";
-@source "../controllers";
 
 @theme {
     --color-primary: var(--primary-elev);

@@ -143,7 +143,15 @@ export default class extends Controller {
         const editSound = document.getElementById('edit-sound');
 
         try {
-            const userCode = window.TNSVT_USER?.code || '{{ app.user.code }}';
+            // Shell hydrates window.TNSVT_USER async (tnsvt:user-loaded).
+            // Never fetch a literal fallback: retry once on the event.
+            const userCode = window.TNSVT_USER?.code || document.body?.dataset?.userCode || '';
+            if (!userCode) {
+                window.addEventListener('tnsvt:user-loaded', () => this.loadProfile(), {
+                    once: true,
+                });
+                return;
+            }
             const r = await fetch('/api/profile/' + userCode);
             const data = await r.json();
 

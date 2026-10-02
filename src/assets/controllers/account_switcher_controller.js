@@ -157,9 +157,18 @@ export default class extends Controller {
         selects.forEach((sel) => {
             const current = window.TNSVT_ACTIVE_ACCOUNT_ID || this.getPersistedActive() || '';
             // Micro-skeleton while async load is in flight (empty + skeleton class).
-            if (!this.accounts || this.accounts.length === 0) {
+            // Once loaded with zero accounts, say so honestly instead of
+            // spinning forever (fresh users hit this on day one).
+            if (!this.accounts) {
                 sel.innerHTML = '<option value="" disabled selected>Cargando cuentas…</option>';
                 sel.classList.add('select-skeleton');
+                sel.disabled = true;
+                return;
+            }
+            if (this.accounts.length === 0) {
+                sel.innerHTML =
+                    '<option value="" disabled selected>Sin cuentas — creá una con + Nueva</option>';
+                sel.classList.remove('select-skeleton');
                 sel.disabled = true;
                 return;
             }

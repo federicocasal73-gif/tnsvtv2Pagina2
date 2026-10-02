@@ -29,4 +29,16 @@ class BookingsAdminTest extends ApiTestCase
 
         $this->assertSame(200, $this->client->getResponse()->getStatusCode());
     }
+
+    public function testListBookingsWorksForRegularUser(): void
+    {
+        $user = $this->createUser(['code' => 'BK02', 'name' => 'Student']);
+        $this->loginAs($user);
+
+        $r = $this->jsonRequest('GET', '/api/academic/bookings');
+
+        $this->assertSame(200, $r['status']);
+        $this->assertTrue($r['data']['success']);
+        $this->assertSame([], $r['data']['bookings']);
+    }
 }

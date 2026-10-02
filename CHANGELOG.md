@@ -6,6 +6,30 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased] - Design system unification + SSH deploy + backend audit
 
+### Added — auditoría visual fase 0-2 (2026-10-02, rama visual-audit)
+
+- **Tailwind v4 utilities-only**: `tailwind.css` (sin preflight) → salida
+  commiteada `tailwind-utilities.css` (`npm run tailwind:build`, CI
+  verifica frescura). Aliases `@theme` (primary/error/…) + escala
+  tipográfica propia + tokens `--primary`/`--error`. Polyfill manual
+  eliminado de `components.css`; alias `.ui-btn.secondary/.ghost`;
+  `.form-textarea` agregado. Bump `APP_VERSION` a `2.0.27` (CODE 525).
+- **Fase 0**: 4 `data-controller` `_`→`-` (account-settings,
+  dashboard-tasks, bookings-admin, profile-public), ruta rota en
+  command-palette (`/account_settings`→`/account/settings`), gate
+  `ROLE_ADMIN` a `/sanctum/admin/bookings` + test, stats users
+  honestas (`—` + total real), cap-hint en journal/new, limpieza de
+  `data-action` muertos en calendar + comentario en api_helper.
+- **Bugs encontrados por el barrido**: `GET /api/academic/bookings`
+  500 (método inexistente + DQL inválido con `SELECT 1`, reescrito
+  con OR sobre relaciones) + test; `loadProfile` pedía
+  `/api/profile/{{ app.user.code }}` literal (fallback de JS
+  estático) → retry por evento; empty/error honestos en calendario
+  mensual, P&L mensual y Werke select sin cuentas; template
+  `export/journal.html.twig` creado (el endpoint 500eaba).
+- **Huérfanos eliminados**: 10 CSS nunca cargados, `feed-module.js`,
+  `base.html.twig`, `_partials/tabbar.html.twig`.
+
 ### Changed — TTL de códigos de mail 10→2 minutos (2026-10-02)
 
 - `TwoFactorChallenge::TTL_SECONDS` 600→120 (aplica a login, enroll y

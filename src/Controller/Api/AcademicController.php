@@ -206,18 +206,9 @@ class AcademicController extends AbstractController
         if ($scope === 'all' && $this->isMentorOrAdmin($user)) {
             // ok admin/mentor puede ver todos
         } else {
-            $studentCond = $this->getEntityManager()->createQueryBuilder()
-                ->select('1')->from(User::class, 'u')
-                ->where('u.code = :c AND u.id = b.student')
-                ->getDQL();
-            $mentorCond = $this->getEntityManager()->createQueryBuilder()
-                ->select('1')->from(User::class, 'u2')
-                ->where('u2.code = :c AND u2.id = b.mentor')
-                ->getDQL();
-
             $bookings = $this->bookingRepo->createQueryBuilder('b')
-                ->where('(' . $studentCond . ') OR (' . $mentorCond . ')')
-                ->setParameter('c', $user->getCode())
+                ->where('b.student = :user OR b.mentor = :user')
+                ->setParameter('user', $user)
                 ->orderBy('b.startAt', 'ASC')
                 ->getQuery()
                 ->getResult();
