@@ -136,6 +136,15 @@ with dev fallbacks). Optional `TNSVT_USERA_CODE/NAME`,
 login step times out and the suite fails — set them in GitHub Settings →
 Secrets before trusting a red e2e run.
 
+> **Los secrets son una FOTO, no un link.** `TNSVT_ADMIN_PASSWORD`
+> debe ser igual a la password vigente de ADMIN01 en prod. Solo hay
+> que actualizarlo cuando **cambies la password** (perfil → contraseña
+> o `PATCH .../security`); ningún otro cambio del admin (mail, tiers,
+> usuarios, settings) lo afecta. `TNSVT_ADMIN_CODE` casi nunca cambia
+> (los códigos son inmutables). Si el e2e falla SOLO en el login
+> (`login.ts:100 waitForURL`), lo primero es verificar que el secret
+> siga igual a la password real — no tocar código.
+
 ### Critical CI requirements (every job that boots the kernel)
 
 1. **Generate JWT keys** (Lexik reads `config/jwt/private.pem`):
