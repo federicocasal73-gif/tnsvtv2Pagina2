@@ -6,6 +6,13 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased] - Design system unification + SSH deploy + backend audit
 
+### Changed — TTL de códigos de mail 10→2 minutos (2026-10-02)
+
+- `TwoFactorChallenge::TTL_SECONDS` 600→120 (aplica a login, enroll y
+  recupero: todos leen la constante). Copy actualizado en login, perfil,
+  toasts y template de mail (`minutes` 10→2). Reenvío sigue con
+  cooldown 60s. Bump `APP_VERSION` a `2.0.26` (CODE 524).
+
 ### Added — código obligatorio para cambiar contraseña en perfil (2026-10-02)
 
 - `POST /api/profile/password` ahora exige `email_code` (código fresco

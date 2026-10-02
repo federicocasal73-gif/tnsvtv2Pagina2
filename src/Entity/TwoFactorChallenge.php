@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * Security rules (enforced by TwoFactorService, not the DB):
  * - only the sha256 of the code is stored, never the code itself;
- * - 10 minute TTL, single use, max 5 attempts, resend cooldown 60s.
+ * - 2 minute TTL, single use, max 5 attempts, resend cooldown 60s.
  */
 #[ORM\Entity(repositoryClass: TwoFactorChallengeRepository::class)]
 #[ORM\Table(name: 'two_factor_challenges')]
@@ -25,7 +25,7 @@ class TwoFactorChallenge
     public const PURPOSE_ENROLL = 'enroll';
     public const PURPOSE_RESET = 'reset';
 
-    public const TTL_SECONDS = 600;
+    public const TTL_SECONDS = 120;
     public const MAX_ATTEMPTS = 5;
     public const CODE_LENGTH = 6;
 

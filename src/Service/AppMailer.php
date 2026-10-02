@@ -58,7 +58,7 @@ class AppMailer
             $html = $this->twig->render('mail/auth_code.html.twig', [
                 'code' => $code,
                 'purpose' => $purpose,
-                'minutes' => 10,
+                'minutes' => 2,
             ]);
         } catch (\Throwable $e) {
             $this->logger->warning('[MAIL] template render failed, using fallback', ['error' => $e->getMessage()]);

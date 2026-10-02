@@ -382,7 +382,7 @@ export default class extends Controller {
                     window.apiToast(
                         'Código enviado a ' +
                             (data.masked_email || 'tu mail') +
-                            ' (vale 10 minutos)',
+                            ' (vale 2 minutos)',
                         'success'
                     );
                 const input = document.getElementById('sec-pass-code');

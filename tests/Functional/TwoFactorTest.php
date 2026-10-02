@@ -58,16 +58,26 @@ class TwoFactorTest extends ApiTestCase
         $_ENV['TWO_FACTOR_GRACE_UNTIL'] = '2000-01-01'; // gracia vencida
     }
 
-    private function lastMailboxCode(): ?string
+    private function lastMailboxCode(?string $purpose = null): ?string
     {
         $files = glob($this->mailboxDir() . '/*.json') ?: [];
         if ([] === $files) {
             return null;
         }
         usort($files, static fn ($a, $b) => filemtime($b) <=> filemtime($a));
-        $data = json_decode((string) file_get_contents($files[0]), true);
+        foreach ($files as $f) {
+            $data = json_decode((string) file_get_contents($f), true);
+            if (!\is_array($data)) {
+                continue;
+            }
+            if (null !== $purpose && $purpose !== ($data['purpose'] ?? null)) {
+                continue;
+            }
 
-        return is_array($data) ? ($data['code'] ?? null) : null;
+            return $data['code'] ?? null;
+        }
+
+        return null;
     }
 
     private function enrolledUser(string $code): User
@@ -330,7 +340,7 @@ class TwoFactorTest extends ApiTestCase
         // + código fresco al mail verificado.
         $codeReq = $this->jsonRequest('POST', '/api/profile/password/code');
         $this->assertSame(200, $codeReq['status']);
-        $passCode = (string) $this->lastMailboxCode();
+        $passCode = (string) $this->lastMailboxCode('reset');
         $this->assertNotEmpty($passCode);
 
         $pass = $this->jsonRequest('POST', '/api/profile/password', [
@@ -346,7 +356,7 @@ class TwoFactorTest extends ApiTestCase
         $wrong = $this->jsonRequest('POST', '/api/profile/password', [
             'current_password' => 'nope',
             'new_password' => 'OtraClave1234',
-            'email_code' => (string) $this->lastMailboxCode(),
+            'email_code' => (string) $this->lastMailboxCode('reset'),
         ]);
         $this->assertSame(401, $wrong['status']);
 
@@ -356,7 +366,7 @@ class TwoFactorTest extends ApiTestCase
         $ok = $this->jsonRequest('POST', '/api/profile/password', [
             'current_password' => 'PerfilClave12',
             'new_password' => 'OtraClave1234',
-            'email_code' => (string) $this->lastMailboxCode(),
+            'email_code' => (string) $this->lastMailboxCode('reset'),
         ]);
         $this->assertSame(200, $ok['status']);
     }

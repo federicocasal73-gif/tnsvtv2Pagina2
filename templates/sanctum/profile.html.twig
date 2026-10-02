@@ -149,7 +149,7 @@
                     <input id="sec-email-code" type="text" class="form-input flex-1" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
                     <button id="sec-email-verify" type="button" class="ui-btn ui-btn-primary">Verificar</button>
                 </div>
-                <p class="text-xs text-[var(--outline-elev)] mt-1">Vale 10 minutos. <button type="button" id="sec-email-resend" class="linklike" disabled>Reenviar (<span id="sec-email-timer">60</span>s)</button></p>
+                <p class="text-xs text-[var(--outline-elev)] mt-1">Vale 2 minutos. <button type="button" id="sec-email-resend" class="linklike" disabled>Reenviar (<span id="sec-email-timer">60</span>s)</button></p>
             </div>
             <div class="text-xs text-[var(--outline-elev)]" id="sec-2fa-status">Verificación en dos pasos: —</div>
             <hr class="border-[var(--outline-variant-elev)]">
@@ -162,7 +162,7 @@
                 <input id="sec-pass-new" type="password" class="form-input" autocomplete="new-password" placeholder="Mínimo 10 caracteres">
             </div>
             <div>
-                <label class="form-label" for="sec-pass-code">Código de tu mail verificado <span class="text-xs text-[var(--outline-elev)]">(vale 10 minutos)</span></label>
+                <label class="form-label" for="sec-pass-code">Código de tu mail verificado <span class="text-xs text-[var(--outline-elev)]">(vale 2 minutos)</span></label>
                 <div class="flex gap-2">
                     <input id="sec-pass-code" type="text" class="form-input flex-1" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
                     <button id="sec-pass-send" type="button" class="ui-btn ui-btn-secondary">Enviar código</button>
