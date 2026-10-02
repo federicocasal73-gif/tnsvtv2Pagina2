@@ -27,6 +27,31 @@
     opacity: 0.6;
 }
 
+/* ─── Form Textarea (same base as input, multiline) ─── */
+.form-textarea {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border-elev);
+    border-radius: 0.375rem;
+    color: var(--on-surface-elev);
+    font-family: var(--font-body-elev), sans-serif;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    min-height: 5rem;
+    resize: vertical;
+}
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--gold-elev);
+    box-shadow: 0 0 0 3px rgba(242, 202, 80, 0.1);
+}
+.form-textarea::placeholder {
+    color: var(--outline-elev);
+    opacity: 0.6;
+}
+
 /* ─── Form Select ─── */
 .form-select {
     width: 100%;

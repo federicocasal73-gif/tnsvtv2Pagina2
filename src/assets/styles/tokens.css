@@ -68,6 +68,11 @@
     --success-elev: #4ade80;
     --warning-elev: #fbbf24;
 
+    /* Short aliases for Tailwind-style var() references in templates
+       (text-[var(--primary)], border-[var(--error)]/50, …). */
+    --primary: var(--primary-elev);
+    --error: var(--error-elev);
+
     /* === TNSVT-specific brand tokens === */
     --starlight-white-elev: #fdfcf8;
     --void-black-elev: #050308;

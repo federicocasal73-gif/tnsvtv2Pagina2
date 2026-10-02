@@ -28,6 +28,15 @@
   "ignoreFiles": [
     "public/assets/**/*.css",
     "vendor/**/*.css",
-    "node_modules/**/*.css"
+    "node_modules/**/*.css",
+    "src/assets/styles/tailwind-utilities.css"
+  ],
+  "overrides": [
+    {
+      "files": ["src/assets/styles/tailwind.css"],
+      "rules": {
+        "at-rule-no-unknown": null
+      }
+    }
   ]
 }

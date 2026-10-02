@@ -173,6 +173,11 @@ jobs:
             - name: Stylelint
               run: npm run stylelint
 
+            - name: Tailwind freshness (generated CSS committed)
+              # tailwind-utilities.css is committed (no build on the server).
+              # Regen here and fail if a template added classes without rebuild.
+              run: npm run tailwind:build && git diff --exit-code -- src/assets/styles/tailwind-utilities.css
+
             - name: JS Syntax (standalone .js files)
               # Belt-and-suspenders: catch the class of bug where a file
               # lacks the 'export default' that ESLint expects.

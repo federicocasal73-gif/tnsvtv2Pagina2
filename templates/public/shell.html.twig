@@ -37,6 +37,8 @@
        NO Sanctum CSS (no elev/v2/glass-premium) — clean boundary. #}
     <link rel="stylesheet" href="{{ asset('styles/tokens.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/components.css') }}" />
+    {# Tailwind utilities (generated, committed — regen via npm run tailwind:build). #}
+    <link rel="stylesheet" href="{{ asset('styles/tailwind-utilities.css') }}" />
     <link rel="stylesheet" href="{{ asset('styles/home.css') }}" />
 
     {% block stylesheets %}{% endblock %}

@@ -9,6 +9,9 @@ stitch_tnsvt_app_m_vil/
 *.lockb
 phpstan-baseline.neon
 
+# Generated Tailwind output — rebuilt via npm run tailwind:build, never hand-edited.
+src/assets/styles/tailwind-utilities.css
+
 # Vendored third-party JS — keep upstream formatting to ease future
 # re-vendoring. Prettier output here would diverge from upstream and
 # create noise in any vendor update.

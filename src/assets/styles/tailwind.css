@@ -1,0 +1,66 @@
+/**
+ * TNSVT Tailwind entry — utilities layer ONLY (no preflight, no reset).
+ *
+ * The design system lives in tokens.css + components.css; this file only
+ * generates the Tailwind-style utility classes used across templates
+ * (grids, spacing, states, responsive variants). Output is committed as
+ * src/assets/styles/tailwind-utilities.css — no build runs on the server.
+ *
+ * Regen after adding new utility classes in templates:
+ *   npm run tailwind:build
+ * CI verifies the committed file is fresh (lint-js job).
+ *
+ * Brand aliases map the non-Tailwind color names used in templates to
+ * the canonical -elev tokens (theme-aware via var indirection).
+ * The TNSVT typography scale (headline/title/label) is hand-defined
+ * below — Tailwind has no such names.
+ */
+@import 'tailwindcss/utilities';
+
+@source "../../templates";
+@source "../controllers";
+
+@theme {
+    --color-primary: var(--primary-elev);
+    --color-secondary: var(--gold-elev);
+    --color-error: var(--error-elev);
+    --color-void-black: var(--void-elev);
+}
+
+/* ─── TNSVT typography scale (hand-defined, Tailwind has no such names) ─── */
+.font-headline-lg {
+    font-family: var(--font-display-elev), serif;
+}
+.text-headline-lg {
+    font-size: 1.5rem;
+    line-height: 2rem;
+}
+.font-headline-xl {
+    font-family: var(--font-display-elev), serif;
+}
+.text-headline-xl {
+    font-size: 2rem;
+    line-height: 2.5rem;
+}
+.font-title-md {
+    font-family: var(--font-display-elev), serif;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+.font-label-sm {
+    font-family: var(--font-label-elev), sans-serif;
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+.font-label-md {
+    font-family: var(--font-label-elev), sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+.text-label-sm {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+.text-on-surface-variant {
+    color: var(--on-surface-variant-elev);
+}

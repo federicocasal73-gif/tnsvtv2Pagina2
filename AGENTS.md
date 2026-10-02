@@ -328,6 +328,22 @@ git operation to scan 12 000+ files.
 - **Do not** commit secrets, `var/`, `vendor/`, `public/assets/` (already
   in `.gitignore`).
 
+### Tailwind (v4 utilities-only, committed output)
+
+- Templates use Tailwind-style classes. There is NO Tailwind pipeline
+  on the server: `src/assets/styles/tailwind.css` (`@import
+  "tailwindcss/utilities"` only — **no preflight**, plus `@theme`
+  brand aliases and the TNSVT typography scale) is compiled **locally**
+  via `npm run tailwind:build` into the committed
+  `src/assets/styles/tailwind-utilities.css` (loaded last in both
+  shells). Never hand-edit the output file.
+- After adding new utility classes in templates/controllers, run
+  `npm run tailwind:build` and commit the regenerated file. CI fails
+  the lint-js job if the output is stale.
+- The old hand-rolled polyfill block in `components.css` was deleted
+  (commit on `visual-audit` branch); do not reintroduce per-class
+  shims — use real utilities.
+
 ## Common pitfalls
 
 | Symptom | Cause | Fix |

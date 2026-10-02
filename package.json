@@ -10,6 +10,7 @@
     "format:check": "prettier --check \"src/assets/**/*.{js,css}\"",
     "stylelint": "stylelint \"src/assets/**/*.css\"",
     "stylelint:fix": "stylelint \"src/assets/**/*.css\" --fix",
+    "tailwind:build": "tailwindcss -i ./src/assets/styles/tailwind.css -o ./src/assets/styles/tailwind-utilities.css --minify",
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
@@ -24,10 +25,12 @@
     "@axe-core/playwright": "^4.10.0",
     "@lhci/cli": "^0.14.0",
     "@playwright/test": "^1.61.0",
+    "@tailwindcss/cli": "^4.3.3",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.0",
     "prettier": "^3.3.0",
     "stylelint": "^16.0.0",
-    "stylelint-config-standard": "^36.0.0"
+    "stylelint-config-standard": "^36.0.0",
+    "tailwindcss": "^4.3.3"
   }
 }
