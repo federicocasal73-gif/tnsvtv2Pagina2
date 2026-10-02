@@ -171,7 +171,7 @@ const NAV = [
         label: 'Ir a Configuración',
         hint: 'Ajustes',
         icon: 'tune',
-        url: '/account_settings',
+        url: '/account/settings',
         keys: 'configuracion ajustes settings preferencias',
     },
 ];

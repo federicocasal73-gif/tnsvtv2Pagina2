@@ -98,6 +98,8 @@ export default class extends Controller {
             const data = r.data;
             if (!data || !data.success) throw new Error((data && data.error) || 'unknown');
             this.allUsers = data.users;
+            const statTotal = document.getElementById('admin-stat-total');
+            if (statTotal) statTotal.textContent = String(this.allUsers.length);
             this.renderUsers();
         } catch (e) {
             grid.innerHTML = `<p class="col-span-full text-red-400 text-center py-8">Error: ${this.escapeHtml(e.message)}</p>`;

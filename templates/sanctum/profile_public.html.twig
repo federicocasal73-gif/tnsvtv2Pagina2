@@ -10,7 +10,7 @@
 {% block content %}
 <h1 class="page-title text-cinzel-display text-2xl md:text-3xl tracking-wide mb-6">{{ block('topbar_title') }}</h1>
 <div class="max-w-2xl mx-auto"
-     data-controller="profile_public"
+      data-controller="profile-public"
      data-profile-public-user-code-value="{{ app.request.attributes.get('code') ?? '' }}">
     <div data-profile-public-target="container">
         <p class="text-center text-[var(--outline-elev)] py-8 loading-pulse">Cargando perfil...</p>

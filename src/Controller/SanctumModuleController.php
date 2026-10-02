@@ -11,7 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 /**
  * SanctumModuleController — migrated legacy modules rendered with v2 design system.
  *
@@ -53,6 +53,7 @@ class SanctumModuleController extends AbstractController
     }
 
     #[Route('/sanctum/admin/bookings', name: 'sanctum_admin_bookings', methods: ['GET'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function adminBookings(): Response
     {
         return $this->render('sanctum/bookings_admin.html.twig');

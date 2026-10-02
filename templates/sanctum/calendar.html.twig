@@ -44,8 +44,7 @@
     <div class="glass-card-elev p-4 mb-4 flex flex-wrap items-center gap-3">
         <div class="flex items-center gap-2">
             <label class="kpi-label" for="cal-date">Fecha</label>
-            <input id="cal-date" type="date" class="form-input"
-                   data-action="change->calendar-events#refresh" />
+            <input id="cal-date" type="date" class="form-input" />
             <button type="button" id="cal-today-btn" class="cal-today-btn" title="Ir a hoy" aria-label="Ir a hoy">
                 <span class="material-symbols-elev icon-size-sm" aria-hidden="true">today</span>
                 Hoy
@@ -54,8 +53,7 @@
         <div class="flex items-center gap-2 flex-wrap">
             <label class="kpi-label" for="cal-country">País</label>
             {# Multi-select kept for state; chip picker drives the UX. #}
-            <select id="cal-country" multiple size="1" class="sr-only" aria-hidden="true"
-                    data-action="change->calendar-events#refresh">
+            <select id="cal-country" multiple size="1" class="sr-only" aria-hidden="true">
                 <option value="US" selected>🇺🇸 USD</option>
                 <option value="EU" selected>🇪🇺 EUR</option>
                 <option value="GB" selected>🇬🇧 GBP</option>
@@ -78,8 +76,7 @@
         </div>
         <div class="flex items-center gap-2">
             <label class="kpi-label" for="cal-impact">Impacto</label>
-            <select id="cal-impact" class="form-input"
-                    data-action="change->calendar-events#refresh">
+            <select id="cal-impact" class="form-input">
                 <option value="">Todos</option>
                 <option value="3" selected>Alto (3)</option>
                 <option value="2">Medio (2)</option>
