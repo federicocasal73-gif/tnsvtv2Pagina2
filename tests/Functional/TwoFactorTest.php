@@ -326,23 +326,37 @@ class TwoFactorTest extends ApiTestCase
         $this->assertSame(200, $verify['status']);
         $this->assertTrue($verify['data']['success']);
 
-        // El helper crea usuarios CON password: cambiarla exige la actual.
+        // El helper crea usuarios CON password: cambiarla exige la actual
+        // + código fresco al mail verificado.
+        $codeReq = $this->jsonRequest('POST', '/api/profile/password/code');
+        $this->assertSame(200, $codeReq['status']);
+        $passCode = (string) $this->lastMailboxCode();
+        $this->assertNotEmpty($passCode);
+
         $pass = $this->jsonRequest('POST', '/api/profile/password', [
             'current_password' => 'TestPassword123!',
             'new_password' => 'PerfilClave12',
+            'email_code' => $passCode,
         ]);
         $this->assertSame(200, $pass['status']);
 
-        // Cambiarla exige la actual.
+        // Cambiarla exige la actual (el código válido se consume al verificar).
+        $codeReq2 = $this->jsonRequest('POST', '/api/profile/password/code');
+        $this->assertSame(200, $codeReq2['status']);
         $wrong = $this->jsonRequest('POST', '/api/profile/password', [
             'current_password' => 'nope',
             'new_password' => 'OtraClave1234',
+            'email_code' => (string) $this->lastMailboxCode(),
         ]);
         $this->assertSame(401, $wrong['status']);
 
+        // El código es de un solo uso: pedir otro para el cambio válido.
+        $codeReq3 = $this->jsonRequest('POST', '/api/profile/password/code');
+        $this->assertSame(200, $codeReq3['status']);
         $ok = $this->jsonRequest('POST', '/api/profile/password', [
             'current_password' => 'PerfilClave12',
             'new_password' => 'OtraClave1234',
+            'email_code' => (string) $this->lastMailboxCode(),
         ]);
         $this->assertSame(200, $ok['status']);
     }

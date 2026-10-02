@@ -6,6 +6,7 @@ use App\Entity\TwoFactorChallenge;
 use App\Entity\User;
 use App\Repository\TwoFactorChallengeRepository;
 use App\Repository\UserRepository;
+use App\Service\RateLimiterService;
 use App\Service\TwoFactorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,6 +25,7 @@ class ProfileController extends AbstractController
         private TwoFactorService $twoFactor,
         private TwoFactorChallengeRepository $challenges,
         private UserPasswordHasherInterface $hasher,
+        private RateLimiterService $rateLimiter,
     ) {}
 
     #[Route('/{code}', name: 'api_profile_show', methods: ['GET'])]
@@ -188,6 +190,26 @@ class ProfileController extends AbstractController
             ], 400);
         }
 
+        // Cambio de contraseña exige código fresco al mail verificado
+        // (la sesión sola no basta: mitiga session hijacking).
+        $challenge = $this->challenges->findActiveForUser((int) $user->getId(), TwoFactorChallenge::PURPOSE_RESET);
+        if (!$challenge instanceof TwoFactorChallenge) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Pedí un código con Enviar código e ingresalo.',
+                'error_code' => 'challenge_expired',
+            ], Response::HTTP_GONE);
+        }
+        if (!$this->twoFactor->verify($challenge, (string) ($data['email_code'] ?? ''))) {
+            $left = TwoFactorChallenge::MAX_ATTEMPTS - $challenge->getAttempts();
+
+            return $this->json([
+                'success' => false,
+                'error' => 'Código incorrecto.',
+                'attempts_left' => max(0, $left),
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
         // Si ya tiene contraseña, exigir la actual (la sesión sola no basta).
         if (null !== $user->getPassword() && '' !== $user->getPassword()) {
             $current = (string) ($data['current_password'] ?? '');
@@ -200,6 +222,35 @@ class ProfileController extends AbstractController
         $this->em->flush();
 
         return $this->json(['success' => true, 'message' => 'Contraseña actualizada.']);
+    }
+
+    #[Route('/password/code', name: 'api_profile_password_code', methods: ['POST'])]
+    public function sendPasswordCode(Request $request): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        if ($this->rateLimiter->checkAndHit('profile_pwd_code:' . $user->getCode(), 5, 3600) <= 0) {
+            return $this->json(['success' => false, 'error' => 'Demasiados intentos. Probá en una hora.'], Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
+        if (!$user->isActive() || !$user->hasVerifiedEmail()) {
+            return $this->json(['success' => false, 'error' => 'Cargá y verificá tu mail primero.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        [$challenge] = $this->twoFactor->issue($user, TwoFactorChallenge::PURPOSE_RESET);
+        if (null === $challenge) {
+            return $this->json(['success' => false, 'error' => 'No se pudo enviar el mail'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json([
+            'success' => true,
+            'masked_email' => $this->twoFactor->maskedEmail((string) $user->getEmail()),
+            'expires_in' => TwoFactorChallenge::TTL_SECONDS,
+        ]);
     }
 
     #[Route('/avatar', name: 'api_profile_avatar_upload', methods: ['POST'])]

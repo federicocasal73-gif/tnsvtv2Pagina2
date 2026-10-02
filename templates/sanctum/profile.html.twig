@@ -161,6 +161,13 @@
                 <label class="form-label" for="sec-pass-new">Nueva contraseña <span class="text-xs text-[var(--outline-elev)]">(mínimo 10 caracteres)</span></label>
                 <input id="sec-pass-new" type="password" class="form-input" autocomplete="new-password" placeholder="Mínimo 10 caracteres">
             </div>
+            <div>
+                <label class="form-label" for="sec-pass-code">Código de tu mail verificado <span class="text-xs text-[var(--outline-elev)]">(vale 10 minutos)</span></label>
+                <div class="flex gap-2">
+                    <input id="sec-pass-code" type="text" class="form-input flex-1" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+                    <button id="sec-pass-send" type="button" class="ui-btn ui-btn-secondary">Enviar código</button>
+                </div>
+            </div>
             <button id="sec-pass-save" type="button" class="ui-btn ui-btn-primary w-full">Guardar contraseña</button>
         </div>
     </div>

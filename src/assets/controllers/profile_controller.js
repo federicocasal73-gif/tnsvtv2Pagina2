@@ -44,6 +44,22 @@ export default class extends Controller {
         if (passSave) {
             passSave.addEventListener('click', () => this.savePassword());
         }
+        const passSend = document.getElementById('sec-pass-send');
+        if (passSend) {
+            passSend.addEventListener('click', () => this.sendPassCode());
+        }
+        const passCode = document.getElementById('sec-pass-code');
+        if (passCode) {
+            passCode.addEventListener('input', () => {
+                passCode.value = passCode.value.replace(/\D/g, '').slice(0, 6);
+            });
+            passCode.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.savePassword();
+                }
+            });
+        }
         const emailCode = document.getElementById('sec-email-code');
         if (emailCode) {
             emailCode.addEventListener('input', () => {
@@ -354,12 +370,44 @@ export default class extends Controller {
         }, 1000);
     }
 
+    async sendPassCode() {
+        try {
+            const r = await fetch('/api/profile/password/code', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await r.json();
+            if (data.success) {
+                if (window.apiToast)
+                    window.apiToast(
+                        'Código enviado a ' +
+                            (data.masked_email || 'tu mail') +
+                            ' (vale 10 minutos)',
+                        'success'
+                    );
+                const input = document.getElementById('sec-pass-code');
+                if (input) input.focus();
+            } else if (window.apiToast) {
+                window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');
+            }
+        } catch (e) {
+            if (window.apiToast) window.apiToast('Sin conexión con el servidor', 'error');
+        }
+    }
+
     async savePassword() {
         const currentEl = document.getElementById('sec-pass-current');
         const newEl = document.getElementById('sec-pass-new');
+        const codeEl = document.getElementById('sec-pass-code');
         const fresh = newEl ? newEl.value : '';
         if (fresh.length < 10) {
             if (window.apiToast) window.apiToast('Mínimo 10 caracteres', 'warning');
+            return;
+        }
+        const emailCode = codeEl ? codeEl.value.trim() : '';
+        if (emailCode.length < 6) {
+            if (window.apiToast)
+                window.apiToast('Pedí un código con Enviar código e ingresalo', 'warning');
             return;
         }
         try {
@@ -369,12 +417,14 @@ export default class extends Controller {
                 body: JSON.stringify({
                     current_password: currentEl ? currentEl.value : '',
                     new_password: fresh,
+                    email_code: emailCode,
                 }),
             });
             const data = await r.json();
             if (data.success) {
                 if (currentEl) currentEl.value = '';
                 if (newEl) newEl.value = '';
+                if (codeEl) codeEl.value = '';
                 if (window.apiToast) window.apiToast('Contraseña actualizada', 'success');
             } else if (window.apiToast) {
                 window.apiToast('Error: ' + (data.error || 'desconocido'), 'error');

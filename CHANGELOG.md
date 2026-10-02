@@ -6,6 +6,20 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased] - Design system unification + SSH deploy + backend audit
 
+### Added — código obligatorio para cambiar contraseña en perfil (2026-10-02)
+
+- `POST /api/profile/password` ahora exige `email_code` (código fresco
+  de 6 dígitos al mail verificado) además de la actual. Nuevo
+  `POST /api/profile/password/code` para pedirlo (rate 5/h por usuario,
+  requiere mail verificado). Mitiga session hijacking: con solo la
+  sesión ya no se puede trabar la cuenta. Sin mail verificado el
+  cambio devuelve 400 pidiendo verificar el mail primero.
+- Perfil: sección contraseña con botón "Enviar código" + campo de
+  código (espeja la sección de mail). Tests: `ProfilePasswordTest`
+  (6 casos); `TwoFactorTest::testProfileEmailAndPassword` migrado al
+  flujo nuevo.
+- Bump `APP_VERSION` a `2.0.25` (CODE 523).
+
 ### Added — "Olvidé mi código" (recupero self-service por mail, 2026-09-30)
 
 - `POST /api/auth/code/forgot`: respuesta genérica siempre (no enumera);
