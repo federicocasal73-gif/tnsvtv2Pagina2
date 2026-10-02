@@ -105,6 +105,17 @@ Si no llega:
 3. Si ves `[MAIL] send failed`, revisar que `MAILER_DSN` esté bien encoded (especialmente si el password tiene caracteres especiales).
 4. Si ves `[MAIL] dumped to mailbox`, el mailer no se levantó — warmup no corrió o typo en variable.
 
+> **Lección 2026-10-01 (incidente SMTP 535):** el smoke del Paso D es
+> insuficiente — `code/forgot` y `password/forgot` responden 200 genérico
+> **siempre** (anti-enumeración), incluso cuando el mail muere en el
+> transporte. Un 200 NO prueba entrega. Tras cada prueba de mail:
+> `grep -a 'MAIL' var/log/prod-$(date +%F).log` — ausencia de
+> `[MAIL] send failed` + mail real en inbox = único verde válido.
+> Ese día el `MAILER_DSN` tenía password vieja (hPanel la había rotado) y
+> 9 envíos murieron con `535` sin que ningún smoke lo detectara.
+> Regla: `&` en password → `%26` en el DSN; ante un 535, resetear la
+> password del buzón en hPanel → Email Accounts y actualizar el DSN.
+
 ### Paso F: Habilitar 2FA opcional (10 min)
 
 Una vez que los códigos llegan:
