@@ -43,14 +43,14 @@ export default class extends Controller {
             if (this.currentFilter !== 'all') {
                 params.set('status', this.currentFilter);
             }
-            const r = await fetch(`/api/campus/admin/submissions?${params}`, {
-                headers: this.headers(),
+            const r = await window.apiFetch(`/api/campus/admin/submissions?${params}`, {
+                silent: true,
             });
             if (!r.ok) {
                 this.listTarget.innerHTML = `<p class="empty-state empty-state-md"><span class="material-symbols-elev empty-state-icon">error</span><p class="empty-state-message">Error ${r.status}</p></p>`;
                 return;
             }
-            const json = await r.json();
+            const json = r.data;
             // API returns {data, total, page, limit} — accept a raw array too
             // for backward compatibility with older responses.
             const submissions = Array.isArray(json) ? json : json.data || [];
@@ -131,10 +131,10 @@ export default class extends Controller {
         const grade = prompt('Nota (0–10):', decision === 'approved' ? '8' : '');
         const comment = prompt('Comentario (opcional):', '') || '';
         try {
-            const r = await fetch(`/api/campus/admin/submissions/${submissionId}/grade`, {
+            const r = await window.apiFetch(`/api/campus/admin/submissions/${submissionId}/grade`, {
                 method: 'POST',
-                headers: { ...this.headers(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({ grade, comment, decision }),
+                body: { grade, comment, decision },
+                silent: true,
             });
             if (r.ok) {
                 if (window.apiToast)
@@ -160,7 +160,8 @@ export default class extends Controller {
     }
 
     headers() {
-        return { 'X-Admin-Password': this.tokenValue || '' };
+        // Legacy: auth ahora va por window.apiFetch (X-Game-Code + Bearer).
+        return {};
     }
 
     escape(s) {

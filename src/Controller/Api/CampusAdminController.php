@@ -7,6 +7,7 @@ use App\Entity\CampusCourse;
 use App\Entity\CampusEnrollment;
 use App\Entity\CampusFeedback;
 use App\Entity\CampusLesson;
+use App\Entity\CampusLessonProgress;
 use App\Entity\CampusMaterial;
 use App\Entity\CampusModule;
 use App\Entity\CampusSubmission;

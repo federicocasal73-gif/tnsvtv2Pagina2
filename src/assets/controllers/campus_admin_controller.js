@@ -43,14 +43,12 @@ export default class extends Controller {
     async loadList() {
         if (!this.hasListTarget) return;
         try {
-            const r = await fetch('/api/campus/admin/courses', {
-                headers: this.adminHeaders(),
-            });
-            if (!r.ok) {
-                this.listTarget.innerHTML = this.errorHtml(r.status);
+            const res = await window.apiFetch('/api/campus/admin/courses', { silent: true });
+            if (!res.ok) {
+                this.listTarget.innerHTML = this.errorHtml(res.status);
                 return;
             }
-            const courses = await r.json();
+            const courses = res.data;
             if (!Array.isArray(courses)) {
                 this.listTarget.innerHTML = this.errorHtml('Datos inválidos');
                 return;
@@ -156,10 +154,10 @@ export default class extends Controller {
             (c) => c.dataset.courseId
         );
         try {
-            await fetch('/api/campus/admin/courses/reorder', {
+            await window.apiFetch('/api/campus/admin/courses/reorder', {
                 method: 'POST',
-                headers: { ...this.adminHeaders(), 'Content-Type': 'application/json' },
-                body: JSON.stringify({ order: order.map((id) => parseInt(id, 10)) }),
+                body: { order: order.map((id) => parseInt(id, 10)) },
+                silent: true,
             });
             if (window.apiToast) window.apiToast('Orden actualizado', 'success');
         } catch (e) {
@@ -169,7 +167,9 @@ export default class extends Controller {
     }
 
     adminHeaders() {
-        return { 'X-Admin-Password': this.tokenValue || '' };
+        // Legacy: auth ahora va por window.apiFetch (X-Game-Code + Bearer).
+        // Se mantiene por compatibilidad pero ya no se usa.
+        return {};
     }
 
     emptyHtml() {

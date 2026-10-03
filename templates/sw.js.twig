@@ -86,9 +86,9 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Default: try cache, then network
+    // Default: try cache, then network (con fallback para no gritar Uncaught)
     event.respondWith(
-        caches.match(request).then((cached) => cached || fetch(request))
+        caches.match(request).then((cached) => cached || fetch(request).catch(() => caches.match(OFFLINE_URL)))
     );
 });
 
@@ -102,9 +102,15 @@ async function cacheFirst(request) {
         }).catch(() => {});
         return cached;
     }
-    const response = await fetch(request);
-    if (response.ok) cache.put(request, response.clone());
-    return response;
+    try {
+        const response = await fetch(request);
+        if (response.ok) cache.put(request, response.clone());
+        return response;
+    } catch (e) {
+        const offline = await caches.match(OFFLINE_URL);
+        if (offline) return offline;
+        return new Response('Offline', { status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/plain' } });
+    }
 }
 
 async function networkFirstWithOffline(request) {

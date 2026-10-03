@@ -13,6 +13,23 @@ export default class extends Controller {
 
         this.wire();
         this.restoreTab();
+        // Si el shell aún no hidrató al usuario, reintentar al llegar el evento.
+        if (!this.me) {
+            window.addEventListener(
+                'tnsvt:user-loaded',
+                () => {
+                    this.me = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+                    this.restoreTab();
+                },
+                { once: true }
+            );
+        }
+    }
+
+    getMe() {
+        const live = (window.TNSVT_USER && window.TNSVT_USER.code) || '';
+        if (live) this.me = live;
+        return this.me || '';
     }
 
     esc(s) {
@@ -181,21 +198,30 @@ export default class extends Controller {
 
         list.innerHTML = '<p class="social-loading" style="grid-column: 1 / -1;">Cargando...</p>';
         try {
-            const q = document.getElementById('social-search').value.trim();
-            const url = '/social/api/users' + (q ? '?q=' + encodeURIComponent(q) : '');
-            const response = await fetch(url, { signal });
-            const r = await response.json();
+            const q = document.getElementById('social-search').value.trim().toLowerCase();
+            // Opción A: endpoint con fallback auth (X-Game-Code/Bearer/user_code)
+            // + apiFetch que adjunta los headers. Filtro q en cliente.
+            const res = await window.apiFetch('/api/users/all', { silent: true, signal });
+            const r = res.data;
 
-            if (!r.success || !Array.isArray(r.users)) {
+            if (!r || !r.success || !Array.isArray(r.users)) {
                 list.innerHTML =
                     '<p class="social-empty" style="grid-column: 1 / -1;">Sin miembros para mostrar.</p>';
                 return;
             }
-            this.allUsers = r.users.map((u) => ({
+            let users = r.users.map((u) => ({
                 ...u,
                 role: u.is_admin ? 'admin' : 'trader',
                 access_status: u.status,
             }));
+            if (q) {
+                users = users.filter(
+                    (u) =>
+                        (u.code || '').toLowerCase().includes(q) ||
+                        (u.name || '').toLowerCase().includes(q)
+                );
+            }
+            this.allUsers = users;
             const badge = document.getElementById('badge-users');
             if (badge) badge.hidden = true;
             if (this.allUsers.length === 0) {
@@ -224,12 +250,13 @@ export default class extends Controller {
 
         list.innerHTML = '<p class="social-empty">Cargando...</p>';
         try {
-            const response = await fetch(
-                '/api/access-request?user_code=' + encodeURIComponent(this.me)
+            const res = await window.apiFetch(
+                '/api/access-request?user_code=' + encodeURIComponent(this.getMe()),
+                { silent: true }
             );
-            const r = await response.json();
+            const r = res.data;
 
-            if (!r.success) {
+            if (!r || !r.success) {
                 list.innerHTML = '<p class="social-empty">Sin solicitudes</p>';
                 return;
             }
@@ -271,12 +298,13 @@ export default class extends Controller {
 
         list.innerHTML = '<p class="social-empty">Cargando...</p>';
         try {
-            const response = await fetch(
-                '/api/connections?user_code=' + encodeURIComponent(this.me)
+            const res = await window.apiFetch(
+                '/api/connections?user_code=' + encodeURIComponent(this.getMe()),
+                { silent: true }
             );
-            const r = await response.json();
+            const r = res.data;
 
-            if (!r.success) {
+            if (!r || !r.success) {
                 list.innerHTML = '<p class="social-empty">Sin conexiones.</p>';
                 return;
             }
@@ -312,14 +340,14 @@ export default class extends Controller {
 
     async loadPrivacy() {
         try {
-            const response = await fetch(
-                '/api/journal/settings?code=' + encodeURIComponent(this.me)
+            const res = await window.apiFetch(
+                '/api/journal/settings?user_code=' + encodeURIComponent(this.getMe()),
+                { silent: true }
             );
-            const r = await response.json();
+            const r = res.data;
 
-            if (r.ok && r.data) {
-                const v = r.data.visibility || r.data.setup_token ? 'connections' : 'public';
-                this.privacy = v;
+            if (res.ok && r && r.success) {
+                this.privacy = r.visibility || 'connections';
             } else {
                 this.privacy = 'connections';
             }
@@ -348,15 +376,13 @@ export default class extends Controller {
             if (!ok) return;
         }
         try {
-            const response = await fetch(
-                '/api/access-request?code=' + encodeURIComponent(this.me),
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_code: this.me, target_code: targetCode }),
-                }
-            );
-            const r = await response.json();
+            const me = this.getMe();
+            const res = await window.apiFetch('/api/access-request', {
+                method: 'POST',
+                body: { user_code: me, target_code: targetCode },
+                silent: true,
+            });
+            const r = res.data;
             if (r.success) {
                 this.toast('Solicitud enviada a ' + targetCode, 'success');
                 this.loadUsers();
@@ -370,15 +396,12 @@ export default class extends Controller {
 
     async respondRequest(id, status) {
         try {
-            const response = await fetch(
-                '/api/access-request/' + id + '?code=' + encodeURIComponent(this.me),
-                {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_code: this.me, status: status }),
-                }
-            );
-            const r = await response.json();
+            const res = await window.apiFetch('/api/access-request/' + id, {
+                method: 'PATCH',
+                body: { user_code: this.getMe(), status: status },
+                silent: true,
+            });
+            const r = res.data;
             if (r.success) {
                 this.toast(
                     'Solicitud ' + (status === 'accepted' ? 'aceptada' : 'rechazada'),
@@ -403,14 +426,16 @@ export default class extends Controller {
         )
             return;
         try {
-            const response = await fetch(
-                '/api/connections/' + id + '?code=' + encodeURIComponent(this.me),
+            const res = await window.apiFetch(
+                '/api/connections/' + id + '?user_code=' + encodeURIComponent(this.getMe()),
                 {
                     method: 'DELETE',
+                    silent: true,
+                    redirectOn401: false,
                 }
             );
-            const r = await response.json().catch(() => null);
-            if (response.ok) {
+            const r = res.data ? res.data : null;
+            if (res.ok) {
                 this.toast('Conexión eliminada', 'success');
                 this.loadConnections();
             } else {
@@ -423,16 +448,13 @@ export default class extends Controller {
 
     async setPrivacy(vis) {
         try {
-            const response = await fetch(
-                '/api/journal/settings?code=' + encodeURIComponent(this.me),
-                {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code: this.me, visibility: vis }),
-                }
-            );
-            const r = await response.json();
-            if (r.ok && r.data && r.data.success) {
+            const res = await window.apiFetch('/api/journal/settings', {
+                method: 'PATCH',
+                body: { user_code: this.getMe(), visibility: vis },
+                silent: true,
+            });
+            const r = res.data;
+            if (res.ok && r && r.success) {
                 this.privacy = vis;
                 const currentValue = document.getElementById('privacy-current-value');
                 if (currentValue) currentValue.textContent = this.labelForPrivacy(vis);
@@ -441,7 +463,7 @@ export default class extends Controller {
                 });
                 this.toast('Privacidad actualizada', 'success');
             } else {
-                this.toast((r.data && r.data.error) || 'Error al actualizar', 'error');
+                this.toast((r && r.error) || 'Error al actualizar', 'error');
             }
         } catch (e) {
             this.toast('Error de red', 'error');

@@ -61,19 +61,13 @@ parameters:
 			path: src/Controller/Api/AuthController.php
 
 		-
-			message: '#^Class App\\Controller\\Api\\CampusLessonProgress not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: src/Controller/Api/CampusAdminController.php
-
-		-
 			message: '#^Method App\\Controller\\Api\\CampusAdminController\:\:getEnrollmentRepo\(\) should return App\\Repository\\CampusEnrollmentRepository but returns Doctrine\\ORM\\EntityRepository\<App\\Entity\\CampusEnrollment\>\.$#'
 			identifier: return.type
 			count: 1
 			path: src/Controller/Api/CampusAdminController.php
 
 		-
-			message: '#^Method App\\Controller\\Api\\CampusAdminController\:\:getProgressRepo\(\) should return App\\Repository\\CampusLessonProgressRepository but returns Doctrine\\ORM\\EntityRepository\<App\\Controller\\Api\\CampusLessonProgress\>\.$#'
+			message: '#^Method App\\Controller\\Api\\CampusAdminController\:\:getProgressRepo\(\) should return App\\Repository\\CampusLessonProgressRepository but returns Doctrine\\ORM\\EntityRepository\<App\\Entity\\CampusLessonProgress\>\.$#'
 			identifier: return.type
 			count: 1
 			path: src/Controller/Api/CampusAdminController.php
